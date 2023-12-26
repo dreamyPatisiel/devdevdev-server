@@ -11,12 +11,15 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = @Index(name = "idx__name__email",
+        columnList = "name, email"))
 public class Member extends BasicTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+    private String email;
     private String password;
     private String userId;
     private String profileImage;
