@@ -3,7 +3,6 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Fetch;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,15 +18,26 @@ public class Member extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String email;
-    private String password;
+    @Embedded
+    @AttributeOverride(name = "email",
+            column = @Column(name = "email")
+    )
+    private Email email;
+    @Embedded
+    private Password password;
     private String userId;
     private String profileImage;
     private String job;
-    private Integer annualIncome;
-    private Integer experience;
+    @Embedded
+    private AnnualIncome annualIncome;
+    @Embedded
+    private Experience experience;
     private Boolean subscriptionLetterGranted;
-    private String subscriptionLetterEmail;
+    @Embedded
+    @AttributeOverride(name = "email",
+            column = @Column(name = "subscription_letter_email")
+    )
+    private Email subscriptionLetterEmail; //
     private LocalDateTime loginDate;
 
     @OneToMany(mappedBy = "member")
@@ -44,5 +54,6 @@ public class Member extends BasicTime {
 
     @OneToMany(mappedBy = "member")
     private List<Recommend> recommends = new ArrayList<>();
+
 
 }
