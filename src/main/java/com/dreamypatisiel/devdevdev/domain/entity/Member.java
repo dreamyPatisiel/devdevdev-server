@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,12 @@ public class Member extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+
+    @Embedded
+    @AttributeOverride(name = "nickname",
+            column = @Column(name = "nickname")
+    )
+    private Nickname nickname;
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "email")

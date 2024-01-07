@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.entity;
+package com.dreamypatisiel.devdevdev.domain.entity.embedded;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,15 +1,18 @@
-package com.dreamypatisiel.devdevdev.domain.entity;
+package com.dreamypatisiel.devdevdev.domain.entity.embedded;
 
 import com.dreamypatisiel.devdevdev.exception.EmailException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
 public class Email {
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9+-\\_.]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$";
     public static final String INVALID_EMAIL_FORMAT_MESSAGE = "유효한 형식의 이메일 주소를 입력해주세요.";
+
     private String email;
 
     public Email(String email) {

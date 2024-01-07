@@ -10,8 +10,7 @@ public class Notification extends BasicTime {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private NotificationMessage message;
+    private String message;
 
     @Enumerated(value = EnumType.STRING)
     private NotificationType type;

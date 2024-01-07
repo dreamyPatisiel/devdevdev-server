@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.entity;
+package com.dreamypatisiel.devdevdev.domain.entity.embedded;
 
 import com.dreamypatisiel.devdevdev.exception.EmailException;
 import org.junit.jupiter.api.DisplayName;

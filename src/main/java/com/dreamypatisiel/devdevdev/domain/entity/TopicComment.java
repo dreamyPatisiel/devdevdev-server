@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,9 +13,21 @@ public class TopicComment extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String content;
-    private Long blameTotalCount;
-    private Long recommendTotalCount;
+    @Embedded
+    @AttributeOverride(name = "commentContent",
+            column = @Column(name = "content")
+    )
+    private CommentContent content;
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "blame_total_count")
+    )
+    private Count blameTotalCount;
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "recommend_total_count")
+    )
+    private Count recommendTotalCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Reason;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,8 @@ public class TechBlame extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String reason;
+    @Embedded
+    private Reason reason;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tech_comment_id")

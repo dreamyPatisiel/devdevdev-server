@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -13,10 +15,18 @@ public class Company extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Embedded
+    @AttributeOverride(name = "companyName",
+            column = @Column(name = "name")
+    )
+    private CompanyName name;
 
-    private String name;
     private String thumbnail;
-    private String careerUrl;
+    @Embedded
+    @AttributeOverride(name = "url",
+            column = @Column(name = "careerUrl")
+    )
+    private Url careerUrl;
 
     @OneToMany(mappedBy = "company")
     private List<TechArticle> techArticles = new ArrayList<>();

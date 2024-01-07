@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import io.lettuce.core.dynamic.annotation.CommandNaming;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,7 +13,10 @@ public class InterestedCompany extends BasicTime {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @Embedded
+    @AttributeOverride(name = "companyName",
+            column = @Column(name = "name"))
+    private CompanyName name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

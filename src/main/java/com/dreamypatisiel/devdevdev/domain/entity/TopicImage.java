@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,9 +12,12 @@ public class TopicImage extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long voteTotalCount;
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "view_total_count")
+    )
+    private Count voteTotalCount;
     private String imageUrl;
-    private String thumbnailUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_id")

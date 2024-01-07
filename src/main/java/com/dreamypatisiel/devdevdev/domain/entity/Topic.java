@@ -1,7 +1,9 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.TopicContents;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -15,10 +17,27 @@ public class Topic extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String title;
-    private String contents;
-    private Long viewTotalCount;
-    private Long commentTotalCount;
+    @Column(length = 50)
+    private Title title;
+
+    @Embedded
+    @AttributeOverride(name = "topicContents",
+            column = @Column(name = "contents")
+    )
+    private TopicContents contents;
+
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "view_total_count")
+    )
+    private Count viewTotalCount;
+
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "comment_total_count")
+    )
+    private Count commentTotalCount;
+    private String thumbnailUrl;
     private String author;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
