@@ -1,8 +1,8 @@
 package com.dreamypatisiel.devdevdev.web;
 
+import static com.dreamypatisiel.devdevdev.global.config.security.SecurityConstant.PREFLIGHT_MAX_AGE;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
-import com.dreamypatisiel.devdevdev.global.config.SecurityConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +41,6 @@ public class CorsTest {
                 .andExpect(MockMvcResultMatchers.header()
                         .string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, HttpMethod.GET.name()))
                 .andExpect(MockMvcResultMatchers.header()
-                        .string(HttpHeaders.ACCESS_CONTROL_MAX_AGE, String.valueOf(SecurityConfig.PREFLIGHT_MAX_AGE)));
+                        .string(HttpHeaders.ACCESS_CONTROL_MAX_AGE, String.valueOf(PREFLIGHT_MAX_AGE)));
     }
 }

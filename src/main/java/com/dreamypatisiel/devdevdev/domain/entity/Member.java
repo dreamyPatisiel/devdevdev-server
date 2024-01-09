@@ -1,6 +1,8 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
+import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.OAuth2UserProvider;
+import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.SocialMemberDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -11,8 +13,8 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(indexes = @Index(name = "idx__name__email",
-        columnList = "name, email"))
+@Table(indexes = @Index(name = "idx__name__email__user_id",
+        columnList = "name, email, userId"))
 public class Member extends BasicTime {
 
     @Id
@@ -30,8 +32,7 @@ public class Member extends BasicTime {
             column = @Column(name = "email")
     )
     private Email email;
-    @Embedded
-    private Password password;
+    private String password;
     private String userId;
     private String profileImage;
     private String job;
@@ -44,9 +45,10 @@ public class Member extends BasicTime {
     @AttributeOverride(name = "email",
             column = @Column(name = "subscription_letter_email")
     )
-    private Email subscriptionLetterEmail; //
+    private Email subscriptionLetterEmail;
     private LocalDateTime loginDate;
-
+    @Enumerated(EnumType.STRING)
+    private SocialType socialType;
     @OneToMany(mappedBy = "member")
     private List<InterestedCompany> interestedCompanies = new ArrayList<>();
 
@@ -62,5 +64,14 @@ public class Member extends BasicTime {
     @OneToMany(mappedBy = "member")
     private List<Recommend> recommends = new ArrayList<>();
 
+    public static Member createMemberBy(SocialMemberDto socialMemberDto) {
+        Member member = new Member();
+        member.userId = socialMemberDto.getUserId();
+        member.name = socialMemberDto.getName();
+        member.email = new Email(socialMemberDto.getEmail());
+        member.nickname = new Nickname(socialMemberDto.getNickName());
+        member.password = socialMemberDto.getPassword();
 
+        return member;
+    }
 }

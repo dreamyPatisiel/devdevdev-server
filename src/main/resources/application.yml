@@ -2,3 +2,5 @@ spring:
   profiles:
     active:
       - local
+    include:
+      - oauth2-local
