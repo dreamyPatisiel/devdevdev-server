@@ -21,7 +21,7 @@ public class AppOAuth2MemberService {
     @Transactional
     public void register(OAuth2UserProvider oAuth2UserProvider) {
         Optional<Member> optionalMember = memberRepository
-                .findByUserIdAndSocialType(oAuth2UserProvider.getId(), oAuth2UserProvider.getSocialType());
+                .findMemberByUserIdAndSocialType(oAuth2UserProvider.getId(), oAuth2UserProvider.getSocialType());
         if(optionalMember.isPresent()) {
             return;
         }
