@@ -1,17 +1,14 @@
 package com.dreamypatisiel.devdevdev.global.config.security.oauth2.model;
 
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
-import java.util.List;
+import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 public class KakaoMember extends SocialUserProvider {
 
     private final static String KAKAO_ACCOUNT = "kakao_account";
-    private final static String PROPERTIES = "properties"; //
+    private final static String PROPERTIES = "properties";
     private final static String NICKNAME = "nickname";
     private final static String EMAIL = "email";
     private static final String ID = "id";
@@ -43,5 +40,10 @@ public class KakaoMember extends SocialUserProvider {
             return kakaoAccountAttributes.get(EMAIL).toString();
         }
         return DEFAULT_EMAIL;
+    }
+
+    @Override
+    public SocialType getSocialType() {
+        return SocialType.KAKAO;
     }
 }

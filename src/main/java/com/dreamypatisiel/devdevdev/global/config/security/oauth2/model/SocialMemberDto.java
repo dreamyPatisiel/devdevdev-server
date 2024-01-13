@@ -30,8 +30,8 @@ public class SocialMemberDto {
                 .name(oAuth2UserProvider.getUserName())
                 .email(oAuth2UserProvider.getEmail())
                 .nickName(oAuth2UserProvider.getUserName())
+                .socialType(oAuth2UserProvider.getSocialType())
                 .password(encodedPassword)
-                .socialType(SocialType.KAKAO)
                 .build();
     }
 }

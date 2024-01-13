@@ -9,23 +9,26 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AppOAuth2MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public Member register(OAuth2UserProvider oAuth2UserProvider) {
-        Optional<Member> optionalMember = memberRepository.findByUserId(oAuth2UserProvider.getId());
+    @Transactional
+    public void register(OAuth2UserProvider oAuth2UserProvider) {
+        Optional<Member> optionalMember = memberRepository
+                .findByUserIdAndSocialType(oAuth2UserProvider.getId(), oAuth2UserProvider.getSocialType());
         if(optionalMember.isPresent()) {
-            return optionalMember.get();
+            return;
         }
 
+        // 데이터베이스 회원이 없으면 회원가입 시킨다.
         String encodePassword = passwordEncoder.encode(new Password().getPassword());
         SocialMemberDto socialMemberDto = SocialMemberDto.from(oAuth2UserProvider, encodePassword);
         memberRepository.save(Member.createMemberBy(socialMemberDto));
-
-        return Member.createMemberBy(socialMemberDto);
     }
 }

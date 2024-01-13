@@ -13,8 +13,8 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(indexes = @Index(name = "idx__name__email__user_id",
-        columnList = "name, email, userId"))
+@Table(indexes = @Index(name = "idx__name__email__user_id__socialType",
+        columnList = "name, email, userId, socialType"))
 public class Member extends BasicTime {
 
     @Id
@@ -71,6 +71,7 @@ public class Member extends BasicTime {
         member.email = new Email(socialMemberDto.getEmail());
         member.nickname = new Nickname(socialMemberDto.getNickName());
         member.password = socialMemberDto.getPassword();
+        member.socialType = socialMemberDto.getSocialType();
 
         return member;
     }

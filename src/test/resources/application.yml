@@ -2,7 +2,7 @@ spring:
   profiles:
     include:
      - test
-     - api-key
+     - oauth2-test
 
   jpa:
     hibernate:
