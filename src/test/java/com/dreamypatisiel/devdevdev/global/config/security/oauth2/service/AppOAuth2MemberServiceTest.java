@@ -10,13 +10,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Nickname;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.OAuth2UserProvider;
-import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.service.AppOAuth2MemberService;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest

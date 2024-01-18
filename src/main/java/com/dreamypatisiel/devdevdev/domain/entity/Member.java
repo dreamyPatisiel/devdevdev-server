@@ -1,10 +1,10 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
-import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.OAuth2UserProvider;
-import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -13,8 +13,10 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(indexes = @Index(name = "idx__name__email__user_id__socialType",
-        columnList = "name, email, userId, socialType"))
+@Table(indexes = {
+        @Index(name = "idx__name__user_id", columnList = "name, userId"),
+        @Index(name = "idx__email__socialType", columnList = "email, socialType")
+})
 public class Member extends BasicTime {
 
     @Id
@@ -81,5 +83,21 @@ public class Member extends BasicTime {
 
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public boolean isRefreshTokenEquals(String refreshToken) {
+        return refreshToken.equalsIgnoreCase(this.refreshToken);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Email getEmail() {
+        return email;
+    }
+
+    public SocialType getSocialType() {
+        return socialType;
     }
 }
