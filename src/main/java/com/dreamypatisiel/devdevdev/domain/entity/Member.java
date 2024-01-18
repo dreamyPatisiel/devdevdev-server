@@ -41,6 +41,7 @@ public class Member extends BasicTime {
     @Embedded
     private Experience experience;
     private Boolean subscriptionLetterGranted;
+    private String refreshToken;
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "subscription_letter_email")
@@ -49,6 +50,8 @@ public class Member extends BasicTime {
     private LocalDateTime loginDate;
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
+    @Enumerated(EnumType.STRING)
+    private Role role;
     @OneToMany(mappedBy = "member")
     private List<InterestedCompany> interestedCompanies = new ArrayList<>();
 
@@ -74,5 +77,9 @@ public class Member extends BasicTime {
         member.socialType = socialMemberDto.getSocialType();
 
         return member;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

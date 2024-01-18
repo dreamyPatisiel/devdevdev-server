@@ -4,3 +4,4 @@ spring:
       - local
     include:
       - oauth2-local
+      - jwt-local

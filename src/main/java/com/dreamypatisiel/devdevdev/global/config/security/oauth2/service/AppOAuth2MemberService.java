@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.config.security.oauth2.service;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.config.security.oauth2.model.OAuth2UserProvider;
@@ -20,8 +21,7 @@ public class AppOAuth2MemberService {
 
     @Transactional
     public void register(OAuth2UserProvider oAuth2UserProvider) {
-        Optional<Member> optionalMember = memberRepository
-                .findMemberByUserIdAndSocialType(oAuth2UserProvider.getId(), oAuth2UserProvider.getSocialType());
+        Optional<Member> optionalMember = findMemberByUserIdAndSocialType(oAuth2UserProvider);
         if(optionalMember.isPresent()) {
             return;
         }
@@ -30,5 +30,20 @@ public class AppOAuth2MemberService {
         String encodePassword = passwordEncoder.encode(new Password().getPassword());
         SocialMemberDto socialMemberDto = SocialMemberDto.from(oAuth2UserProvider, encodePassword);
         memberRepository.save(Member.createMemberBy(socialMemberDto));
+    }
+
+
+    public Optional<Member> findMemberByUserIdAndSocialType(OAuth2UserProvider oAuth2UserProvider) {
+        return memberRepository
+                .findMemberByUserIdAndSocialType(oAuth2UserProvider.getId(), oAuth2UserProvider.getSocialType());
+    }
+    public void findMemberByEmailAndSaveRefreshToken(String email, String refreshToken) {
+        System.out.println("email = "+email);
+        System.out.println("refreshToken = "+refreshToken);
+        Optional<Member> optionalMember = memberRepository.findMemberByEmail(email);
+        if(!optionalMember.isPresent()) {
+            return;
+        }
+        optionalMember.get().updateRefreshToken(refreshToken);
     }
 }
