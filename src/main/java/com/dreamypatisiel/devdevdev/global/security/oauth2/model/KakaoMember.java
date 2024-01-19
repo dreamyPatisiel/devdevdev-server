@@ -47,8 +47,8 @@ public class KakaoMember extends SocialUserProvider {
         return SocialType.KAKAO;
     }
 
-    @Override
-    public String getName() {
-        return propertiesAttributes.get(NICKNAME).toString();
-    }
+//    @Override
+//    public String getName() {
+//        return propertiesAttributes.get(NICKNAME).toString();
+//    }
 }

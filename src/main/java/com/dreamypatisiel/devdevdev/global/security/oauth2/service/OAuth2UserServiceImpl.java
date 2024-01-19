@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @RequiredArgsConstructor
-public class OAuth2UserServiceImpl implements OAuth2UserService<OAuth2UserRequest, OAuth2UserProvider> {
+//public class OAuth2UserServiceImpl implements OAuth2UserService<OAuth2UserRequest, OAuth2UserProvider> {
+public class OAuth2UserServiceImpl implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     public static final String INVALID_SOCIAL_LOGIN_SUPPORT_MESSAGE = "지원하지 않은 소셜로그인 입니다.";
 
@@ -25,14 +26,14 @@ public class OAuth2UserServiceImpl implements OAuth2UserService<OAuth2UserReques
     private final OAuth2UserService<OAuth2UserRequest, OAuth2User> defaultOAuth2UserService;
 
     @Override
-    public OAuth2UserProvider loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         ClientRegistration clientRegistration = userRequest.getClientRegistration();
         OAuth2User oAuth2User = defaultOAuth2UserService.loadUser(userRequest);
 
         OAuth2UserProvider provider = getProvider(clientRegistration, oAuth2User);
         OAuth2MemberService.register(provider);
 
-        return provider;
+        return oAuth2User;
     }
 
     private OAuth2UserProvider getProvider(ClientRegistration clientRegistration, OAuth2User oAuth2User) {

@@ -1,7 +1,7 @@
 jwt:
   header: Authorization
   secret: devdevdevtestdevdevdevtestdevdevdevtestdevdevdevtest
-  redirectUri: http://localhost:8080/devdevdev/api/v1/members
-  expiration:
-    access: 100
-    refresh: 1000000
+  redirectUri:
+    scheme: http
+    host: localhost:8080
+    path: /devdevdev/api/v1/members

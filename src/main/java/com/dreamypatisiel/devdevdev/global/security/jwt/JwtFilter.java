@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -17,6 +16,7 @@ import java.io.IOException;
 /**
  * (상시)
  * API 요청 토큰을 검증하는 필터
+ * JWT의 인증 정보를 검사해 현재 쓰레드의 SecurityContext에 저장하는 역할 수행
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -24,24 +24,23 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
 
-    // jwt 토큰의 인증정보를 SecurityContext에 저장하는 역할 수행
     @Override
-    protected void doFilterInternal(HttpServletRequest servletRequest,
-                                    HttpServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException, ServletException, IOException {
-        try {
-            log.info("JwtFilter 앞");
-            String token = tokenService.resolveToken(servletRequest);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-            if (tokenService.validateToken(token)) { // JWT 토큰이 유효한 경우에만, USER객체 셋팅
-                Authentication authentication = tokenService.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("jwt success");
-            }
-        } catch (Exception e) {
+        String requestURI = request.getRequestURI();
+        log.info("requestURI = "+requestURI);
 
+        log.info("JwtFilter 앞");
+        String token = tokenService.resolveToken(request);
+
+        if(tokenService.validateToken(token)) { // JWT 토큰이 유효한 경우에만, USER객체 셋팅
+            Authentication authentication = tokenService.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("jwt success");
         }
-        filterChain.doFilter(servletRequest, servletResponse); // 다음 Filter를 실행(마지막 필터라면 필터 실행 후 리소스를 반환)
+        filterChain.doFilter(request, response); // 다음 Filter 실행
         log.info("JwtFilter 뒤");
     }
+
 }

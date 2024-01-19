@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.service;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
@@ -20,7 +21,7 @@ public class OAuth2MemberService {
 
     @Transactional
     public void register(OAuth2UserProvider oAuth2UserProvider) {
-        Optional<Member> optionalMember = findMemberByUserIdAndSocialType(oAuth2UserProvider);
+        Optional<Member> optionalMember = findMemberByEmailAndSocialType(oAuth2UserProvider);
         if(optionalMember.isPresent()) {
             return;
         }
@@ -31,8 +32,8 @@ public class OAuth2MemberService {
         memberRepository.save(Member.createMemberBy(socialMemberDto));
     }
 
-    private Optional<Member> findMemberByUserIdAndSocialType(OAuth2UserProvider oAuth2UserProvider) {
+    private Optional<Member> findMemberByEmailAndSocialType(OAuth2UserProvider oAuth2UserProvider) {
         return memberRepository
-                .findMemberByUserIdAndSocialType(oAuth2UserProvider.getId(), oAuth2UserProvider.getSocialType());
+                .findMemberByEmailAndSocialType(new Email(oAuth2UserProvider.getEmail()), oAuth2UserProvider.getSocialType());
     }
 }
