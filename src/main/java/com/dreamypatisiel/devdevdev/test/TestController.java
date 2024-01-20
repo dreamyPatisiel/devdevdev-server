@@ -2,10 +2,14 @@ package com.dreamypatisiel.devdevdev.test;
 
 import java.util.List;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/devdevdev/api/v1")
 public class TestController {

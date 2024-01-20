@@ -6,8 +6,18 @@ public class SecurityConstant {
     public static final long PREFLIGHT_MAX_AGE = 3600L;
     public static final String[] GET_WHITELIST = new String[]{
             "/",
-            "/login",
-            "/devdevdev/api/v1/members"
+            "/login**",
+            "/auth**",
+            "/oauth2/authorize",
+            "/error",
+            "/favicon.ico",
+            "/**/*.png",
+            "/**/*.gif",
+            "/**/*.svg",
+            "/**/*.jpg",
+            "/**/*.html",
+            "/**/*.css",
+            "/**/*.js"
     };
 
     public static final String[] POST_WHITELIST = new String[]{

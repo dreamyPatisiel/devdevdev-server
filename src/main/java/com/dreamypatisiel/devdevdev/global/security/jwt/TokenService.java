@@ -145,7 +145,7 @@ public class TokenService implements InitializingBean {
                 List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
-    public String resolveToken(HttpServletRequest request) throws TokenInvalidException {
+    public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith(BEARER_PREFIX)) {
             // throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
@@ -154,7 +154,7 @@ public class TokenService implements InitializingBean {
         return bearerToken.substring(BEARER_PREFIX.length());
     }
 
-    public boolean validateToken(String token) throws TokenInvalidException {
+    public boolean validateToken(String token) {
         if(!StringUtils.hasText(token)) {
 //            throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
             return false;
