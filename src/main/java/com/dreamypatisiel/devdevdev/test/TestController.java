@@ -23,6 +23,12 @@ public class TestController {
         return new BasicResponse<>("SUCCESS", List.of(imHa, minJu, minYoung, soYoung, seaung));
     }
 
+    @GetMapping("/authentication")
+    public Authentication getAu() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication;
+    }
+
     @Data
     static class Member {
         private String name;

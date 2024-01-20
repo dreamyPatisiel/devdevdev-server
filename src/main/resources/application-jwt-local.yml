@@ -4,4 +4,4 @@ jwt:
   redirectUri:
     scheme: http
     host: localhost:8080
-    path: /devdevdev/api/v1/members
+    path: /devdevdev/api/v1/refreshToken

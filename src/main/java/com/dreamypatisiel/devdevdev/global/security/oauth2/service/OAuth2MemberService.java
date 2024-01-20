@@ -28,7 +28,7 @@ public class OAuth2MemberService {
 
         // 데이터베이스 회원이 없으면 회원가입 시킨다.
         String encodePassword = passwordEncoder.encode(new Password().getPassword());
-        SocialMemberDto socialMemberDto = SocialMemberDto.from(oAuth2UserProvider, encodePassword);
+        SocialMemberDto socialMemberDto = SocialMemberDto.of(oAuth2UserProvider, encodePassword);
         memberRepository.save(Member.createMemberBy(socialMemberDto));
     }
 

@@ -77,6 +77,7 @@ public class Member extends BasicTime {
         member.nickname = new Nickname(socialMemberDto.getNickName());
         member.password = socialMemberDto.getPassword();
         member.socialType = socialMemberDto.getSocialType();
+        member.role = socialMemberDto.getRole();
 
         return member;
     }

@@ -1,10 +1,11 @@
 package com.dreamypatisiel.devdevdev.global.config.security.oauth2.service;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.exception.OAuth2UserProviderException;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.service.AppOAuth2MemberService;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2MemberService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,6 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class OAuth2UserServiceImplTest {

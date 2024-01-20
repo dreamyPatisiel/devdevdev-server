@@ -1,12 +1,11 @@
-package com.dreamypatisiel.devdevdev.global.security.jwt;
+package com.dreamypatisiel.devdevdev.global.security.jwt.handler;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * 인증, 인가 단계에서 발생한 에러를 처리하는 클래스

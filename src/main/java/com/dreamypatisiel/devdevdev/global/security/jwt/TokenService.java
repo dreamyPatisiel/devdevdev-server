@@ -1,15 +1,16 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
-import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -20,19 +21,19 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import static com.dreamypatisiel.devdevdev.exception.TokenInvalidException.REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE;
-import static com.dreamypatisiel.devdevdev.exception.TokenNotFoundException.TOKEN_NOT_FOUND_EXCEPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME;
 
@@ -66,22 +67,48 @@ public class TokenService implements InitializingBean {
     /**
      * 토큰 발급
      */
-    @Transactional
-    public Token generateToken(String email, String socialType) {
-
-        Claims claims = Jwts.claims().setSubject(email);
-        claims.put(JwtClaimConstant.email, email);
-        claims.put(JwtClaimConstant.socialType, socialType);
-        claims.put(JwtClaimConstant.role, "ROLE_USER");
+    public Token generateToken(String email, String socialType, String role) {
+        Claims claims = configClaims(email, socialType, role);
 
         String accessToken = createAccessToken(claims);
         String refreshToken = createRefreshToken(claims);
 
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), SocialType.valueOf(socialType))
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
-        findMember.updateRefreshToken(refreshToken);
+        return new Token(accessToken, refreshToken);
+    }
+
+    private Claims configClaims(String email, String socialType, String role) {
+        Claims claims = Jwts.claims();
+        claims.put(JwtClaimConstant.email, email);
+        claims.put(JwtClaimConstant.socialType, socialType);
+        claims.put(JwtClaimConstant.role, role);
+
+        return claims;
+    }
+
+    public Token generateToken(OAuth2UserProvider oAuth2UserProvider) {
+        String email = oAuth2UserProvider.getEmail();
+        log.info("email={}", email);
+        SocialType socialType = oAuth2UserProvider.getSocialType();
+        Role role = getRole(oAuth2UserProvider.getAuthorities());
+
+        Claims claims = configClaims(email, socialType.name(), role.name());
+
+        String accessToken = createAccessToken(claims);
+        String refreshToken = createRefreshToken(claims);
 
         return new Token(accessToken, refreshToken);
+    }
+
+    private Role getRole(List<? extends GrantedAuthority> authorities) {
+        GrantedAuthority grantedAuthority = authorities.stream()
+                .findFirst()
+                .orElse(null);
+
+        if(ObjectUtils.isEmpty(grantedAuthority)) {
+            return Role.ROLE_USER;
+        }
+
+        return Role.ROLE_ADMIN;
     }
 
     private String createRefreshToken(Claims claims) {
@@ -94,6 +121,7 @@ public class TokenService implements InitializingBean {
     }
 
     private String createAccessToken(Claims claims) {
+        log.info("claims={}", claims);
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(timeProvider.getDateNow())
@@ -146,12 +174,11 @@ public class TokenService implements InitializingBean {
         return false;
     }
 
-    private Claims parseClaims(String accessToken) {
-        try {
-            return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(accessToken).getBody();
-        } catch (ExpiredJwtException e) {
-            return e.getClaims();
-        }
+    public Claims getClaims(String validToken) {
+        return Jwts.parserBuilder().setSigningKey(key)
+                .build()
+                .parseClaimsJws(validToken)
+                .getBody();
     }
 
     public void validateRefreshToken(String refreshToken) throws TokenInvalidException {
@@ -174,12 +201,17 @@ public class TokenService implements InitializingBean {
     }
 
     public String getSocialType(String token) {
-        Claims claims = parseClaims(token);
+        Claims claims = getClaims(token);
         return claims.get(JwtClaimConstant.socialType).toString();
     }
 
     public String getEmail(String token) {
-        Claims claims = parseClaims(token);
+        Claims claims = getClaims(token);
         return claims.get(JwtClaimConstant.email).toString();
+    }
+
+    public String getRole(String token) {
+        Claims claims = getClaims(token);
+        return claims.get(JwtClaimConstant.role).toString();
     }
 }

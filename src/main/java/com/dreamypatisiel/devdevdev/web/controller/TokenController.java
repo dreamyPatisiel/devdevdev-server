@@ -1,7 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
+import com.dreamypatisiel.devdevdev.domain.service.response.MemberResponse;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.CookieUtils;
@@ -10,6 +12,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,7 +39,7 @@ public class TokenController {
      * 2. 클라이언트에서 리프레시 토큰을 요청한다.
      */
     @GetMapping("/refresh")
-    public ResponseEntity<BasicResponse<Object>> refreshAuth(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+    public ResponseEntity<BasicResponse<MemberResponse>> refreshAuth(HttpServletRequest request, HttpServletResponse response) throws ServletException {
 //        String refreshToken = request.getHeader("Refresh");
         String refreshToken = request.getParameter("refresh");
         log.info("refresh 요청 => "+refreshToken);
@@ -46,10 +49,11 @@ public class TokenController {
             tokenService.validateRefreshToken(refreshToken);
             String email = tokenService.getEmail(refreshToken);
             String socialType = tokenService.getSocialType(refreshToken);
+            String role = tokenService.getRole(refreshToken);
 
             log.info("토큰 생성 with "+email+" , "+socialType);
             // 새로운 토큰 생성
-            Token newToken = tokenService.generateToken(email, socialType);
+            Token newToken = tokenService.generateToken(email, socialType, role);
 
             // 쿠키 설정
             log.info("쿠키 설정");
@@ -57,9 +61,10 @@ public class TokenController {
 
             // save refresh token
             log.info("refresh 저장 "+email+", "+socialType);
-            jwtMemberService.findMemberByEmailAndSocialTypeAndSaveRefreshToken(new Email(email), SocialType.valueOf(socialType), newToken.getRefreshToken());
+            Claims claims = tokenService.getClaims(refreshToken);
+            MemberResponse memberResponse = jwtMemberService.updateMemberRefreshToken(refreshToken, claims);
 
-            return ResponseEntity.ok(BasicResponse.success("CREATE_NEW_TOKEN"));
+            return ResponseEntity.ok(BasicResponse.success(memberResponse));
 
         } catch (TokenNotFoundException e){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(BasicResponse.fail("리프레시 토큰 정보 없음",HttpStatus.FORBIDDEN.value()));
@@ -73,7 +78,6 @@ public class TokenController {
 
         } catch (Exception e) {
             throw new RuntimeException();
-
         }
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 public class KakaoMember extends SocialUserProvider {
 
-    private final static String KAKAO_ACCOUNT = "kakao_account";
+    public final static String KAKAO_ACCOUNT = "kakao_account";
     private final static String PROPERTIES = "properties";
     private final static String NICKNAME = "nickname";
     private final static String EMAIL = "email";
@@ -18,8 +18,8 @@ public class KakaoMember extends SocialUserProvider {
     private final Map<String, Object> propertiesAttributes;
 
     @SuppressWarnings("unchecked cast")
-    public KakaoMember(OAuth2User oAuth2User, ClientRegistration clientRegistration) {
-        super(oAuth2User, clientRegistration);
+    public KakaoMember(OAuth2User oAuth2User) {
+        super(oAuth2User);
         this.kakaoAccountAttributes = (Map<String, Object>) oAuth2User.getAttributes().get(KAKAO_ACCOUNT);
         this.propertiesAttributes = (Map<String, Object>) oAuth2User.getAttributes().get(PROPERTIES);
     }
