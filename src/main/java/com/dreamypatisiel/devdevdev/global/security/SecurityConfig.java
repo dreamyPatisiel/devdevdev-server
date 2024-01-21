@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.global.security;
 
-import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.GET_WHITELIST;
-import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.POST_WHITELIST;
 import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.PREFLIGHT_MAX_AGE;
 import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.SPRING_H2_CONSOLE_ENABLED;
 import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.WILDCARD_PATTERN;
@@ -12,7 +10,6 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAccessDeniedHandler;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAuthenticationEntryPointHandler;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2SuccessHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
@@ -23,42 +20,39 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-
 
     private final OAuth2UserServiceImpl oAuth2UserServiceImpl;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
-    private final TokenService tokenService;
+    private final JwtFilter jwtFilter;
+    private final SecurityExceptionFilter securityExceptionFilter;
 
     @Bean
     @Profile({"test", "local"})
     public SecurityFilterChain securityFilterChainOnLocal(HttpSecurity http) throws Exception {
+
         http
                 .cors(cors -> cors.configurationSource(apiCorsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(WILDCARD_PATTERN).permitAll()
-//                        .requestMatchers(HttpMethod.GET, GET_WHITELIST).permitAll()
-//                        .requestMatchers(HttpMethod.POST, POST_WHITELIST).permitAll()
+                        .requestMatchers(SecurityConstant.WHITELIST_URL).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -74,17 +68,17 @@ public class SecurityConfig {
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2AuthenticationFailureHandler)
                 .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
-                        .baseUri("/oauth2/authorization/**")
+                        .baseUri(SecurityConstant.OAUTH2_LOGIN_URL_PREFIX)
                 )
                 .redirectionEndpoint(redirectionEndpointConfig -> redirectionEndpointConfig
-                        .baseUri("/login/oauth2/code/**"))
+                        .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))
         );
 
-        http.addFilterBefore(new JwtFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(new SecurityExceptionFilter(), JwtFilter.class);
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(securityExceptionFilter, JwtFilter.class);
 
         http.logout(customizer -> customizer
-                .logoutUrl("/logout")
+                .logoutUrl("/devdevdev/api/v1/logout")
                 .logoutSuccessUrl("/")
                 .deleteCookies(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN)
                 .permitAll());

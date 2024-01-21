@@ -4,9 +4,8 @@ import com.dreamypatisiel.devdevdev.exception.JwtAccessDeniedException;
 import com.dreamypatisiel.devdevdev.exception.JwtAuthenticationException;
 import com.dreamypatisiel.devdevdev.exception.OAuth2LoginException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.global.security.SecurityConstant;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -14,9 +13,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -24,6 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * 시큐리티 필터 체인에서 발생하는 예외를 처리하는 필터
  */
+@Slf4j
 @Component
 public class SecurityExceptionFilter extends OncePerRequestFilter {
 
@@ -32,6 +33,7 @@ public class SecurityExceptionFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
+            log.info("SecurityExceptionFilter 시작");
             filterChain.doFilter(request, response);
         } catch (TokenInvalidException e) {
             sendErrorMessage(response, HttpServletResponse.SC_BAD_REQUEST, e);

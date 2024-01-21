@@ -21,7 +21,7 @@ spring:
             authorization-grant-type: authorization_code
             client-name: DEVDEVDEV-TEST
             client-secret: yk58g3giuS6yqfNbit5yqWVZwDCV032t
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: http://localhost:8080/devdevdev/api/v1/login/oauth2/code/kakao
             client-authentication-method: client_secret_post
             scope:
               # - openid
