@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.handler;
 
+import com.dreamypatisiel.devdevdev.exception.JwtAccessDeniedException;
+import com.dreamypatisiel.devdevdev.exception.JwtAuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -16,6 +18,6 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN);
+        throw new JwtAccessDeniedException("해당 자원에 접근 권한이 없습니다.");
     }
 }

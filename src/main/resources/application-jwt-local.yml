@@ -3,5 +3,6 @@ jwt:
   secret: devdevdevtestdevdevdevtestdevdevdevtestdevdevdevtest
   redirectUri:
     scheme: http
-    host: localhost:8080
-    path: /devdevdev/api/v1/refreshToken
+    host: localhost
+    port: 8080
+    path: /devdevdev/api/v1/members

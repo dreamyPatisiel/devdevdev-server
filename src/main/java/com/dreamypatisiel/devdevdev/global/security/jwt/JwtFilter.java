@@ -27,31 +27,19 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        log.info("JwtFilter 시작");
 
-        try {
-            String requestURI = request.getRequestURI();
-            log.info("requestURI = " + requestURI);
+        String token = tokenService.resolveToken(request);
+        log.info("accessToken={}", token);
 
-            log.info("JwtFilter 앞");
-            log.info(SecurityContextHolder.getContext().toString());
-
-            String token = tokenService.resolveToken(request);
-            log.info("accessToken={}", token);
-
-            if (tokenService.validateToken(token)) { // JWT 토큰이 유효한 경우에만, USER객체 셋팅
-                Authentication authentication = tokenService.getAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("jwt success");
-            }
-        } catch (Exception e){
-            log.error("message=", e);
+        if (tokenService.validateToken(token)) { // JWT 토큰이 유효한 경우에만, USER객체 셋팅
+            Authentication authentication = tokenService.getAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("jwt success");
         }
 
-        log.info("앞 request={}, response={}", request, response);
-//        response.sendRedirect();
         filterChain.doFilter(request, response); // 다음 Filter 실행
-        log.info("JwtFilter 뒤");
-        log.info("뒤 request={}, response={}", request, response);
+        log.info("JwtFilter 종료");
     }
 
 }

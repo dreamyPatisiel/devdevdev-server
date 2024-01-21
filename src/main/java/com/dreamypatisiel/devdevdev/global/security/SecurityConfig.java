@@ -1,9 +1,12 @@
 package com.dreamypatisiel.devdevdev.global.security;
 
+import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.GET_WHITELIST;
+import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.POST_WHITELIST;
 import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.PREFLIGHT_MAX_AGE;
 import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.SPRING_H2_CONSOLE_ENABLED;
 import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.WILDCARD_PATTERN;
 
+import com.dreamypatisiel.devdevdev.global.security.filter.SecurityExceptionFilter;
 import com.dreamypatisiel.devdevdev.global.security.jwt.JwtFilter;
 import com.dreamypatisiel.devdevdev.global.security.jwt.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAccessDeniedHandler;
@@ -20,6 +23,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -43,8 +47,6 @@ public class SecurityConfig {
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
-    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
-
     private final TokenService tokenService;
 
     @Bean
@@ -73,12 +75,13 @@ public class SecurityConfig {
                 .failureHandler(oAuth2AuthenticationFailureHandler)
                 .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
                         .baseUri("/oauth2/authorization/**")
-                        .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository))
+                )
                 .redirectionEndpoint(redirectionEndpointConfig -> redirectionEndpointConfig
                         .baseUri("/login/oauth2/code/**"))
         );
 
         http.addFilterBefore(new JwtFilter(tokenService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new SecurityExceptionFilter(), JwtFilter.class);
 
         http.logout(customizer -> customizer
                 .logoutUrl("/logout")

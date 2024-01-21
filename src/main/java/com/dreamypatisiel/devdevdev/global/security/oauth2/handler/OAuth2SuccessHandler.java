@@ -5,6 +5,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.CookieUtils;
 import com.dreamypatisiel.devdevdev.global.security.jwt.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.KakaoMember;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialUserProvider;
@@ -38,8 +39,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
-    private static final String TYPE_ACCESS = "access";
-    private static final String TYPE_REFRESH = "refresh";
 
     @Value("${jwt.redirectUri.scheme}")
     private String scheme;
@@ -47,56 +46,41 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private String host;
     @Value("${jwt.redirectUri.path}")
     private String path;
+    @Value("${jwt.redirectUri.port}")
+    private int port;
 
     private final TokenService tokenService;
     private final JwtMemberService jwtMemberService;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     // OAuth2.0 로그인 성공시 수행하는 로직
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        log.info("OAuth2SuccessHandler authentication={}",authentication);
-        log.info("OAuth2SuccessHandler");
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         String socialType = oauthToken.getAuthorizedClientRegistrationId().toUpperCase();
 
         // 토큰 생성
         OAuth2UserProvider oAuth2UserProvider = OAuth2UserProvider.getOAuth2UserProvider(SocialType.valueOf(socialType), authentication);
         Token token = tokenService.generateToken(oAuth2UserProvider);
-        log.info("accessToken={}", token.getAccessToken());
-        log.info("refreshToken={}", token.getRefreshToken());
 
         // set cookie
         CookieUtils.configJwtCookie(response, token);
 
         // 리다이렉트 설정
-        String redirectUri = getRedirectUri(scheme, host, path);
-        //response.sendRedirect(redirectUri);
-        //getRedirectStrategy().sendRedirect(request, response, redirectUri);
+        String redirectUri = getRedirectUri(scheme, host, port, path);
+        getRedirectStrategy().sendRedirect(request, response, redirectUri);
 
         // 리프레시 토큰 저장
         Claims claims = tokenService.getClaims(token.getAccessToken());
         jwtMemberService.updateMemberRefreshToken(token.getRefreshToken(), claims);
+        log.info("OAuth2SuccessHandler accessToken={}", token.getAccessToken());
     }
 
-    private void saveTokenAtCookie(HttpServletRequest request, HttpServletResponse response, Token token) {
-        setCookie(response, token.getAccessToken(), "TYPE_ACCESS", false);
-        setCookie(response, token.getRefreshToken(), "TYPE_REFRESH",true);
-    }
-
-    private void setCookie(HttpServletResponse response, String token, String name, boolean isHttpOnly) {
-        Cookie cookie = new Cookie(name, token);
-        cookie.setPath("/");
-        if(isHttpOnly){
-            cookie.setHttpOnly(true);
-            cookie.setSecure(true);
-        }
-        response.addCookie(cookie);
-    }
-
-    private String getRedirectUri(String scheme, String host, String path) {
+    private String getRedirectUri(String scheme, String host, int port, String path) {
         return UriComponentsBuilder.newInstance()
                 .scheme(scheme)
                 .host(host)
+                .port(port)
                 .path(path)
                 .toUriString();
     }

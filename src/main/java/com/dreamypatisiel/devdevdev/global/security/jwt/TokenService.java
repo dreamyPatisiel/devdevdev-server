@@ -7,6 +7,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
+import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
@@ -34,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 
 import static com.dreamypatisiel.devdevdev.exception.TokenInvalidException.REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.exception.TokenNotFoundException.TOKEN_NOT_FOUND_EXCEPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME;
 
@@ -148,30 +150,27 @@ public class TokenService implements InitializingBean {
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith(BEARER_PREFIX)) {
-            // throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
-            return null;
+             throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
         }
         return bearerToken.substring(BEARER_PREFIX.length());
     }
 
     public boolean validateToken(String token) {
-        if(!StringUtils.hasText(token)) {
-//            throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
-            return false;
-        }
         try {
+            if(!StringUtils.hasText(token)) {
+                throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
+            }
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-//            throw new TokenInvalidException("잘못된 jwt 서명을 가진 토큰입니다");
+            throw new TokenInvalidException("잘못된 jwt 서명을 가진 토큰입니다");
         } catch (ExpiredJwtException e) {
-//            throw new TokenInvalidException("만료된 jwt 토큰입니다");
+            throw new TokenInvalidException("만료된 jwt 토큰입니다");
         } catch (UnsupportedJwtException e) {
-//            throw new TokenInvalidException("지원하지 않는 jwt 토큰입니다");
+            throw new TokenInvalidException("지원하지 않는 jwt 토큰입니다");
         } catch (IllegalArgumentException e) {
-//            throw new TokenInvalidException("잘못된 jwt 토큰입니다");
+            throw new TokenInvalidException("잘못된 jwt 토큰입니다");
         }
-        return false;
     }
 
     public Claims getClaims(String validToken) {
