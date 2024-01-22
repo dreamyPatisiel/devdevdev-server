@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.security;
+package com.dreamypatisiel.devdevdev.global.constant;
 
 public class SecurityConstant {
     public static final String SPRING_H2_CONSOLE_ENABLED = "spring.h2.console.enabled";
@@ -17,17 +17,26 @@ public class SecurityConstant {
             "/**.html",
             "/**.css",
             "/**.js",
-            "/devdevdev/api/v1/logout",
             "/devdevdev/api/v1/oauth2/authorization/**",
             "/devdevdev/api/v1/oauth2/authorization/kakao",
             "/devdevdev/api/v1/login/oauth2/code/**",
             "/devdevdev/api/v1/login/oauth2/code/kakao",
-            "/devdevdev/api/v1/members"
+            "/devdevdev/api/v1/logout",
+            "/h2-console/**",
+            "/h2-console",
+            "/devdevdev/api/v1/members",
+            "/devdevdev/api/v1/token/**"
     };
     public static final String[] GET_WHITELIST = new String[]{
-            "/oauth2/authorization/**",
-            "/login/oauth2/code/**",
-            "/devdevdev/api/v1/members"
+            "/devdevdev/api/v1/oauth2/authorization/**",
+            "/devdevdev/api/v1/oauth2/authorization/kakao",
+            "/devdevdev/api/v1/login/oauth2/code/**",
+            "/devdevdev/api/v1/login/oauth2/code/kakao",
+            "/devdevdev/api/v1/logout",
+            "/h2-console/**",
+            "/h2-console",
+            "/devdevdev/api/v1/members",
+            "/devdevdev/api/v1/token/**"
     };
 
     public static final String[] POST_WHITELIST = new String[]{

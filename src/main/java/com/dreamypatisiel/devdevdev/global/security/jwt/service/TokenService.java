@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.security.jwt;
+package com.dreamypatisiel.devdevdev.global.security.jwt.service;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
@@ -25,7 +25,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
@@ -92,7 +91,6 @@ public class TokenService implements InitializingBean {
         log.info("email={}", email);
         SocialType socialType = oAuth2UserProvider.getSocialType();
         Role role = getRole(oAuth2UserProvider.getAuthorities());
-
         Claims claims = configClaims(email, socialType.name(), role.name());
 
         String accessToken = createAccessToken(claims);
@@ -106,7 +104,7 @@ public class TokenService implements InitializingBean {
                 .findFirst()
                 .orElse(null);
 
-        if(ObjectUtils.isEmpty(grantedAuthority)) {
+        if(!ObjectUtils.isEmpty(grantedAuthority) && "OAUTH2_USER".equals(grantedAuthority.getAuthority())) {
             return Role.ROLE_USER;
         }
 
@@ -142,15 +140,18 @@ public class TokenService implements InitializingBean {
     public Authentication getAuthentication(String token) {
         String email = getEmail(token);
         String socialType = getSocialType(token);
+        String role = getRole(token);
+        log.info("User role = {}",role);
 
         return new UsernamePasswordAuthenticationToken(email, null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+                List.of(new SimpleGrantedAuthority(role)));
     }
 
     public String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith(BEARER_PREFIX)) {
-             throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
+            return null;
+//             throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
         }
         return bearerToken.substring(BEARER_PREFIX.length());
     }
@@ -158,19 +159,21 @@ public class TokenService implements InitializingBean {
     public boolean validateToken(String token) {
         try {
             if(!StringUtils.hasText(token)) {
-                throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
+                return false;
+//                throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
             }
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            throw new TokenInvalidException("잘못된 jwt 서명을 가진 토큰입니다");
+//            throw new TokenInvalidException("잘못된 jwt 서명을 가진 토큰입니다");
         } catch (ExpiredJwtException e) {
-            throw new TokenInvalidException("만료된 jwt 토큰입니다");
+//            throw new TokenInvalidException("만료된 jwt 토큰입니다");
         } catch (UnsupportedJwtException e) {
-            throw new TokenInvalidException("지원하지 않는 jwt 토큰입니다");
+//            throw new TokenInvalidException("지원하지 않는 jwt 토큰입니다");
         } catch (IllegalArgumentException e) {
-            throw new TokenInvalidException("잘못된 jwt 토큰입니다");
+//            throw new TokenInvalidException("잘못된 jwt 토큰입니다");
         }
+        return false;
     }
 
     public Claims getClaims(String validToken) {
@@ -184,7 +187,7 @@ public class TokenService implements InitializingBean {
         try {
             validateToken(refreshToken);
         } catch (TokenInvalidException e){
-            throw new TokenInvalidException(REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE);
+//            throw new TokenInvalidException(REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE);
         }
 
         String email = getEmail(refreshToken);

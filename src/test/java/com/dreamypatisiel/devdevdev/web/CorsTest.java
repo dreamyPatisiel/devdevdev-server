@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.web;
 
-import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.PREFLIGHT_MAX_AGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PREFLIGHT_MAX_AGE;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import org.junit.jupiter.api.DisplayName;

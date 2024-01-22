@@ -1,25 +1,21 @@
-package com.dreamypatisiel.devdevdev.global.security;
+package com.dreamypatisiel.devdevdev.global.security.config;
 
-import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.PREFLIGHT_MAX_AGE;
-import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.SPRING_H2_CONSOLE_ENABLED;
-import static com.dreamypatisiel.devdevdev.global.security.SecurityConstant.WILDCARD_PATTERN;
-
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.filter.SecurityExceptionFilter;
-import com.dreamypatisiel.devdevdev.global.security.jwt.JwtFilter;
-import com.dreamypatisiel.devdevdev.global.security.jwt.TokenService;
+import com.dreamypatisiel.devdevdev.global.security.jwt.filter.JwtFilter;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAccessDeniedHandler;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAuthenticationEntryPointHandler;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2SuccessHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -30,6 +26,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.*;
 
 @EnableWebSecurity
 @Configuration
@@ -52,7 +52,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(apiCorsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(SecurityConstant.WHITELIST_URL).permitAll()
+                        .requestMatchers(HttpMethod.GET, GET_WHITELIST).permitAll()
+                        .requestMatchers("/devdevdev/api/v1/public").permitAll()
+                        .requestMatchers("/devdevdev/api/v1/admin").hasRole("ADMIN")
+                        .requestMatchers("/devdevdev/api/v1/user").hasRole("USER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -68,7 +71,7 @@ public class SecurityConfig {
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2AuthenticationFailureHandler)
                 .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
-                        .baseUri(SecurityConstant.OAUTH2_LOGIN_URL_PREFIX)
+                        .baseUri(OAUTH2_LOGIN_URL_PREFIX)
                 )
                 .redirectionEndpoint(redirectionEndpointConfig -> redirectionEndpointConfig
                         .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))

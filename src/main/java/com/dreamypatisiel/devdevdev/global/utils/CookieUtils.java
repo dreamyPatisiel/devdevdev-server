@@ -1,11 +1,10 @@
-package com.dreamypatisiel.devdevdev.global.security.jwt;
+package com.dreamypatisiel.devdevdev.global.utils;
 
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import java.util.Arrays;

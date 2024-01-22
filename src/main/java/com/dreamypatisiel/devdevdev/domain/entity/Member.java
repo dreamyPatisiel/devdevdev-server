@@ -101,4 +101,8 @@ public class Member extends BasicTime {
     public SocialType getSocialType() {
         return socialType;
     }
+
+    public Role getRole() {
+        return role;
+    }
 }

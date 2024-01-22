@@ -1,34 +1,25 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.handler;
 
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.global.security.jwt.CookieUtils;
-import com.dreamypatisiel.devdevdev.global.security.jwt.TokenService;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.HttpCookieOAuth2AuthorizationRequestRepository;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.KakaoMember;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialUserProvider;
 import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import org.springframework.web.util.UriBuilder;
+
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**

@@ -3,6 +3,8 @@ package com.dreamypatisiel.devdevdev.test;
 import java.util.List;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,18 @@ public class TestController {
     public Authentication getAu() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication;
+    }
+    @GetMapping("/admin")
+    public ResponseEntity<String> adminTest() {
+        return new ResponseEntity<>("관리자만 들어올 수 있는 페이지", HttpStatus.OK);
+    }
+    @GetMapping("/user")
+    public ResponseEntity<String> userTest() {
+        return new ResponseEntity<>("유저만 접근 가능한 페이지", HttpStatus.OK);
+    }
+    @GetMapping("/public")
+    public ResponseEntity<String> publicTest() {
+        return new ResponseEntity<>("모두에게 공개된 페이지", HttpStatus.OK);
     }
 
     @Data

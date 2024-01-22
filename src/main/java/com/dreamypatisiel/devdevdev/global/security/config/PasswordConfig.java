@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.security;
+package com.dreamypatisiel.devdevdev.global.security.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

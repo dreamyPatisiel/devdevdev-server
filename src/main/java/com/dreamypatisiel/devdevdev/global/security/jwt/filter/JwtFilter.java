@@ -1,16 +1,16 @@
-package com.dreamypatisiel.devdevdev.global.security.jwt;
+package com.dreamypatisiel.devdevdev.global.security.jwt.filter;
 
 
-import com.dreamypatisiel.devdevdev.global.security.SecurityConstant;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.lang.reflect.Array;
+
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.annotation.Order;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

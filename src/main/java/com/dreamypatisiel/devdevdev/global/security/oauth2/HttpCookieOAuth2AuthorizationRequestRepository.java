@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2;
 
-import com.dreamypatisiel.devdevdev.global.security.jwt.CookieUtils;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

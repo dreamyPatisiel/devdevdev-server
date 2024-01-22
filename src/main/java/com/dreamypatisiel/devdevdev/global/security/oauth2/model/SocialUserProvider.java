@@ -15,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.util.ObjectUtils;
 
 @RequiredArgsConstructor
 public abstract class SocialUserProvider implements OAuth2UserProvider {
@@ -41,8 +42,14 @@ public abstract class SocialUserProvider implements OAuth2UserProvider {
 
     @Override
     public Role getRole() {
-        return Role.valueOf(oAuth2User.getAuthorities().stream()
-                .map(authority -> Collections.singleton(new SimpleGrantedAuthority(authority.getAuthority())))
-                .toString());
+        GrantedAuthority grantedAuthority = oAuth2User.getAuthorities().stream()
+                .findFirst()
+                .orElse(null);
+
+        if(!ObjectUtils.isEmpty(grantedAuthority) && "OAUTH2_USER".equals(grantedAuthority.getAuthority())) {
+            return Role.ROLE_USER;
+        }
+
+        return Role.ROLE_ADMIN;
     }
 }
