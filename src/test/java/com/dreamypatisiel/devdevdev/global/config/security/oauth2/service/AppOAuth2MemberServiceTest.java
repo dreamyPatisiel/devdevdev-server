@@ -68,7 +68,7 @@ class AppOAuth2MemberServiceTest {
         when(mockOAuth2UserProvider.getSocialType()).thenReturn(socialType);
         when(mockOAuth2UserProvider.getEmail()).thenReturn(email);
 
-        SocialMemberDto socialMemberDto = SocialMemberDto.of(mockOAuth2UserProvider, password);
+        SocialMemberDto socialMemberDto = SocialMemberDto.from(mockOAuth2UserProvider, password);
         memberRepository.save(Member.createMemberBy(socialMemberDto));
 
         // when

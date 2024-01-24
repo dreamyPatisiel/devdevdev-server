@@ -7,11 +7,12 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
-import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -34,7 +35,6 @@ import java.util.Date;
 import java.util.List;
 
 import static com.dreamypatisiel.devdevdev.exception.TokenInvalidException.REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE;
-import static com.dreamypatisiel.devdevdev.exception.TokenNotFoundException.TOKEN_NOT_FOUND_EXCEPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME;
 
@@ -47,8 +47,7 @@ import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpire
 @RequiredArgsConstructor
 public class TokenService implements InitializingBean {
 
-    private static final String BEARER_PREFIX = "Bearer ";
-    private static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String OAUTH2_USER = "OAUTH2_USER";
 
     @Value("${jwt.secret}")
     private String secret;
@@ -90,7 +89,7 @@ public class TokenService implements InitializingBean {
         String email = oAuth2UserProvider.getEmail();
         log.info("email={}", email);
         SocialType socialType = oAuth2UserProvider.getSocialType();
-        Role role = getRole(oAuth2UserProvider.getAuthorities());
+        Role role = oAuth2UserProvider.getRole();
         Claims claims = configClaims(email, socialType.name(), role.name());
 
         String accessToken = createAccessToken(claims);
@@ -99,12 +98,13 @@ public class TokenService implements InitializingBean {
         return new Token(accessToken, refreshToken);
     }
 
+    @Deprecated
     private Role getRole(List<? extends GrantedAuthority> authorities) {
         GrantedAuthority grantedAuthority = authorities.stream()
                 .findFirst()
                 .orElse(null);
 
-        if(!ObjectUtils.isEmpty(grantedAuthority) && "OAUTH2_USER".equals(grantedAuthority.getAuthority())) {
+        if(!ObjectUtils.isEmpty(grantedAuthority) && OAUTH2_USER.equals(grantedAuthority.getAuthority())) {
             return Role.ROLE_USER;
         }
 
@@ -141,19 +141,24 @@ public class TokenService implements InitializingBean {
         String email = getEmail(token);
         String socialType = getSocialType(token);
         String role = getRole(token);
+
+        SocialMemberDto socialMemberDto = SocialMemberDto.of(email, socialType, role);
         log.info("User role = {}",role);
 
-        return new UsernamePasswordAuthenticationToken(email, null,
+        return new UsernamePasswordAuthenticationToken(socialMemberDto, null,
                 List.of(new SimpleGrantedAuthority(role)));
     }
 
-    public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith(BEARER_PREFIX)) {
+    public SocialMemberDto getSocialMemberDtoByAuthentication(Authentication authentication) {
+        return (SocialMemberDto) authentication.getPrincipal();
+    }
+
+    public String getAccessTokenByRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader(SecurityConstant.AUTHORIZATION_HEADER);
+        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith(SecurityConstant.BEARER_PREFIX)) {
             return null;
-//             throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
         }
-        return bearerToken.substring(BEARER_PREFIX.length());
+        return bearerToken.substring(SecurityConstant.BEARER_PREFIX.length());
     }
 
     public boolean validateToken(String token) {

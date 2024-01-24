@@ -33,28 +33,26 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("JwtFilter 시작");
 
-        String token = tokenService.resolveToken(request);
-        log.info("accessToken={}", token);
+        String accessToken = tokenService.getAccessTokenByRequest(request);
 
-        if (tokenService.validateToken(token)) { // JWT 토큰이 유효한 경우에만, USER객체 셋팅
-            Authentication authentication = tokenService.getAuthentication(token);
+        // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
+        if (tokenService.validateToken(accessToken)) {
+            Authentication authentication = tokenService.getAuthentication(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("jwt success");
         }
 
-        filterChain.doFilter(request, response); // 다음 Filter 실행
-        log.info("JwtFilter 종료");
+        // 다음 Filter 실행
+        filterChain.doFilter(request, response);
     }
 
     /**
      * WHITELIST_URL은 JwtFilter를 실행하지 않는다.
      */
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    public boolean shouldNotFilter(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        return Arrays.stream(SecurityConstant.WHITELIST_URL)
+        return Arrays.stream(SecurityConstant.JWT_FILTER_WHITELIST_URL)
                 .anyMatch(whiteList -> whiteList.contains(requestURI));
     }
 }

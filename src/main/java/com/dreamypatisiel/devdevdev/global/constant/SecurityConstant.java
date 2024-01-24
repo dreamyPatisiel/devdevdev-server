@@ -6,6 +6,8 @@ public class SecurityConstant {
     public static final long PREFLIGHT_MAX_AGE = 3600L;
     public static final String OAUTH2_LOGIN_URL_PREFIX = "/devdevdev/api/v1/oauth2/authorization/**";
     public static final String OAUTH2_REDIRECT_URL_PREFIX = "/devdevdev/api/v1/login/oauth2/code/**";
+    public static final String BEARER_PREFIX = "Bearer ";
+    public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String[] WHITELIST_URL = new String[] {
             "/",
             "/error",
@@ -27,6 +29,29 @@ public class SecurityConstant {
             "/devdevdev/api/v1/members",
             "/devdevdev/api/v1/token/**"
     };
+    public static final String[] JWT_FILTER_WHITELIST_URL = new String[] {
+            "/",
+            "/error",
+            "/favicon.ico",
+            "/**.png",
+            "/**.gif",
+            "/**.svg",
+            "/**.jpg",
+            "/**.html",
+            "/**.css",
+            "/**.js",
+            "/devdevdev/api/v1/oauth2/authorization/**",
+            "/devdevdev/api/v1/oauth2/authorization/kakao",
+            "/devdevdev/api/v1/login/oauth2/code/**",
+            "/devdevdev/api/v1/login/oauth2/code/kakao",
+            "/h2-console/**",
+            "/h2-console",
+            "/h2-console/**.jsp",
+            "/h2-console/**.gif",
+            "/devdevdev/api/v1/members",
+            "/devdevdev/api/v1/token/**"
+    };
+
     public static final String[] GET_WHITELIST = new String[]{
             "/devdevdev/api/v1/oauth2/authorization/**",
             "/devdevdev/api/v1/oauth2/authorization/kakao",

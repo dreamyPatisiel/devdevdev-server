@@ -3,17 +3,13 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 import static com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl.INVALID_SOCIAL_LOGIN_SUPPORT_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.exception.OAuth2UserProviderException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.util.ObjectUtils;
 
@@ -41,9 +37,22 @@ public abstract class SocialUserProvider implements OAuth2UserProvider {
     }
 
     @Override
+    public Collection<? extends GrantedAuthority> addAuthorities(Role role) {
+        Collection<GrantedAuthority> collect = new ArrayList<>();
+        collect.add(new GrantedAuthority() {
+            @Override
+            public String getAuthority() {
+                return role.name();
+            }
+        });
+        return collect;
+    }
+
+    @Override
     public Role getRole() {
         GrantedAuthority grantedAuthority = oAuth2User.getAuthorities().stream()
-                .findFirst()
+                .filter(g -> Role.ROLE_ADMIN.name().equalsIgnoreCase(g.getAuthority()))
+                .findAny()
                 .orElse(null);
 
         if(!ObjectUtils.isEmpty(grantedAuthority) && "OAUTH2_USER".equals(grantedAuthority.getAuthority())) {

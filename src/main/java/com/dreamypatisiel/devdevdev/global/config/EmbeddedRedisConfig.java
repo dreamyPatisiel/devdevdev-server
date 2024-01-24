@@ -30,7 +30,7 @@ public class EmbeddedRedisConfig {
     private static final String REDIS_SERVER_START_MESSAGE = "redisServer start..={}";
     private static final String REDIS_SERVER_STOP_MESSAGE = "redisServer stop..";
 
-    @Value("${spring.redis.port}")
+    @Value("${spring.data.redis.port}")
     private int redisPort;
     private RedisServer redisServer;
 

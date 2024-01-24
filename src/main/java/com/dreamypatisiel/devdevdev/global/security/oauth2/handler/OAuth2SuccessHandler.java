@@ -10,6 +10,8 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvi
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.net.URI;
+import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +44,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final TokenService tokenService;
     private final JwtMemberService jwtMemberService;
-    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     // OAuth2.0 로그인 성공시 수행하는 로직
     @Override
@@ -67,12 +68,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         log.info("OAuth2SuccessHandler accessToken={}", token.getAccessToken());
     }
 
-    private String getRedirectUri(String scheme, String host, int port, String path) {
-        return UriComponentsBuilder.newInstance()
-                .scheme(scheme)
-                .host(host)
-                .port(port)
-                .path(path)
+    public String getRedirectUri(String domain, String path) {
+        return UriComponentsBuilder
+                .fromUriString(domain+path)
                 .toUriString();
     }
 }

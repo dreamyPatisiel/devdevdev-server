@@ -2,10 +2,8 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import java.util.Collections;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Data
 public class SocialMemberDto {
@@ -28,7 +26,7 @@ public class SocialMemberDto {
         this.role = role;
     }
 
-    public static SocialMemberDto of(OAuth2UserProvider oAuth2UserProvider, String encodedPassword) {
+    public static SocialMemberDto from(OAuth2UserProvider oAuth2UserProvider, String encodedPassword) {
         return SocialMemberDto.builder()
                 .userId(oAuth2UserProvider.getId())
                 .name(oAuth2UserProvider.getUserName())
@@ -36,8 +34,15 @@ public class SocialMemberDto {
                 .nickName(oAuth2UserProvider.getUserName())
                 .socialType(oAuth2UserProvider.getSocialType())
                 .password(encodedPassword)
-//                .role(Role.USER)
                 .role(oAuth2UserProvider.getRole())
+                .build();
+    }
+
+    public static SocialMemberDto of(String email, String socialType, String role) {
+        return SocialMemberDto.builder()
+                .email(email)
+                .socialType(SocialType.valueOf(socialType))
+                .role(Role.valueOf(role))
                 .build();
     }
 }

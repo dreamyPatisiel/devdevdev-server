@@ -10,6 +10,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2Authent
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2SuccessHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -31,10 +32,14 @@ import java.util.List;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.*;
 
+@Slf4j
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private static final String ADMIN = "ADMIN";
+    private static final String USER = "USER";
 
     private final OAuth2UserServiceImpl oAuth2UserServiceImpl;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
@@ -52,10 +57,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(apiCorsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.GET, GET_WHITELIST).permitAll()
+                        .requestMatchers(WHITELIST_URL).permitAll()
+                        .requestMatchers(PathRequest.toH2Console()).permitAll()
                         .requestMatchers("/devdevdev/api/v1/public").permitAll()
-                        .requestMatchers("/devdevdev/api/v1/admin").hasRole("ADMIN")
-                        .requestMatchers("/devdevdev/api/v1/user").hasRole("USER")
+                        .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
+                        .requestMatchers("/devdevdev/api/v1/user").hasRole(USER)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -79,12 +85,6 @@ public class SecurityConfig {
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(securityExceptionFilter, JwtFilter.class);
-
-        http.logout(customizer -> customizer
-                .logoutUrl("/devdevdev/api/v1/logout")
-                .logoutSuccessUrl("/")
-                .deleteCookies(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN)
-                .permitAll());
 
         return http.build();
     }

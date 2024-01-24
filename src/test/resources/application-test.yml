@@ -1,22 +1,21 @@
 domain:
   frontend:
-    host: http://localhost:3000
+    host: https://www.devdevdev.co.kr
   backend:
-    host: http://localhost:8080
+    host: https://api.devdevdev.co.kr
 
 spring:
-  config:
-    activate:
-      on-profile: local
-
   jpa:
-    open-in-view: false
     hibernate:
       ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 1000
+        jdbc:
+          batch_size: 1000
+        order_inserts: true
+        order_updates: true
 
   datasource:
     url: jdbc:h2:mem:devdevdev-test
@@ -28,8 +27,6 @@ spring:
     console:
       enabled: true
       path: /h2-console
-      settings:
-        web-allow-others: true
 
   data:
     redis:
@@ -44,3 +41,4 @@ spring:
 logging:
   level:
     org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE

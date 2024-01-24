@@ -26,9 +26,12 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPoint {
 
+    public static final String LOGIN_URL = "http://localhost:3000/devdevdev/login";
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         // 로그인 페이지로 이동!
+        response.sendRedirect(LOGIN_URL);
         throw new JwtAuthenticationException("유효하지 않은 회원 입니다.");
     }
 }

@@ -4,14 +4,13 @@ import static com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2
 
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.exception.OAuth2UserProviderException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 public interface OAuth2UserProvider {
@@ -23,6 +22,7 @@ public interface OAuth2UserProvider {
     Map<String, Object> getAttributes(); // 서비스 제공자로 부터 받는 값들
     String getSocialUserProvider();
     SocialType getSocialType();
+    Collection<? extends GrantedAuthority> addAuthorities(Role role);
 
     static OAuth2UserProvider getOAuth2UserProvider(ClientRegistration clientRegistration, OAuth2User oAuth2User) {
         if(clientRegistration.getRegistrationId().equalsIgnoreCase(SocialType.KAKAO.name())) {

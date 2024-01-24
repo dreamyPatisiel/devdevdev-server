@@ -2,8 +2,10 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.service.response.MemberResponse;
+import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,10 +52,7 @@ public class TokenController {
             tokenService.validateRefreshToken(refreshToken);
             String email = tokenService.getEmail(refreshToken);
             String socialType = tokenService.getSocialType(refreshToken);
-            String role = tokenService.getRole(refreshToken);
-
-            Optional<Member> member = jwtMemberService.findMemberByEmailAndSocialType(email, socialType);
-            role = member.get().getRole().name();
+            String role = tokenService.getSocialType(refreshToken);
 
             log.info("토큰 생성 with "+email+" , "+socialType);
             // 새로운 토큰 생성
