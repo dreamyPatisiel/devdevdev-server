@@ -55,7 +55,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2UserProvider oAuth2UserProvider = OAuth2UserProvider.getOAuth2UserProvider(SocialType.valueOf(socialType), authentication);
         Token token = tokenService.generateToken(oAuth2UserProvider);
 
-        // set cookie
+        // 토큰을 쿠키에 저장
         CookieUtils.configJwtCookie(response, token);
 
         // 리다이렉트 설정
