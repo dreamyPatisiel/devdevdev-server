@@ -14,10 +14,12 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvi
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2MemberService;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -44,8 +46,11 @@ class AppOAuth2MemberServiceTest {
         when(mockOAuth2UserProvider.getSocialType()).thenReturn(socialType);
         when(mockOAuth2UserProvider.getEmail()).thenReturn(email);
 
+        OAuth2User mockOAuth2User = mock(OAuth2User.class);
+        when(mockOAuth2User.getAttributes()).thenReturn(Map.of());
+
         // when
-        oAuth2MemberService.register(mockOAuth2UserProvider);
+        oAuth2MemberService.register(mockOAuth2UserProvider, mockOAuth2User);
 
         // then
         Member member = memberRepository.findMemberByUserIdAndSocialType(userId, socialType).get();
@@ -72,7 +77,7 @@ class AppOAuth2MemberServiceTest {
         memberRepository.save(Member.createMemberBy(socialMemberDto));
 
         // when
-        oAuth2MemberService.register(mockOAuth2UserProvider);
+        oAuth2MemberService.register(mockOAuth2UserProvider, null);
 
         // then
         List<Member> members = memberRepository.findMembersByUserIdAndSocialType(userId, socialType);

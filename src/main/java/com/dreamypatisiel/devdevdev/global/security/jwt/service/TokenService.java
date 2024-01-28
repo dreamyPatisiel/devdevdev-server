@@ -47,11 +47,8 @@ import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpire
 @RequiredArgsConstructor
 public class TokenService implements InitializingBean {
 
-    public static final String OAUTH2_USER = "OAUTH2_USER";
-
     @Value("${jwt.secret}")
     private String secret;
-
     private Key key;
 
     private final TimeProvider timeProvider;
@@ -64,11 +61,8 @@ public class TokenService implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    /**
-     * 토큰 발급
-     */
-    public Token generateToken(String email, String socialType, String role) {
-        Claims claims = configClaims(email, socialType, role);
+    public Token generateToken(String email, String socialType) {
+        Claims claims = configClaims(email, socialType);
 
         String accessToken = createAccessToken(claims);
         String refreshToken = createRefreshToken(claims);
@@ -76,39 +70,23 @@ public class TokenService implements InitializingBean {
         return new Token(accessToken, refreshToken);
     }
 
-    private Claims configClaims(String email, String socialType, String role) {
+    private Claims configClaims(String email, String socialType) {
         Claims claims = Jwts.claims();
         claims.put(JwtClaimConstant.email, email);
         claims.put(JwtClaimConstant.socialType, socialType);
-        claims.put(JwtClaimConstant.role, role);
 
         return claims;
     }
 
     public Token generateToken(OAuth2UserProvider oAuth2UserProvider) {
         String email = oAuth2UserProvider.getEmail();
-        log.info("email={}", email);
         SocialType socialType = oAuth2UserProvider.getSocialType();
-        Role role = oAuth2UserProvider.getRole();
-        Claims claims = configClaims(email, socialType.name(), role.name());
+        Claims claims = configClaims(email, socialType.name());
 
         String accessToken = createAccessToken(claims);
         String refreshToken = createRefreshToken(claims);
 
         return new Token(accessToken, refreshToken);
-    }
-
-    @Deprecated
-    private Role getRole(List<? extends GrantedAuthority> authorities) {
-        GrantedAuthority grantedAuthority = authorities.stream()
-                .findFirst()
-                .orElse(null);
-
-        if(!ObjectUtils.isEmpty(grantedAuthority) && OAUTH2_USER.equals(grantedAuthority.getAuthority())) {
-            return Role.ROLE_USER;
-        }
-
-        return Role.ROLE_ADMIN;
     }
 
     private String createRefreshToken(Claims claims) {
@@ -130,13 +108,6 @@ public class TokenService implements InitializingBean {
                 .compact();
     }
 
-    @Deprecated
-    private String makeJwtValue(Claims claims, Instant now, long accessTokenValidityInMilliseconds) {
-        return Jwts.builder().setClaims(claims).setIssuedAt(new Date(now.toEpochMilli()))
-                .setExpiration(new Date(now.toEpochMilli() + accessTokenValidityInMilliseconds))
-                .signWith(key, SignatureAlgorithm.HS256).compact();
-    }
-
     public Authentication getAuthentication(String token) {
         String email = getEmail(token);
         String socialType = getSocialType(token);
@@ -147,10 +118,6 @@ public class TokenService implements InitializingBean {
 
         return new UsernamePasswordAuthenticationToken(socialMemberDto, null,
                 List.of(new SimpleGrantedAuthority(role)));
-    }
-
-    public SocialMemberDto getSocialMemberDtoByAuthentication(Authentication authentication) {
-        return (SocialMemberDto) authentication.getPrincipal();
     }
 
     public String getAccessTokenByRequest(HttpServletRequest request) {
@@ -189,11 +156,8 @@ public class TokenService implements InitializingBean {
     }
 
     public void validateRefreshToken(String refreshToken) throws TokenInvalidException {
-        try {
-            validateToken(refreshToken);
-        } catch (TokenInvalidException e){
-//            throw new TokenInvalidException(REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE);
-        }
+
+        validateToken(refreshToken);
 
         String email = getEmail(refreshToken);
         String socialType = getSocialType(refreshToken);

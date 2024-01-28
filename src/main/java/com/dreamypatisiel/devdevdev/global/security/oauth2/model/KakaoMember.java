@@ -2,7 +2,9 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import java.util.List;
 import java.util.Map;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
@@ -44,22 +46,7 @@ public class KakaoMember extends SocialUserProvider {
     }
 
     @Override
-    public Role getRole() {
-        return Role.ROLE_USER;
-    }
-
-    @Override
     public SocialType getSocialType() {
         return SocialType.KAKAO;
     }
-
-    @Override
-    public String getName() {
-        return null;
-    }
-
-//    @Override
-//    public String getName() {
-//        return propertiesAttributes.get(NICKNAME).toString();
-//    }
 }

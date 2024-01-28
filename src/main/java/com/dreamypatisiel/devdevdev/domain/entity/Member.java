@@ -19,9 +19,11 @@ import java.util.List;
 })
 public class Member extends BasicTime {
 
-    @Id
+
+    @Id @Getter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Getter
     private String name;
 
     @Embedded
@@ -29,13 +31,18 @@ public class Member extends BasicTime {
             column = @Column(name = "nickname")
     )
     private Nickname nickname;
+
+    @Getter
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "email")
     )
     private Email email;
+    @Getter
     private String password;
+    @Getter
     private String userId;
+    @Getter
     private String profileImage;
     private String job;
     @Embedded
@@ -50,8 +57,10 @@ public class Member extends BasicTime {
     )
     private Email subscriptionLetterEmail;
     private LocalDateTime loginDate;
+    @Getter
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
+    @Getter
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "member")
@@ -90,19 +99,7 @@ public class Member extends BasicTime {
         return refreshToken.equalsIgnoreCase(this.refreshToken);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Email getEmail() {
-        return email;
-    }
-
-    public SocialType getSocialType() {
-        return socialType;
-    }
-
-    public Role getRole() {
-        return role;
+    public String getEmailAsString() {
+        return email.getEmail();
     }
 }

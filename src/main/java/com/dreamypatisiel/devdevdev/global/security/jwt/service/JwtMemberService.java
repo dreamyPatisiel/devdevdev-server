@@ -33,8 +33,4 @@ public class JwtMemberService {
 
         return MemberResponse.of(findMember);
     }
-
-    public Optional<Member> findMemberByEmailAndSocialType(String email, String socialType) {
-        return memberRepository.findMemberByEmailAndSocialType(new Email(email), SocialType.valueOf(socialType));
-    }
 }

@@ -33,8 +33,8 @@ public class SocialMemberDto {
                 .email(oAuth2UserProvider.getEmail())
                 .nickName(oAuth2UserProvider.getUserName())
                 .socialType(oAuth2UserProvider.getSocialType())
+                .role(Role.ROLE_USER)
                 .password(encodedPassword)
-                .role(oAuth2UserProvider.getRole())
                 .build();
     }
 

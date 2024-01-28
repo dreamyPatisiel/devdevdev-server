@@ -2,7 +2,10 @@ package com.dreamypatisiel.devdevdev.global.security.jwt.filter;
 
 
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.service.CustomUserDetailsService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,8 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,6 +34,7 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -38,8 +44,16 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
         if (tokenService.validateToken(accessToken)) {
-            Authentication authentication = tokenService.getAuthentication(accessToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            Claims claims = tokenService.getClaims(accessToken);
+            String email = claims.get(JwtClaimConstant.email).toString();
+            String socialType = claims.get(JwtClaimConstant.socialType).toString();
+
+            // authentication JWT 기반으로 설정
+            // 여기에 캐시를 사용해야겠다.
+            UserDetails userDetails = customUserDetailsService.loadUserByEmailAndSocialType(email, socialType);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
 
         // 다음 Filter 실행

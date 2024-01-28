@@ -22,6 +22,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -48,6 +49,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
     private final JwtFilter jwtFilter;
     private final SecurityExceptionFilter securityExceptionFilter;
+    private final UserDetailsService userDetailsService;
 
     @Bean
     @Profile({"test", "local"})
@@ -66,7 +68,8 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable);
+                .formLogin(AbstractHttpConfigurer::disable)
+                .userDetailsService(userDetailsService);
 
         http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint(jwtAuthenticationEntryPointHandler)

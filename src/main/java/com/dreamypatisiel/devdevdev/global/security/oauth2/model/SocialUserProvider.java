@@ -33,16 +33,4 @@ public abstract class SocialUserProvider implements OAuth2UserProvider {
     public Map<String, Object> getAttributes() {
         return oAuth2User.getAttributes();
     }
-
-    @Override
-    public Collection<? extends GrantedAuthority> addAuthorities(Role role) {
-        Collection<GrantedAuthority> collect = new ArrayList<>();
-        collect.add(new GrantedAuthority() {
-            @Override
-            public String getAuthority() {
-                return role.name();
-            }
-        });
-        return collect;
-    }
 }
