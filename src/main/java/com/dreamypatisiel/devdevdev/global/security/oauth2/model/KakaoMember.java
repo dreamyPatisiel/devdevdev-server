@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import java.util.Map;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
@@ -43,8 +44,18 @@ public class KakaoMember extends SocialUserProvider {
     }
 
     @Override
+    public Role getRole() {
+        return null;
+    }
+
+    @Override
     public SocialType getSocialType() {
         return SocialType.KAKAO;
+    }
+
+    @Override
+    public String getName() {
+        return null;
     }
 
 //    @Override
