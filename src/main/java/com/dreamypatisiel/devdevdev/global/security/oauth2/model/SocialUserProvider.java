@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
-import static com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl.INVALID_SOCIAL_LOGIN_SUPPORT_MESSAGE;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,19 +44,5 @@ public abstract class SocialUserProvider implements OAuth2UserProvider {
             }
         });
         return collect;
-    }
-
-    @Override
-    public Role getRole() {
-        GrantedAuthority grantedAuthority = oAuth2User.getAuthorities().stream()
-                .filter(g -> Role.ROLE_ADMIN.name().equalsIgnoreCase(g.getAuthority()))
-                .findAny()
-                .orElse(null);
-
-        if(!ObjectUtils.isEmpty(grantedAuthority) && "OAUTH2_USER".equals(grantedAuthority.getAuthority())) {
-            return Role.ROLE_USER;
-        }
-
-        return Role.ROLE_ADMIN;
     }
 }

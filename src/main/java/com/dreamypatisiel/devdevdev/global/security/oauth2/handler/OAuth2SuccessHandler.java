@@ -33,14 +33,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    @Value("${jwt.redirectUri.scheme}")
-    private String scheme;
-    @Value("${jwt.redirectUri.host}")
-    private String host;
+    @Value("${domain.frontend.host}")
+    private String domain;
     @Value("${jwt.redirectUri.path}")
     private String path;
-    @Value("${jwt.redirectUri.port}")
-    private int port;
 
     private final TokenService tokenService;
     private final JwtMemberService jwtMemberService;
@@ -59,7 +55,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CookieUtils.configJwtCookie(response, token);
 
         // 리다이렉트 설정
-        String redirectUri = getRedirectUri(scheme, host, port, path);
+        String redirectUri = getRedirectUri(domain, path);
+        log.info("redirectUri = {}", redirectUri);
         getRedirectStrategy().sendRedirect(request, response, redirectUri);
 
         // 리프레시 토큰 저장
