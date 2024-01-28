@@ -45,7 +45,7 @@ public class KakaoMember extends SocialUserProvider {
 
     @Override
     public Role getRole() {
-        return null;
+        return Role.ROLE_USER;
     }
 
     @Override

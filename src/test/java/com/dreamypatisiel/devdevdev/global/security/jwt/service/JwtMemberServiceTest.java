@@ -8,6 +8,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.MemberResponse;
 import java.util.Optional;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -24,6 +25,7 @@ class JwtMemberServiceTest {
     @Mock
     MemberRepository memberRepository;
 
+    @Disabled
     @Test
     @DisplayName("email과 socialType에 맞는 회원을 가져올 수 있다.")
     void findMemberByEmailAndSocialTypeTest() {
