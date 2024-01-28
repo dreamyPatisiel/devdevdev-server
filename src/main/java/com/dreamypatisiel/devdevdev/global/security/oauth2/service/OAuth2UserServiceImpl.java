@@ -36,8 +36,8 @@ public class OAuth2UserServiceImpl implements OAuth2UserService<OAuth2UserReques
 
         // 회원 저장
         OAuth2UserProvider provider = OAuth2UserProvider.getOAuth2UserProvider(clientRegistration, oAuth2User);
-        Member member = OAuth2MemberService.register(provider);
-        provider.addAuthorities(member.getRole());
+        //Member member = OAuth2MemberService.register(provider);
+        //provider.addAuthorities(member.getRole());
 
         return provider;
     }

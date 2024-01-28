@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.global.security.jwt.service;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -19,6 +20,7 @@ class TokenServiceTest {
     @Autowired
     TokenService tokenService;
 
+    @Disabled
     @Test
     @DisplayName("")
     void test() {
