@@ -1,10 +1,13 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,8 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     @Getter
     private final String email;
     private final String password;
+    @Getter
+    private final SocialType socialType;
     private final Collection<? extends GrantedAuthority> authorities;
     @Setter(value = AccessLevel.PRIVATE)
     private Map<String, Object> attributes;
@@ -29,10 +34,14 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = Collections.singletonList(
                 new SimpleGrantedAuthority(member.getRole().name()));
 
+        String userId = createUserId();
+        String password = new Password().getPassword();
+
         return new UserPrincipal(
-                member.getUserId(),
+                userId,
                 member.getEmailAsString(),
-                member.getPassword(),
+                password,
+                member.getSocialType(),
                 simpleGrantedAuthorities
         );
     }
@@ -41,6 +50,19 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         UserPrincipal userPrincipal = UserPrincipal.create(member);
         userPrincipal.setAttributes(attributes);
         return userPrincipal;
+    }
+
+    public static UserPrincipal create(String email, String role, String socialType) {
+        List<SimpleGrantedAuthority> simpleGrantedAuthorities = Collections.singletonList(
+                new SimpleGrantedAuthority(role));
+
+        return new UserPrincipal(
+                createUserId(),
+                email,
+                new Password().getPassword(),
+                SocialType.valueOf(socialType),
+                simpleGrantedAuthorities
+        );
     }
 
     @Override
@@ -86,5 +108,9 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     @Override
     public String getName() {
         return userId;
+    }
+
+    private static String createUserId() {
+        return UUID.randomUUID().toString();
     }
 }

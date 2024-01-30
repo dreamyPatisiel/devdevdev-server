@@ -1,22 +1,24 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.service;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
+import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,23 +26,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
-import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 
 import static com.dreamypatisiel.devdevdev.exception.TokenInvalidException.REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.exception.TokenNotFoundException.TOKEN_NOT_FOUND_EXCEPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME;
 
 /**
  * JWT의 생성과 인증, 인가를 담당하는 책임을 가진 클래스
  * 토큰 생성, 검증, 쿠키에서 토큰 추출, 클레임 추출
+ *
+ * 토큰을 생성할 때는 클레임으로 email, socialType, role을 사용한다.
+ * 토큰으로 Authentication을 생성할 때는 email, socialType, role만 사용한다.
  */
 @Slf4j
 @Service
@@ -61,19 +66,19 @@ public class TokenService implements InitializingBean {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public Token generateToken(String email, String socialType) {
-        Claims claims = configClaims(email, socialType);
-
+    public Token generateToken(String email, String socialType, String role) {
+        Claims claims = creatClaims(email, socialType, role);
         String accessToken = createAccessToken(claims);
         String refreshToken = createRefreshToken(claims);
 
         return new Token(accessToken, refreshToken);
     }
 
-    private Claims configClaims(String email, String socialType) {
+    private Claims creatClaims(String email, String socialType, String role) {
         Claims claims = Jwts.claims();
         claims.put(JwtClaimConstant.email, email);
         claims.put(JwtClaimConstant.socialType, socialType);
+        claims.put(JwtClaimConstant.role, role);
 
         return claims;
     }
@@ -81,7 +86,8 @@ public class TokenService implements InitializingBean {
     public Token generateToken(OAuth2UserProvider oAuth2UserProvider) {
         String email = oAuth2UserProvider.getEmail();
         SocialType socialType = oAuth2UserProvider.getSocialType();
-        Claims claims = configClaims(email, socialType.name());
+        String role = convertRolesToString(oAuth2UserProvider.getAuthorities());
+        Claims claims = creatClaims(email, socialType.name(), role);
 
         String accessToken = createAccessToken(claims);
         String refreshToken = createRefreshToken(claims);
@@ -99,7 +105,6 @@ public class TokenService implements InitializingBean {
     }
 
     private String createAccessToken(Claims claims) {
-        log.info("claims={}", claims);
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(timeProvider.getDateNow())
@@ -108,16 +113,15 @@ public class TokenService implements InitializingBean {
                 .compact();
     }
 
-    public Authentication getAuthentication(String token) {
+    public Authentication createAuthenticationByToken(String token) {
         String email = getEmail(token);
-        String socialType = getSocialType(token);
         String role = getRole(token);
+        String socialType = getSocialType(token);
 
-        SocialMemberDto socialMemberDto = SocialMemberDto.of(email, socialType, role);
-        log.info("User role = {}",role);
+        UserDetails userDetails = UserPrincipal.create(email, role, socialType);
 
-        return new UsernamePasswordAuthenticationToken(socialMemberDto, null,
-                List.of(new SimpleGrantedAuthority(role)));
+        return new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
     }
 
     public String getAccessTokenByRequest(HttpServletRequest request) {
@@ -130,22 +134,20 @@ public class TokenService implements InitializingBean {
 
     public boolean validateToken(String token) {
         try {
-            if(!StringUtils.hasText(token)) {
-                return false;
-//                throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
+            if(StringUtils.hasText(token)) {
+                Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+                return true;
             }
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
+            throw new TokenNotFoundException(TOKEN_NOT_FOUND_EXCEPTION_MESSAGE);
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-//            throw new TokenInvalidException("잘못된 jwt 서명을 가진 토큰입니다");
+            throw new TokenInvalidException("잘못된 jwt 서명을 가진 토큰입니다");
         } catch (ExpiredJwtException e) {
-//            throw new TokenInvalidException("만료된 jwt 토큰입니다");
+            throw new TokenInvalidException("만료된 jwt 토큰입니다");
         } catch (UnsupportedJwtException e) {
-//            throw new TokenInvalidException("지원하지 않는 jwt 토큰입니다");
+            throw new TokenInvalidException("지원하지 않는 jwt 토큰입니다");
         } catch (IllegalArgumentException e) {
-//            throw new TokenInvalidException("잘못된 jwt 토큰입니다");
+            throw new TokenInvalidException("잘못된 jwt 토큰입니다");
         }
-        return false;
     }
 
     public Claims getClaims(String validToken) {
@@ -153,22 +155,6 @@ public class TokenService implements InitializingBean {
                 .build()
                 .parseClaimsJws(validToken)
                 .getBody();
-    }
-
-    public void validateRefreshToken(String refreshToken) throws TokenInvalidException {
-
-        validateToken(refreshToken);
-
-        String email = getEmail(refreshToken);
-        String socialType = getSocialType(refreshToken);
-
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), SocialType.valueOf(socialType))
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
-
-        boolean isEqualsRefreshToken = findMember.isRefreshTokenEquals(refreshToken);
-        if(!isEqualsRefreshToken) {
-            throw new TokenInvalidException(REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE);
-        }
     }
 
     public String getSocialType(String token) {
@@ -184,5 +170,11 @@ public class TokenService implements InitializingBean {
     public String getRole(String token) {
         Claims claims = getClaims(token);
         return claims.get(JwtClaimConstant.role).toString();
+    }
+
+    private String convertRolesToString(Collection<? extends GrantedAuthority> authorities) {
+        return authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
     }
 }

@@ -49,7 +49,6 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
     private final JwtFilter jwtFilter;
     private final SecurityExceptionFilter securityExceptionFilter;
-    private final UserDetailsService userDetailsService;
 
     @Bean
     @Profile({"test", "local"})
@@ -63,13 +62,12 @@ public class SecurityConfig {
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         .requestMatchers("/devdevdev/api/v1/public").permitAll()
                         .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
-                        .requestMatchers("/devdevdev/api/v1/user").hasRole(USER)
+                        .requestMatchers("/devdevdev/api/v1/user").hasAnyRole(ADMIN, USER)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .userDetailsService(userDetailsService);
+                .formLogin(AbstractHttpConfigurer::disable);
 
         http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint(jwtAuthenticationEntryPointHandler)

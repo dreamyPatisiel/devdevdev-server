@@ -1,13 +1,18 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import java.util.List;
 import java.util.Map;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+/**
+ * @Note:
+ * <p>필수 동의 항목</p>
+ * <ul>
+ *     <li>profile_nickname</li>
+ *     <li>profile_image</li>
+ *     <li>account_email</li>
+ * </ul>
+ */
 public class KakaoMember extends SocialUserProvider {
 
     public final static String KAKAO_ACCOUNT = "kakao_account";

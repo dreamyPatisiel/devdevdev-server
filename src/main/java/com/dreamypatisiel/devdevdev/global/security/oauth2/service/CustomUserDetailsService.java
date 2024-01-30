@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Deprecated
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {

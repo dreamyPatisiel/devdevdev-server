@@ -1,18 +1,14 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.service;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -27,7 +23,7 @@ public class OAuth2MemberService {
 
     @Transactional
     public UserPrincipal register(OAuth2UserProvider oAuth2UserProvider, OAuth2User oAuth2User) {
-        Optional<Member> optionalMember = findMemberByEmailAndSocialType(oAuth2UserProvider);
+        Optional<Member> optionalMember = findMemberByOAuth2UserProvider(oAuth2UserProvider);
         if(optionalMember.isPresent()) {
             return UserPrincipal.create(optionalMember.get());
         }
@@ -40,7 +36,7 @@ public class OAuth2MemberService {
         return UserPrincipal.create(newMember, oAuth2User.getAttributes());
     }
 
-    private Optional<Member> findMemberByEmailAndSocialType(OAuth2UserProvider oAuth2UserProvider) {
+    private Optional<Member> findMemberByOAuth2UserProvider(OAuth2UserProvider oAuth2UserProvider) {
         return memberRepository.findMemberByEmailAndSocialType(
                 new Email(oAuth2UserProvider.getEmail()), oAuth2UserProvider.getSocialType()
         );

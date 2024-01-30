@@ -25,6 +25,6 @@ spring:
             client-authentication-method: client_secret_post
             scope:
               # - openid
+              - profile_image
               - profile_nickname
               - account_email
-              - name
