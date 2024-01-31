@@ -45,7 +45,7 @@ public class JwtMemberService {
 
         // 새로운 토큰 생성
         String role = findMember.getRole().name();
-        Token newToken = tokenService.generateToken(email, socialType, role);
+        Token newToken = tokenService.generateTokenBy(email, socialType, role);
 
         // 리프레시 토큰 저장
         findMember.updateRefreshToken(newToken.getRefreshToken());
