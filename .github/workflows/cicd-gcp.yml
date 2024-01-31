@@ -1,5 +1,5 @@
 ## Default Setting
-name: Build and Deploy to GCE
+name: Build and Deploy to GCP
 
 on:
   push:
@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    name: Build and Deploy to GCE
+    name: Build and Deploy to GCP
     # 실행 환경 설정
     runs-on: ubuntu-latest
 
@@ -56,8 +56,8 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0     #가장 최신 버젼 appleboy 사용
         with:
           host: ${{secrets.GCP_HOST}}
-          username: ${{secrets.GCE_PROJECT}}
-          key: ${{secrets.GCE_SA_KEY}}
+          username: ${{secrets.GCP_USERNAME}}
+          key: ${{secrets.GCP_KEY}}
           script: |
             sudo docker login -u ${{ secrets.DOCKERHUB_ID }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
             sudo docker pull ${{secrets.DOCKERHUB_ID}}/devdevdev-test
