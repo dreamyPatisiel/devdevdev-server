@@ -6,7 +6,6 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +45,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         // 토큰 생성
         OAuth2UserProvider oAuth2UserProvider = OAuth2UserProvider.getOAuth2UserProvider(SocialType.valueOf(socialType), authentication);
-        Token token = tokenService.generateToken(oAuth2UserProvider);
+        Token token = tokenService.generateTokenByOAuth2UserProvider(oAuth2UserProvider);
 
         // 토큰을 쿠키에 저장
         CookieUtils.configJwtCookie(response, token);

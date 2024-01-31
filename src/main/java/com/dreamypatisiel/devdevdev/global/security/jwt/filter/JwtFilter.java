@@ -2,10 +2,7 @@ package com.dreamypatisiel.devdevdev.global.security.jwt.filter;
 
 
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.service.CustomUserDetailsService;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,10 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -40,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String accessToken = tokenService.getAccessTokenByRequest(request);
+        String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
         if (tokenService.validateToken(accessToken)) {
