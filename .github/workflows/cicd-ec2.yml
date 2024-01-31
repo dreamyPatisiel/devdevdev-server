@@ -32,6 +32,16 @@ jobs:
           java-version: 17
           distribution: corretto
 
+      # 환경파일 작성 : github에 올리지 못하는 정보의 설정파일을 runner에 삽입
+      ## create application-prod.yml
+      - name: make application-prod.yml
+        run: |
+           ## create application-prod.yml
+           cd ./src/main/resources
+           touch ./application-prod.yml
+           echo "${{ secrets.application_prod }}" >> ./application-prod.yml
+        shell: bash
+
       ## Springboot 프로젝트 빌드
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
