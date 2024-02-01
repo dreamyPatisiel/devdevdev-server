@@ -2,4 +2,4 @@ jwt:
   header: Authorization
   secret: devdevdevtestdevdevdevtestdevdevdevtestdevdevdevtest
   redirectUri:
-    path: /login
+    path: /
