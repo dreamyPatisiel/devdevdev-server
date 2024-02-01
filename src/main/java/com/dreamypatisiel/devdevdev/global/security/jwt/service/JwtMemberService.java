@@ -25,6 +25,12 @@ public class JwtMemberService {
     private final MemberRepository memberRepository;
     private final TokenService tokenService;
 
+    /**
+     * 리프레시 토큰을 검증하고,
+     * 새로운 토큰을 생성하고,
+     * 새롭게 생성한 리프레시 토큰으로 회원을 갱신하고
+     * 새롭게 생성한 토큰을 반환한다.
+     */
     @Transactional
     public Token validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(String refreshToken) throws TokenInvalidException {
 
@@ -53,6 +59,9 @@ public class JwtMemberService {
         return newToken;
     }
 
+    /**
+     * 회원의 리프레시 토큰을 갱신한다.
+     */
     @Transactional
     public void updateMemberRefreshToken(String refreshToken) {
         Claims claims = tokenService.getClaims(refreshToken);
