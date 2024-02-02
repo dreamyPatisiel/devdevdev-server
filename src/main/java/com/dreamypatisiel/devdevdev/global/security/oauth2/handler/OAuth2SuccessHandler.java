@@ -61,7 +61,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     public String getRedirectUri(String domain, String path) {
         return UriComponentsBuilder
-                .fromUriString(domain+path)
+                .fromUriString(domain + path)
                 .toUriString();
     }
 }

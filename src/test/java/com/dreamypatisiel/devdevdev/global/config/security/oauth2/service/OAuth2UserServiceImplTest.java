@@ -14,9 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -26,7 +23,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 class OAuth2UserServiceImplTest {
 
     @InjectMocks
-    OAuth2UserServiceImpl OAuth2UserServiceImpl;
+    OAuth2UserServiceImpl oAuth2UserService;
     @Mock
     OAuth2MemberService appOAuth2MemberService;
     @Mock
@@ -51,7 +48,7 @@ class OAuth2UserServiceImplTest {
         when(defaultOAuth2UserService.loadUser(oAuth2UserRequest)).thenReturn(oAuth2User);
 
         // when // then
-        assertThatCode(() -> OAuth2UserServiceImpl.loadUser(oAuth2UserRequest))
+        assertThatCode(() -> oAuth2UserService.loadUser(oAuth2UserRequest))
                 .doesNotThrowAnyException();
     }
 
@@ -64,7 +61,7 @@ class OAuth2UserServiceImplTest {
         when(defaultOAuth2UserService.loadUser(oAuth2UserRequest)).thenReturn(oAuth2User);
 
         // when // then
-        assertThatThrownBy(() -> OAuth2UserServiceImpl.loadUser(oAuth2UserRequest))
+        assertThatThrownBy(() -> oAuth2UserService.loadUser(oAuth2UserRequest))
                 .isInstanceOf(OAuth2UserProviderException.class)
                 .hasMessage(OAuth2UserServiceImpl.INVALID_SOCIAL_LOGIN_SUPPORT_MESSAGE);
     }
