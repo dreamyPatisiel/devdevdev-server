@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.exception;
 
+import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
@@ -15,6 +16,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiControllerAdvice {
+
+    @ExceptionHandler(MemberException.class)
+    public ResponseEntity<BasicResponse<Object>> memberException(MemberException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.NOT_FOUND.value()),
+                HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<BasicResponse<Object>> tokenNotFoundException(TokenNotFoundException e) {

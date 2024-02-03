@@ -47,7 +47,7 @@ public class SecurityConstant {
             "/h2-console/**.jsp",
             "/h2-console/**.gif",
             "/devdevdev/api/v1/members",
-            "/devdevdev/api/v1/token/**"
+            "/devdevdev/api/v1/token/refresh"
     };
 
     public static final String[] GET_WHITELIST = new String[]{

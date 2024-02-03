@@ -11,7 +11,6 @@ import org.springframework.util.SerializationUtils;
 
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Optional;
 
 public class CookieUtils {
 
@@ -20,21 +19,25 @@ public class CookieUtils {
     public static final String DEFAULT_PATH = "/";
     public static final String BLANK = "";
     public static final String INVALID_NOT_FOUND_COOKIE_MESSAGE = "쿠키가 존재하지 않습니다.";
+    public static final String INVALID_NOT_FOUND_COOKIE_BY_NAME_MESSAGE = "요청값에 이름에 맞는 쿠키가 없습니다.";
+    public static final String INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE = "요청값에 이름에 맞는 쿠키의 값이 없습니다.";
 
 
-    public static Optional<Cookie> getRequestCookieByName(HttpServletRequest request, String name) {
+    public static Cookie getRequestCookieByName(HttpServletRequest request, String name) {
         validationCookieEmpty(request.getCookies());
         return Arrays.stream(request.getCookies())
                 .filter(cookie -> cookie.getName().equals(name))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new CookieException(INVALID_NOT_FOUND_COOKIE_BY_NAME_MESSAGE));
     }
 
-    public static Optional<String> getRequestCookieValueByName(HttpServletRequest request, String name) {
+    public static String getRequestCookieValueByName(HttpServletRequest request, String name) {
         validationCookieEmpty(request.getCookies());
         return Arrays.stream(request.getCookies())
                 .filter(cookie -> name.equals(cookie.getName()))
                 .map(Cookie::getValue)
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new CookieException(INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE));
     }
 
     public static void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge, boolean isHttpOnly, boolean isSecure) {

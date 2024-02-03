@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
@@ -25,8 +26,12 @@ public class TokenController {
     @GetMapping("/refresh")
     public ResponseEntity<BasicResponse<Object>> getRefreshToken(HttpServletRequest request, HttpServletResponse response) {
         // 쿠키에서 refresh를 꺼내온다.
-        String refreshToken = request.getParameter("refresh");
-        Token newToken = jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(refreshToken);
+        String refreshToken = CookieUtils.getRequestCookieValueByName(request,
+                JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+
+        // 쿠키 검증 및 토큰 재발급
+        Token newToken = jwtMemberService
+                .validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(refreshToken);
 
         // 쿠키 설정
         CookieUtils.configJwtCookie(response, newToken);
