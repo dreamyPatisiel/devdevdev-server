@@ -26,8 +26,8 @@ public class ApiControllerAdvice {
     public ResponseEntity<BasicResponse<Object>> tokenInvalidException(HttpServletRequest request, HttpServletResponse response, TokenInvalidException e)
             throws ServletException {
         request.logout(); // 로그아웃 처리
-        CookieUtils.deleteCookie(request, response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
-        CookieUtils.deleteCookie(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+        CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
+        CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
 
         return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.UNAUTHORIZED.value()),
                 HttpStatus.UNAUTHORIZED);
