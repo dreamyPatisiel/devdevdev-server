@@ -17,9 +17,9 @@ public class KakaoMember extends SocialUserProvider {
 
     public final static String KAKAO_ACCOUNT = "kakao_account";
     private final static String PROPERTIES = "properties";
-    private final static String NICKNAME = "nickname";
-    private final static String EMAIL = "email";
-    private static final String ID = "id";
+    public final static String NICKNAME = "nickname";
+    public final static String EMAIL = "email";
+    public static final String ID = "id";
     private static final String DEFAULT_EMAIL = "user@example.com";
 
     private final Map<String, Object> kakaoAccountAttributes;

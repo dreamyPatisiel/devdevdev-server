@@ -56,7 +56,7 @@ public class CookieUtils {
                 if (cookie.getName().equals(name)) {
                     cookie.setValue(BLANK);
                     cookie.setPath(DEFAULT_PATH);
-                    cookie.setMaxAge(0);
+                    cookie.setMaxAge(DEFAULT_MAX_AGE);
                     response.addCookie(cookie);
                 }
             }

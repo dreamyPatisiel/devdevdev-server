@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.config.security.oauth2.service;
+package com.dreamypatisiel.devdevdev.global.security.oauth2.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
