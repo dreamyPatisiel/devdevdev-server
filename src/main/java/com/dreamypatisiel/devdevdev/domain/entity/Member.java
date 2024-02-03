@@ -50,6 +50,7 @@ public class Member extends BasicTime {
     @Embedded
     private Experience experience;
     private Boolean subscriptionLetterGranted;
+    @Getter
     private String refreshToken;
     @Embedded
     @AttributeOverride(name = "email",
