@@ -17,7 +17,7 @@ class CookieUtilsTest {
 
     @Test
     @DisplayName("요청에 있는 쿠키를 추출할 때 쿠키가 없으면 예외가 발생한다.")
-    void getRequestCookieByNameException() {
+    void getRequestCookieByNameException_INVALID_NOT_FOUND_COOKIE_MESSAGE() {
         // given
         MockHttpServletRequest request = new MockHttpServletRequest();
         String name = "ChocolateChipCookie";
@@ -26,6 +26,24 @@ class CookieUtilsTest {
         assertThatThrownBy(() -> CookieUtils.getRequestCookieByName(request, name))
                 .isInstanceOf(CookieException.class)
                 .hasMessage(CookieUtils.INVALID_NOT_FOUND_COOKIE_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("요청에 있는 쿠키를 추출할 때 알맞은 이름의 쿠키가 없으면 예외가 발생한다.")
+    void getRequestCookieByNameException_INVALID_NOT_FOUND_COOKIE_BY_NAME_MESSAGE() {
+        // given
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String name = "ChocolateChipCookie";
+        String value = "yummy";
+        Cookie cookie = new Cookie(name, value);
+        request.setCookies(cookie);
+
+        String otherName = "ButterChipCookie";
+
+        // when // then
+        assertThatThrownBy(() -> CookieUtils.getRequestCookieByName(request, otherName))
+                .isInstanceOf(CookieException.class)
+                .hasMessage(CookieUtils.INVALID_NOT_FOUND_COOKIE_BY_NAME_MESSAGE);
     }
 
     @Test
@@ -40,7 +58,7 @@ class CookieUtilsTest {
         request.setCookies(cookie);
 
         // when
-        Cookie result = CookieUtils.getRequestCookieByName(request, name).get();
+        Cookie result = CookieUtils.getRequestCookieByName(request, name);
 
         // then
         assertAll(
@@ -64,6 +82,24 @@ class CookieUtilsTest {
     }
 
     @Test
+    @DisplayName("요청에 있는 쿠키값을 추출할 때 알맞은 이름의 쿠키가 없으면 예외가 발생한다.")
+    void getRequestCookieByNameException_INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE() {
+        // given
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String name = "ChocolateChipCookie";
+        String value = "yummy";
+        Cookie cookie = new Cookie(name, value);
+        request.setCookies(cookie);
+
+        String otherName = "ButterChipCookie";
+
+        // when // then
+        assertThatThrownBy(() -> CookieUtils.getRequestCookieValueByName(request, otherName))
+                .isInstanceOf(CookieException.class)
+                .hasMessage(CookieUtils.INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE);
+    }
+
+    @Test
     @DisplayName("요청에 있는 쿠키의 값을 쿠키 이름으로 추출한다.")
     void getRequestCookieValueByName() {
         // given
@@ -75,11 +111,12 @@ class CookieUtilsTest {
         request.setCookies(cookie);
 
         // when
-        String result = CookieUtils.getRequestCookieValueByName(request, name).get();
+        String result = CookieUtils.getRequestCookieValueByName(request, name);
 
         // then
         assertThat(result).isEqualTo(value);
     }
+
 
     @Test
     @DisplayName("쿠키를 삭제할 경우"

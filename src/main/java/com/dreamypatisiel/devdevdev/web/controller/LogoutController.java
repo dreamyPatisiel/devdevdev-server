@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/devdevdev/api/v1")
 public class LogoutController {
 
-    private static final String REDIRECT_URL = "/devdevdev/home";
+    private static final String LOGOUT_REDIRECT_URL = "/home";
 
     @GetMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response)
@@ -27,7 +27,7 @@ public class LogoutController {
         CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
         CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
 
-        response.sendRedirect(REDIRECT_URL);
+        response.sendRedirect(LOGOUT_REDIRECT_URL);
 
         return ResponseEntity.ok().body(null);
     }
