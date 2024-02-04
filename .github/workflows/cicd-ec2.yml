@@ -4,8 +4,6 @@ name: Build and Deploy to EC2
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
 
 # 환경 변수 $변수명으로 사용
 env:

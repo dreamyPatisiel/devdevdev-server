@@ -4,8 +4,6 @@ name: Build and Deploy to GCP
 on:
   push:
     branches: ["develop", "feature/cicd"]
-  pull_request:
-    branches: ["develop", "feature/cicd"]
 
 jobs:
   build:
