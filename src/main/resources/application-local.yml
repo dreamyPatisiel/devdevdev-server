@@ -1,15 +1,15 @@
+domain:
+  frontend:
+    # host: http://localhost:3000
+    # host: https://devdevdev-client.vercel.app
+    host: https://www.devdevdev.co.kr
+  backend:
+    host: http://localhost:8080
+
 spring:
   config:
     activate:
       on-profile: local
-
-  redis:
-    port: 6379
-    lettuce:
-      pool:
-        max-active: 10
-        max-idle: 10
-        min-idle: 2
 
   jpa:
     open-in-view: false
@@ -32,9 +32,16 @@ spring:
       path: /h2-console
       settings:
         web-allow-others: true
+
   data:
     redis:
       host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 8
+          min-idle: 2
 
 logging:
   level:

@@ -38,3 +38,8 @@ out/
 
 ### yml
 src/main/resources/application-prod.yml
+src/main/resources/application-jwt-prod.yml
+src/main/resources/application-oauth2-prod.yml
+src/main/resources/application-dev.yml
+src/main/resources/application-jwt-dev.yml
+src/main/resources/application-oauth2-dev.yml
