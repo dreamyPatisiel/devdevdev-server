@@ -138,8 +138,8 @@ class JwtMemberServiceTest {
         when(timeProvider.getDateNow()).thenReturn(new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
         Token token = tokenService.generateTokenBy(email, socialType, role);
         String otherRefreshToken = token.getRefreshToken();
-        // when
 
+        // when
         jwtMemberService.updateMemberRefreshToken(otherRefreshToken);
 
         // then

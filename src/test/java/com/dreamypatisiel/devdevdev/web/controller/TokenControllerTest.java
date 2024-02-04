@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -16,6 +17,7 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.servlet.http.Cookie;
 import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +26,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+import static org.assertj.core.api.Assertions.*;
 
 @Transactional
 class TokenControllerTest extends SupportControllerTest {
@@ -66,9 +71,9 @@ class TokenControllerTest extends SupportControllerTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
-                .cookie(cookie)
-                .contentType(MediaType.APPLICATION_JSON))
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+                        .cookie(cookie)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists(DEVDEVDEV_REFRESH_TOKEN))
@@ -76,7 +81,16 @@ class TokenControllerTest extends SupportControllerTest {
                 .andExpect(cookie().secure(DEVDEVDEV_REFRESH_TOKEN, true))
                 .andExpect(cookie().exists(DEVDEVDEV_ACCESS_TOKEN))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_ACCESS_TOKEN, false))
-                .andExpect(cookie().secure(DEVDEVDEV_ACCESS_TOKEN, false));
+                .andExpect(cookie().secure(DEVDEVDEV_ACCESS_TOKEN, false))
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.errorCode").value(0));
+
+        // 쿠키에 있는 리프레시 토큰이 저장되었는지 검증
+        Cookie refreshTokenCookie = actions.andReturn().getResponse().getCookie(DEVDEVDEV_REFRESH_TOKEN);
+        String value = refreshTokenCookie.getValue();
+
+        Member findMember = memberRepository.findById(member.getId()).get();
+        assertThat(findMember.isRefreshTokenEquals(value)).isTrue();
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {

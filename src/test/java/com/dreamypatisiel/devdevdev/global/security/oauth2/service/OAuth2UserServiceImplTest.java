@@ -35,10 +35,6 @@ class OAuth2UserServiceImplTest {
     @Mock
     ClientRegistration clientRegistration;
 
-    /**
-     * 1. 리소스 서버(시간 + 리소스) -> 네네네네네네네 좋은 거 같다.
-     */
-
     @Test
     @DisplayName("카카오(kakao) 소셜 로그인일 경우 예외가 발생하지 않는다.")
     void loadUser() {

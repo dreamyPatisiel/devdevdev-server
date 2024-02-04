@@ -59,7 +59,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         log.info("OAuth2SuccessHandler accessToken={}", token.getAccessToken());
     }
 
-    public String getRedirectUri(String domain, String path) {
+    private String getRedirectUri(String domain, String path) {
         return UriComponentsBuilder
                 .fromUriString(domain + path)
                 .toUriString();
