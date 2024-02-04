@@ -21,6 +21,7 @@ public class CookieUtils {
     public static final String INVALID_NOT_FOUND_COOKIE_MESSAGE = "쿠키가 존재하지 않습니다.";
     public static final String INVALID_NOT_FOUND_COOKIE_BY_NAME_MESSAGE = "요청값에 이름에 맞는 쿠키가 없습니다.";
     public static final String INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE = "요청값에 이름에 맞는 쿠키의 값이 없습니다.";
+    public static final String DEVDEVDEV_DOMAIN = ".devdevdev.co.kr";
 
 
     public static Cookie getRequestCookieByName(HttpServletRequest request, String name) {
@@ -46,6 +47,7 @@ public class CookieUtils {
         cookie.setHttpOnly(isHttpOnly);
         cookie.setSecure(isSecure);
         cookie.setMaxAge(maxAge);
+        cookie.setDomain(DEVDEVDEV_DOMAIN);
 
         response.addCookie(cookie);
     }

@@ -25,7 +25,7 @@ public class OAuth2MemberService {
     public UserPrincipal register(OAuth2UserProvider oAuth2UserProvider, OAuth2User oAuth2User) {
         Optional<Member> optionalMember = findMemberByOAuth2UserProvider(oAuth2UserProvider);
         if(optionalMember.isPresent()) {
-            return UserPrincipal.create(optionalMember.get());
+            return UserPrincipal.create(optionalMember.get(), oAuth2User.getAttributes());
         }
 
         // 데이터베이스 회원이 없으면 회원가입 시킨다.
