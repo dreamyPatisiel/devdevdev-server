@@ -40,10 +40,12 @@ jobs:
           echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
           echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
           
-          ls
+          cat ./application-dev.yml
+          cat ./application-jwt-dev.yml
+          cat ./application-oauth2-dev.yml
+
 
         shell: bash
-
       ## Springboot 프로젝트 빌드
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
