@@ -79,7 +79,7 @@ public class CookieUtils {
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN,
                 token.getAccessToken(), CookieUtils.DEFAULT_MAX_AGE, false, false);
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN,
-                token.getRefreshToken(), CookieUtils.DEFAULT_MAX_AGE, true, true);
+                token.getRefreshToken(), CookieUtils.DEFAULT_MAX_AGE, true, false);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {
