@@ -51,7 +51,7 @@ public class SecurityConfig {
     private final SecurityExceptionFilter securityExceptionFilter;
 
     @Bean
-    @Profile({"test", "local"})
+    @Profile({"test", "local", "dev"})
     public SecurityFilterChain securityFilterChainOnLocal(HttpSecurity http) throws Exception {
 
         http

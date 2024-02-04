@@ -10,6 +10,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Nickname;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.KakaoMember;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -17,6 +18,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2MemberService;
 
 import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -80,6 +82,7 @@ class AppOAuth2MemberServiceTest {
         when(mockOAuth2UserProvider.getUserName()).thenReturn(userName);
         when(mockOAuth2UserProvider.getSocialType()).thenReturn(socialType);
         when(mockOAuth2UserProvider.getEmail()).thenReturn(email);
+
 
         OAuth2User mockOAuth2User = mock(OAuth2User.class);
         Map<String, Object> attributes = new HashMap<>();

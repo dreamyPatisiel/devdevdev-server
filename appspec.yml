@@ -1,0 +1,24 @@
+version: 0.0
+os: linux
+
+# 배포 파일에 대한 설정
+files:
+  - source:  / # 인스턴스에 복사할 디렉토리 경로
+    destination: /home/ubuntu/devdevdev # 인스턴스에서 파일이 복사되는 위치
+    overwrite: yes # 복사할 위치에 파일이 있는 경우 덮어쓰기
+
+# files 섹션에서 복사한 파일에 대한 권한 설정
+permissions:
+  - object: / # 권한이 지정되는 파일 또는 디렉토리
+    pattern: "**" # 매칭되는 패턴에만 권한 부여
+    owner: ubuntu # object의 소유자
+    group: ubuntu # object의 그룹 이름
+
+# 배포 이후에 수행할 스크립트 지정
+# 파일 설치 후 기존 실행중이던 컨테이너 종료, 컨테이너 삭제, 도커 이미지 삭제 후
+# 새로운 도커 이미지 빌드와 컨테이너 실행
+hooks:
+  AfterInstall:
+    - location: deploy.sh # hooks 에서 실행할 스크립트 위치
+      timeout: 500 # (optional) 스크립트 실행에 허용되는 최대 시간이며, 넘으면 배포 실패로 간주됨
+      runas : root # (optional) 스크립트를 실행하는 사용자
