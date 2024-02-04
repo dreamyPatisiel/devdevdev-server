@@ -81,13 +81,18 @@ class AppOAuth2MemberServiceTest {
         when(mockOAuth2UserProvider.getSocialType()).thenReturn(socialType);
         when(mockOAuth2UserProvider.getEmail()).thenReturn(email);
 
-        OAuth2User oAuth2User = mock(OAuth2User.class);
+        OAuth2User mockOAuth2User = mock(OAuth2User.class);
+        Map<String, Object> attributes = new HashMap<>();
+        Map<String, Object> kakaoAttributes = new HashMap<>();
+        kakaoAttributes.put(KakaoMember.EMAIL, email);
+        attributes.put(KakaoMember.KAKAO_ACCOUNT, kakaoAttributes);
+        when(mockOAuth2User.getAttributes()).thenReturn(attributes);
 
         SocialMemberDto socialMemberDto = SocialMemberDto.from(mockOAuth2UserProvider, password);
         memberRepository.save(Member.createMemberBy(socialMemberDto));
 
         // when
-        oAuth2MemberService.register(mockOAuth2UserProvider, null);
+        oAuth2MemberService.register(mockOAuth2UserProvider, mockOAuth2User);
 
         // then
         List<Member> members = memberRepository.findMembersByUserIdAndSocialType(userId, socialType);
