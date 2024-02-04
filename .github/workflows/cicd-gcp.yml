@@ -31,8 +31,17 @@ jobs:
         run: |
           ## create application-dev.yml
           cd ./src/main/resources
+          
           touch ./application-dev.yml
+          touch ./application-jwt-dev.yml
+          touch ./application-oauth2-dev.yml
+        
           echo "${{ secrets.application_dev }}" >> ./application-dev.yml
+          echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
+          echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
+          
+          ls
+
         shell: bash
 
       ## Springboot 프로젝트 빌드
@@ -51,8 +60,8 @@ jobs:
 
       - name: Docker image build ahd Docker Hub push
         run: |
-          docker build -t ${{secrets.DOCKERHUB_ID}}/devdevdev-test .
-          docker push ${{secrets.DOCKERHUB_ID}}/devdevdev-test
+          docker build -t ${{secrets.DOCKERHUB_ID}}/${{secrets.DOCKERHUB_REPOSITORY}} .
+          docker push ${{secrets.DOCKERHUB_ID}}/${{secrets.DOCKERHUB_REPOSITORY}}
 
       # GCP
       - name: Deploy to Instance
@@ -63,7 +72,7 @@ jobs:
           key: ${{secrets.GCP_KEY}}
           script: |
             sudo docker login -u ${{ secrets.DOCKERHUB_ID }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-            sudo docker pull ${{secrets.DOCKERHUB_ID}}/devdevdev-test
+            sudo docker pull ${{secrets.DOCKERHUB_ID}}/${{secrets.DOCKERHUB_REPOSITORY}}
             sudo docker rm -f $(docker ps -qa)
             sudo docker-compose up -d
             sudo docker image prune -f
