@@ -224,7 +224,7 @@ class CookieUtilsTest {
                 () -> assertThat(refreshTokenCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN),
                 () -> assertThat(refreshTokenCookie.getValue()).isEqualTo(refreshToken),
                 () -> assertThat(refreshTokenCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
-                () -> assertThat(refreshTokenCookie.getSecure()).isTrue(),
+                () -> assertThat(refreshTokenCookie.getSecure()).isFalse(),
                 () -> assertThat(refreshTokenCookie.isHttpOnly()).isTrue()
         );
     }

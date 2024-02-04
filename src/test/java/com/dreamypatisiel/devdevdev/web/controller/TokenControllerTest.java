@@ -78,7 +78,7 @@ class TokenControllerTest extends SupportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists(DEVDEVDEV_REFRESH_TOKEN))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_REFRESH_TOKEN, true))
-                .andExpect(cookie().secure(DEVDEVDEV_REFRESH_TOKEN, true))
+                .andExpect(cookie().secure(DEVDEVDEV_REFRESH_TOKEN, false))
                 .andExpect(cookie().exists(DEVDEVDEV_ACCESS_TOKEN))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_ACCESS_TOKEN, false))
                 .andExpect(cookie().secure(DEVDEVDEV_ACCESS_TOKEN, false))
