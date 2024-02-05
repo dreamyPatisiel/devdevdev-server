@@ -15,6 +15,7 @@ import java.util.Base64;
 public class CookieUtils {
 
     public static final int DEFAULT_MAX_AGE = 180;
+    public static final int REFRESH_MAX_AGE = 60 * 60 * 24 * 7;
     public static final int DEFAULT_MIN_AGE = 0;
     public static final String DEFAULT_PATH = "/";
     public static final String BLANK = "";
@@ -22,6 +23,8 @@ public class CookieUtils {
     public static final String INVALID_NOT_FOUND_COOKIE_BY_NAME_MESSAGE = "요청값에 이름에 맞는 쿠키가 없습니다.";
     public static final String INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE = "요청값에 이름에 맞는 쿠키의 값이 없습니다.";
     public static final String DEVDEVDEV_DOMAIN = "devdevdev.co.kr";
+    public static final String ACTIVE = "active";
+    public static final String INACTIVE = "inactive";
 
 
     public static Cookie getRequestCookieByName(HttpServletRequest request, String name) {
@@ -79,7 +82,9 @@ public class CookieUtils {
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN,
                 token.getAccessToken(), CookieUtils.DEFAULT_MAX_AGE, false, false);
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN,
-                token.getRefreshToken(), CookieUtils.DEFAULT_MAX_AGE, true, true);
+                token.getRefreshToken(), CookieUtils.REFRESH_MAX_AGE, true, false);
+        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
+                ACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, false);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {

@@ -26,8 +26,10 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationEntryPointHandler implements AuthenticationEntryPoint {
 
+    public static final String INVALID_MEMBER_MESSAGE = "유효하지 않은 회원 입니다.";
+
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-        throw new JwtAuthenticationException("유효하지 않은 회원 입니다.");
+        throw new JwtAuthenticationException(INVALID_MEMBER_MESSAGE);
     }
 }

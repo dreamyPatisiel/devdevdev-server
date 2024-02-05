@@ -206,10 +206,12 @@ class CookieUtilsTest {
         // then
         Cookie accessTokenCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
         Cookie refreshTokenCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+        Cookie loginStatusCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS);
 
         assertAll(
                 () -> assertThat(accessTokenCookie).isNotNull(),
-                () -> assertThat(refreshTokenCookie).isNotNull()
+                () -> assertThat(refreshTokenCookie).isNotNull(),
+                () -> assertThat(loginStatusCookie).isNotNull()
         );
 
         assertAll(
@@ -223,9 +225,17 @@ class CookieUtilsTest {
         assertAll(
                 () -> assertThat(refreshTokenCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN),
                 () -> assertThat(refreshTokenCookie.getValue()).isEqualTo(refreshToken),
-                () -> assertThat(refreshTokenCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
-                () -> assertThat(refreshTokenCookie.getSecure()).isTrue(),
+                () -> assertThat(refreshTokenCookie.getMaxAge()).isEqualTo(CookieUtils.REFRESH_MAX_AGE),
+                () -> assertThat(refreshTokenCookie.getSecure()).isFalse(),
                 () -> assertThat(refreshTokenCookie.isHttpOnly()).isTrue()
+        );
+
+        assertAll(
+                () -> assertThat(loginStatusCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS),
+                () -> assertThat(loginStatusCookie.getValue()).isEqualTo(CookieUtils.ACTIVE),
+                () -> assertThat(loginStatusCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(loginStatusCookie.getSecure()).isFalse(),
+                () -> assertThat(loginStatusCookie.isHttpOnly()).isFalse()
         );
     }
 
