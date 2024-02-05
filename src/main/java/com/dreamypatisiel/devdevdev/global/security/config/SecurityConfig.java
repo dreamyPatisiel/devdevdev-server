@@ -106,7 +106,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Profile("local")
+    @Profile({"local", "dev"})
     @ConditionalOnProperty(name = SPRING_H2_CONSOLE_ENABLED, havingValue = "true")
     public WebSecurityCustomizer configH2ConsoleEnable() {
         return web -> web.ignoring()

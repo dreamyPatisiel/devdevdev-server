@@ -1,6 +1,10 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.handler;
 
+import static com.dreamypatisiel.devdevdev.global.utils.CookieUtils.INACTIVE;
+
 import com.dreamypatisiel.devdevdev.exception.OAuth2LoginException;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,6 +26,8 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
+        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
+                INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, false);
         throw new OAuth2LoginException(INVALID_OAUTH2_AUTHENTICATION_FAIL_MESSAGE);
     }
 }

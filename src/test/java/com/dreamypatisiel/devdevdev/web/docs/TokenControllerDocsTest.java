@@ -84,7 +84,8 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         actions.andDo(document("token-refresh",
                 preprocessResponse(prettyPrint()),
                 responseHeaders(
-                        headerWithName("Set-Cookie").description("DEVDEVDEV_REFRESH_TOKEN=리프레시 토큰 값, DEVDEVDEV_ACCESS_TOKEN=엑세스 토큰 값")
+                        headerWithName("Set-Cookie").description("DEVDEVDEV_REFRESH_TOKEN=리프레시 토큰 값,"
+                                + " DEVDEVDEV_ACCESS_TOKEN=엑세스 토큰 값, DEVDEVDEV_LOGIN_STATUS=로그인 활성 유무")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -82,6 +83,9 @@ class TokenControllerTest extends SupportControllerTest {
                 .andExpect(cookie().exists(DEVDEVDEV_ACCESS_TOKEN))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_ACCESS_TOKEN, false))
                 .andExpect(cookie().secure(DEVDEVDEV_ACCESS_TOKEN, false))
+                .andExpect(cookie().exists(DEVDEVDEV_LOGIN_STATUS))
+                .andExpect(cookie().httpOnly(DEVDEVDEV_LOGIN_STATUS, false))
+                .andExpect(cookie().secure(DEVDEVDEV_LOGIN_STATUS, false))
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.errorCode").value(0));
 
