@@ -5,14 +5,17 @@
 === 정상 요청/응답
 ==== HTTP Request
 include::{snippets}/token-refresh/http-request.adoc[]
+include::{snippets}/token-refresh/request-cookies.adoc[]
 
 ==== HTTP Response
 include::{snippets}/token-refresh/http-response.adoc[]
-include::{snippets}/token-refresh/response-body.adoc[]
-include::{snippets}/token-refresh/response-headers.adoc[]
+==== HTTP Response Cookie Fields
+include::{snippets}/token-refresh/response-cookies.adoc[]
+==== HTTP Response Fields
 include::{snippets}/token-refresh/response-fields.adoc[]
 
 === 예외
 ==== HTTP Response
 include::{snippets}/token-refresh-exception/response-body.adoc[]
+==== HTTP Response Fields
 include::{snippets}/token-refresh-exception/response-fields.adoc[]

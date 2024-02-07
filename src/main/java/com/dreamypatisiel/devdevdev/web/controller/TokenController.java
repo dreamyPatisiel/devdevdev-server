@@ -36,6 +36,6 @@ public class TokenController {
         // 쿠키 설정
         CookieUtils.configJwtCookie(response, newToken);
 
-        return ResponseEntity.ok(BasicResponse.success(null));
+        return ResponseEntity.ok(BasicResponse.success());
     }
 }

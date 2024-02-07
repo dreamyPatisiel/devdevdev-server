@@ -16,8 +16,10 @@ import java.io.IOException;
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
+    public static final String INVALID_ACCESS_DENIED_MESSAGE = "해당 자원에 접근 권한이 없습니다.";
+
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
-        throw new JwtAccessDeniedException("해당 자원에 접근 권한이 없습니다.");
+        throw new JwtAccessDeniedException(INVALID_ACCESS_DENIED_MESSAGE);
     }
 }

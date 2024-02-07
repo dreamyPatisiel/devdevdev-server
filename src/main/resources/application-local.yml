@@ -2,7 +2,8 @@ domain:
   frontend:
     # host: http://localhost:3000
     # host: https://devdevdev-client.vercel.app
-    host: https://www.devdevdev.co.kr
+    # host: https://www.devdevdev.co.kr
+    host: http://localhost:8080
   backend:
     host: http://localhost:8080
 

@@ -34,7 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
+        log.info("JwtFilter 시작");
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅

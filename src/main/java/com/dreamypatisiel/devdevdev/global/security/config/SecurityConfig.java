@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2SuccessHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -92,8 +93,11 @@ public class SecurityConfig {
 
     @Bean
     protected CorsConfigurationSource apiCorsConfigurationSource() {
+        List<String> origins = List.of("http://localhost:3000",
+                "https://devdevdev-client.vercel.app", "https://dev.devdevdev.co.kr");
+
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of(CorsConfiguration.ALL));
+        configuration.setAllowedOriginPatterns(origins);
         configuration.setAllowedMethods(List.of(CorsConfiguration.ALL));
         configuration.setAllowedHeaders(List.of(CorsConfiguration.ALL));
         configuration.setMaxAge(PREFLIGHT_MAX_AGE);

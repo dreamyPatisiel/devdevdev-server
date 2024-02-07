@@ -2,12 +2,17 @@ package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
+import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
+import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -31,6 +36,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -83,9 +89,13 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         // Docs
         actions.andDo(document("token-refresh",
                 preprocessResponse(prettyPrint()),
-                responseHeaders(
-                        headerWithName("Set-Cookie").description("DEVDEVDEV_REFRESH_TOKEN=리프레시 토큰 값,"
-                                + " DEVDEVDEV_ACCESS_TOKEN=엑세스 토큰 값, DEVDEVDEV_LOGIN_STATUS=로그인 활성 유무")
+                requestCookies(
+                        cookieWithName("DEVDEVDEV_REFRESH_TOKEN").description("리프레시 토큰")
+                ),
+                responseCookies(
+                        cookieWithName("DEVDEVDEV_REFRESH_TOKEN").description("리프레시 토큰"),
+                        cookieWithName("DEVDEVDEV_ACCESS_TOKEN").description("엑세스 토큰"),
+                        cookieWithName("DEVDEVDEV_LOGIN_STATUS").description("로그인 활성 유무(active | inactive)")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

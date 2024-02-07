@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
+import com.dreamypatisiel.devdevdev.global.utils.UriUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * 로그인 순서(2)
@@ -32,7 +31,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Value("${domain.frontend.host}")
     private String domain;
     @Value("${jwt.redirectUri.path}")
-    private String path;
+    private String endpoint;
 
     private final TokenService tokenService;
     private final JwtMemberService jwtMemberService;
@@ -51,17 +50,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CookieUtils.configJwtCookie(response, token);
 
         // 리다이렉트 설정
-        String redirectUri = getRedirectUri(domain, path);
+        String redirectUri = UriUtils.createUriByDomainAndEndpoint(domain, endpoint);
         getRedirectStrategy().sendRedirect(request, response, redirectUri);
 
         // 리프레시 토큰 저장
         jwtMemberService.updateMemberRefreshToken(token.getRefreshToken());
         log.info("OAuth2SuccessHandler accessToken={}", token.getAccessToken());
-    }
-
-    private String getRedirectUri(String domain, String path) {
-        return UriComponentsBuilder
-                .fromUriString(domain + path)
-                .toUriString();
     }
 }
