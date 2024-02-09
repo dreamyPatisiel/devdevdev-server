@@ -44,8 +44,10 @@ public class LogoutController {
         request.logout();
         // 인증 객체 초기화
         SecurityContextHolder.clearContext();
-        // 쿠키 삭제
+        // 쿠키 설정
         CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
+                CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, false);
 
         // 리다이렉트 설정
         String redirectUri = UriUtils.createUriByDomainAndEndpoint(domain, endpoint);

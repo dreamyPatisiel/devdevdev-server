@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.BEARER_PREFIX;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
@@ -25,6 +26,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
@@ -51,11 +53,12 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
+        Cookie refreshTokenCookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
+        Cookie loginStatusCookie = new Cookie(DEVDEVDEV_LOGIN_STATUS, CookieUtils.INACTIVE);
 
         // when // then
         ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/logout")
-                        .cookie(cookie)
+                        .cookie(refreshTokenCookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
@@ -74,7 +77,8 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
                         cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰")
                 ),
                 responseCookies(
-                        cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰")
+                        cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰"),
+                        cookieWithName(DEVDEVDEV_LOGIN_STATUS).description("로그인 활성화 유뮤(active | inactive)")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

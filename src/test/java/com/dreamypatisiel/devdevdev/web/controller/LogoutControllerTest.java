@@ -1,9 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.*;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,21 +12,14 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
-import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
-import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.ResultActions;
@@ -42,7 +35,8 @@ class LogoutControllerTest extends SupportControllerTest {
 
     @Test
     @DisplayName("로그아웃을 하면 회원의 리프레시 토큰이 비활성화 상태로 변경되고"
-            + " 리프레시 토큰 쿠키를 초기화 하여 리다이렉트 한다.")
+            + " 리프레시 토큰 쿠키를 초기화 하고"
+            + " 로그인 활성화 유무 쿠키를 비활성화 하고 리다이렉트 한다.")
     void logout() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -64,12 +58,21 @@ class LogoutControllerTest extends SupportControllerTest {
 
         // then
         MockHttpServletResponse response = actions.andReturn().getResponse();
-        Cookie responseCookie = response.getCookie(DEVDEVDEV_REFRESH_TOKEN);
-        assertThat(responseCookie).isNotNull();
+        Cookie responseRefreshCookie = response.getCookie(DEVDEVDEV_REFRESH_TOKEN);
+        assertThat(responseRefreshCookie).isNotNull();
         assertAll(
-                () -> assertThat(responseCookie.getValue()).isEqualTo(CookieUtils.BLANK),
-                () -> assertThat(responseCookie.getPath()).isEqualTo(CookieUtils.DEFAULT_PATH),
-                () -> assertThat(responseCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MIN_AGE)
+                () -> assertThat(responseRefreshCookie.getValue()).isEqualTo(CookieUtils.BLANK),
+                () -> assertThat(responseRefreshCookie.getPath()).isEqualTo(CookieUtils.DEFAULT_PATH),
+                () -> assertThat(responseRefreshCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MIN_AGE)
+        );
+
+        Cookie responseLoginStatusCookie = response.getCookie(DEVDEVDEV_LOGIN_STATUS);
+        assertThat(responseLoginStatusCookie).isNotNull();
+        assertAll(
+                () -> assertThat(responseLoginStatusCookie.getValue()).isEqualTo(CookieUtils.INACTIVE),
+                () -> assertThat(responseLoginStatusCookie.getPath()).isEqualTo(CookieUtils.DEFAULT_PATH),
+                () -> assertThat(responseLoginStatusCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(responseLoginStatusCookie.getDomain()).isEqualTo(CookieUtils.DEVDEVDEV_DOMAIN)
         );
 
         Member findMember = memberRepository.findById(member.getId()).get();
