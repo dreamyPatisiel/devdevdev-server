@@ -1,7 +1,7 @@
 spring:
   profiles:
     active:
-      - local
+      - dev
     include:
-      - oauth2-local
-      - jwt-local
+      - oauth2-dev
+      - jwt-dev
