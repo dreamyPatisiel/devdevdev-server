@@ -21,13 +21,13 @@ public class CorsTest {
 
     @Autowired
     MockMvc mockMvc;
-    String urlTemplate = "/devdevdev/api/v1/members";
+    String urlTemplate = "/devdevdev/api/v1/public";
 
     @Test
     @DisplayName("CORS 허용 테스트")
     void corsAllowedTest() throws Exception {
         // given
-        String originUrl = "http://example.com";
+        String originUrl = "https://www.devdevdev.co.kr";
 
         // when // then
         mockMvc.perform(MockMvcRequestBuilders.options(urlTemplate)

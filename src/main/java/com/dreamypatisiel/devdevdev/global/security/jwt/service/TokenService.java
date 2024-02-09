@@ -94,7 +94,8 @@ public class TokenService {
         String role = getRole(token);
         String socialType = getSocialType(token);
 
-        UserDetails userDetails = UserPrincipal.create(email, role, socialType);
+        UserDetails userDetails = UserPrincipal
+                .createByEmailAndRoleAndSocialType(email, role, socialType);
 
         return new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());

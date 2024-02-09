@@ -11,6 +11,7 @@ import org.springframework.util.SerializationUtils;
 
 import java.util.Arrays;
 import java.util.Base64;
+import org.springframework.util.StringUtils;
 
 public class CookieUtils {
 
@@ -57,7 +58,11 @@ public class CookieUtils {
 
     // 쿠키를 삭제하려면 클라이언트에게 해당 쿠키가 더 이상 유효하지 않음을 알려야 합니다.
     public static void deleteCookieFromResponse(HttpServletRequest request, HttpServletResponse response, String name) {
-        validationCookieEmpty(request.getCookies());
+        // 쿠키가 없어도 예외가 발생하지 않는다.
+        if(ObjectUtils.isEmpty(request.getCookies())) {
+            return;
+        }
+
         Arrays.stream(request.getCookies())
                 .filter(cookie -> cookie.getName().equals(name))
                 .forEach(cookie -> {

@@ -50,13 +50,14 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
     private final JwtFilter jwtFilter;
     private final SecurityExceptionFilter securityExceptionFilter;
+    private final CorsConfig corsConfig;
 
     @Bean
     @Profile({"test", "local", "dev"})
     public SecurityFilterChain securityFilterChainOnLocal(HttpSecurity http) throws Exception {
 
         http
-                .cors(cors -> cors.configurationSource(apiCorsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfig.apiCorsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(WHITELIST_URL).permitAll()
@@ -89,24 +90,6 @@ public class SecurityConfig {
         http.addFilterBefore(securityExceptionFilter, JwtFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    protected CorsConfigurationSource apiCorsConfigurationSource() {
-        List<String> origins = List.of("http://localhost:3000",
-                "https://devdevdev-client.vercel.app", "https://dev.devdevdev.co.kr");
-
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(origins);
-        configuration.setAllowedMethods(List.of(CorsConfiguration.ALL));
-        configuration.setAllowedHeaders(List.of(CorsConfiguration.ALL));
-        configuration.setMaxAge(PREFLIGHT_MAX_AGE);
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration(WILDCARD_PATTERN, configuration);
-
-        return source;
     }
 
     @Bean

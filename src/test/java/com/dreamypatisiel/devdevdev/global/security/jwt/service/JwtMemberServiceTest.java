@@ -14,6 +14,7 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -167,6 +168,40 @@ class JwtMemberServiceTest {
 
         // when // then
         assertThatThrownBy(() -> jwtMemberService.updateMemberRefreshToken(otherRefreshToken))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원의 리프레시 토큰을 비활성화 상태로 변경한다.")
+    void updateMemberRefreshTokenToDisabled() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal
+                .createByEmailAndRoleAndSocialType(email, role, socialType);
+
+        // when
+        jwtMemberService.updateMemberRefreshTokenToDisabled(userPrincipal);
+
+        // then
+        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email),
+                SocialType.valueOf(socialType)).get();
+        assertThat(findMember.getRefreshToken()).isEqualTo(Token.DISABLED);
+    }
+
+    @Test
+    @DisplayName("회원의 리프레시 토큰을 비활성화 상태로 변경할 때 회원이 없으면 예외가 발생한다.")
+    void updateMemberRefreshTokenToDisabledException() {
+        // given
+        UserPrincipal userPrincipal = UserPrincipal
+                .createByEmailAndRoleAndSocialType(email, role, socialType);
+
+        // when // then
+        assertThatThrownBy(() -> jwtMemberService.updateMemberRefreshTokenToDisabled(userPrincipal))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }

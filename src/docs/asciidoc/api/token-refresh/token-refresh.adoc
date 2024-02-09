@@ -1,10 +1,11 @@
 [[refresh-token]]
 == 토큰 재발급 API
-엑세스 토큰 만료시 토큰을 재발급하는 API
+* 엑세스 토큰 만료시 토큰을 재발급하는 API
 
 === 정상 요청/응답
 ==== HTTP Request
 include::{snippets}/token-refresh/http-request.adoc[]
+==== HTTP Request Cookie Fields
 include::{snippets}/token-refresh/request-cookies.adoc[]
 
 ==== HTTP Response

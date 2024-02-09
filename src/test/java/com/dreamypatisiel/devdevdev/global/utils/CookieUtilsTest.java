@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.exception.CookieException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import jakarta.servlet.http.Cookie;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -147,6 +148,7 @@ class CookieUtilsTest {
         );
     }
 
+    @Disabled
     @Test
     @DisplayName("쿠키를 삭제할 경우 요청 값에 쿠키가 없으면 예외가 발생한다.")
     void deleteCookieException() {

@@ -1,20 +1,21 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.BEARER_PREFIX;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -22,37 +23,28 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
-import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import jakarta.servlet.http.Cookie;
-import java.util.Date;
-import org.junit.jupiter.api.BeforeEach;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
-public class TokenControllerDocsTest extends SupportControllerDocsTest {
+public class LogoutControllerDocsTest extends SupportControllerDocsTest {
 
     @Autowired
     MemberRepository memberRepository;
 
     @Test
-    @DisplayName("토큰 재발급을 요청할 때"
-            + " 쿠키에 리프레시 토큰을 담아서 요청하면"
-            + " 토큰을 재발급하고 재발급한 토큰을 쿠키에 담아 응답을 준다.")
-    void getRefreshToken() throws Exception {
+    @DisplayName("로그아웃을 하면 회원의 리프레시 토큰이 비활성화 상태로 변경되고 리다이렉트 한다.")
+    void logout() throws Exception {
         // given
-        when(timeProvider.getDateNow()).thenReturn(new Date());
-
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -62,52 +54,60 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/logout")
                         .cookie(cookie)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                )
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().is3xxRedirection());
 
-        // Docs
-        actions.andDo(document("token-refresh",
+        // docs
+        actions.andDo(document("logout",
+                preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
                 requestCookies(
-                        cookieWithName("DEVDEVDEV_REFRESH_TOKEN").description("리프레시 토큰")
+                        cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰")
                 ),
                 responseCookies(
-                        cookieWithName("DEVDEVDEV_REFRESH_TOKEN").description("리프레시 토큰"),
-                        cookieWithName("DEVDEVDEV_ACCESS_TOKEN").description("엑세스 토큰"),
-                        cookieWithName("DEVDEVDEV_LOGIN_STATUS").description("로그인 활성 유무(active | inactive)")
+                        cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                ))
-        );
+                )
+        ));
     }
 
     @Test
-    @DisplayName("토큰 재발급을 요청할 때 리프레시 토큰으로 회원을 찾을 수 없으면 예외가 발생한다.")
-    void getRefreshTokenException() throws Exception {
+    @DisplayName("로그아웃할 때 쿠키에 담긴 리프레시 토큰을 보유한 회원이 없으면 예외가 발생한다.")
+    void logoutException() throws Exception {
         // given
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
-        // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        // when
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
                         .cookie(cookie)
-                        .contentType(MediaType.APPLICATION_JSON))
+                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
-        // Docs
-        actions.andDo(document("token-refresh-exception",
+        // docs
+        actions.andDo(document("logout-exception",
+                preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                ))
-        );
+                )
+        ));
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
