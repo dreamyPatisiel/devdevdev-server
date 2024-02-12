@@ -4,6 +4,9 @@ domain:
   backend:
     host: https://api.devdevdev.co.kr
 
+cors:
+  origin: http://localhost:3000
+
 spring:
   jpa:
     hibernate:

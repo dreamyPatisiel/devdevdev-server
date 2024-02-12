@@ -25,11 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class LogoutController {
 
-    @Value("${domain.frontend.host}")
-    private String domain;
-    @Value("${jwt.redirectUri.path}")
-    private String endpoint;
-
     private final JwtMemberService jwtMemberService;
 
     @PostMapping("/logout")
@@ -48,10 +43,6 @@ public class LogoutController {
         CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
                 CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, false);
-
-        // 리다이렉트 설정
-        String redirectUri = UriUtils.createUriByDomainAndEndpoint(domain, endpoint);
-        response.sendRedirect(redirectUri);
 
         return ResponseEntity.ok().body(BasicResponse.success());
     }

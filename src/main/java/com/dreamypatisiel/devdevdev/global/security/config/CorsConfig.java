@@ -4,6 +4,7 @@ import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PREF
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.WILDCARD_PATTERN;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -13,13 +14,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    public static final String LOCAL_ORIGIN = "http://localhost:3000";
-    public static final String DEV_ORIGIN = "https://dev.devdevdev.co.kr";
-    public static final String PROD_ORIGIN = "https://www.devdevdev.co.kr";
+
+    @Value("${cors.origin}")
+    public String origin;
 
     @Bean
     protected CorsConfigurationSource apiCorsConfigurationSource() {
-        List<String> origins = List.of(LOCAL_ORIGIN, DEV_ORIGIN, PROD_ORIGIN);
+        List<String> origins = List.of(origin);
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(origins);

@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
@@ -23,13 +24,13 @@ public class CorsTest {
     MockMvc mockMvc;
     String urlTemplate = "/devdevdev/api/v1/public";
 
+    @Value("${cors.origin}")
+    String originUrl;
+
     @Test
     @DisplayName("CORS 허용 테스트")
     void corsAllowedTest() throws Exception {
-        // given
-        String originUrl = "https://www.devdevdev.co.kr";
-
-        // when // then
+        // given // when // then
         mockMvc.perform(MockMvcRequestBuilders.options(urlTemplate)
                         .header(HttpHeaders.ORIGIN, originUrl)
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET)

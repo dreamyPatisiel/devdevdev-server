@@ -54,7 +54,6 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         Cookie refreshTokenCookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
-        Cookie loginStatusCookie = new Cookie(DEVDEVDEV_LOGIN_STATUS, CookieUtils.INACTIVE);
 
         // when // then
         ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/logout")
@@ -64,7 +63,7 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                 )
                 .andDo(print())
-                .andExpect(status().is3xxRedirection());
+                .andExpect(status().isOk());
 
         // docs
         actions.andDo(document("logout",
