@@ -3,8 +3,10 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
+import com.dreamypatisiel.devdevdev.exception.UserPrincipalException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -16,9 +18,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.util.StringUtils;
 
 @RequiredArgsConstructor
 public class UserPrincipal implements OAuth2User, UserDetails {
+
+    public static final String INVALID_CREATE_PRINCIPAL_MESSAGE = "회원을 생성할 수 없습니다. 이메일, 권한, 소셜타입을 확인해주세요.";
 
     private final String userId;
     @Getter
@@ -28,9 +33,9 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     private final SocialType socialType;
     private final Collection<? extends GrantedAuthority> authorities;
     @Setter(value = AccessLevel.PRIVATE)
-    private Map<String, Object> attributes;
+    private Map<String, Object> attributes = new HashMap<>();
 
-    public static UserPrincipal create(Member member) {
+    public static UserPrincipal createByMember(Member member) {
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = Collections.singletonList(
                 new SimpleGrantedAuthority(member.getRole().name()));
 
@@ -46,13 +51,14 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         );
     }
 
-    public static UserPrincipal create(Member member, Map<String, Object> attributes) {
-        UserPrincipal userPrincipal = UserPrincipal.create(member);
+    public static UserPrincipal createByMemberAndAttributes(Member member, Map<String, Object> attributes) {
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         userPrincipal.setAttributes(attributes);
         return userPrincipal;
     }
 
-    public static UserPrincipal create(String email, String role, String socialType) {
+    public static UserPrincipal createByEmailAndRoleAndSocialType(String email, String role, String socialType) {
+        validationArguments(email, role, socialType);
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = Collections.singletonList(
                 new SimpleGrantedAuthority(role));
 
@@ -63,6 +69,14 @@ public class UserPrincipal implements OAuth2User, UserDetails {
                 SocialType.valueOf(socialType),
                 simpleGrantedAuthorities
         );
+    }
+
+    private static void validationArguments(String email, String role, String socialType) {
+        if(!StringUtils.hasText(email)
+                || !StringUtils.hasText(role)
+                || !StringUtils.hasText(socialType)) {
+            throw new UserPrincipalException(INVALID_CREATE_PRINCIPAL_MESSAGE);
+        }
     }
 
     @Override

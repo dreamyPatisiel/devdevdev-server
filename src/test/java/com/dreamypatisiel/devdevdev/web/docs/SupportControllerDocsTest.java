@@ -1,22 +1,54 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import static org.mockito.Mockito.when;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
+import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Date;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
-@ExtendWith(RestDocumentationExtension.class)
+//@ExtendWith(RestDocumentationExtension.class)
 public class SupportControllerDocsTest {
 
+    protected String DEFAULT_PATH_V1 = "/devdevdev/api/v1";
+
     @Autowired
-    ObjectMapper om;
+    protected ObjectMapper om;
     @Autowired
-    MockMvc mockMvc;
+    protected MockMvc mockMvc;
+    @Autowired
+    protected TokenService tokenService;
+    @MockBean
+    protected TimeProvider timeProvider;
+
+    protected String refreshToken;
+    protected String accessToken;
+    protected String email = "dreamy5patisiel@kakao.com";
+    protected String socialType = SocialType.KAKAO.name();
+    protected String role = Role.ROLE_USER.name();
+    protected Date date = new Date();
+
+    @BeforeEach
+    void setupRefreshToken() {
+        when(timeProvider.getDateNow()).thenReturn(date);
+
+        Token token = tokenService.generateTokenBy(email, socialType, role);
+        refreshToken = token.getRefreshToken();
+        accessToken = token.getAccessToken();
+    }
 }

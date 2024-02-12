@@ -49,11 +49,11 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class TokenService {
 
-    public static final String INVALID_TOKEN_NOT_FOUND_MESSAGE = "토큰이 존재하지 않습니다.";
-    public static final String INVALID_TOKEN_SIGNATURE_MESSAGE = "잘못된 jwt 서명을 가진 토큰입니다.";
-    public static final String INVALID_EXPIRED_TOKEN_MESSAGE = "만료된 jwt 토큰입니다.";
-    public static final String INVALID_UNSUPPORTED_TOKEN_MESSAGE = "지원하지 않는 jwt 토큰입니다.";
-    public static final String INVALID_TOKEN_MESSAGE = "잘못된 jwt 토큰입니다.";
+    public static final String INVALID_TOKEN_NOT_FOUND_MESSAGE = "JWT가 존재하지 않습니다.";
+    public static final String INVALID_TOKEN_SIGNATURE_MESSAGE = "잘못된 서명을 가진 JWT 입니다.";
+    public static final String INVALID_EXPIRED_TOKEN_MESSAGE = "만료된 JWT 입니다.";
+    public static final String INVALID_UNSUPPORTED_TOKEN_MESSAGE = "지원하지 않는 JWT 입니다.";
+    public static final String INVALID_TOKEN_MESSAGE = "잘못된 JWT 입니다.";
     private static final String ROLE_DELIMITER = ",";
 
     @Value("${jwt.secret}")
@@ -94,7 +94,8 @@ public class TokenService {
         String role = getRole(token);
         String socialType = getSocialType(token);
 
-        UserDetails userDetails = UserPrincipal.create(email, role, socialType);
+        UserDetails userDetails = UserPrincipal
+                .createByEmailAndRoleAndSocialType(email, role, socialType);
 
         return new UsernamePasswordAuthenticationToken(
                 userDetails, null, userDetails.getAuthorities());

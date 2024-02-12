@@ -1,0 +1,23 @@
+[[logout]]
+== 로그아웃 API
+* 리프레시 토큰을 쿠키로 요청받아 회원의 리프레시 토큰을 비활성화 한다.
+* 리프레시 토큰 쿠키를 초기화하여 리다이렉트(`/home`) 한다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/logout/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/logout/request-headers.adoc[]
+==== HTTP Request Cookie Fields
+include::{snippets}/logout/request-cookies.adoc[]
+
+==== HTTP Response
+include::{snippets}/logout/http-response.adoc[]
+==== HTTP Response Cookie Fields
+include::{snippets}/logout/response-cookies.adoc[]
+
+=== 예외
+==== HTTP Response
+include::{snippets}/logout-exception/response-body.adoc[]
+==== HTTP Response Fields
+include::{snippets}/logout-exception/response-fields.adoc[]

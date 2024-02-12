@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
@@ -31,7 +30,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -58,7 +56,7 @@ class OAuth2SuccessHandlerTest {
         Map<String, Object> kakaoAttributes = new HashMap<>();
         kakaoAttributes.put(KakaoMember.EMAIL, email);
         attributes.put(KakaoMember.KAKAO_ACCOUNT, kakaoAttributes);
-        UserPrincipal userPrincipal = UserPrincipal.create(member, attributes);
+        UserPrincipal userPrincipal = UserPrincipal.createByMemberAndAttributes(member, attributes);
 
         // OAuth2AuthenticationToken 생성
         SecurityContext context = SecurityContextHolder.getContext();

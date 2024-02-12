@@ -24,7 +24,6 @@ public class SecurityConstant {
             "/devdevdev/api/v1/oauth2/authorization/kakao",
             "/devdevdev/api/v1/login/oauth2/code/**",
             "/devdevdev/api/v1/login/oauth2/code/kakao",
-            "/devdevdev/api/v1/logout",
             "/h2-console/**",
             "/h2-console",
             "/devdevdev/api/v1/members",
@@ -33,23 +32,13 @@ public class SecurityConstant {
     };
     public static final String[] JWT_FILTER_WHITELIST_URL = new String[] {
             "/docs/index.html",
+            "/h2-console",
             "/error",
             "/favicon.ico",
-            "/**.png",
-            "/**.gif",
-            "/**.svg",
-            "/**.jpg",
-            "/**.html",
-            "/**.css",
-            "/**.js",
-            "/devdevdev/api/v1/oauth2/authorization/**",
-            "/devdevdev/api/v1/login/oauth2/code/**",
-            "/h2-console/**",
-            "/h2-console",
-            "/h2-console/**.jsp",
-            "/h2-console/**.gif",
-            "/devdevdev/api/v1/authentication",
+            "/devdevdev/api/v1/oauth2/authorization/",
+            "/devdevdev/api/v1/login/oauth2/code/",
             "/devdevdev/api/v1/members",
+            "/devdevdev/api/v1/public",
             "/devdevdev/api/v1/token/refresh"
     };
 

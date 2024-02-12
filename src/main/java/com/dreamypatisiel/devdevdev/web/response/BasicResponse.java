@@ -32,6 +32,14 @@ public class BasicResponse<T> {
         this.datas = datas;
     }
 
+    private BasicResponse(ResultType resultType) {
+        this.resultType = resultType;
+    }
+
+    public static <T> BasicResponse<T> success() {
+        return new BasicResponse<>(ResultType.SUCCESS);
+    }
+
     public static <T> BasicResponse<T> success(T data) {
         return new BasicResponse<>(ResultType.SUCCESS, data);
     }

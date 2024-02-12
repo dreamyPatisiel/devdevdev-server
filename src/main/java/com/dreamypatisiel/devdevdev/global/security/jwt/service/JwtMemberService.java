@@ -10,13 +10,13 @@ import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtClaimConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -74,5 +74,16 @@ public class JwtMemberService {
                 .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
         // 리프레시 토큰 갱신
         findMember.updateRefreshToken(refreshToken);
+    }
+
+    @Transactional
+    public void updateMemberRefreshTokenToDisabled(UserPrincipal userPrincipal) {
+        String email = userPrincipal.getEmail();
+        SocialType socialType = userPrincipal.getSocialType();
+
+        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType)
+                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
+
+        findMember.updateRefreshToken(Token.DISABLED);
     }
 }

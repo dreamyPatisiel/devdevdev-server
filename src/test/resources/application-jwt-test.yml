@@ -1,4 +1,4 @@
 jwt:
   secret: devdevdevtestdevdevdevtestdevdevdevtestdevdevdevtest
   redirectUri:
-    path: /devdevdev/api/v1/members
+    path: /home
