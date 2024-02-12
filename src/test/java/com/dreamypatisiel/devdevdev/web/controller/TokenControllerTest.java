@@ -70,8 +70,7 @@ class TokenControllerTest extends SupportControllerTest {
                 .andExpect(cookie().exists(DEVDEVDEV_LOGIN_STATUS))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_LOGIN_STATUS, false))
                 .andExpect(cookie().secure(DEVDEVDEV_LOGIN_STATUS, false))
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.errorCode").value(0));
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
 
         // 쿠키에 있는 리프레시 토큰이 저장되었는지 검증
         Cookie refreshTokenCookie = actions.andReturn().getResponse().getCookie(DEVDEVDEV_REFRESH_TOKEN);
@@ -81,11 +80,11 @@ class TokenControllerTest extends SupportControllerTest {
         assertThat(findMember.isRefreshTokenEquals(value)).isTrue();
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickname)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

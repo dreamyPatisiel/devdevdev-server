@@ -2,7 +2,7 @@ package com.dreamypatisiel.devdevdev.web.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.ArrayList;
+
 import java.util.List;
 import lombok.Data;
 
@@ -14,7 +14,7 @@ public class BasicResponse<T> {
     private T data;
     @JsonAlias(value = "data")
     private List<T> datas;
-    private int errorCode;
+    private Integer errorCode;
 
     private BasicResponse(ResultType resultType, String message, int errorCode) {
         this.resultType = resultType;

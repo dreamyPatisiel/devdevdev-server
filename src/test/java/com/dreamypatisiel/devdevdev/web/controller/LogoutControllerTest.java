@@ -57,8 +57,7 @@ class LogoutControllerTest extends SupportControllerTest {
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.errorCode").value(0));
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
 
         // then
         MockHttpServletResponse response = actions.andReturn().getResponse();
@@ -83,11 +82,11 @@ class LogoutControllerTest extends SupportControllerTest {
         assertThat(findMember.getRefreshToken()).isEqualTo(Token.DISABLED);
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickname)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

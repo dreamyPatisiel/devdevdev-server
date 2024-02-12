@@ -127,7 +127,7 @@ class OAuth2SuccessHandlerTest {
                 .userId(userId)
                 .name(userId)
                 .email(email)
-                .nickName(userId)
+                .nickname(userId)
                 .password(password)
                 .socialType(socialType)
                 .role(role)
