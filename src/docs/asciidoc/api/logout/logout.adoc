@@ -15,6 +15,9 @@ include::{snippets}/logout/request-cookies.adoc[]
 include::{snippets}/logout/http-response.adoc[]
 ==== HTTP Response Cookie Fields
 include::{snippets}/logout/response-cookies.adoc[]
+==== HTTP Response Fields
+include::{snippets}/logout/response-fields.adoc[]
+
 
 === 예외
 ==== HTTP Response

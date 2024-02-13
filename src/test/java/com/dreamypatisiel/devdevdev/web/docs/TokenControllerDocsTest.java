@@ -81,7 +81,6 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
-//                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
                 ))
         );
     }
