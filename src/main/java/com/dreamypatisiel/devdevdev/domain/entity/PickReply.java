@@ -1,5 +1,4 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
-
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.*;
@@ -8,7 +7,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TopicComment extends BasicTime {
+public class PickReply extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,7 +33,6 @@ public class TopicComment extends BasicTime {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id")
-    private Topic topic;
-
+    @JoinColumn(name = "pick_id")
+    private Pick pick;
 }

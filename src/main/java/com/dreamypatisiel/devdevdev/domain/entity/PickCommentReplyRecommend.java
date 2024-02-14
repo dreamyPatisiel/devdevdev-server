@@ -6,17 +6,17 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TopicCommentReplyRecommend extends BasicTime {
+public class PickCommentReplyRecommend extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_comment_id")
-    private TopicComment topicComment;
+    @JoinColumn(name = "pick_comment_id")
+    private PickComment pickComment;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_reply_id")
-    private TopicReply topicReply;
+    @JoinColumn(name = "pick_reply_id")
+    private PickReply pickReply;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;

@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TopicBlame extends BasicTime {
+public class PickBlame extends BasicTime {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,17 +17,17 @@ public class TopicBlame extends BasicTime {
     private Reason reason;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_comment_id")
-    private TopicComment topicComment;
+    @JoinColumn(name = "pick_comment_id")
+    private PickComment pickComment;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "topic_reply_id")
-    private TopicReply topicReply;
+    private PickReply pickReply;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id")
-    private Topic topic;
+    @JoinColumn(name = "pick_id")
+    private Pick pick;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
     @Enumerated(value = EnumType.STRING)
-    private TopicBlameType topicBlameType;
+    private PickBlameType pickBlameType;
 }
