@@ -18,8 +18,4 @@ public class PickVote extends BasicTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pick_option_id")
     private PickOption pickOption;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_image_id")
-    private PickOptionImage pickOptionImage;
 }

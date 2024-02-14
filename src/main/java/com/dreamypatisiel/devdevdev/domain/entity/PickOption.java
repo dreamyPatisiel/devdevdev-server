@@ -33,4 +33,8 @@ public class PickOption {
             column = @Column(name = "contents")
     )
     private PickContents contents;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pick_option_image_id")
+    private PickOptionImage pickOptionImage;
 }
