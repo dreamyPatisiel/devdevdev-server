@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum TopicBlameType {
+public enum PickBlameType {
 
     /**
      * PROFANITY AND HATE SPEECH:

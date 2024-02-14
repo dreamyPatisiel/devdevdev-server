@@ -13,29 +13,29 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class TopicContentsTest {
+class PickContentsTest {
     @ParameterizedTest
     @MethodSource("generateValidData")
-    @DisplayName(TopicContents.MIN_TOPIC_CONTENTS_LENGTH+" ~ " +TopicContents.MAX_TOPIC_CONTENTS_LENGTH
+    @DisplayName(PickContents.MIN_PICK_CONTENTS_LENGTH +" ~ " + PickContents.MAX_PICK_CONTENTS_LENGTH
             +" 길이의 토픽 내용을 생성할 수 있다.")
     void topicContents(String topicContents) {
         // given // when // then
-        assertThatCode(() -> new TopicContents(topicContents))
+        assertThatCode(() -> new PickContents(topicContents))
                 .doesNotThrowAnyException();
     }
     @ParameterizedTest
     @MethodSource("generateInvalidData")
-    @DisplayName(TopicContents.MIN_TOPIC_CONTENTS_LENGTH + " ~ "+TopicContents.MAX_TOPIC_CONTENTS_LENGTH
+    @DisplayName(PickContents.MIN_PICK_CONTENTS_LENGTH + " ~ "+ PickContents.MAX_PICK_CONTENTS_LENGTH
             +" 길이가 아닌 토픽 내용을 생성할 경우 예외가 발생한다.")
     void topicContentsException(String topicContents) {
         // given // when // then
-        assertThatThrownBy(() -> new TopicContents(topicContents))
+        assertThatThrownBy(() -> new PickContents(topicContents))
                 .isInstanceOf(TopicContentsException.class)
-                .hasMessage(TopicContents.getInvalidLengthExceptionMessage());
+                .hasMessage(PickContents.getInvalidLengthExceptionMessage());
     }
 
     static Stream<Arguments> generateValidData() {
-        int[] dataLengths = {TopicContents.MIN_TOPIC_CONTENTS_LENGTH, TopicContents.MAX_TOPIC_CONTENTS_LENGTH};
+        int[] dataLengths = {PickContents.MIN_PICK_CONTENTS_LENGTH, PickContents.MAX_PICK_CONTENTS_LENGTH};
         List<String> data = new ArrayList<>();
         for (int i = 0; i < dataLengths.length; i++) {
             data.add(createStringBy(dataLengths[i]));
@@ -44,7 +44,7 @@ class TopicContentsTest {
     }
 
     static Stream<Arguments> generateInvalidData() {
-        int[] dataLengths = {0, TopicContents.MAX_TOPIC_CONTENTS_LENGTH+1};
+        int[] dataLengths = {0, PickContents.MAX_PICK_CONTENTS_LENGTH +1};
         List<String> data = new ArrayList<>();
         for (int i = 0; i < dataLengths.length; i++) {
             data.add(createStringBy(dataLengths[i]));

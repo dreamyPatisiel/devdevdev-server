@@ -10,15 +10,16 @@ import org.springframework.util.StringUtils;
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
-public class TopicContents {
-    public static final int MAX_TOPIC_CONTENTS_LENGTH = 1000;
-    public static final int MIN_TOPIC_CONTENTS_LENGTH = 1;
-    private static final String INVALID_TOPIC_LENGTH_MESSAGE = "토픽 내용의 길이는 %d ~ %d 사이의 값이어야 합니다.";
-    private String topicContents;
+public class PickContents {
+    public static final int MAX_PICK_CONTENTS_LENGTH = 30_000;
+    public static final int MIN_PICK_CONTENTS_LENGTH = 1;
+    private static final String INVALID_PICK_LENGTH_MESSAGE = "픽픽픽 내용의 길이는 %d ~ %d 사이의 값이어야 합니다.";
 
-    public TopicContents(String topicContents) {
+    private String pickContents;
+
+    public PickContents(String topicContents) {
         validationTopicContents(topicContents);
-        this.topicContents = topicContents;
+        this.pickContents = topicContents;
     }
 
     private void validationTopicContents(String topicContents) {
@@ -28,10 +29,10 @@ public class TopicContents {
     }
 
     private static boolean isValidLength(String topicContents) {
-        return StringUtils.hasText(topicContents) && topicContents.length() <= MAX_TOPIC_CONTENTS_LENGTH;
+        return StringUtils.hasText(topicContents) && topicContents.length() <= MAX_PICK_CONTENTS_LENGTH;
     }
 
     public static String getInvalidLengthExceptionMessage() {
-        return String.format(INVALID_TOPIC_LENGTH_MESSAGE, MIN_TOPIC_CONTENTS_LENGTH, MAX_TOPIC_CONTENTS_LENGTH);
+        return String.format(INVALID_PICK_LENGTH_MESSAGE, MIN_PICK_CONTENTS_LENGTH, MAX_PICK_CONTENTS_LENGTH);
     }
 }

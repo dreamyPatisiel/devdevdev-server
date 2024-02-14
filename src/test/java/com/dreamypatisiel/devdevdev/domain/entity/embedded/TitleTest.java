@@ -24,8 +24,8 @@ public class TitleTest {
     }
 
     static Stream<Arguments> createValidString() {
-        String commentContentLength50 = createStringBy(50);
-        String commentContentLength49 = createStringBy(49);
+        String commentContentLength50 = createStringBy(150);
+        String commentContentLength49 = createStringBy(149);
         String commentContentLength1 = createStringBy(1);
 
         return Stream.of(
@@ -50,7 +50,7 @@ public class TitleTest {
     }
 
     static Stream<Arguments> createInValidString() {
-        String commentContentLength51 = createStringBy(51);
+        String commentContentLength51 = createStringBy(151);
         String commentContentLength0 = createStringBy(0);
 
         return Stream.of(
