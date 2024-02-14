@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
@@ -24,14 +23,14 @@ public class TitleTest {
     }
 
     static Stream<Arguments> createValidString() {
-        String commentContentLength50 = createStringBy(150);
-        String commentContentLength49 = createStringBy(149);
-        String commentContentLength1 = createStringBy(1);
+        String maxValue = createStringBy(Title.MAX_TITLE_LENGTH);
+        String maxBoundaryValue = createStringBy(Title.MAX_TITLE_LENGTH - 1);
+        String minValue = createStringBy(Title.MIN_TITLE_LENGTH);
 
         return Stream.of(
-                Arguments.of(commentContentLength50),
-                Arguments.of(commentContentLength49),
-                Arguments.of(commentContentLength1)
+                Arguments.of(maxValue),
+                Arguments.of(maxBoundaryValue),
+                Arguments.of(minValue)
         );
     }
 
@@ -50,12 +49,12 @@ public class TitleTest {
     }
 
     static Stream<Arguments> createInValidString() {
-        String commentContentLength51 = createStringBy(151);
-        String commentContentLength0 = createStringBy(0);
+        String maxBoundaryValue = createStringBy(Title.MAX_TITLE_LENGTH + 1);
+        String minBoundaryValue = createStringBy(Title.MIN_TITLE_LENGTH - 1);
 
         return Stream.of(
-                Arguments.of(commentContentLength51),
-                Arguments.of(commentContentLength0)
+                Arguments.of(maxBoundaryValue),
+                Arguments.of(minBoundaryValue)
         );
     }
 
