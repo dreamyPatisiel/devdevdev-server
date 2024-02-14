@@ -24,12 +24,12 @@ public class TitleTest {
 
     static Stream<Arguments> createValidString() {
         String maxValue = createStringBy(Title.MAX_TITLE_LENGTH);
-        String maxBoundaryValue = createStringBy(Title.MAX_TITLE_LENGTH - 1);
+        String maxUnderBoundaryValue = createStringBy(Title.MAX_TITLE_LENGTH - 1);
         String minValue = createStringBy(Title.MIN_TITLE_LENGTH);
 
         return Stream.of(
                 Arguments.of(maxValue),
-                Arguments.of(maxBoundaryValue),
+                Arguments.of(maxUnderBoundaryValue),
                 Arguments.of(minValue)
         );
     }
@@ -49,12 +49,12 @@ public class TitleTest {
     }
 
     static Stream<Arguments> createInValidString() {
-        String maxBoundaryValue = createStringBy(Title.MAX_TITLE_LENGTH + 1);
-        String minBoundaryValue = createStringBy(Title.MIN_TITLE_LENGTH - 1);
+        String maxUpperBoundaryValue = createStringBy(Title.MAX_TITLE_LENGTH + 1);
+        String minUnderBoundaryValue = createStringBy(Title.MIN_TITLE_LENGTH - 1);
 
         return Stream.of(
-                Arguments.of(maxBoundaryValue),
-                Arguments.of(minBoundaryValue)
+                Arguments.of(maxUpperBoundaryValue),
+                Arguments.of(minUnderBoundaryValue)
         );
     }
 
