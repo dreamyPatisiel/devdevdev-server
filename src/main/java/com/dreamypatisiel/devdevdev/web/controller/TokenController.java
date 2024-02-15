@@ -45,14 +45,25 @@ public class TokenController {
         return ResponseEntity.ok(BasicResponse.success());
     }
 
-    @Operation(summary = "테스트 계정 토큰 생성", description = "테스트 계정의 토큰을 생성하고 refresh를 갱신합니다.")
-    @GetMapping("/test")
-    public ResponseEntity<BasicResponse<Token>> createTestToken() {
+    @Operation(summary = "USER 테스트 계정 토큰 생성", description = "USER 테스트 계정의 토큰을 생성하고 해당 계정의 refresh 토큰을 갱신합니다.")
+    @GetMapping("/test/user")
+    public ResponseEntity<BasicResponse<Token>> createUserToken() {
         // 테스트 계정 토큰 생성
-        Token newToken = tokenService.generateTokenBy(LocalInitData.email, LocalInitData.socialType.name(), LocalInitData.role.name());
+        Token newToken = tokenService.generateTokenBy(LocalInitData.userEmail,
+                LocalInitData.userSocialType.name(), LocalInitData.userRole.name());
         // 테스트 계정의 refresh 갱신
         jwtMemberService.updateMemberRefreshToken(newToken.getRefreshToken());
+        return ResponseEntity.ok(BasicResponse.success(newToken));
+    }
 
+    @Operation(summary = "ADMIN 테스트 계정 토큰 생성", description = "ADMIN 테스트 계정의 토큰을 생성하고 해당 계정의 refresh 토큰을 갱신합니다.")
+    @GetMapping("/test/admin")
+    public ResponseEntity<BasicResponse<Token>> createAdminToken() {
+        // 테스트 계정 토큰 생성
+        Token newToken = tokenService.generateTokenBy(LocalInitData.adminEmail,
+                LocalInitData.adminSocialType.name(), LocalInitData.adminRole.name());
+        // 테스트 계정의 refresh 갱신
+        jwtMemberService.updateMemberRefreshToken(newToken.getRefreshToken());
         return ResponseEntity.ok(BasicResponse.success(newToken));
     }
 }

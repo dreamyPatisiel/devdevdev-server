@@ -17,18 +17,27 @@ import org.springframework.stereotype.Component;
 @Profile(value = {"local", "dev"})
 @RequiredArgsConstructor
 public class LocalInitData {
+    public final static String userNickname = "댑댑이_User";
+    public final static String userEmail = "test_user@devdevdev.com";
+    public final static Role userRole = Role.ROLE_USER;
+    public final static SocialType userSocialType = SocialType.KAKAO;
+
+    public final static String adminNickname = "댑댑이_Admin";
+    public final static String adminEmail = "test_admin@devdevdev.com";
+    public final static Role adminRole = Role.ROLE_ADMIN;
+    public final static SocialType adminSocialType = SocialType.KAKAO;
 
     private final MemberRepository memberRepository;
 
-    public final static String nickname = "댑댑이";
-    public final static String email = "test@devdevdev.com";
-    public final static Role role = Role.ROLE_USER;
-    public final static SocialType socialType = SocialType.KAKAO;
-
     @EventListener(ApplicationReadyEvent.class)
-    public void init() {
+    public void dataInsert() {
         log.info("LocalInitData.init()");
-        SocialMemberDto socialMemberDto = SocialMemberDto.of(email,socialType.name(), role.name(), nickname);
-        memberRepository.save(Member.createMemberBy(socialMemberDto));
+
+        SocialMemberDto userSocialMemberDto = SocialMemberDto.of(userEmail, userSocialType.name(), userRole.name(), userNickname);
+        memberRepository.save(Member.createMemberBy(userSocialMemberDto));
+
+        SocialMemberDto adminSocialMemberDto = SocialMemberDto.of(adminEmail, adminSocialType.name(), adminRole.name(), adminNickname);
+        memberRepository.save(Member.createMemberBy(adminSocialMemberDto));
     }
+
 }

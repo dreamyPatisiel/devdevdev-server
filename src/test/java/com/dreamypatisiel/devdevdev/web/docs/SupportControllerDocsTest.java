@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.docs;
 
 import static org.mockito.Mockito.when;
 
+import com.dreamypatisiel.devdevdev.LocalInitData;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -10,13 +11,11 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -41,6 +40,10 @@ public class SupportControllerDocsTest {
     protected String email = "dreamy5patisiel@kakao.com";
     protected String socialType = SocialType.KAKAO.name();
     protected String role = Role.ROLE_USER.name();
+    protected String userEmail = LocalInitData.userEmail;
+    protected String userRole = Role.ROLE_USER.name();
+    protected String adminEmail = LocalInitData.adminEmail;
+    protected String adminRole = Role.ROLE_ADMIN.name();
     protected Date date = new Date();
 
     @BeforeEach
