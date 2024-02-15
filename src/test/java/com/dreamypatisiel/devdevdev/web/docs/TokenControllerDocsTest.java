@@ -176,7 +176,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(jsonPath("$.data.refreshToken").value(findMember.getRefreshToken()));
 
         // Docs
-        actions.andDo(document("token-test-Admin",
+        actions.andDo(document("token-test-admin",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
@@ -197,7 +197,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(status().is4xxClientError());
 
         // Docs
-        actions.andDo(document("token-test-Admin-exception",
+        actions.andDo(document("token-test-admin-exception",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

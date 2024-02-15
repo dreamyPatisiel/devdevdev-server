@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.servlet.http.Cookie;
@@ -86,7 +87,7 @@ class TokenControllerTest extends SupportControllerTest {
 
         // when // then
         Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(userEmail), SocialType.valueOf(socialType)).get();
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/user")
+        mockMvc.perform(get("/devdevdev/api/v1/token/test/user")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -108,7 +109,7 @@ class TokenControllerTest extends SupportControllerTest {
 
         // when // then
         Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(adminEmail), SocialType.valueOf(socialType)).get();
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
+        mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
