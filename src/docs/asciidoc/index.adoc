@@ -10,5 +10,7 @@ endif::[]
 :sectlinks:
 
 [[refresh-token]]
+include::api/token-test/token-test-user.adoc[]
+include::api/token-test/token-test-admin.adoc[]
 include::api/token-refresh/token-refresh.adoc[]
 include::api/logout/logout.adoc[]

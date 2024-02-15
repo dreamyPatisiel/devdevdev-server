@@ -1,0 +1,18 @@
+[[token-test-user]]
+== USER 테스트 토큰 생성 API
+* USER 권한 테스트 계정의 토큰을 생성하는 API
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/token-test-user/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/token-test-user/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/token-test-user/response-fields.adoc[]
+
+=== 예외
+==== HTTP Response
+include::{snippets}/token-test-user-exception/response-body.adoc[]
+==== HTTP Response Fields
+include::{snippets}/token-test-user-exception/response-fields.adoc[]

@@ -84,7 +84,7 @@ public class Member extends BasicTime {
         member.userId = socialMemberDto.getUserId();
         member.name = socialMemberDto.getName();
         member.email = new Email(socialMemberDto.getEmail());
-        member.nickname = new Nickname(socialMemberDto.getNickName());
+        member.nickname = new Nickname(socialMemberDto.getNickname());
         member.password = socialMemberDto.getPassword();
         member.socialType = socialMemberDto.getSocialType();
         member.role = socialMemberDto.getRole();
