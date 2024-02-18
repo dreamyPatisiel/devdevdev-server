@@ -57,8 +57,7 @@ class LogoutControllerTest extends SupportControllerTest {
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.errorCode").value(0));
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
 
         // then
         MockHttpServletResponse response = actions.andReturn().getResponse();

@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -25,8 +26,8 @@ import java.io.IOException;
  * JWT의 인증 정보를 검사해 현재 쓰레드의 SecurityContext에 저장하는 역할 수행
  */
 @Slf4j
-@RequiredArgsConstructor
 @Component
+@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
@@ -38,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
-        if (tokenService.validateToken(accessToken)) {
+        if (StringUtils.hasText(accessToken) && tokenService.validateToken(accessToken)) {
             // JWT 기반으로 authentication 설정
             Authentication authenticationToken = tokenService.createAuthenticationByToken(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

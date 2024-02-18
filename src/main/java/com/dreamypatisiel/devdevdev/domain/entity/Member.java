@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
         @Index(name = "idx__name__user_id", columnList = "name, userId"),
@@ -19,11 +20,9 @@ import java.util.List;
 })
 public class Member extends BasicTime {
 
-
-    @Id @Getter
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Getter
     private String name;
 
     @Embedded
@@ -32,17 +31,17 @@ public class Member extends BasicTime {
     )
     private Nickname nickname;
 
-    @Getter
+
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "email")
     )
     private Email email;
-    @Getter
+
     private String password;
-    @Getter
+
     private String userId;
-    @Getter
+
     private String profileImage;
     private String job;
     @Embedded
@@ -50,7 +49,7 @@ public class Member extends BasicTime {
     @Embedded
     private Experience experience;
     private Boolean subscriptionLetterGranted;
-    @Getter
+
     private String refreshToken;
     @Embedded
     @AttributeOverride(name = "email",
@@ -58,12 +57,13 @@ public class Member extends BasicTime {
     )
     private Email subscriptionLetterEmail;
     private LocalDateTime loginDate;
-    @Getter
+
     @Enumerated(EnumType.STRING)
     private SocialType socialType;
-    @Getter
+
     @Enumerated(EnumType.STRING)
     private Role role;
+
     @OneToMany(mappedBy = "member")
     private List<InterestedCompany> interestedCompanies = new ArrayList<>();
 
@@ -102,5 +102,9 @@ public class Member extends BasicTime {
 
     public String getEmailAsString() {
         return email.getEmail();
+    }
+
+    public boolean isEqualsMember(Member member) {
+        return this.equals(member);
     }
 }
