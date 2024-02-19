@@ -16,11 +16,10 @@ public class CorsConfig {
 
 
     @Value("${cors.origin}")
-    public String origin;
+    public List<String> origins;
 
     @Bean
     protected CorsConfigurationSource apiCorsConfigurationSource() {
-        List<String> origins = List.of(origin);
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(origins);
