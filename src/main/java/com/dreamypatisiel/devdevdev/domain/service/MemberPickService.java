@@ -6,8 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
@@ -17,8 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +29,12 @@ public class MemberPickService implements PickService {
     private final MemberRepository memberRepository;
 
     @Override
-    public Slice<PicksResponse> findPicks(Pageable pageable, Long pickId, UserDetails userDetails) {
+    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, Authentication authentication) {
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findByIdIsLessThanOrderByIdDesc(pageable, pickId);
+        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId);
 
         // 회원 조회
-        UserPrincipal userPrincipal = (UserPrincipal) userDetails;
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         String email = userPrincipal.getEmail();
         SocialType socialType = userPrincipal.getSocialType();
         Member member = memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType)
@@ -57,8 +55,7 @@ public class MemberPickService implements PickService {
                 .voteTotalCount(pick.getVoteTotalCount())
                 .commentTotalCount(pick.getCommentTotalCount())
                 .isVoted(isVotedByPickAndMember(pick, member))
-                .nextCursor(picks.hasNext())
-                .pickOptionsResponse(mapToPickOptionsResponse(pick, member))
+                .pickOptions(mapToPickOptionsResponse(pick, member))
                 .build();
     }
 

@@ -28,7 +28,8 @@ public class SecurityConstant {
             "/h2-console",
             "/devdevdev/api/v1/members",
             "/devdevdev/api/v1/authentication",
-            "/devdevdev/api/v1/token/**"
+            "/devdevdev/api/v1/token/**",
+            "/devdevdev/api/v1/picks",
     };
     public static final String[] JWT_FILTER_WHITELIST_URL = new String[] {
             "/docs/index.html",

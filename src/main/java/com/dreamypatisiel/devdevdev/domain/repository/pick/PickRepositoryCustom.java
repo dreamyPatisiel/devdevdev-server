@@ -1,0 +1,9 @@
+package com.dreamypatisiel.devdevdev.domain.repository.pick;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+
+public interface PickRepositoryCustom {
+    Slice<Pick> findPicksByLtPickId(Pageable pageable, Long pickId);
+}

@@ -4,12 +4,14 @@ import com.dreamypatisiel.devdevdev.exception.TopicContentsException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
+@Getter
 public class PickContents {
     public static final int MAX_PICK_CONTENTS_LENGTH = 30_000;
     public static final int MIN_PICK_CONTENTS_LENGTH = 1;

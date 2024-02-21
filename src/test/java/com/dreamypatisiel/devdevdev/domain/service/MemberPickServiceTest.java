@@ -11,7 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
@@ -28,6 +28,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.*;
 
@@ -89,9 +93,13 @@ class MemberPickServiceTest {
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
-        Pageable pageable = PageRequest.of(0, 10);
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        Pageable pageable = PageRequest.of(0, 10);
         Long cursor = Long.MAX_VALUE;
 
         em.flush();
@@ -100,20 +108,20 @@ class MemberPickServiceTest {
         System.out.println("====================================");
 
         // when
-        Slice<PicksResponse> picks = memberPickService.findPicks(pageable, cursor, userPrincipal);
+        Slice<PicksResponse> picks = memberPickService.findPicksMain(pageable, cursor, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
         assertThat(picks).hasSize(1)
                 .extracting("id", "title", "voteTotalCount",
-                        "commentTotalCount", "isVoted", "nextCursor")
+                        "commentTotalCount", "isVoted")
                 .containsExactly(
                         tuple(findPick.getId(), findPick.getTitle().getTitle(), findPick.getVoteTotalCount().getCount(),
-                                findPick.getCommentTotalCount().getCount(), true, false)
+                                findPick.getCommentTotalCount().getCount(), true)
                 );
 
         List<PickOption> pickOptions = findPick.getPickOptions();
-        assertThat(picks.getContent().get(0).getPickOptionsResponse()).hasSize(2)
+        assertThat(picks.getContent().get(0).getPickOptions()).hasSize(2)
                 .extracting("id", "title", "percent", "isPicked")
                 .containsExactly(
                         tuple(pickOptions.get(0).getId(), pickOptions.get(0).getTitle().getTitle(), 10, true),
@@ -129,9 +137,13 @@ class MemberPickServiceTest {
 
         Long cursor = Long.MAX_VALUE;
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.findPicks(pageable, cursor, userPrincipal))
+        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, cursor, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -140,7 +152,7 @@ class MemberPickServiceTest {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickName)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

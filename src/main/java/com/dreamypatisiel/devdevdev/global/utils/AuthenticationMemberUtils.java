@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.utils;
 
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -12,13 +13,16 @@ public class AuthenticationMemberUtils {
         return (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
-    public static boolean isAnonymous() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        return userDetails.getUsername().equals(ANONYMOUS_USER);
+    public static Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    public static boolean isAnonymous(UserDetails userDetails) {
-        return userDetails.getUsername().equals(ANONYMOUS_USER);
+    public static boolean isAnonymous() {
+        String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.equals(ANONYMOUS_USER);
+    }
+
+    public static boolean isAnonymous(Authentication authentication) {
+        return authentication.getPrincipal().equals(ANONYMOUS_USER);
     }
 }

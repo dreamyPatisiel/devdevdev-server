@@ -44,7 +44,7 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
     MemberRepository memberRepository;
 
     @Test
-    @DisplayName("로그아웃을 하면 회원의 리프레시 토큰이 비활성화 상태로 변경되고 리다이렉트 한다.")
+    @DisplayName("로그아웃을 하면 회원의 리프레시 토큰이 비활성화 상태로 변경된다.")
     void logout() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -80,8 +80,7 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
                         cookieWithName(DEVDEVDEV_LOGIN_STATUS).description("로그인 활성화 유뮤(active | inactive)")
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
                 )
         ));
     }
@@ -117,7 +116,7 @@ public class LogoutControllerDocsTest extends SupportControllerDocsTest {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickName)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

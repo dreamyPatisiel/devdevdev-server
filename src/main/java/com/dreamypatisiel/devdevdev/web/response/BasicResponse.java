@@ -14,7 +14,7 @@ public class BasicResponse<T> {
     private T data;
     @JsonAlias(value = "data")
     private List<T> datas;
-    private int errorCode;
+    private Integer errorCode;
 
     private BasicResponse(ResultType resultType, String message, int errorCode) {
         this.resultType = resultType;

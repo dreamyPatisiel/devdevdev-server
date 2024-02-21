@@ -10,17 +10,17 @@ public class SocialMemberDto {
     private String userId;
     private String name;
     private String email;
-    private String nickName;
+    private String nickname;
     private String password;
     private SocialType socialType;
     private Role role;
 
     @Builder
-    private SocialMemberDto(String userId, String name, String email, String nickName, String password, SocialType socialType, Role role) {
+    private SocialMemberDto(String userId, String name, String email, String nickname, String password, SocialType socialType, Role role) {
         this.userId = userId;
         this.name = name;
         this.email = email;
-        this.nickName = nickName;
+        this.nickname = nickname;
         this.password = password;
         this.socialType = socialType;
         this.role = role;
@@ -31,7 +31,7 @@ public class SocialMemberDto {
                 .userId(oAuth2UserProvider.getId())
                 .name(oAuth2UserProvider.getUserName())
                 .email(oAuth2UserProvider.getEmail())
-                .nickName(oAuth2UserProvider.getUserName())
+                .nickname(oAuth2UserProvider.getUserName())
                 .socialType(oAuth2UserProvider.getSocialType())
                 .role(Role.ROLE_USER)
                 .password(encodedPassword)
@@ -43,6 +43,15 @@ public class SocialMemberDto {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    public static SocialMemberDto of(String email, String socialType, String role, String nickname) {
+        return SocialMemberDto.builder()
+                .email(email)
+                .socialType(SocialType.valueOf(socialType))
+                .role(Role.valueOf(role))
+                .nickname(nickname)
                 .build();
     }
 }

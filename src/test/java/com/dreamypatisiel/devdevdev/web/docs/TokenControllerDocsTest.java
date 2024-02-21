@@ -80,8 +80,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
                         cookieWithName("DEVDEVDEV_LOGIN_STATUS").description("로그인 활성 유무(active | inactive)")
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
                 ))
         );
     }
@@ -114,7 +113,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickName)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

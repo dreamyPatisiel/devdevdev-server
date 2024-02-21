@@ -3,14 +3,11 @@ package com.dreamypatisiel.devdevdev.domain.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -18,7 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -33,9 +30,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -90,31 +88,24 @@ class GuestPickServiceTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
-        Long cursor = Long.MAX_VALUE;
-
-        UserDetails userDetails = mock(UserDetails.class);
-        when(userDetails.getUsername()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        em.flush();
-        em.clear();
-
-        System.out.println("====================================");
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picks = guestPickService.findPicks(pageable, cursor, userDetails);
+        Slice<PicksResponse> picks = guestPickService.findPicksMain(pageable, null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
         assertThat(picks).hasSize(1)
                 .extracting("id", "title", "voteTotalCount",
-                        "commentTotalCount", "nextCursor")
+                        "commentTotalCount")
                 .containsExactly(
                         tuple(findPick.getId(), findPick.getTitle().getTitle(), findPick.getVoteTotalCount().getCount(),
-                                findPick.getCommentTotalCount().getCount(), false)
+                                findPick.getCommentTotalCount().getCount())
                 );
 
         List<PickOption> pickOptions = findPick.getPickOptions();
-        assertThat(picks.getContent().get(0).getPickOptionsResponse()).hasSize(2)
+        assertThat(picks.getContent().get(0).getPickOptions()).hasSize(2)
                 .extracting("id", "title", "percent")
                 .containsExactly(
                         tuple(pickOptions.get(0).getId(), pickOptions.get(0).getTitle().getTitle(), 10),
@@ -130,13 +121,14 @@ class GuestPickServiceTest {
 
         Long cursor = Long.MAX_VALUE;
 
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname,
-                password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.findPicks(pageable, cursor, userPrincipal))
+        assertThatThrownBy(() -> guestPickService.findPicksMain(pageable, cursor, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(GuestPickService.INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
     }
@@ -145,7 +137,7 @@ class GuestPickServiceTest {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickName)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

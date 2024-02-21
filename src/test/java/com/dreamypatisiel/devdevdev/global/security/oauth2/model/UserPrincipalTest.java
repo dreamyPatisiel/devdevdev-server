@@ -93,7 +93,7 @@ class UserPrincipalTest {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickName(nickName)
+                .nickname(nickName)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))

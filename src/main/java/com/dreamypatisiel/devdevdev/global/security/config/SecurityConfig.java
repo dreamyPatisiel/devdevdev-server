@@ -2,14 +2,12 @@ package com.dreamypatisiel.devdevdev.global.security.config;
 
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.filter.SecurityExceptionFilter;
-import com.dreamypatisiel.devdevdev.global.security.jwt.filter.JwtFilter;
+import com.dreamypatisiel.devdevdev.global.security.jwt.filter.JwtAuthenticationFilter;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAccessDeniedHandler;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAuthenticationEntryPointHandler;
-import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2SuccessHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
-import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -17,20 +15,13 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.*;
 
@@ -48,7 +39,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
-    private final JwtFilter jwtFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final SecurityExceptionFilter securityExceptionFilter;
     private final CorsConfig corsConfig;
 
@@ -86,8 +77,8 @@ public class SecurityConfig {
                         .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))
         );
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(securityExceptionFilter, JwtFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(securityExceptionFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

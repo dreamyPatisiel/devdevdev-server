@@ -1,22 +1,17 @@
 package com.dreamypatisiel.devdevdev.domain.service;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
-import com.dreamypatisiel.devdevdev.domain.repository.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
-import com.dreamypatisiel.devdevdev.exception.MemberException;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +25,13 @@ public class GuestPickService implements PickService {
     private final PickRepository pickRepository;
 
     @Override
-    public Slice<PicksResponse> findPicks(Pageable pageable, Long pickId, UserDetails userDetails) {
-        if(!AuthenticationMemberUtils.isAnonymous(userDetails)) {
+    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, Authentication authentication) {
+        if(!AuthenticationMemberUtils.isAnonymous(authentication)) {
             throw new IllegalStateException(INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
         }
 
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findByIdIsLessThanOrderByIdDesc(pageable, pickId);
+        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId);
 
         // 데이터 가공
         List<PicksResponse> picksResponses = picks.stream()
@@ -52,8 +47,7 @@ public class GuestPickService implements PickService {
                 .title(pick.getTitle())
                 .voteTotalCount(pick.getVoteTotalCount())
                 .commentTotalCount(pick.getCommentTotalCount())
-                .nextCursor(picks.hasNext())
-                .pickOptionsResponse(mapToPickOptionsResponse(pick))
+                .pickOptions(mapToPickOptionsResponse(pick))
                 .build();
     }
 
