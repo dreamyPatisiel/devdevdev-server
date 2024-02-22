@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -24,10 +25,10 @@ public class PickController {
 
     @GetMapping("picks")
     public ResponseEntity<BasicResponse<Slice<PicksResponse>>> getPicksMain(
-            @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable, Long pickId) {
+            @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable, Long pickId, PickSort pickSort) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<PicksResponse> response = pickService.findPicksMain(pageable, pickId, authentication);
+        Slice<PicksResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

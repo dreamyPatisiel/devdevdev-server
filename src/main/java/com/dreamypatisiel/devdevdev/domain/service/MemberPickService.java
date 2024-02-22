@@ -7,6 +7,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
@@ -29,9 +30,9 @@ public class MemberPickService implements PickService {
     private final MemberRepository memberRepository;
 
     @Override
-    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, Authentication authentication) {
+    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId);
+        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId, pickSort);
 
         // 회원 조회
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();

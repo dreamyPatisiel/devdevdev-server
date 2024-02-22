@@ -70,7 +70,7 @@ class MemberPickServiceTest {
 
     @Test
     @DisplayName("회원이 커서 방식으로 픽픽픽 메인을 조회한다.")
-    void findPicks() {
+    void findPicksMain() {
         // given
         PickOption pickOption1 = PickOption.create(pickOptionTitle1, pickContents1, pickOptionVoteCount1);
         PickOption pickOption2 = PickOption.create(pickOptionTitle2, pickContents2, pickOptionVoteCount2);
@@ -100,15 +100,9 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Pageable pageable = PageRequest.of(0, 10);
-        Long cursor = Long.MAX_VALUE;
-
-        em.flush();
-        em.clear();
-
-        System.out.println("====================================");
 
         // when
-        Slice<PicksResponse> picks = memberPickService.findPicksMain(pageable, cursor, authentication);
+        Slice<PicksResponse> picks = memberPickService.findPicksMain(pageable, null, null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
@@ -131,11 +125,10 @@ class MemberPickServiceTest {
 
     @Test
     @DisplayName("커서 방식으로 픽픽픽 메인을 조회할 때 회원이 없으면 예외가 발생한다.")
-    void findPicksException() {
+    void findPicksMainException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
-        Long cursor = Long.MAX_VALUE;
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
@@ -143,7 +136,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, cursor, authentication))
+        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, null, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -158,12 +151,5 @@ class MemberPickServiceTest {
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
                 .build();
-    }
-
-    private BigDecimal calculatePercent(Count optionCount, Count totalCount) {
-        return BigDecimalUtils.toPercentageOf(
-                BigDecimal.valueOf(optionCount.getCount()),
-                BigDecimal.valueOf(totalCount.getCount())
-        );
     }
 }

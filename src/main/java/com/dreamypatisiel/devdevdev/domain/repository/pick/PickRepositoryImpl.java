@@ -5,8 +5,10 @@ import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -16,22 +18,24 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * @Note: ToMany 페치 조인과 페이징은 불가
- * ToOne은 페치 조인, ToMany는 지연로딩으로...!(where in 절)
+ * ToOne은 페치 조인, ToMany는 지연로딩으로...! (where in 절)
+ *  - default_batch_fetch_size: 1000
  */
 @RequiredArgsConstructor
 public class PickRepositoryImpl implements PickRepositoryCustom {
 
     private static final int ONE = 1;
 
-    private final JPQLQueryFactory jpqlQueryFactory;
+    private final JPQLQueryFactory query;
 
     @Override
-    public Slice<Pick> findPicksByLtPickId(Pageable pageable, Long pickId) {
-        List<Pick> contents = jpqlQueryFactory.selectFrom(pick)
+    public Slice<Pick> findPicksByLtPickId(Pageable pageable, Long pickId, PickSort pickSort) {
+        List<Pick> contents = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption)
                 .leftJoin(pick.member, member).fetchJoin()
                 .where(loePickId(pickId))
-                .orderBy(pick.id.desc())
+                .orderBy(pickSort(pickSort), pick.id.desc())
+                .having()
                 .limit(pageable.getPageSize() + ONE)
                 .fetch();
 
@@ -46,11 +50,15 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
         return pick.id.loe(pickId);
     }
 
+    private OrderSpecifier pickSort(PickSort pickSort) {
+        return Arrays.stream(PickSort.values())
+                .filter(sort -> sort.equals(pickSort))
+                .findFirst()
+                .map(PickSort::getOrderSpecifierByPickSort)
+                .orElseGet(PickSort.LATEST::getOrderSpecifierByPickSort);
+    }
+
     private boolean hasNextPage(List<Pick> contents, int pageSize) {
-        if(contents.size() > pageSize) {
-            contents.remove(pageSize);
-            return true;
-        }
-        return false;
+        return contents.size() > pageSize;
     }
 }

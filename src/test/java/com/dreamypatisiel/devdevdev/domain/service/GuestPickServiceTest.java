@@ -71,7 +71,7 @@ class GuestPickServiceTest {
 
     @Test
     @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 픽픽픽 메인을 조회한다.")
-    void findPicks() {
+    void findPicksMain() {
         // given
         PickOption pickOption1 = PickOption.create(pickOptionTitle1, pickContents1, pickOptionVoteCount1);
         PickOption pickOption2 = PickOption.create(pickOptionTitle2, pickContents2, pickOptionVoteCount2);
@@ -92,7 +92,7 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picks = guestPickService.findPicksMain(pageable, null, authentication);
+        Slice<PicksResponse> picks = guestPickService.findPicksMain(pageable, null, null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
@@ -115,11 +115,9 @@ class GuestPickServiceTest {
 
     @Test
     @DisplayName("커서 방식으로 익명 사용자 전용 픽픽픽 메인을 조회할 때 익명 사용자가 아니면 예외가 발생한다.")
-    void findPicksException() {
+    void findPicksMainException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-
-        Long cursor = Long.MAX_VALUE;
 
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -128,7 +126,7 @@ class GuestPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.findPicksMain(pageable, cursor, authentication))
+        assertThatThrownBy(() -> guestPickService.findPicksMain(pageable, null, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(GuestPickService.INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
     }

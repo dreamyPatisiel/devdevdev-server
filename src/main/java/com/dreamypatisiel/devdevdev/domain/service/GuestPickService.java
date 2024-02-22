@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -25,23 +26,23 @@ public class GuestPickService implements PickService {
     private final PickRepository pickRepository;
 
     @Override
-    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, Authentication authentication) {
+    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
         if(!AuthenticationMemberUtils.isAnonymous(authentication)) {
             throw new IllegalStateException(INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
         }
 
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId);
+        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId, pickSort);
 
         // 데이터 가공
         List<PicksResponse> picksResponses = picks.stream()
-                .map(pick -> mapToPickResponse(pick, picks))
+                .map(this::mapToPickResponse)
                 .toList();
 
         return new SliceImpl<>(picksResponses, pageable, picks.hasNext());
     }
 
-    private PicksResponse mapToPickResponse(Pick pick, Slice<Pick> picks) {
+    private PicksResponse mapToPickResponse(Pick pick) {
         return PicksResponse.builder()
                 .id(pick.getId())
                 .title(pick.getTitle())
