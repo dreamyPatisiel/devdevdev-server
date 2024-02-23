@@ -4,7 +4,6 @@ import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTH
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.BEARER_PREFIX;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
@@ -24,9 +23,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
@@ -35,9 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 public class LogoutControllerDocsTest extends SupportControllerDocsTest {
 
     @Autowired

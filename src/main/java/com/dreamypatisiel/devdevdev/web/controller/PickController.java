@@ -23,7 +23,7 @@ public class PickController {
 
     private final PickService pickService;
 
-    @GetMapping("picks")
+    @GetMapping("/picks")
     public ResponseEntity<BasicResponse<Slice<PicksResponse>>> getPicksMain(
             @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable, Long pickId, PickSort pickSort) {
 

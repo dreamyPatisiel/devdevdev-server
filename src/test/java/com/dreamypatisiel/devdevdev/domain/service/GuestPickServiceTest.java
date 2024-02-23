@@ -17,6 +17,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -68,6 +69,8 @@ class GuestPickServiceTest {
     PickContents pickContents2 = new PickContents("hello2");
     Count pickOptionVoteCount2 = new Count(90);
     Title pickTitle = new Title("픽픽픽 제목");
+    String thumbnailUrl = "섬네일 이미지 url";
+    String author = "운영자";
 
     @Test
     @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 픽픽픽 메인을 조회한다.")
@@ -79,8 +82,6 @@ class GuestPickServiceTest {
         Count pickVoteTotalCount = new Count(pickOptionVoteCount1.getCount() + pickOptionVoteCount2.getCount());
         Count pickViewTotalCount = new Count(1);
         Count pickCommentTotalCount = new Count(0);
-        String thumbnailUrl = "섬네일 이미지 url";
-        String author = "운영자";
         Pick pick = Pick.create(pickTitle, pickVoteTotalCount, pickViewTotalCount, pickCommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
         pickRepository.save(pick);
@@ -92,11 +93,11 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picks = guestPickService.findPicksMain(pageable, null, null, authentication);
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
-        assertThat(picks).hasSize(1)
+        assertThat(picksMain).hasSize(1)
                 .extracting("id", "title", "voteTotalCount",
                         "commentTotalCount")
                 .containsExactly(
@@ -105,11 +106,192 @@ class GuestPickServiceTest {
                 );
 
         List<PickOption> pickOptions = findPick.getPickOptions();
-        assertThat(picks.getContent().get(0).getPickOptions()).hasSize(2)
+        assertThat(picksMain.getContent().get(0).getPickOptions()).hasSize(2)
                 .extracting("id", "title", "percent")
                 .containsExactly(
                         tuple(pickOptions.get(0).getId(), pickOptions.get(0).getTitle().getTitle(), 10),
                         tuple(pickOptions.get(1).getId(), pickOptions.get(1).getTitle().getTitle(), 90)
+                );
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
+    void findPicksMainMOST_VIEWED() {
+        // given
+        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+
+        Title title1 = new Title("픽1타이틀");
+        Title title2 = new Title("픽2타이틀");
+        Title title3 = new Title("픽3타이틀");
+
+        Count pick1ViewTotalCount = new Count(1);
+        Count pick2ViewTotalCount = new Count(2);
+        Count pick3ViewTotalCount = new Count(3);
+
+        Count count = new Count(1);
+        Pick pick1 = Pick.create(title1, count, pick1ViewTotalCount, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick2 = Pick.create(title2, count, pick2ViewTotalCount, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick3 = Pick.create(title3, count, pick3ViewTotalCount, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+
+        pickRepository.saveAll(List.of(pick1, pick2, pick3));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.MOST_VIEWED,
+                authentication);
+
+        // then
+        assertThat(picksMain).hasSize(3)
+                .extracting("title")
+                .containsExactly(
+                        title3.getTitle(),
+                        title2.getTitle(),
+                        title1.getTitle()
+                );
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 생성시간 내림차순으로 픽픽픽 메인을 조회한다.")
+    void findPicksMainLATEST() {
+        // given
+        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+
+        Title title1 = new Title("픽1타이틀");
+        Title title2 = new Title("픽2타이틀");
+        Title title3 = new Title("픽3타이틀");
+        Count count = new Count(1);
+        Pick pick1 = Pick.create(title1, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick2 = Pick.create(title2, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick3 = Pick.create(title3, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+
+        pickRepository.saveAll(List.of(pick1, pick2, pick3));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.LATEST,
+                authentication);
+
+        // then
+        assertThat(picksMain).hasSize(3)
+                .extracting("title")
+                .containsExactly(
+                        title3.getTitle(),
+                        title2.getTitle(),
+                        title1.getTitle()
+                );
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 댓글수 내림차순으로 픽픽픽 메인을 조회한다.")
+    void findPicksMainMOST_COMMENTED() {
+        // given
+        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+
+        Title title1 = new Title("픽1타이틀");
+        Title title2 = new Title("픽2타이틀");
+        Title title3 = new Title("픽3타이틀");
+        Count pick1commentTotalCount = new Count(1);
+        Count pick2commentTotalCount = new Count(2);
+        Count pick3commentTotalCount = new Count(3);
+        Count count = new Count(1);
+        Pick pick1 = Pick.create(title1, count, count, pick1commentTotalCount,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick2 = Pick.create(title2, count, count, pick2commentTotalCount,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick3 = Pick.create(title3, count, count, pick3commentTotalCount,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+
+        pickRepository.saveAll(List.of(pick1, pick2, pick3));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.MOST_COMMENTED,
+                authentication);
+
+        // then
+        assertThat(picksMain).hasSize(3)
+                .extracting("title")
+                .containsExactly(
+                        title3.getTitle(),
+                        title2.getTitle(),
+                        title1.getTitle()
+                );
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 인기순으로 픽픽픽 메인을 조회한다."
+            + "(현재 가중치 = 댓글수:"+PickSort.COMMENT_WEIGHT+", 투표수:"+PickSort.VOTE_WEIGHT+", 조회수:"+PickSort.VIEW_WEIGHT+")")
+    void findPicksMainPOPULAR() {
+        // given
+        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+
+        Title title1 = new Title("픽1타이틀");
+        Title title2 = new Title("픽2타이틀");
+        Title title3 = new Title("픽3타이틀");
+
+        Count pick1commentTotalCount = new Count(2);
+        Count pick1VoteTotalCount = new Count(2);
+        Count pick1ViewTotalCount = new Count(1);
+
+        Count pick2commentTotalCount = new Count(1);
+        Count pick2VoteTotalCount = new Count(2);
+        Count pick2ViewTotalCount = new Count(2);
+
+        Count pick3commentTotalCount = new Count(1);
+        Count pick3VoteTotalCount = new Count(1);
+        Count pick3ViewTotalCount = new Count(2);
+
+        Pick pick1 = Pick.create(title1, pick1VoteTotalCount, pick1ViewTotalCount, pick1commentTotalCount,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick2 = Pick.create(title2, pick2VoteTotalCount, pick2ViewTotalCount, pick2commentTotalCount,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick3 = Pick.create(title3, pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+
+        pickRepository.saveAll(List.of(pick1, pick2, pick3));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.POPULAR,
+                authentication);
+
+        // then
+        assertThat(picksMain).hasSize(3)
+                .extracting("title")
+                .containsExactly(
+                        title1.getTitle(),
+                        title2.getTitle(),
+                        title3.getTitle()
                 );
     }
 
