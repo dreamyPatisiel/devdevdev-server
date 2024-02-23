@@ -20,7 +20,7 @@ public class PickOptionResponse {
     public PickOptionResponse(Long id, Title title, BigDecimal percent, Boolean isPicked) {
         this.id = id;
         this.title = title.getTitle();
-        this.percent = percent.intValue();
+        this.percent = percent.intValueExact();
         this.isPicked = isPicked;
     }
 }

@@ -24,19 +24,22 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class PickRepositoryImpl implements PickRepositoryCustom {
 
+    public static final long TWO = 2L;
     private static final int ONE = 1;
 
     private final JPQLQueryFactory query;
 
     @Override
     public Slice<Pick> findPicksByLtPickId(Pageable pageable, Long pickId, PickSort pickSort) {
+        // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
+        long pageSize = pageable.getPageSize() * TWO + ONE;
+
         List<Pick> contents = query.selectFrom(pick)
-                .leftJoin(pick.pickOptions, pickOption)
+                .join(pick.pickOptions, pickOption)
                 .leftJoin(pick.member, member).fetchJoin()
                 .where(loePickId(pickId))
                 .orderBy(pickSort(pickSort), pick.id.desc())
-                .having()
-                .limit(pageable.getPageSize() + ONE)
+                .limit(pageSize)
                 .fetch();
 
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));

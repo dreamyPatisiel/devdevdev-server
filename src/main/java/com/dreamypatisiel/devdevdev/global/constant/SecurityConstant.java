@@ -11,6 +11,8 @@ public class SecurityConstant {
     public static final String[] WHITELIST_URL = new String[] {
             "/",
             "/docs/index.html",
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
             "/error",
             "/favicon.ico",
             "/**.png",
@@ -33,6 +35,8 @@ public class SecurityConstant {
     };
     public static final String[] JWT_FILTER_WHITELIST_URL = new String[] {
             "/docs/index.html",
+            "/swagger-ui",
+            "/v3/api-docs",
             "/h2-console",
             "/error",
             "/favicon.ico",

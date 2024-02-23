@@ -14,6 +14,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -61,14 +62,15 @@ public class LocalInitData {
     }
 
     private List<Pick> creatPicks(List<PickOption> pickOptions) {
-        Count pickViewTotalCount = new Count(1);
-        Count pickCommentTotalCount = new Count(0);
         String thumbnailUrl = "픽 섬네일 이미지 url";
         String author = "운영자";
 
         List<Pick> picks = new ArrayList<>();
         for(int number = 0; number < DATA_MAX_COUNT; number++) {
+            Count pickViewTotalCount = new Count(creatRandomNumber());
+            Count pickCommentTotalCount = new Count(creatRandomNumber());
             Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
+
             Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author, List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of());
             picks.add(pick);
@@ -80,10 +82,14 @@ public class LocalInitData {
     private List<PickOption> createPickOptions() {
         List<PickOption> pickOptions = new ArrayList<>();
         for(int number = 1; number <= DATA_MAX_COUNT*2; number++) {
-            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickContents("픽콘텐츠"+number), new Count(number));
+            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickContents("픽콘텐츠"+number), new Count(creatRandomNumber()));
             pickOptions.add(pickOption);
         }
 
         return pickOptions;
+    }
+
+    private int creatRandomNumber() {
+        return (int) (Math.random() * 1_000);
     }
 }
