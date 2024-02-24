@@ -35,7 +35,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
         long pageSize = pageable.getPageSize() * TWO + ONE;
 
         List<Pick> contents = query.selectFrom(pick)
-                .join(pick.pickOptions, pickOption)
+                .leftJoin(pick.pickOptions, pickOption)
                 .leftJoin(pick.member, member).fetchJoin()
                 .where(loePickId(pickId))
                 .orderBy(pickSort(pickSort), pick.id.desc())

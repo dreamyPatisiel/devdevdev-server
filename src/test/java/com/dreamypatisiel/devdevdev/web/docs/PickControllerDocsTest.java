@@ -62,7 +62,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(1));
         Title title = new Title("픽1타이틀");
         Count count = new Count(2);
-        String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
+        String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/tumbnail/1";
         String author = "운영자";
         Pick pick = Pick.create(title, count, count, count, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
 
@@ -93,7 +93,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
                 ),
                 queryParameters(
                     parameterWithName("pickId").optional().description("픽픽픽 아이디"),

@@ -90,7 +90,8 @@ asciidoctor {
 
 bootJar {
 	dependsOn asciidoctor
-	from("${asciidoctor.outputDir}")
-	into 'static/docs'
-	into 'src/main/resources/static/docs'
+	copy {
+		from("${asciidoctor.outputDir}")
+		into 'src/main/resources/static/docs'
+	}
 }
