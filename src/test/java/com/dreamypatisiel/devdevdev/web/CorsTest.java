@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web;
 
+import com.dreamypatisiel.devdevdev.global.properties.CorsProperties;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,6 +33,10 @@ public class CorsTest {
     String urlTemplate = "/devdevdev/api/v1/public";
     static List<String> origins;
 
+    @BeforeAll
+    static void setup(@Autowired CorsProperties corsProperties) {
+        origins = corsProperties.getUnmodifiableOrigins();
+    }
 
     @ParameterizedTest
     @MethodSource("corsOriginProvider")
@@ -50,11 +55,6 @@ public class CorsTest {
                         .string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, HttpMethod.GET.name()))
                 .andExpect(MockMvcResultMatchers.header()
                         .string(HttpHeaders.ACCESS_CONTROL_MAX_AGE, String.valueOf(PREFLIGHT_MAX_AGE)));
-    }
-
-    @BeforeAll
-    static void setup(@Autowired CorsProperties corsProperties) {
-        origins = corsProperties.getOrigin();
     }
 
     static Stream<Arguments> corsOriginProvider() {
