@@ -34,7 +34,7 @@ class PickRepositoryTest {
     String author = "운영자";
 
     @Test
-    @DisplayName("findPicksByLeoPickId 쿼리 확인")
+    @DisplayName("findPicksByLoePickId 쿼리 확인")
     void findPicksByLtPickId() {
         // given
         PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
@@ -68,7 +68,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, null, null);
+        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, null);
 
         // then
         assertThat(picks).hasSize(7);
@@ -98,7 +98,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, null, PickSort.MOST_VIEWED);
+        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.MOST_VIEWED);
 
         // then
         assertThat(picks).hasSize(3)
@@ -129,7 +129,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, null, PickSort.LATEST);
+        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.LATEST);
 
         // then
         assertThat(picks).hasSize(3)
@@ -163,7 +163,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, null, PickSort.MOST_COMMENTED);
+        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.MOST_COMMENTED);
 
         // then
         assertThat(picks).hasSize(3)
@@ -206,7 +206,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, null, PickSort.POPULAR);
+        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.POPULAR);
 
         // then
         assertThat(picks).hasSize(3)

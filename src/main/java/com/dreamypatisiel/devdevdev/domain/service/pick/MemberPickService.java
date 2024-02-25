@@ -6,7 +6,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
@@ -29,12 +28,11 @@ public class MemberPickService implements PickService {
 
     private final PickRepository pickRepository;
     private final MemberRepository memberRepository;
-    private final PickVoteRepository pickVoteRepository;
 
     @Override
     public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, pickId, pickSort);
+        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, pickId, pickSort);
 
         // 회원 조회
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -45,13 +43,13 @@ public class MemberPickService implements PickService {
 
         // 데이터 가공
         List<PicksResponse> picksResponses = picks.stream()
-                .map(pick -> mapToPickResponse(pick, picks, member))
+                .map(pick -> mapToPickResponse(pick, member))
                 .toList();
 
         return new SliceImpl<>(picksResponses, pageable, picks.hasNext());
     }
 
-    private PicksResponse mapToPickResponse(Pick pick, Slice<Pick> picks, Member member) {
+    private PicksResponse mapToPickResponse(Pick pick, Member member) {
         return PicksResponse.builder()
                 .id(pick.getId())
                 .title(pick.getTitle())
@@ -84,7 +82,6 @@ public class MemberPickService implements PickService {
     }
 
     private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, Member member) {
-        //return pickVoteRepository.existsByPickOptionAndMember(pickOption, member);
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().equals(pickOption))
                 .anyMatch(pickVote -> pickVote.getMember().equals(member));

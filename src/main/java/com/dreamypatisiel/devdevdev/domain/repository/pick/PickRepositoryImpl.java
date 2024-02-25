@@ -31,7 +31,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     private final JPQLQueryFactory query;
 
     @Override
-    public Slice<Pick> findPicksByLeoPickId(Pageable pageable, Long pickId, PickSort pickSort) {
+    public Slice<Pick> findPicksByLoePickId(Pageable pageable, Long pickId, PickSort pickSort) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
         long pageSize = pageable.getPageSize() * TWO + ONE;
 
