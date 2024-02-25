@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -10,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import java.util.ArrayList;
@@ -44,35 +46,72 @@ public class LocalInitData {
     private final MemberRepository memberRepository;
     private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
+    private final PickVoteRepository pickVoteRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {
         log.info("LocalInitData.init()");
 
         SocialMemberDto userSocialMemberDto = SocialMemberDto.of(userEmail, userSocialType.name(), userRole.name(), userNickname);
-        memberRepository.save(Member.createMemberBy(userSocialMemberDto));
+        Member member = Member.createMemberBy(userSocialMemberDto);
+        memberRepository.save(member);
 
         SocialMemberDto adminSocialMemberDto = SocialMemberDto.of(adminEmail, adminSocialType.name(), adminRole.name(), adminNickname);
         memberRepository.save(Member.createMemberBy(adminSocialMemberDto));
 
         List<PickOption> pickOptions = createPickOptions();
-        List<Pick> picks = creatPicks(pickOptions);
+        List<PickVote> pickVotes = createPickVotes(member, pickOptions);
+        List<Pick> picks = creatPicks(pickOptions, pickVotes);
         pickRepository.saveAll(picks);
+        pickVoteRepository.saveAll(pickVotes);
         pickOptionRepository.saveAll(pickOptions);
     }
 
-    private List<Pick> creatPicks(List<PickOption> pickOptions) {
+    private List<Member> createMembers() {
+        List<Member> members = new ArrayList<>();
+        for(int number = 0; number < DATA_MAX_COUNT / 2; number++) {
+            SocialMemberDto socialMemberDto = SocialMemberDto.of(userEmail+number, userSocialType.name(), userRole.name(),
+                    userNickname+number);
+            Member member = Member.createMemberBy(socialMemberDto);
+            members.add(member);
+        }
+        return members;
+    }
+
+    private List<PickVote> createPickVotes(Member member, List<PickOption> pickOptions) {
+        List<PickVote> pickVotes = new ArrayList<>();
+        for(int number = 0; number < DATA_MAX_COUNT / 2; number++) {
+            PickVote pickVote = PickVote.create(member, pickOptions.get(number*2));
+            pickVotes.add(pickVote);
+        }
+
+        return pickVotes;
+    }
+
+    private List<Pick> creatPicks(List<PickOption> pickOptions, List<PickVote> pickVotes) {
         String thumbnailUrl = "픽 섬네일 이미지 url";
         String author = "운영자";
 
         List<Pick> picks = new ArrayList<>();
-        for(int number = 0; number < DATA_MAX_COUNT; number++) {
+        for(int number = 0; number < DATA_MAX_COUNT / 2; number++) {
             Count pickViewTotalCount = new Count(creatRandomNumber());
             Count pickCommentTotalCount = new Count(creatRandomNumber());
             Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
 
             Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
-                    pickCommentTotalCount, thumbnailUrl+number, author, List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of());
+                    pickCommentTotalCount, thumbnailUrl+number, author,
+                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(pickVotes.get(number)));
+            picks.add(pick);
+        }
+
+        for(int number = DATA_MAX_COUNT / 2; number < DATA_MAX_COUNT; number++) {
+            Count pickViewTotalCount = new Count(creatRandomNumber());
+            Count pickCommentTotalCount = new Count(creatRandomNumber());
+            Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
+
+            Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
+                    pickCommentTotalCount, thumbnailUrl+number, author,
+                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of());
             picks.add(pick);
         }
 

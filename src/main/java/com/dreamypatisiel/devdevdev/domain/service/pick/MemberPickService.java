@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service;
+package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
@@ -28,11 +29,12 @@ public class MemberPickService implements PickService {
 
     private final PickRepository pickRepository;
     private final MemberRepository memberRepository;
+    private final PickVoteRepository pickVoteRepository;
 
     @Override
     public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId, pickSort);
+        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, pickId, pickSort);
 
         // 회원 조회
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -82,6 +84,7 @@ public class MemberPickService implements PickService {
     }
 
     private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, Member member) {
+        //return pickVoteRepository.existsByPickOptionAndMember(pickOption, member);
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().equals(pickOption))
                 .anyMatch(pickVote -> pickVote.getMember().equals(member));

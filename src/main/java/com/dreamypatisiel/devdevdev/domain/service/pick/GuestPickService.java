@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service;
+package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
@@ -32,7 +32,7 @@ public class GuestPickService implements PickService {
         }
 
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLtPickId(pageable, pickId, pickSort);
+        Slice<Pick> picks = pickRepository.findPicksByLeoPickId(pageable, pickId, pickSort);
 
         // 데이터 가공
         List<PicksResponse> picksResponses = picks.stream()

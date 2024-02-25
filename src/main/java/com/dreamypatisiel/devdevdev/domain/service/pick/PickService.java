@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service;
+package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;

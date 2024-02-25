@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.repository.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
+import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.querydsl.core.types.OrderSpecifier;
@@ -30,12 +31,13 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     private final JPQLQueryFactory query;
 
     @Override
-    public Slice<Pick> findPicksByLtPickId(Pageable pageable, Long pickId, PickSort pickSort) {
+    public Slice<Pick> findPicksByLeoPickId(Pageable pageable, Long pickId, PickSort pickSort) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
         long pageSize = pageable.getPageSize() * TWO + ONE;
 
         List<Pick> contents = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption)
+                .leftJoin(pick.pickVotes, pickVote)
                 .leftJoin(pick.member, member).fetchJoin()
                 .where(loePickId(pickId))
                 .orderBy(pickSort(pickSort), pick.id.desc())

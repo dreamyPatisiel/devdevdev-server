@@ -18,6 +18,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickService;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
