@@ -1,25 +1,32 @@
 package com.dreamypatisiel.devdevdev.global.security.config;
 
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PREFLIGHT_MAX_AGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.WILDCARD_PATTERN;
-
-import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
+import com.dreamypatisiel.devdevdev.global.properties.CorsProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PREFLIGHT_MAX_AGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.WILDCARD_PATTERN;
+
 @Configuration
+@EnableConfigurationProperties(CorsProperties.class)
 public class CorsConfig {
 
-
-    @Value("${cors.origin}")
     public List<String> origins;
+
+    @Autowired
+    CorsProperties corsProperties;
 
     @Bean
     protected CorsConfigurationSource apiCorsConfigurationSource() {
+
+        origins = corsProperties.getUnmodifiableOrigins();
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(origins);
