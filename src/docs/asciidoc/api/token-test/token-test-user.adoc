@@ -1,5 +1,5 @@
 [[token-test-user]]
-== USER 테스트 토큰 생성 API
+== USER 테스트 토큰 생성 API(GET: /devdevdev/api/v1/token/test/user)
 * USER 권한 테스트 계정의 토큰을 생성하는 API
 
 === 정상 요청/응답
