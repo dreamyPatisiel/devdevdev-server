@@ -1,16 +1,20 @@
 package com.dreamypatisiel.devdevdev.global.config;
 
+
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+
+import java.util.Collections;
+
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
-import java.util.Collections;
 
 @Profile({"local", "dev"})
 @Configuration
@@ -19,8 +23,9 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI(){
         SecurityScheme accessToken = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")
-                .in(SecurityScheme.In.HEADER).name("Authorization");
+                .type(SecurityScheme.Type.HTTP).scheme(SecurityConstant.BEARER_PREFIX.trim()).bearerFormat("JWT")
+                .in(SecurityScheme.In.HEADER).name(SecurityConstant.AUTHORIZATION_HEADER);
+
 
         SecurityRequirement securityRequirement = new SecurityRequirement()
                 .addList("accessToken");

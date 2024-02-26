@@ -25,20 +25,20 @@ import java.io.IOException;
  * JWT의 인증 정보를 검사해 현재 쓰레드의 SecurityContext에 저장하는 역할 수행
  */
 @Slf4j
-@RequiredArgsConstructor
 @Component
-public class JwtFilter extends OncePerRequestFilter {
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("JwtFilter 시작");
+        log.info("JwtAuthenticationFilter 시작");
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
-        if (tokenService.validateToken(accessToken)) {
+        if (StringUtils.hasText(accessToken) && tokenService.validateToken(accessToken)) {
             // JWT 기반으로 authentication 설정
             Authentication authenticationToken = tokenService.createAuthenticationByToken(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

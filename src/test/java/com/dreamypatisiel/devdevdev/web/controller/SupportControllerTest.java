@@ -16,9 +16,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class SupportControllerTest {
 
     protected String DEFAULT_PATH_V1 = "/devdevdev/api/v1";
@@ -33,6 +35,8 @@ public class SupportControllerTest {
     protected TimeProvider timeProvider;
 
     protected String refreshToken;
+    protected String userId = "userId";
+    protected String password = "1234";
     protected String accessToken;
     protected String email = "dreamy5patisiel@kakao.com";
     protected String socialType = SocialType.KAKAO.name();

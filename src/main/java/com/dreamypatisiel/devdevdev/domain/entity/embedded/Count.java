@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.exception.CountException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Embeddable
@@ -14,6 +15,7 @@ public class Count {
     private static final String INVALID_COUNT_MESSAGE = "카운트 값은 %d 이상이어야 합니다.";
     public static final int MIN_COUNT = 0;
 
+    @Getter
     private int count;
 
     public Count(int count) {

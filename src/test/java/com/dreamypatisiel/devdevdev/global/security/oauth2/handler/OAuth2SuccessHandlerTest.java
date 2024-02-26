@@ -3,7 +3,6 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.handler;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.mock;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
@@ -66,7 +65,7 @@ class OAuth2SuccessHandlerTest {
 
     @Test
     @DisplayName("OAuth2.0 로그인 성공 시 데이터베이스에 회원이 없으면 예외가 발생한다.")
-    public void onAuthenticationSuccessException() throws IOException {
+    public void onAuthenticationSuccessException() {
         // given
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         MockHttpServletRequest request = new MockHttpServletRequest();

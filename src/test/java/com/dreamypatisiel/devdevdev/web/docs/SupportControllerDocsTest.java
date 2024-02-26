@@ -17,11 +17,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
-//@ExtendWith(RestDocumentationExtension.class)
+@Transactional
 public class SupportControllerDocsTest {
 
     protected String DEFAULT_PATH_V1 = "/devdevdev/api/v1";

@@ -1,6 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.controller.exception;
 
-import com.dreamypatisiel.devdevdev.exception.CookieException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
@@ -19,9 +18,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ApiControllerAdvice {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<BasicResponse<Object>> cookieException(IllegalArgumentException e) {
+    public ResponseEntity<BasicResponse<Object>> illegalArgumentException(IllegalArgumentException e) {
         return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.BAD_REQUEST.value()),
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<BasicResponse<Object>> illegalStateException(IllegalStateException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.METHOD_NOT_ALLOWED.value()),
+                HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @ExceptionHandler(MemberException.class)

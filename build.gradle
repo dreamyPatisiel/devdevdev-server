@@ -42,10 +42,17 @@ dependencies {
 	implementation 'commons-validator:commons-validator:1.8.0'
 	// https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
+	// Querydsl
+	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.h2database:h2'
@@ -58,6 +65,10 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+clean {
+	delete file('src/main/generated')
 }
 
 test {
@@ -79,7 +90,8 @@ asciidoctor {
 
 bootJar {
 	dependsOn asciidoctor
-	from("${asciidoctor.outputDir}") {
-		into 'static/docs'
+	copy {
+		from("${asciidoctor.outputDir}")
+		into 'src/main/resources/static/docs'
 	}
 }

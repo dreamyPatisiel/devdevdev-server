@@ -4,12 +4,14 @@ import com.dreamypatisiel.devdevdev.exception.TitleException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
+@Getter
 public class Title {
     public static final String INVALID_TITLE_MESSAGE = "제목은 빈 값이거나 %d자 초과일 수 없습니다.";
     public static final int MAX_TITLE_LENGTH = 150;
