@@ -40,11 +40,11 @@ public class SecurityConstant {
             "/h2-console",
             "/error",
             "/favicon.ico",
-            "/devdevdev/api/v1/oauth2/authorization/",
-            "/devdevdev/api/v1/login/oauth2/code/",
+            "/devdevdev/api/v1/oauth2/authorization",
+            "/devdevdev/api/v1/login/oauth2/code",
             "/devdevdev/api/v1/members",
             "/devdevdev/api/v1/public",
-            "/devdevdev/api/v1/token/refresh"
+            "/devdevdev/api/v1/token"
     };
 
     public static final String[] GET_WHITELIST = new String[]{

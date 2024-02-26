@@ -2,7 +2,7 @@ package com.dreamypatisiel.devdevdev.web.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import java.util.ArrayList;
+
 import java.util.List;
 import lombok.Data;
 

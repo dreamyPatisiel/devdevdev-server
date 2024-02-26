@@ -5,7 +5,10 @@ domain:
     host: https://api.devdevdev.co.kr
 
 cors:
-  origin: http://localhost:3000
+  origin:
+    http://localhost:3000,
+    https://dev.devdevdev.co.kr
+
 
 spring:
   jpa:

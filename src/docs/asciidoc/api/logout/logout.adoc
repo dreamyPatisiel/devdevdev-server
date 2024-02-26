@@ -1,6 +1,7 @@
 [[logout]]
 == 로그아웃 API(POST: /devdevdev/api/v1/logout)
 * 리프레시 토큰을 쿠키로 요청받아 회원의 리프레시 토큰을 비활성화 한다.
+* 리프레시 토큰 쿠키를 초기화 한다.
 
 === 정상 요청/응답
 ==== HTTP Request
@@ -14,6 +15,9 @@ include::{snippets}/logout/request-cookies.adoc[]
 include::{snippets}/logout/http-response.adoc[]
 ==== HTTP Response Cookie Fields
 include::{snippets}/logout/response-cookies.adoc[]
+==== HTTP Response Fields
+include::{snippets}/logout/response-fields.adoc[]
+
 
 === 예외
 ==== HTTP Response

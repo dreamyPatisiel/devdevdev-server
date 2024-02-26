@@ -7,6 +7,7 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.global.utils.UriUtils;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ public class LogoutController {
 
     private final JwtMemberService jwtMemberService;
 
+    @Operation(summary = "로그아웃 요청", description = "쿠키에 담긴 RefreshToken을 초기화합니다.", deprecated = true)
     @PostMapping("/logout")
     public ResponseEntity<BasicResponse<Object>> logout(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

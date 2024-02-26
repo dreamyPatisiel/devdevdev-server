@@ -17,6 +17,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 
 @Slf4j
 @Component
@@ -40,13 +42,14 @@ public class LocalInitData {
     public final static String adminEmail = "test_admin@devdevdev.com";
     public final static Role adminRole = Role.ROLE_ADMIN;
     public final static SocialType adminSocialType = SocialType.KAKAO;
-    private final static int DATA_MAX_COUNT = 100;
 
+    private final static int DATA_MAX_COUNT = 100;
 
     private final MemberRepository memberRepository;
     private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
     private final PickVoteRepository pickVoteRepository;
+
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {

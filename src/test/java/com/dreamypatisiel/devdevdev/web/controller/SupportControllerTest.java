@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import static org.mockito.Mockito.when;
 
+import com.dreamypatisiel.devdevdev.LocalInitData;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -40,10 +41,15 @@ public class SupportControllerTest {
     protected String email = "dreamy5patisiel@kakao.com";
     protected String socialType = SocialType.KAKAO.name();
     protected String role = Role.ROLE_USER.name();
+
+    protected String userEmail = LocalInitData.userEmail;
+    protected String userRole = Role.ROLE_USER.name();
+    protected String adminEmail = LocalInitData.adminEmail;
+    protected String adminRole = Role.ROLE_ADMIN.name();
     protected Date date = new Date();
 
     @BeforeEach
-    void setupRefreshToken() {
+    void setupToken() {
         when(timeProvider.getDateNow()).thenReturn(date);
 
         Token token = tokenService.generateTokenBy(email, socialType, role);

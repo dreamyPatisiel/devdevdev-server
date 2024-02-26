@@ -36,7 +36,7 @@ class LogoutControllerTest extends SupportControllerTest {
     @Test
     @DisplayName("로그아웃을 하면 회원의 리프레시 토큰이 비활성화 상태로 변경되고"
             + " 리프레시 토큰 쿠키를 초기화 하고"
-            + " 로그인 활성화 유무 쿠키를 비활성화 하고 리다이렉트 한다.")
+            + " 로그인 활성화 유무 쿠키를 비활성화 한다.")
     void logout() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -80,11 +80,11 @@ class LogoutControllerTest extends SupportControllerTest {
         assertThat(findMember.getRefreshToken()).isEqualTo(Token.DISABLED);
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
-                .nickname(nickName)
+                .nickname(nickname)
                 .password(password)
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
