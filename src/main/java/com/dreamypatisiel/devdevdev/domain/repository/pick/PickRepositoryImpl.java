@@ -33,7 +33,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     @Override
     public Slice<Pick> findPicksByLoePickId(Pageable pageable, Long pickId, PickSort pickSort) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
-        long pageSize = pageable.getPageSize() * TWO + ONE;
+        long limit = pageable.getPageSize() * TWO + ONE;
 
         List<Pick> contents = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption)
@@ -41,10 +41,12 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .leftJoin(pick.member, member).fetchJoin()
                 .where(loePickId(pickId))
                 .orderBy(pickSort(pickSort), pick.id.desc())
-                .limit(pageSize)
+                .limit(limit)
                 .fetch();
 
-        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
+        int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
+
+        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
     }
 
     private BooleanExpression loePickId(Long pickId) {
