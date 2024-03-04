@@ -65,7 +65,7 @@ class PickControllerTest extends SupportControllerTest {
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/picks")
                 .queryParam("size", String.valueOf(pageable.getPageSize()))
-                .queryParam("pickId", String.valueOf(pick.getId()))
+                .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                 .queryParam("pickSort", PickSort.LATEST.name())
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
@@ -79,6 +79,8 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
                 .andExpect(jsonPath("$.data.content.[0].voteTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].commentTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].viewTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].popularScore").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].isVoted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].pickOptions").isArray())
                 .andExpect(jsonPath("$.data.content.[0].pickOptions.[0].id").isNumber())
@@ -131,7 +133,7 @@ class PickControllerTest extends SupportControllerTest {
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/picks")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("pickId", String.valueOf(pick.getId()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                         .queryParam("pickSort", PickSort.LATEST.name())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))

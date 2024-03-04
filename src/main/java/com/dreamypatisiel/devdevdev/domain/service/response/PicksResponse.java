@@ -12,19 +12,34 @@ import lombok.Data;
 public class PicksResponse {
     private final Long id;
     private final String title;
-    private final int voteTotalCount;
-    private final int commentTotalCount;
+    private final long voteTotalCount;
+    private final long commentTotalCount;
+    private final long viewTotalCount;
+    private final long popularScore;
     private final Boolean isVoted;
     private final List<PickOptionResponse> pickOptions;
 
     @Builder
     public PicksResponse(Long id, Title title, Count voteTotalCount, Count commentTotalCount,
-                         Boolean isVoted, List<PickOptionResponse> pickOptions) {
+                         Count viewTotalCount, Count popularScore, Boolean isVoted,
+                         List<PickOptionResponse> pickOptions) {
         this.id = id;
         this.title = title.getTitle();
         this.voteTotalCount = voteTotalCount.getCount();
         this.commentTotalCount = commentTotalCount.getCount();
+        this.viewTotalCount = viewTotalCount.getCount();
+        this.popularScore = popularScore.getCount();
         this.isVoted = isVoted;
         this.pickOptions = pickOptions;
     }
+
+//    public PicksResponse(Long id, Title title, Count voteTotalCount, Count commentTotalCount,
+//                         Boolean isVoted, List<PickOptionResponse> pickOptions) {
+//        this.id = id;
+//        this.title = title.getTitle();
+//        this.voteTotalCount = voteTotalCount.getCount();
+//        this.commentTotalCount = commentTotalCount.getCount();
+//        this.isVoted = isVoted;
+//        this.pickOptions = pickOptions;
+//    }
 }

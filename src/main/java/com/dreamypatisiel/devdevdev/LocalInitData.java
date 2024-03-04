@@ -104,6 +104,8 @@ public class LocalInitData {
             Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author,
                     List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(pickVotes.get(number)));
+            Count popularScore = pick.calculatePopularScore();
+            pick.changePopularScore(popularScore);
             picks.add(pick);
         }
 
@@ -115,6 +117,8 @@ public class LocalInitData {
             Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author,
                     List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of());
+            Count popularScore = pick.calculatePopularScore();
+            pick.changePopularScore(popularScore);
             picks.add(pick);
         }
 

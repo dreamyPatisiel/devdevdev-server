@@ -2,9 +2,12 @@ package com.dreamypatisiel.devdevdev.domain.repository.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
+import io.swagger.v3.oas.models.security.SecurityScheme.In;
 
 public enum PickSort {
 
@@ -13,11 +16,23 @@ public enum PickSort {
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.createdAt);
         }
+
+        @Override
+        public BooleanExpression getCursorCondition(Pick findPick) {
+            return pick.id.lt(findPick.getId());
+        }
     },
     POPULAR {
         @Override
         public OrderSpecifier getOrderSpecifierByPickSort() {
-            return new OrderSpecifier<>(Order.DESC, pickPopular());
+            return new OrderSpecifier<>(Order.DESC, pick.popularScore.count);
+        }
+
+        @Override
+        public BooleanExpression getCursorCondition(Pick findPick) {
+            return pick.popularScore.count.lt(findPick.getPopularScore().getCount())
+                    .or(pick.popularScore.count.eq(findPick.getPopularScore().getCount())
+                            .and(pick.id.lt(findPick.getId())));
         }
     },
     MOST_VIEWED {
@@ -25,24 +40,39 @@ public enum PickSort {
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.viewTotalCount.count);
         }
+
+        @Override
+        public BooleanExpression getCursorCondition(Pick findPick) {
+            return pick.viewTotalCount.count.lt(findPick.getViewTotalCount().getCount())
+                    .or(pick.viewTotalCount.count.eq(findPick.getViewTotalCount().getCount())
+                            .and(pick.id.lt(findPick.getId())));
+        }
     },
     MOST_COMMENTED {
         @Override
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.commentTotalCount.count);
         }
+
+        @Override
+        public BooleanExpression getCursorCondition(Pick findPick) {
+            return pick.commentTotalCount.count.lt(findPick.getCommentTotalCount().getCount())
+                    .or(pick.commentTotalCount.count.eq(findPick.getCommentTotalCount().getCount())
+                            .and(pick.id.lt(findPick.getId())));
+        }
     };
 
-    public static final int COMMENT_WEIGHT = 4;
-    public static final int VOTE_WEIGHT = 4;
-    public static final int VIEW_WEIGHT = 2;
+    public static final long COMMENT_WEIGHT = 4L;
+    public static final long VOTE_WEIGHT = 4L;
+    public static final long VIEW_WEIGHT = 2L;
 
     abstract public OrderSpecifier getOrderSpecifierByPickSort();
-    private static NumberExpression<Integer> pickPopular() {
-        NumberExpression<Integer> add = pick.commentTotalCount.count.multiply(COMMENT_WEIGHT)
+    abstract public BooleanExpression getCursorCondition(Pick pick);
+
+    @Deprecated
+    private static NumberExpression<Long> pickPopular() {
+        return pick.commentTotalCount.count.multiply(COMMENT_WEIGHT)
                 .add(pick.voteTotalCount.count.multiply(VOTE_WEIGHT))
                 .add(pick.viewTotalCount.count.multiply(VIEW_WEIGHT));
-
-        return add;
     }
 }

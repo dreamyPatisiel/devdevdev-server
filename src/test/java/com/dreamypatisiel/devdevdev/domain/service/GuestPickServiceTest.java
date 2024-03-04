@@ -94,7 +94,7 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, null, authentication);
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
@@ -147,7 +147,7 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.MOST_VIEWED,
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.MOST_VIEWED,
                 authentication);
 
         // then
@@ -187,7 +187,7 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.LATEST,
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.LATEST,
                 authentication);
 
         // then
@@ -230,7 +230,7 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.MOST_COMMENTED,
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.MOST_COMMENTED,
                 authentication);
 
         // then
@@ -269,10 +269,18 @@ class GuestPickServiceTest {
 
         Pick pick1 = Pick.create(title1, pick1VoteTotalCount, pick1ViewTotalCount, pick1commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick1PopularScore = pick1.calculatePopularScore();
+        pick1.changePopularScore(pick1PopularScore);
+
         Pick pick2 = Pick.create(title2, pick2VoteTotalCount, pick2ViewTotalCount, pick2commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick2PopularScore = pick2.calculatePopularScore();
+        pick2.changePopularScore(pick2PopularScore);
+
         Pick pick3 = Pick.create(title3, pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick3PopularScore = pick3.calculatePopularScore();
+        pick3.changePopularScore(pick3PopularScore);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -283,7 +291,7 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when
-        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, null, PickSort.POPULAR,
+        Slice<PicksResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.POPULAR,
                 authentication);
 
         // then
@@ -309,7 +317,7 @@ class GuestPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.findPicksMain(pageable, null, null, authentication))
+        assertThatThrownBy(() -> guestPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(GuestPickService.INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
     }

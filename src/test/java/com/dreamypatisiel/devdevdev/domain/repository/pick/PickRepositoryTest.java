@@ -34,7 +34,7 @@ class PickRepositoryTest {
     String author = "운영자";
 
     @Test
-    @DisplayName("findPicksByLoePickId 쿼리 확인")
+    @DisplayName("findPicksByCursor 쿼리 확인")
     void findPicksByLtPickId() {
         // given
         PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
@@ -68,7 +68,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, null);
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, Long.MAX_VALUE, null);
 
         // then
         assertThat(picks).hasSize(7);
@@ -98,7 +98,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.MOST_VIEWED);
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, Long.MAX_VALUE, PickSort.MOST_VIEWED);
 
         // then
         assertThat(picks).hasSize(3)
@@ -129,7 +129,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.LATEST);
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, Long.MAX_VALUE, PickSort.LATEST);
 
         // then
         assertThat(picks).hasSize(3)
@@ -163,7 +163,7 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.MOST_COMMENTED);
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, Long.MAX_VALUE, PickSort.MOST_COMMENTED);
 
         // then
         assertThat(picks).hasSize(3)
@@ -195,10 +195,18 @@ class PickRepositoryTest {
 
         Pick pick1 = Pick.create(new Title("픽1타이틀"), pick1VoteTotalCount, pick1ViewTotalCount, pick1commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick1PopularScore = pick1.calculatePopularScore();
+        pick1.changePopularScore(pick1PopularScore);
+
         Pick pick2 = Pick.create(new Title("픽2타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick2PopularScore = pick2.calculatePopularScore();
+        pick2.changePopularScore(pick2PopularScore);
+
         Pick pick3 = Pick.create(new Title("픽3타이틀"), pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick3PopularScore = pick3.calculatePopularScore();
+        pick3.changePopularScore(pick3PopularScore);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -206,7 +214,8 @@ class PickRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, null, PickSort.POPULAR);
+        // pick1이 인기점수가 제일 높다
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, Long.MAX_VALUE, PickSort.POPULAR);
 
         // then
         assertThat(picks).hasSize(3)

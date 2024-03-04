@@ -80,7 +80,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("pickId", String.valueOf(pick.getId()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                         .queryParam("pickSort", PickSort.LATEST.name())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -109,6 +109,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].title").type(JsonFieldType.STRING).description("픽픽픽 제목"),
                         fieldWithPath("data.content[].voteTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 전체 투표 수"),
                         fieldWithPath("data.content[].commentTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 전체 댓글 수"),
+                        fieldWithPath("data.content[].viewTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 조회 수"),
+                        fieldWithPath("data.content[].popularScore").type(JsonFieldType.NUMBER).description("픽픽픽 인기점수"),
                         fieldWithPath("data.content[].isVoted").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("픽픽픽 투표 여부(익명 사용자는 필드가 없다.)"),
 
                         fieldWithPath("data.content[].pickOptions").type(JsonFieldType.ARRAY).description("픽픽픽 옵션 배열"),

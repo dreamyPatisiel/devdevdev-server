@@ -100,22 +100,27 @@ class MemberPickServiceTest {
         String author = "운영자";
         Pick pick = Pick.create(pickTitle, pickVoteTotalCount, pickViewTotalCount, pickCommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of(pickVote));
+        Count popularScore = pick.calculatePopularScore();
+        pick.changePopularScore(popularScore);
+
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<PicksResponse> picks = memberPickService.findPicksMain(pageable, null, null, authentication);
+        Slice<PicksResponse> picks = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
         assertThat(picks).hasSize(1)
-                .extracting("id", "title", "voteTotalCount",
-                        "commentTotalCount", "isVoted")
+                .extracting("id", "title",
+                        "voteTotalCount", "commentTotalCount",
+                        "viewTotalCount", "popularScore","isVoted")
                 .containsExactly(
-                        tuple(findPick.getId(), findPick.getTitle().getTitle(), findPick.getVoteTotalCount().getCount(),
-                                findPick.getCommentTotalCount().getCount(), true)
+                        tuple(findPick.getId(), findPick.getTitle().getTitle(),
+                                findPick.getVoteTotalCount().getCount(), findPick.getCommentTotalCount().getCount(),
+                                findPick.getViewTotalCount().getCount(), findPick.getPopularScore().getCount(), true)
                 );
 
         List<PickOption> pickOptions = findPick.getPickOptions();
@@ -212,7 +217,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        Slice<PicksResponse> picksMain = memberPickService.findPicksMain(pageable, null, PickSort.LATEST,
+        Slice<PicksResponse> picksMain = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.LATEST,
                 authentication);
 
         // then
@@ -262,7 +267,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        Slice<PicksResponse> picksMain = memberPickService.findPicksMain(pageable, null, PickSort.MOST_COMMENTED,
+        Slice<PicksResponse> picksMain = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.MOST_COMMENTED,
                 authentication);
 
         // then
@@ -299,12 +304,20 @@ class MemberPickServiceTest {
         Count pick3VoteTotalCount = new Count(1);
         Count pick3ViewTotalCount = new Count(2);
 
-        Pick pick1 = Pick.create(title1, pick1VoteTotalCount, pick1ViewTotalCount, pick1commentTotalCount,
+        Pick pick1 = Pick.create(new Title("픽1타이틀"), pick1VoteTotalCount, pick1ViewTotalCount, pick1commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = Pick.create(title2, pick2VoteTotalCount, pick2ViewTotalCount, pick2commentTotalCount,
+        Count pick1PopularScore = pick1.calculatePopularScore();
+        pick1.changePopularScore(pick1PopularScore);
+
+        Pick pick2 = Pick.create(new Title("픽2타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = Pick.create(title3, pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
+        Count pick2PopularScore = pick2.calculatePopularScore();
+        pick2.changePopularScore(pick2PopularScore);
+
+        Pick pick3 = Pick.create(new Title("픽3타이틀"), pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Count pick3PopularScore = pick3.calculatePopularScore();
+        pick3.changePopularScore(pick3PopularScore);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -322,7 +335,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        Slice<PicksResponse> picksMain = memberPickService.findPicksMain(pageable, null, PickSort.POPULAR,
+        Slice<PicksResponse> picksMain = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.POPULAR,
                 authentication);
 
         // then
@@ -348,7 +361,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, null, null, authentication))
+        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }

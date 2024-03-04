@@ -31,7 +31,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     private final JPQLQueryFactory query;
 
     @Override
-    public Slice<Pick> findPicksByLoePickId(Pageable pageable, Long pickId, PickSort pickSort) {
+    public Slice<Pick> findPicksByCursor(Pageable pageable, Long pickId, PickSort pickSort) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
         long limit = pageable.getPageSize() * TWO + ONE;
 
@@ -39,7 +39,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .leftJoin(pick.pickOptions, pickOption)
                 .leftJoin(pick.pickVotes, pickVote)
                 .leftJoin(pick.member, member).fetchJoin()
-                .where(loePickId(pickId))
+                .where(cursorCondition(pickSort, pickId))
                 .orderBy(pickSort(pickSort), pick.id.desc())
                 .limit(limit)
                 .fetch();
@@ -49,6 +49,30 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
     }
 
+    private BooleanExpression cursorCondition(PickSort pickSort, Long pickId) {
+        if (ObjectUtils.isEmpty(pickId)) {
+            return null;
+        }
+
+        // 픽 아이디로 픽 조회
+        Pick findPick = query.selectFrom(pick)
+                .where(pick.id.eq(pickId))
+                .fetchOne();
+
+        // 픽이 없으면
+        if (ObjectUtils.isEmpty(findPick)) {
+            return pick.id.loe(pickId);
+        }
+
+        // sort 조건에 맞는 cursorCondition 반환
+        return Arrays.stream(PickSort.values())
+                .filter(sort -> sort.equals(pickSort))
+                .findFirst()
+                .map(sort -> sort.getCursorCondition(findPick))
+                .orElse(PickSort.LATEST.getCursorCondition(findPick));
+    }
+
+    @Deprecated
     private BooleanExpression loePickId(Long pickId) {
         if (ObjectUtils.isEmpty(pickId)) {
             return null;
