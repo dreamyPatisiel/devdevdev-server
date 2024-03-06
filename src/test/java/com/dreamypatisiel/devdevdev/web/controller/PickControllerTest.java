@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -39,6 +40,8 @@ class PickControllerTest extends SupportControllerTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    PickPopularScorePolicy pickPopularScorePolicy;
 
     @Test
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
@@ -50,8 +53,9 @@ class PickControllerTest extends SupportControllerTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = createPick(title, count, count, count, count,
+        Pick pick = createPick(title, count, count, count,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -125,8 +129,9 @@ class PickControllerTest extends SupportControllerTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = createPick(title, count, count, count, count,
+        Pick pick = createPick(title, count, count, count,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -191,7 +196,7 @@ class PickControllerTest extends SupportControllerTest {
     }
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
-                            Count pickcommentTotalCount, Count pickPopularScore, String thumbnailUrl, String author,
+                            Count pickcommentTotalCount, String thumbnailUrl, String author,
                             List<PickOption> pickOptions, List<PickVote> pickVotes
     ) {
 
@@ -200,7 +205,6 @@ class PickControllerTest extends SupportControllerTest {
                 .voteTotalCount(pickVoteTotalCount)
                 .viewTotalCount(pickViewTotalCount)
                 .commentTotalCount(pickcommentTotalCount)
-                .popularScore(pickPopularScore)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
                 .build();
