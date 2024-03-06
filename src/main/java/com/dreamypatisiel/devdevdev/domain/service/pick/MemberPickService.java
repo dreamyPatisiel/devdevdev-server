@@ -57,7 +57,7 @@ public class MemberPickService implements PickService {
                 .voteTotalCount(pick.getVoteTotalCount())
                 .commentTotalCount(pick.getCommentTotalCount())
                 .viewTotalCount(pick.getViewTotalCount())
-                .popularScore(pick.calculatePopularScore())
+                .popularScore(pick.getPopularScore())
                 .pickOptions(mapToPickOptionsResponse(pick, member))
                 .build();
     }

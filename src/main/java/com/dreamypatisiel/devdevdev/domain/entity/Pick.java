@@ -2,6 +2,9 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.policy.PopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -94,64 +97,15 @@ public class Pick extends BasicTime {
         return pick;
     }
 
-    public static Pick create(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, Count popularScore,
-                              String thumbnailUrl, String author, List<PickOption> pickOptions, List<PickVote> pickVotes) {
-        Pick pick = new Pick();
-        pick.title = title;
-        pick.voteTotalCount = voteTotalCount;
-        pick.viewTotalCount = viewTotalCount;
-        pick.commentTotalCount = commentTotalCount;
-        pick.popularScore = popularScore;
-        pick.author = author;
-        pick.thumbnailUrl = thumbnailUrl;
-        pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
-
-        return pick;
-    }
-
-    public static Pick create(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount,
-                              String author, String thumbnailUrl, List<PickOption> pickOptions, List<PickVote> pickVotes) {
-        Pick pick = new Pick();
-        pick.title = title;
-        pick.voteTotalCount = voteTotalCount;
-        pick.viewTotalCount = viewTotalCount;
-        pick.commentTotalCount = commentTotalCount;
-        pick.popularScore = new Count(0);
-        pick.author = author;
-        pick.thumbnailUrl = thumbnailUrl;
-        pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
-
-        return pick;
-    }
-
-    public static Pick create(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount,
-                              String author, String thumbnailUrl, Member member, List<PickOption> pickOptions, List<PickVote> pickVotes) {
-        Pick pick = new Pick();
-        pick.title = title;
-        pick.voteTotalCount = voteTotalCount;
-        pick.viewTotalCount = viewTotalCount;
-        pick.commentTotalCount = commentTotalCount;
-        pick.popularScore = new Count(0);
-        pick.author = author;
-        pick.thumbnailUrl = thumbnailUrl;
-        pick.member = member;
-        pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
-
-        return pick;
-    }
-
     // 연관관계 편의 메소드
-    private void changePickOptions(List<PickOption> pickOptions) {
+    public void changePickOptions(List<PickOption> pickOptions) {
         for(PickOption pickOption : pickOptions) {
             pickOption.changePick(this);
             this.getPickOptions().add(pickOption);
         }
     }
 
-    private void changePickVote(List<PickVote> pickVotes) {
+    public void changePickVote(List<PickVote> pickVotes) {
         for(PickVote pickVote : pickVotes) {
             pickVote.changePick(this);
             this.getPickVotes().add(pickVote);
@@ -162,14 +116,11 @@ public class Pick extends BasicTime {
         return this.equals(pick);
     }
 
-    public void changePopularScore(Count popularScore) {
-        this.popularScore = popularScore;
+    public void changePopularScore(PickPopularScorePolicy policy) {
+        this.popularScore = this.calculatePopularScore(policy);
     }
 
-    public Count calculatePopularScore() {
-        long score = this.viewTotalCount.getCount()*2
-                + this.commentTotalCount.getCount()*4
-                + this.voteTotalCount.getCount()*4;
-        return new Count(score);
+    private Count calculatePopularScore(PickPopularScorePolicy policy) {
+        return policy.calculatePopularScore(this);
     }
 }

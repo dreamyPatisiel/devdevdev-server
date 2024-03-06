@@ -32,14 +32,4 @@ public class PicksResponse {
         this.isVoted = isVoted;
         this.pickOptions = pickOptions;
     }
-
-//    public PicksResponse(Long id, Title title, Count voteTotalCount, Count commentTotalCount,
-//                         Boolean isVoted, List<PickOptionResponse> pickOptions) {
-//        this.id = id;
-//        this.title = title.getTitle();
-//        this.voteTotalCount = voteTotalCount.getCount();
-//        this.commentTotalCount = commentTotalCount.getCount();
-//        this.isVoted = isVoted;
-//        this.pickOptions = pickOptions;
-//    }
 }

@@ -62,17 +62,7 @@ public enum PickSort {
         }
     };
 
-    public static final long COMMENT_WEIGHT = 4L;
-    public static final long VOTE_WEIGHT = 4L;
-    public static final long VIEW_WEIGHT = 2L;
 
     abstract public OrderSpecifier getOrderSpecifierByPickSort();
     abstract public BooleanExpression getCursorCondition(Pick pick);
-
-    @Deprecated
-    private static NumberExpression<Long> pickPopular() {
-        return pick.commentTotalCount.count.multiply(COMMENT_WEIGHT)
-                .add(pick.voteTotalCount.count.multiply(VOTE_WEIGHT))
-                .add(pick.viewTotalCount.count.multiply(VIEW_WEIGHT));
-    }
 }

@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -49,7 +50,8 @@ class PickControllerTest extends SupportControllerTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = Pick.create(title, count, count, count, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick = createPick(title, count, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -123,7 +125,8 @@ class PickControllerTest extends SupportControllerTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = Pick.create(title, count, count, count, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick = createPick(title, count, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -185,5 +188,26 @@ class PickControllerTest extends SupportControllerTest {
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
                 .build();
+    }
+
+    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+                            Count pickcommentTotalCount, Count pickPopularScore, String thumbnailUrl, String author,
+                            List<PickOption> pickOptions, List<PickVote> pickVotes
+    ) {
+
+        Pick pick = Pick.builder()
+                .title(title)
+                .voteTotalCount(pickVoteTotalCount)
+                .viewTotalCount(pickViewTotalCount)
+                .commentTotalCount(pickcommentTotalCount)
+                .popularScore(pickPopularScore)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .build();
+
+        pick.changePickOptions(pickOptions);
+        pick.changePickVote(pickVotes);
+
+        return pick;
     }
 }
