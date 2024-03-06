@@ -13,17 +13,17 @@ import lombok.NoArgsConstructor;
 public class Count {
 
     private static final String INVALID_COUNT_MESSAGE = "카운트 값은 %d 이상이어야 합니다.";
-    public static final int MIN_COUNT = 0;
+    public static final long MIN_COUNT = 0L;
 
     @Getter
-    private int count;
+    private long count;
 
-    public Count(int count) {
+    public Count(long count) {
         validationCount(count);
         this.count = count;
     }
 
-    private void validationCount(int count) {
+    private void validationCount(long count) {
         if(!isValidCount(count)) {
             throw new CountException(getInvalidCountExceptionMessage());
         }
@@ -33,7 +33,7 @@ public class Count {
         return String.format(INVALID_COUNT_MESSAGE, MIN_COUNT);
     }
 
-    private static boolean isValidCount(int count) {
+    private static boolean isValidCount(long count) {
         return count >= MIN_COUNT;
     }
 }

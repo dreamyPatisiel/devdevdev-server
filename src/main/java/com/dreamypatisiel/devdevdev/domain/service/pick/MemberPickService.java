@@ -32,7 +32,7 @@ public class MemberPickService implements PickService {
     @Override
     public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, pickId, pickSort);
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
 
         // 회원 조회
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -53,9 +53,11 @@ public class MemberPickService implements PickService {
         return PicksResponse.builder()
                 .id(pick.getId())
                 .title(pick.getTitle())
+                .isVoted(isVotedByPickAndMember(pick, member))
                 .voteTotalCount(pick.getVoteTotalCount())
                 .commentTotalCount(pick.getCommentTotalCount())
-                .isVoted(isVotedByPickAndMember(pick, member))
+                .viewTotalCount(pick.getViewTotalCount())
+                .popularScore(pick.getPopularScore())
                 .pickOptions(mapToPickOptionsResponse(pick, member))
                 .build();
     }

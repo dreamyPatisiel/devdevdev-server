@@ -9,31 +9,29 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +51,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    PickPopularScorePolicy pickPopularScorePolicy;
 
     @Test
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
@@ -64,7 +64,9 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/tumbnail/1";
         String author = "운영자";
-        Pick pick = Pick.create(title, count, count, count, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick = createPick(title, count, count, count, thumbnailUrl,
+                author, List.of(pickOption1, pickOption2), List.of());
+        pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -80,7 +82,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("pickId", String.valueOf(pick.getId()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                         .queryParam("pickSort", PickSort.LATEST.name())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -109,6 +111,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].title").type(JsonFieldType.STRING).description("픽픽픽 제목"),
                         fieldWithPath("data.content[].voteTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 전체 투표 수"),
                         fieldWithPath("data.content[].commentTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 전체 댓글 수"),
+                        fieldWithPath("data.content[].viewTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 조회 수"),
+                        fieldWithPath("data.content[].popularScore").type(JsonFieldType.NUMBER).description("픽픽픽 인기점수"),
                         fieldWithPath("data.content[].isVoted").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("픽픽픽 투표 여부(익명 사용자는 필드가 없다.)"),
 
                         fieldWithPath("data.content[].pickOptions").type(JsonFieldType.ARRAY).description("픽픽픽 옵션 배열"),
@@ -159,5 +163,25 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
                 .build();
+    }
+
+    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+                            Count pickcommentTotalCount, String thumbnailUrl,
+                            String author, List<PickOption> pickOptions, List<PickVote> pickVotes
+    ) {
+
+        Pick pick = Pick.builder()
+                .title(title)
+                .voteTotalCount(pickVoteTotalCount)
+                .viewTotalCount(pickViewTotalCount)
+                .commentTotalCount(pickcommentTotalCount)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .build();
+
+        pick.changePickOptions(pickOptions);
+        pick.changePickVote(pickVotes);
+
+        return pick;
     }
 }

@@ -9,11 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -38,6 +40,8 @@ class PickControllerTest extends SupportControllerTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    PickPopularScorePolicy pickPopularScorePolicy;
 
     @Test
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
@@ -49,7 +53,9 @@ class PickControllerTest extends SupportControllerTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = Pick.create(title, count, count, count, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick = createPick(title, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -65,7 +71,7 @@ class PickControllerTest extends SupportControllerTest {
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/picks")
                 .queryParam("size", String.valueOf(pageable.getPageSize()))
-                .queryParam("pickId", String.valueOf(pick.getId()))
+                .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                 .queryParam("pickSort", PickSort.LATEST.name())
                 .contentType(MediaType.APPLICATION_JSON)
                 .characterEncoding(StandardCharsets.UTF_8)
@@ -79,6 +85,8 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
                 .andExpect(jsonPath("$.data.content.[0].voteTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].commentTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].viewTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].popularScore").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].isVoted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].pickOptions").isArray())
                 .andExpect(jsonPath("$.data.content.[0].pickOptions.[0].id").isNumber())
@@ -121,7 +129,9 @@ class PickControllerTest extends SupportControllerTest {
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = Pick.create(title, count, count, count, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick = createPick(title, count, count, count,
+                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -131,7 +141,7 @@ class PickControllerTest extends SupportControllerTest {
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/picks")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("pickId", String.valueOf(pick.getId()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                         .queryParam("pickSort", PickSort.LATEST.name())
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -183,5 +193,25 @@ class PickControllerTest extends SupportControllerTest {
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
                 .build();
+    }
+
+    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+                            Count pickcommentTotalCount, String thumbnailUrl, String author,
+                            List<PickOption> pickOptions, List<PickVote> pickVotes
+    ) {
+
+        Pick pick = Pick.builder()
+                .title(title)
+                .voteTotalCount(pickVoteTotalCount)
+                .viewTotalCount(pickViewTotalCount)
+                .commentTotalCount(pickcommentTotalCount)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .build();
+
+        pick.changePickOptions(pickOptions);
+        pick.changePickVote(pickVotes);
+
+        return pick;
     }
 }

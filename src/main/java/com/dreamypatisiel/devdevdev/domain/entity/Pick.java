@@ -2,6 +2,9 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.policy.PopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -40,6 +43,13 @@ public class Pick extends BasicTime {
             column = @Column(name = "comment_total_count")
     )
     private Count commentTotalCount;
+
+    @Embedded
+    @AttributeOverride(name = "count",
+        column = @Column(name = "popluar_score")
+    )
+    private Count popularScore;
+
     private String thumbnailUrl;
     private String author;
 
@@ -60,24 +70,27 @@ public class Pick extends BasicTime {
     private List<PickVote> pickVotes = new ArrayList<>();
 
     @Builder
-    private Pick(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, String thumbnailUrl,
+    private Pick(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, Count popularScore, String thumbnailUrl,
                 String author, Member member) {
         this.title = title;
         this.voteTotalCount = voteTotalCount;
         this.viewTotalCount = viewTotalCount;
         this.commentTotalCount = commentTotalCount;
+        this.popularScore = popularScore;
         this.thumbnailUrl = thumbnailUrl;
         this.author = author;
         this.member = member;
     }
 
-    public static Pick create(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, String thumbnailUrl,
-                              String author, List<PickOption> pickOptions, List<PickVote> pickVotes) {
+    public static Pick create(Title title, String thumbnailUrl, String author, Member member,
+                              List<PickOption> pickOptions, List<PickVote> pickVotes) {
         Pick pick = new Pick();
         pick.title = title;
-        pick.voteTotalCount = voteTotalCount;
-        pick.viewTotalCount = viewTotalCount;
-        pick.commentTotalCount = commentTotalCount;
+        pick.voteTotalCount = new Count(0);
+        pick.viewTotalCount = new Count(0);
+        pick.commentTotalCount = new Count(0);
+        pick.popularScore = new Count(0);
+        pick.member = member;
         pick.author = author;
         pick.thumbnailUrl = thumbnailUrl;
         pick.changePickOptions(pickOptions);
@@ -87,14 +100,14 @@ public class Pick extends BasicTime {
     }
 
     // 연관관계 편의 메소드
-    private void changePickOptions(List<PickOption> pickOptions) {
+    public void changePickOptions(List<PickOption> pickOptions) {
         for(PickOption pickOption : pickOptions) {
             pickOption.changePick(this);
             this.getPickOptions().add(pickOption);
         }
     }
 
-    private void changePickVote(List<PickVote> pickVotes) {
+    public void changePickVote(List<PickVote> pickVotes) {
         for(PickVote pickVote : pickVotes) {
             pickVote.changePick(this);
             this.getPickVotes().add(pickVote);
@@ -103,5 +116,13 @@ public class Pick extends BasicTime {
 
     public boolean isEqualsPick(Pick pick) {
         return this.equals(pick);
+    }
+
+    public void changePopularScore(PickPopularScorePolicy policy) {
+        this.popularScore = this.calculatePopularScore(policy);
+    }
+
+    private Count calculatePopularScore(PickPopularScorePolicy policy) {
+        return policy.calculatePopularScore(this);
     }
 }

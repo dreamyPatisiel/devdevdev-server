@@ -5,5 +5,5 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 public interface PickRepositoryCustom {
-    Slice<Pick> findPicksByLoePickId(Pageable pageable, Long pickId, PickSort pickSort);
+    Slice<Pick> findPicksByCursor(Pageable pageable, Long pickId, PickSort pickSort);
 }

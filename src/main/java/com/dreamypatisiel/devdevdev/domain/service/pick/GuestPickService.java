@@ -32,7 +32,7 @@ public class GuestPickService implements PickService {
         }
 
         // 픽픽픽 조회
-        Slice<Pick> picks = pickRepository.findPicksByLoePickId(pageable, pickId, pickSort);
+        Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
 
         // 데이터 가공
         List<PicksResponse> picksResponses = picks.stream()
@@ -48,6 +48,8 @@ public class GuestPickService implements PickService {
                 .title(pick.getTitle())
                 .voteTotalCount(pick.getVoteTotalCount())
                 .commentTotalCount(pick.getCommentTotalCount())
+                .viewTotalCount(pick.getViewTotalCount())
+                .popularScore(pick.getPopularScore())
                 .pickOptions(mapToPickOptionsResponse(pick))
                 .build();
     }

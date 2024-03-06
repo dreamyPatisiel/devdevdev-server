@@ -20,7 +20,7 @@ class CountTest {
     @ParameterizedTest
     @MethodSource("generateValidData")
     @DisplayName(Count.MIN_COUNT + " 이상의 카운트를 생성할 수 있다.")
-    void count(int count) {
+    void count(long count) {
         // given // when // then
         assertThatCode(() -> new Count(count))
                 .doesNotThrowAnyException();
@@ -29,7 +29,7 @@ class CountTest {
     @ParameterizedTest
     @MethodSource("generateInvalidData")
     @DisplayName(Count.MIN_COUNT + " 미만의 카운트를 생성할 경우 예외가 발생한다.")
-    void countException(int count) {
+    void countException(long count) {
         // given // when // then
         assertThatThrownBy(() -> new Count(count))
                 .isInstanceOf(CountException.class)
@@ -37,8 +37,8 @@ class CountTest {
     }
 
     static Stream<Arguments> generateValidData() {
-        int[] dataLengths = {Count.MIN_COUNT, Count.MIN_COUNT+1};
-        List<Integer> data = new ArrayList<>();
+        long[] dataLengths = {Count.MIN_COUNT, Count.MIN_COUNT+1};
+        List<Long> data = new ArrayList<>();
         for (int i = 0; i < dataLengths.length; i++) {
             data.add(dataLengths[i]);
         }
@@ -46,8 +46,8 @@ class CountTest {
     }
 
     static Stream<Arguments> generateInvalidData() {
-        int[] dataLengths = {Count.MIN_COUNT-1};
-        List<Integer> data = new ArrayList<>();
+        long[] dataLengths = {Count.MIN_COUNT-1};
+        List<Long> data = new ArrayList<>();
         for (int i = 0; i < dataLengths.length; i++) {
             data.add(dataLengths[i]);
         }

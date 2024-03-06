@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
@@ -49,6 +50,7 @@ public class LocalInitData {
     private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
     private final PickVoteRepository pickVoteRepository;
+    private final PickPopularScorePolicy pickPopularScorePolicy;
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -101,9 +103,10 @@ public class LocalInitData {
             Count pickCommentTotalCount = new Count(creatRandomNumber());
             Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
 
-            Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
+            Pick pick = createPick(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author,
                     List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(pickVotes.get(number)));
+            pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
 
@@ -112,13 +115,34 @@ public class LocalInitData {
             Count pickCommentTotalCount = new Count(creatRandomNumber());
             Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
 
-            Pick pick = Pick.create(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
+            Pick pick = createPick(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author,
                     List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of());
+            pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
 
         return picks;
+    }
+
+    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+                            Count pickcommentTotalCount, String thumbnailUrl, String author,
+                            List<PickOption> pickOptions, List<PickVote> pickVotes
+    ) {
+
+        Pick pick = Pick.builder()
+                .title(title)
+                .voteTotalCount(pickVoteTotalCount)
+                .viewTotalCount(pickViewTotalCount)
+                .commentTotalCount(pickcommentTotalCount)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .build();
+
+        pick.changePickOptions(pickOptions);
+        pick.changePickVote(pickVotes);
+
+        return pick;
     }
 
     private List<PickOption> createPickOptions() {
