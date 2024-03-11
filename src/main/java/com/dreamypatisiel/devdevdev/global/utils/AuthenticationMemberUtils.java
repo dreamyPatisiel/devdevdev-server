@@ -9,6 +9,7 @@ public class AuthenticationMemberUtils {
 
     public static final String ANONYMOUS_USER = "anonymousUser";
     public static final String INVALID_TYPE_CAST_USER_PRINCIPAL_MESSAGE = "인증객체 타입에 문제가 발생했습니다.";
+    public static final String INVALID_METHODS_CALL_MESSAGE = "익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.";
 
     public static UserPrincipal getUserPrincipal() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -18,6 +19,12 @@ public class AuthenticationMemberUtils {
         }
 
         return (UserPrincipal) principal;
+    }
+
+    public static void validateAnonymousMethodCall(Authentication authentication) {
+        if(!isAnonymous(authentication)) {
+            throw new IllegalStateException(INVALID_METHODS_CALL_MESSAGE);
+        }
     }
 
     private static boolean isUserPrincipalClass(Object principal) {

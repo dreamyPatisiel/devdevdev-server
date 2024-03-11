@@ -1,12 +1,16 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface TechArticleService {
-    Slice<TechArticleResponse> getTechArticles(Pageable pageable, String keyword, Authentication authentication);
+    Slice<TechArticleResponse> findTechArticles(Pageable pageable, String elasticId,
+                                                TechArticleSort techArticleSort, Authentication authentication);
 }
