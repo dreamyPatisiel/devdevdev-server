@@ -12,6 +12,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -54,7 +55,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -84,7 +85,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
