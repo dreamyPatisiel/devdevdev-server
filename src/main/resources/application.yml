@@ -1,17 +1,8 @@
 spring:
   profiles:
     active:
-      - dev
+      - local
     include:
-      - oauth2-dev
-      - jwt-dev
-
-springdoc:
-  packages-to-scan: com.dreamypatisiel.devdevdev
-  default-consumes-media-type: application/json;charset=UTF-8
-  default-produces-media-type: application/json;charset=UTF-8
-  swagger-ui:
-    path: /index.html
-    disable-swagger-default-url: true
-    display-request-duration: true
-    operations-sorter: alpha
+      - oauth2-local
+      - jwt-local
+      - storage-s3

@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
+import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/devdevdev/api/v1")
 public class PickController {
 
-    private final PickService pickService;
+    private final PickServiceStrategy pickServiceStrategy;
 
     @Operation(summary = "픽픽픽 메인 조회", description = "픽픽픽 메인 페이지에 필요한 데이터를 조회합니다.")
     @GetMapping("/picks")
@@ -33,6 +34,8 @@ public class PickController {
             @RequestParam(required = false) PickSort pickSort) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+//        Slice<PicksResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, authentication);
+        PickService pickService = pickServiceStrategy.getPickService();
         Slice<PicksResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));

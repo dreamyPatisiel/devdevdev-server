@@ -11,11 +11,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiControllerAdvice {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<BasicResponse<Object>> accessDeniedException(AccessDeniedException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.UNAUTHORIZED.value()),
+                HttpStatus.UNAUTHORIZED);
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<BasicResponse<Object>> illegalArgumentException(IllegalArgumentException e) {

@@ -7,14 +7,19 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuestPickService implements PickService {
 
     public static final String INVALID_FIND_PICKS_METHODS_CALL_MESSAGE = "익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.";
+    public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
 
     private final PickRepository pickRepository;
 
@@ -40,6 +46,18 @@ public class GuestPickService implements PickService {
                 .toList();
 
         return new SliceImpl<>(picksResponses, pageable, picks.hasNext());
+    }
+
+    @Override
+    public Long registerPick(RegisterPickRequest registerPickRequest,
+                             Map<String, List<MultipartFile>> registerPickImageFiles,
+                             Authentication authentication) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Override
+    public Long registerPick(RegisterPickRequest registerPickRequest, Authentication authentication) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     private PicksResponse mapToPickResponse(Pick pick) {

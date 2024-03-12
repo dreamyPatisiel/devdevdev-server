@@ -57,6 +57,9 @@ public class PickOption {
     @OneToMany(mappedBy = "pickOption")
     private List<PickVote> pickVotes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pickOption")
+    private List<PickOptionImage> pickOptionImages = new ArrayList<>();
+
     @Builder
     private PickOption(Title title, PickContents contents, Count voteTotalCount) {
         this.title = title;
@@ -64,11 +67,30 @@ public class PickOption {
         this.voteTotalCount = voteTotalCount;
     }
 
+    public static PickOption create(Title title, PickContents pickContents) {
+        PickOption pickOption = new PickOption();
+        pickOption.title = title;
+        pickOption.contents = pickContents;
+        pickOption.voteTotalCount = new Count(0);
+
+        return pickOption;
+    }
+
     public static PickOption create(Title title, PickContents pickContents, Count voteTotalCount) {
         PickOption pickOption = new PickOption();
         pickOption.title = title;
         pickOption.contents = pickContents;
         pickOption.voteTotalCount = voteTotalCount;
+
+        return pickOption;
+    }
+
+    public static PickOption create(Title title, PickContents pickContents, Count voteTotalCount, List<PickOptionImage> pickOptionImages) {
+        PickOption pickOption = new PickOption();
+        pickOption.title = title;
+        pickOption.contents = pickContents;
+        pickOption.voteTotalCount = voteTotalCount;
+        pickOption.changePickOptionImages(pickOptionImages);
 
         return pickOption;
     }
@@ -84,5 +106,13 @@ public class PickOption {
 
     public void changePick(Pick pick) {
         this.pick = pick;
+    }
+
+    // 연관관계 편의 메소드
+    public void changePickOptionImages(List<PickOptionImage> pickOptionImages) {
+        for(PickOptionImage pickOptionImage : pickOptionImages) {
+            pickOptionImage.changePickOptionImage(this);
+            this.getPickOptionImages().add(pickOptionImage);
+        }
     }
 }

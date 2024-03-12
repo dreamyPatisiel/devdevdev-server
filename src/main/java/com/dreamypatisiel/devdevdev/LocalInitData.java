@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
@@ -147,12 +148,23 @@ public class LocalInitData {
 
     private List<PickOption> createPickOptions() {
         List<PickOption> pickOptions = new ArrayList<>();
+        List<PickOptionImage> pickOptionImages = createPickOptionImage();
         for(int number = 1; number <= DATA_MAX_COUNT*2; number++) {
-            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickContents("픽콘텐츠"+number), new Count(creatRandomNumber()));
+            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickContents("픽콘텐츠"+number), new Count(creatRandomNumber()), pickOptionImages);
             pickOptions.add(pickOption);
         }
 
         return pickOptions;
+    }
+
+    private List<PickOptionImage> createPickOptionImage() {
+        String sampleImageUrl1 = "https://devdevdev-storage.s3.ap-northeast-2.amazonaws.com/test/pickpickpick/hexagonal-architecture.png";
+        String sampleImageUrl2 = "https://devdevdev-storage.s3.ap-northeast-2.amazonaws.com/test/pickpickpick/layered-architecture.png";
+
+        PickOptionImage pickOptionImage1 = PickOptionImage.create(sampleImageUrl1, "/test/pickpickpick/hexagonal-architecture.png");
+        PickOptionImage pickOptionImage2 = PickOptionImage.create(sampleImageUrl2, "/test/pickpickpick/layered-architecture.png");
+
+        return List.of(pickOptionImage1, pickOptionImage2);
     }
 
     private int creatRandomNumber() {
