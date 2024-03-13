@@ -1,0 +1,17 @@
+[[common]]
+== 예외 응답
+=== Cookie 예외
+* 쿠키의 name에 해당하는 value가 빈값인 경우
+** name: DEVDEVDEV_REFRESH_TOKEN, DEVDEVDEV_ACCESS_TOKEN
+
+==== HTTP Response
+include::{snippets}/token-refresh-cookie-exception/response-body.adoc[]
+
+=== JWT 예외
+* 엑세스 토큰 **인증**에 문제가 있는 경우
+
+==== HTTP Response
+include::{snippets}/token-invalid-signature-accessToken-exception/response-body.adoc[]
+include::{snippets}/token-invalid-expired-accessToken-exception/response-body.adoc[]
+include::{snippets}/token-invalid-blanked-accessToken-exception/response-body.adoc[]
+

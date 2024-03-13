@@ -28,14 +28,12 @@ public class SecurityExceptionFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+            throws IOException {
 
         try {
             log.info("SecurityExceptionFilter 시작");
             filterChain.doFilter(request, response);
-        } catch (TokenInvalidException e) {
-            sendErrorMessage(response, HttpServletResponse.SC_BAD_REQUEST, e);
-        }  catch (JwtAuthenticationException e) {
+        } catch (TokenInvalidException | JwtAuthenticationException e) {
             sendErrorMessage(response, HttpServletResponse.SC_UNAUTHORIZED, e);
         } catch (JwtAccessDeniedException e) {
             sendErrorMessage(response, HttpServletResponse.SC_FORBIDDEN, e);

@@ -15,6 +15,14 @@ public class BasicResponse<T> {
     @JsonAlias(value = "data")
     private List<T> datas;
     private Integer errorCode;
+    private String errorCodeMessage;
+
+    public BasicResponse(ResultType resultType, String message, Integer errorCode, String errorCodeMessage) {
+        this.resultType = resultType;
+        this.message = message;
+        this.errorCode = errorCode;
+        this.errorCodeMessage = errorCodeMessage;
+    }
 
     private BasicResponse(ResultType resultType, String message, int errorCode) {
         this.resultType = resultType;
@@ -50,5 +58,9 @@ public class BasicResponse<T> {
 
     public static <T> BasicResponse<T> fail(String message, int errorCode) {
         return new BasicResponse<>(ResultType.FAIL, message, errorCode);
+    }
+
+    public static <T> BasicResponse<T> fail(String message, Integer errorCode, String errorCodeMessage) {
+        return new BasicResponse<>(ResultType.FAIL, message, errorCode, errorCodeMessage);
     }
 }
