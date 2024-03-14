@@ -45,8 +45,6 @@ class LogoutControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        //Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
-
         // when
         ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/logout")
                         .contentType(MediaType.APPLICATION_JSON)

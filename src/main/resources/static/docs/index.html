@@ -447,6 +447,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toc" class="toc2">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
+<li><a href="#common">예외 응답</a>
+<ul class="sectlevel2">
+<li><a href="#_cookie_예외">Cookie 예외</a></li>
+<li><a href="#_jwt_예외">JWT 예외</a></li>
+</ul>
+</li>
 <li><a href="#token-test-user">USER 테스트 토큰 생성 API(GET: /devdevdev/api/v1/token/test/user)</a>
 <ul class="sectlevel2">
 <li><a href="#_정상_요청응답">정상 요청/응답</a></li>
@@ -481,6 +487,80 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="content">
 <div class="sect1">
+<h2 id="common"><a class="link" href="#common">예외 응답</a></h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_cookie_예외"><a class="link" href="#_cookie_예외">Cookie 예외</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>쿠키의 name에 해당하는 value가 빈값인 경우</p>
+<div class="ulist">
+<ul>
+<li>
+<p>name: DEVDEVDEV_REFRESH_TOKEN, DEVDEVDEV_ACCESS_TOKEN</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_http_response"><a class="link" href="#_http_response">HTTP Response</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "resultType" : "FAIL",
+  "message" : "요청값에 이름에 맞는 쿠키의 값이 없습니다.",
+  "errorCode" : 400
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_jwt_예외"><a class="link" href="#_jwt_예외">JWT 예외</a></h3>
+<div class="ulist">
+<ul>
+<li>
+<p>엑세스 토큰 <strong>인증</strong>에 문제가 있는 경우</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_http_response_2"><a class="link" href="#_http_response_2">HTTP Response</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "resultType" : "FAIL",
+  "message" : "잘못된 서명을 가진 JWT 입니다.",
+  "errorCode" : 401
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "resultType" : "FAIL",
+  "message" : "만료된 JWT 입니다.",
+  "errorCode" : 401
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "resultType" : "FAIL",
+  "message" : "유효하지 않은 회원 입니다.",
+  "errorCode" : 401
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="token-test-user"><a class="link" href="#token-test-user">USER 테스트 토큰 생성 API(GET: /devdevdev/api/v1/token/test/user)</a></h2>
 <div class="sectionbody">
 <div class="ulist">
@@ -503,7 +583,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response"><a class="link" href="#_http_response">HTTP Response</a></h4>
+<h4 id="_http_response_3"><a class="link" href="#_http_response_3">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -522,8 +602,8 @@ Content-Length: 518
 {
   "resultType" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMDI2MjIzMywiZXhwIjoxNzEwMjY0MDMzfQ.ytItoXQWlUfiIz8Y5uuu5aPC8-0l-1d0mldB9QcjtgA",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMDI2MjIzMywiZXhwIjoxNzEwODY3MDMzfQ.aOm8sK3bbkzxi4hcUDXOjdWJP-ngVbLEgCd7Ub7ZpOE"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMDM0MjI1MCwiZXhwIjoxNzEwMzQ0MDUwfQ.l9uwGytQhJvD4Mu3cdyWYsimKRC22Q0YkCX8H0P7-kI",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMDM0MjI1MCwiZXhwIjoxNzEwOTQ3MDUwfQ.jeilS5NQBSScf5uU-4nLiSuAn0W3MgZ_D_JtS6w9nfk"
   }
 }</code></pre>
 </div>
@@ -578,7 +658,7 @@ Content-Length: 518
 <div class="sect2">
 <h3 id="_예외"><a class="link" href="#_예외">예외</a></h3>
 <div class="sect3">
-<h4 id="_http_response_2"><a class="link" href="#_http_response_2">HTTP Response</a></h4>
+<h4 id="_http_response_4"><a class="link" href="#_http_response_4">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
@@ -654,7 +734,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response_3"><a class="link" href="#_http_response_3">HTTP Response</a></h4>
+<h4 id="_http_response_5"><a class="link" href="#_http_response_5">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -673,8 +753,8 @@ Content-Length: 522
 {
   "resultType" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTAyNjQwMzN9.VFZqxyUtSZn1YfHqw9gEmTefU6oCBOmavYFMsbUtkK0",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTA4NjcwMzN9.-r0rq5SBudLn0kr3_Tj_BH6ROgtIe8cudcCJGW4LBPk"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTAzNDQwNTB9.C7bPyGhSdf-KRF-m6wsPbFYKHKGA_t3fOQGmnfjiXHY",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTA5NDcwNTB9.OPASVvKXsUOeq39sUQvReB83gN7q_VmNNX3NzRPKlx0"
   }
 }</code></pre>
 </div>
@@ -729,7 +809,7 @@ Content-Length: 522
 <div class="sect2">
 <h3 id="_예외_2"><a class="link" href="#_예외_2">예외</a></h3>
 <div class="sect3">
-<h4 id="_http_response_4"><a class="link" href="#_http_response_4">HTTP Response</a></h4>
+<h4 id="_http_response_6"><a class="link" href="#_http_response_6">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
@@ -801,7 +881,7 @@ Content-Length: 522
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/token/refresh HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Host: localhost:8080
-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTA4NjcwMzN9.Q9V7Ixm-ljViArNzrKNme9KQidrgKFCqjDzlox5MxYU</code></pre>
+Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTA5NDcwNTB9.3YlgFTrRhrYSkySh7pBuda6uwuvuGIqexvjrtcaK9F0</code></pre>
 </div>
 </div>
 </div>
@@ -830,16 +910,16 @@ Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXR
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_5"><a class="link" href="#_http_response_5">HTTP Response</a></h4>
+<h4 id="_http_response_7"><a class="link" href="#_http_response_7">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
 Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
-Set-Cookie: DEVDEVDEV_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTAyNjQwMzN9.hXx7p7yish7bMUFJOmTQRrtDA92wr1zDTpkM6aEN50w; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Tue, 12 Mar 2024 16:53:33 GMT
-Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTA4NjcwMzN9.Q9V7Ixm-ljViArNzrKNme9KQidrgKFCqjDzlox5MxYU; Path=/; Domain=devdevdev.co.kr; Max-Age=604800; Expires=Tue, 19 Mar 2024 16:50:33 GMT; HttpOnly
-Set-Cookie: DEVDEVDEV_LOGIN_STATUS=active; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Tue, 12 Mar 2024 16:53:33 GMT
+Set-Cookie: DEVDEVDEV_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTAzNDQwNTB9.8LLGElC206ZXcPzjbNfycCl5ukVjerOfGNLgeOvWdBg; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Wed, 13 Mar 2024 15:07:10 GMT
+Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTA5NDcwNTB9.3YlgFTrRhrYSkySh7pBuda6uwuvuGIqexvjrtcaK9F0; Path=/; Domain=devdevdev.co.kr; Max-Age=604800; Expires=Wed, 20 Mar 2024 15:04:10 GMT; HttpOnly
+Set-Cookie: DEVDEVDEV_LOGIN_STATUS=active; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Wed, 13 Mar 2024 15:07:10 GMT
 Content-Type: application/json
 X-Content-Type-Options: nosniff
 X-XSS-Protection: 0
@@ -920,7 +1000,7 @@ Content-Length: 30
 <div class="sect2">
 <h3 id="_예외_3"><a class="link" href="#_예외_3">예외</a></h3>
 <div class="sect3">
-<h4 id="_http_response_6"><a class="link" href="#_http_response_6">HTTP Response</a></h4>
+<h4 id="_http_response_8"><a class="link" href="#_http_response_8">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
@@ -994,7 +1074,7 @@ Content-Length: 30
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/logout HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTAyNjQwMzN9.hXx7p7yish7bMUFJOmTQRrtDA92wr1zDTpkM6aEN50w
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTAzNDQwNTB9.8LLGElC206ZXcPzjbNfycCl5ukVjerOfGNLgeOvWdBg
 Host: localhost:8080
 Cookie: DEVDEVDEV_REFRESH_TOKEN=</code></pre>
 </div>
@@ -1049,7 +1129,7 @@ Cookie: DEVDEVDEV_REFRESH_TOKEN=</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_7"><a class="link" href="#_http_response_7">HTTP Response</a></h4>
+<h4 id="_http_response_9"><a class="link" href="#_http_response_9">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -1057,7 +1137,7 @@ Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
 Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT
-Set-Cookie: DEVDEVDEV_LOGIN_STATUS=inactive; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Tue, 12 Mar 2024 16:53:33 GMT
+Set-Cookie: DEVDEVDEV_LOGIN_STATUS=inactive; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Wed, 13 Mar 2024 15:07:10 GMT
 Content-Type: application/json
 X-Content-Type-Options: nosniff
 X-XSS-Protection: 0
@@ -1133,7 +1213,7 @@ Content-Length: 30
 <div class="sect2">
 <h3 id="_예외_4"><a class="link" href="#_예외_4">예외</a></h3>
 <div class="sect3">
-<h4 id="_http_response_8"><a class="link" href="#_http_response_8">HTTP Response</a></h4>
+<h4 id="_http_response_10"><a class="link" href="#_http_response_10">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
@@ -1207,7 +1287,7 @@ Content-Length: 30
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/picks?size=10&amp;pickId=9223372036854775807&amp;pickSort=LATEST HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMjYyMjMzLCJleHAiOjE3MTAyNjQwMzN9.hXx7p7yish7bMUFJOmTQRrtDA92wr1zDTpkM6aEN50w
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzQyMjUwLCJleHAiOjE3MTAzNDQwNTB9.8LLGElC206ZXcPzjbNfycCl5ukVjerOfGNLgeOvWdBg
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -1271,7 +1351,7 @@ Host: localhost:8080</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_9"><a class="link" href="#_http_response_9">HTTP Response</a></h4>
+<h4 id="_http_response_11"><a class="link" href="#_http_response_11">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -1322,15 +1402,15 @@ Content-Length: 971
       "paged" : true,
       "unpaged" : false
     },
-    "size" : 10,
     "first" : true,
     "last" : true,
+    "size" : 10,
+    "number" : 0,
     "sort" : {
       "empty" : false,
       "sorted" : true,
       "unsorted" : false
     },
-    "number" : 0,
     "numberOfElements" : 1,
     "empty" : false
   }
@@ -1600,7 +1680,7 @@ Content-Length: 971
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-02-27 00:50:59 +0900
+Last updated 2024-03-13 23:58:53 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

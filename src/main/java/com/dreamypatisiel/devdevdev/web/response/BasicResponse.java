@@ -59,8 +59,4 @@ public class BasicResponse<T> {
     public static <T> BasicResponse<T> fail(String message, int errorCode) {
         return new BasicResponse<>(ResultType.FAIL, message, errorCode);
     }
-
-    public static <T> BasicResponse<T> fail(String message, Integer errorCode, String errorCodeMessage) {
-        return new BasicResponse<>(ResultType.FAIL, message, errorCode, errorCodeMessage);
-    }
 }
