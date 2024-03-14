@@ -13,6 +13,9 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 제외
 @RequiredArgsConstructor
 public class TechArticleResponse {
+
+    public static final int DESCRIPTION_MAX_LENGTH = 500;
+
     public Long id;
     public String elasticId;
     public String thumbnailUrl;
@@ -61,7 +64,7 @@ public class TechArticleResponse {
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getTechArticleUrl())
-                .description(elasticTechArticle.getDescription())
+                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .build();
     }
     public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, boolean isBookmarked) {
@@ -77,7 +80,7 @@ public class TechArticleResponse {
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getTechArticleUrl())
-                .description(elasticTechArticle.getDescription())
+                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .bookmarked(isBookmarked)
                 .build();
     }
@@ -95,9 +98,32 @@ public class TechArticleResponse {
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getTechArticleUrl())
-                .description(elasticTechArticle.getDescription())
+                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .score(score)
                 .build();
     }
 
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, Float score, boolean isBookmarked) {
+        return TechArticleResponse.builder()
+                .id(techArticle.getId())
+                .viewTotalCount(techArticle.getViewTotalCount().getCount())
+                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
+                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
+                .popularScore(techArticle.getPopularScore().getCount())
+                .elasticId(elasticTechArticle.getId())
+                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .title(elasticTechArticle.getTitle())
+                .company(elasticTechArticle.getCompany())
+                .regDate(elasticTechArticle.getRegDate())
+                .author(elasticTechArticle.getTechArticleUrl())
+                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
+                .score(score)
+                .bookmarked(isBookmarked)
+                .build();
+    }
+
+    private static String truncateString(String string, int maxLength) {
+        if(string.length() <= maxLength) return string;
+        return string.substring(0, maxLength);
+    }
 }

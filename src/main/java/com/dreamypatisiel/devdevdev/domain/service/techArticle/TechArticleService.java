@@ -7,8 +7,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public interface TechArticleService {
     Slice<TechArticleResponse> findTechArticles(Pageable pageable, String elasticId,

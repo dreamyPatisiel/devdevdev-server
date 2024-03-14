@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.elastic.domain.service;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
+import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -29,6 +30,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ElasticTechArticleService {
+
+    public static final String NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE = "존재하지 않는 엘라스틱 기술블로그 ID 입니다.";
+
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
@@ -85,23 +89,27 @@ public class ElasticTechArticleService {
                 .orElse(TechArticleSort.LATEST.getSortFieldName());
     }
 
-    private Optional<ElasticTechArticle> findElasticTechArticleById(String elasticId) {
-        if(ObjectUtils.isEmpty(elasticId)) return Optional.empty();
-        return elasticTechArticleRepository.findById(elasticId);
-    }
-
     private void setSearchAfterIfApplicable(String elasticId, TechArticleSort techArticleSort, NativeSearchQuery searchQuery) {
-        findElasticTechArticleById(elasticId)
-                .ifPresent(elasticTechArticle -> {
+        if(ObjectUtils.isEmpty(elasticId)) return;
+
+        elasticTechArticleRepository.findById(elasticId)
+                .map(elasticTechArticle -> {
                     searchQuery.setSearchAfter(searchAfter(elasticTechArticle, techArticleSort));
-                });
+                    return elasticTechArticle;
+                })
+                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE));
     }
 
     private void setSearchAfterIfApplicable(String elasticId, Float score, TechArticleSort techArticleSort, NativeSearchQuery searchQuery) {
-        findElasticTechArticleById(elasticId)
-                .ifPresent(elasticTechArticle -> {
-                    searchQuery.setSearchAfter(searchAfter(elasticTechArticle, score, techArticleSort));
-                });
+        if(ObjectUtils.isEmpty(elasticId)) return;
+        Float finalScore = Optional.ofNullable(score).orElse(Float.MAX_VALUE);
+
+        elasticTechArticleRepository.findById(elasticId)
+                .map(elasticTechArticle -> {
+                    searchQuery.setSearchAfter(searchAfter(elasticTechArticle, finalScore, techArticleSort));
+                    return elasticTechArticle;
+                })
+                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE));
     }
 
     private List<Object> searchAfter(ElasticTechArticle elasticTechArticle, TechArticleSort techArticleSort) {

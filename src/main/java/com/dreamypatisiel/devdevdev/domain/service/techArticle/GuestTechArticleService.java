@@ -5,11 +5,9 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -20,17 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class GuestTechArticleService implements TechArticleService {
+public class GuestTechArticleService extends TechArticleServiceUtils implements TechArticleService {
 
     private final ElasticTechArticleService elasticTechArticleService;
-    private final TechArticleRepository techArticleRepository;
+
+    public GuestTechArticleService(TechArticleRepository techArticleRepository, ElasticTechArticleService elasticTechArticleService) {
+        super(techArticleRepository);
+        this.elasticTechArticleService = elasticTechArticleService;
+    }
 
     @Override
     public Slice<TechArticleResponse> findTechArticles(Pageable pageable, String elasticId,
@@ -53,41 +52,16 @@ public class GuestTechArticleService implements TechArticleService {
         return techArticleResponses;
     }
 
-    private static List<ElasticResponse<ElasticTechArticle>> mapToElasticResponses(SearchHits<ElasticTechArticle> searchHits) {
-        return searchHits.stream()
-                .map(searchHit -> new ElasticResponse<>(searchHit.getContent(), searchHit.getScore()))
-                .toList();
-    }
-
     private List<TechArticleResponse> mapToTechArticleResponses(List<ElasticResponse<ElasticTechArticle>> elasticResponses) {
-        List<String> elasticIds = elasticResponses.stream()
-                .map(elasticResponse -> elasticResponse.content().getId())
-                .toList();
+        List<String> elasticIds = getElasticIds(elasticResponses);
+        List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticIds);
+        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticResponses);
 
-        List<TechArticle> findTechArticles = techArticleRepository.findAllByElasticIdIn(elasticIds);
-
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponse = elasticResponses.stream()
-                .collect(Collectors.toMap(el -> el.content().getId(), Function.identity()));
-
-        List<TechArticleResponse> techArticleResponses = findTechArticles.stream()
+        return findTechArticles.stream()
                 .map(findTechArticle -> {
-                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponse.get(findTechArticle.getElasticId());
+                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(findTechArticle.getElasticId());
                     return TechArticleResponse.of(elasticResponse.content(), findTechArticle);
                 })
                 .toList();
-
-        return techArticleResponses;
     }
-
-    private ElasticSlice<TechArticleResponse> createElasticSlice(Pageable pageable, SearchHits<ElasticTechArticle> searchHits,
-                                                                 List<TechArticleResponse> techArticleResponses) {
-        long totalHits = searchHits.getTotalHits();
-        boolean hasNext = hasNextPage(pageable, searchHits);
-        return new ElasticSlice<>(techArticleResponses, pageable, totalHits, hasNext);
-    }
-
-    private boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {
-        return searchHits.getSearchHits().size() >= pageable.getPageSize();
-    }
-
 }
