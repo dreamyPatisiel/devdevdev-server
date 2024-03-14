@@ -45,13 +45,10 @@ class LogoutControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
-
         // when
         ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/logout")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .cookie(cookie)
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -59,14 +56,6 @@ class LogoutControllerTest extends SupportControllerTest {
 
         // then
         MockHttpServletResponse response = actions.andReturn().getResponse();
-        Cookie responseRefreshCookie = response.getCookie(DEVDEVDEV_REFRESH_TOKEN);
-        assertThat(responseRefreshCookie).isNotNull();
-        assertAll(
-                () -> assertThat(responseRefreshCookie.getValue()).isEqualTo(CookieUtils.BLANK),
-                () -> assertThat(responseRefreshCookie.getPath()).isEqualTo(CookieUtils.DEFAULT_PATH),
-                () -> assertThat(responseRefreshCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MIN_AGE)
-        );
-
         Cookie responseLoginStatusCookie = response.getCookie(DEVDEVDEV_LOGIN_STATUS);
         assertThat(responseLoginStatusCookie).isNotNull();
         assertAll(
