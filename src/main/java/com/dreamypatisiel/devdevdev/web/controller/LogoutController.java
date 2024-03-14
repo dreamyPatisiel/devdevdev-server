@@ -31,7 +31,7 @@ public class LogoutController {
     @Operation(summary = "로그아웃 요청", description = "쿠키에 담긴 RefreshToken을 초기화합니다.", deprecated = true)
     @PostMapping("/logout")
     public ResponseEntity<BasicResponse<Object>> logout(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException {
 
         // 회원의 리프레시 토큰을 비활성화 상태로 변경
         UserPrincipal userPrincipal = AuthenticationMemberUtils.getUserPrincipal();

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +30,7 @@ public class TokenController {
     private final TokenService tokenService;
 
     @Operation(summary = "리프레시 요청", description = "쿠키에 담긴 RefreshToken을 통해 AccessToken을 재발급합니다.", deprecated = true)
-    @GetMapping("/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<BasicResponse<Object>> getRefreshToken(HttpServletRequest request, HttpServletResponse response) {
         // 쿠키에서 refresh를 꺼내온다.
         String refreshToken = CookieUtils.getRequestCookieValueByName(request,

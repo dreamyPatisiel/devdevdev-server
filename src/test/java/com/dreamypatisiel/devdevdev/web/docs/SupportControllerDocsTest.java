@@ -46,7 +46,9 @@ public class SupportControllerDocsTest {
     protected String adminEmail = LocalInitData.adminEmail;
     protected String adminRole = Role.ROLE_ADMIN.name();
     protected Date date = new Date();
-
+    protected String invalidSignatureAccessToken = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzM5NzYzLCJleHAiOjE3MTAzMzk3NzN9.VZdmTY3QfBlIRayZWUxeDFe-yKoOCyHq0yhT3KDgrT4";
+    protected String invalidExpiredAccessToken = "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzEwMzM5NzYzLCJleHAiOjE3MTAzNDE1NjN9.Fow-G2zfnJGu-6iYQAxLn9zsM2EwyMtIlwlsYs04PYU";
+    protected String invalidUnsupportedToken = "eyJhbGciOiJIUzI1NiJ9.eyJteV9lbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJteV9zb2NpYWxUeXBlIjoiS0FLQU8iLCJteV9yb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzA2MTA5Njc0LCJleHAiOjE3MDY3MTQ0NzR9.i9qezdFUKoFGcCvarEFrtZ8zzUUwIQElwLqKO9jwXqI";
     @BeforeEach
     void setupRefreshToken() {
         when(timeProvider.getDateNow()).thenReturn(date);

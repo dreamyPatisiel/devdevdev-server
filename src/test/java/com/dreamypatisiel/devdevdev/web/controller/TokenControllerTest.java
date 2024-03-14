@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieCo
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +19,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.servlet.http.Cookie;
 import java.util.Date;
@@ -25,6 +27,7 @@ import java.util.Date;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -49,7 +52,7 @@ class TokenControllerTest extends SupportControllerTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -71,6 +74,23 @@ class TokenControllerTest extends SupportControllerTest {
 
         Member findMember = memberRepository.findById(member.getId()).get();
         assertThat(findMember.isRefreshTokenEquals(value)).isTrue();
+    }
+
+    @Test
+    @DisplayName("요청에 리프레시 토큰 쿠키가 없으면 예외가 발생한다.")
+    void getRefreshTokenException() throws Exception {
+        // given
+        Cookie cookie = new Cookie(DEVDEVDEV_ACCESS_TOKEN, accessToken);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(cookie))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(CookieUtils.INVALID_NOT_FOUND_COOKIE_VALUE_BY_NAME_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
     @Test

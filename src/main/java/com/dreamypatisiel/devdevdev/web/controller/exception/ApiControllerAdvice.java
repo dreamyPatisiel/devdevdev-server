@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.exception;
 
+import com.dreamypatisiel.devdevdev.exception.CookieException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
@@ -29,6 +30,12 @@ public class ApiControllerAdvice {
                 HttpStatus.METHOD_NOT_ALLOWED);
     }
 
+    @ExceptionHandler(CookieException.class)
+    public ResponseEntity<BasicResponse<Object>> cookieException(CookieException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(MemberException.class)
     public ResponseEntity<BasicResponse<Object>> memberException(MemberException e) {
         return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.NOT_FOUND.value()),
@@ -37,8 +44,8 @@ public class ApiControllerAdvice {
 
     @ExceptionHandler(TokenNotFoundException.class)
     public ResponseEntity<BasicResponse<Object>> tokenNotFoundException(TokenNotFoundException e) {
-        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.FORBIDDEN.value()),
-                HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.UNAUTHORIZED.value()),
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(TokenInvalidException.class)
