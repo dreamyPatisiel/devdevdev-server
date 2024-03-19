@@ -59,8 +59,7 @@ public class MemberTechArticleService extends TechArticleServiceUtils implements
 
     private List<TechArticleResponse> getTechArticleResponses(SearchHits<ElasticTechArticle> searchHits, Member member) {
         List<ElasticResponse<ElasticTechArticle>> elasticResponses = mapToElasticResponses(searchHits);
-        List<TechArticleResponse> techArticleResponses = mapToTechArticleResponses(elasticResponses, member);
-        return techArticleResponses;
+        return mapToTechArticleResponses(elasticResponses, member);
     }
 
     private List<TechArticleResponse> mapToTechArticleResponses(List<ElasticResponse<ElasticTechArticle>> elasticResponses, Member member) {

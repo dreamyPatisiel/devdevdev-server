@@ -21,15 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GuestPickService implements PickService {
 
-    public static final String INVALID_FIND_PICKS_METHODS_CALL_MESSAGE = "익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.";
-
     private final PickRepository pickRepository;
 
     @Override
     public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
-        if(!AuthenticationMemberUtils.isAnonymous(authentication)) {
-            throw new IllegalStateException(INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
-        }
+        // 익명 사용자 호출인지 확인
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 픽픽픽 조회
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);

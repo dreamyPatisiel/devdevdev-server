@@ -48,8 +48,7 @@ public class GuestTechArticleService extends TechArticleServiceUtils implements 
 
     private List<TechArticleResponse> getTechArticleResponses(SearchHits<ElasticTechArticle> searchHits) {
         List<ElasticResponse<ElasticTechArticle>> elasticResponses = mapToElasticResponses(searchHits);
-        List<TechArticleResponse> techArticleResponses = mapToTechArticleResponses(elasticResponses);
-        return techArticleResponses;
+        return mapToTechArticleResponses(elasticResponses);
     }
 
     private List<TechArticleResponse> mapToTechArticleResponses(List<ElasticResponse<ElasticTechArticle>> elasticResponses) {

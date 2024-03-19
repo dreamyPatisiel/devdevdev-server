@@ -42,8 +42,9 @@ public class ElasticTechArticle {
     private Long popularScore;
 
     @Builder
-    private ElasticTechArticle(String id, String title, LocalDate regDate, String contents, String techArticleUrl,
-                               String description, String thumbnailUrl, String author, String company) {
+    public ElasticTechArticle(String id, String title, LocalDate regDate, String contents, String techArticleUrl,
+                              String description, String thumbnailUrl, String author, String company,
+                              Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore) {
         this.id = id;
         this.title = title;
         this.regDate = regDate;
@@ -53,5 +54,23 @@ public class ElasticTechArticle {
         this.thumbnailUrl = thumbnailUrl;
         this.author = author;
         this.company = company;
+        this.viewTotalCount = viewTotalCount;
+        this.recommendTotalCount = recommendTotalCount;
+        this.commentTotalCount = commentTotalCount;
+        this.popularScore = popularScore;
+    }
+
+    public static ElasticTechArticle of(String title, LocalDate regDate, String contents, String techArticleUrl,
+                                        Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore) {
+        return ElasticTechArticle.builder()
+                .title(title)
+                .regDate(regDate)
+                .contents(contents)
+                .techArticleUrl(techArticleUrl)
+                .viewTotalCount(viewTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .build();
     }
 }

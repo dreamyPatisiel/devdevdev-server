@@ -28,13 +28,13 @@ public class TechArticleResponse {
     public Long recommendTotalCount;
     public Long commentTotalCount;
     public Long popularScore;
-    public Boolean bookmarked;
+    public Boolean isBookmarked;
     public Float score;
 
     @Builder
     private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String company, LocalDate regDate,
                                String author, String description, Long viewTotalCount, Long recommendTotalCount,
-                               Long commentTotalCount, Long popularScore, Boolean bookmarked, Float score) {
+                               Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
@@ -43,7 +43,7 @@ public class TechArticleResponse {
         this.regDate = regDate;
         this.author = author;
         this.description = description;
-        this.bookmarked = bookmarked;
+        this.isBookmarked = isBookmarked;
         this.viewTotalCount = viewTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.commentTotalCount = commentTotalCount;
@@ -81,7 +81,7 @@ public class TechArticleResponse {
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getTechArticleUrl())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
-                .bookmarked(isBookmarked)
+                .isBookmarked(isBookmarked)
                 .build();
     }
 
@@ -118,7 +118,7 @@ public class TechArticleResponse {
                 .author(elasticTechArticle.getTechArticleUrl())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .score(score)
-                .bookmarked(isBookmarked)
+                .isBookmarked(isBookmarked)
                 .build();
     }
 

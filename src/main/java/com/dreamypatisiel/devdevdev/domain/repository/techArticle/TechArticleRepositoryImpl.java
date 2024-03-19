@@ -33,9 +33,4 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                 .map(techArticleMap::get)
                 .collect(Collectors.toList());
     }
-
-    @Deprecated
-    private OrderSpecifier<?> orderByFieldList(List<String> elasticIds) {
-        return Expressions.stringTemplate("FIELD({0}, {1})", techArticle.elasticId, elasticIds).asc();
-    }
 }
