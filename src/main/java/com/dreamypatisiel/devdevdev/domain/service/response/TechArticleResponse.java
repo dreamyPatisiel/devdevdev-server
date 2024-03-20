@@ -63,7 +63,7 @@ public class TechArticleResponse {
                 .title(elasticTechArticle.getTitle())
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getTechArticleUrl())
+                .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .build();
     }
@@ -79,7 +79,7 @@ public class TechArticleResponse {
                 .title(elasticTechArticle.getTitle())
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getTechArticleUrl())
+                .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .isBookmarked(isBookmarked)
                 .build();
@@ -97,7 +97,7 @@ public class TechArticleResponse {
                 .title(elasticTechArticle.getTitle())
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getTechArticleUrl())
+                .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .score(score)
                 .build();
@@ -115,7 +115,7 @@ public class TechArticleResponse {
                 .title(elasticTechArticle.getTitle())
                 .company(elasticTechArticle.getCompany())
                 .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getTechArticleUrl())
+                .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .score(score)
                 .isBookmarked(isBookmarked)

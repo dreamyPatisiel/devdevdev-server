@@ -15,7 +15,6 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -34,7 +33,7 @@ public class ElasticTechArticleService {
 
     public static final String NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE = "존재하지 않는 엘라스틱 기술블로그 ID 입니다.";
 
-    private final ElasticsearchRestTemplate elasticsearchRestTemplate;
+    private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
     public SearchHits<ElasticTechArticle> findTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort) {
@@ -50,7 +49,7 @@ public class ElasticTechArticleService {
         // searchAfter 설정
         setSearchAfterIfApplicable(elasticId, techArticleSort, searchQuery);
 
-        return elasticsearchRestTemplate.search(searchQuery, ElasticTechArticle.class);
+        return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
 
     public SearchHits<ElasticTechArticle> findTechArticlesByKeyword(Pageable pageable, String elasticId, Float score, TechArticleSort techArticleSort, String keyword) {
@@ -71,13 +70,14 @@ public class ElasticTechArticleService {
         // searchAfter 설정
         setSearchAfterIfApplicable(elasticId, score, techArticleSort, searchQuery);
 
-        return elasticsearchRestTemplate.search(searchQuery, ElasticTechArticle.class);
+        return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
 
     private FieldSortBuilder sortCondition(TechArticleSort techArticleSort) {
         String sortFieldName = getSortFieldName(techArticleSort);
         return SortBuilders.fieldSort(sortFieldName).order(SortOrder.DESC);
     }
+
     private FieldSortBuilder sortPrimaryCondition() {
         return SortBuilders.fieldSort("_id").order(SortOrder.DESC);
     }

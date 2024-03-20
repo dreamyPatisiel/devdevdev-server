@@ -64,7 +64,7 @@ class MemberTechArticleServiceTestTest extends ElasticsearchSupportTest {
 
         // then
         assertThat(techArticles)
-                .hasSizeLessThanOrEqualTo(pageable.getPageSize());
+                .hasSize(pageable.getPageSize());
     }
 
 

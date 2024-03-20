@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.elastic.domain.service;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.config.ContainerExtension;
+//import com.dreamypatisiel.devdevdev.elastic.config.ElasticsearchTestConfig;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import org.junit.jupiter.api.AfterAll;
@@ -18,18 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+//@ExtendWith(ContainerExtension.class)
+//@SpringBootTest(classes = {ElasticsearchTestConfig.class})
 @SpringBootTest
 @Transactional
-@ExtendWith(ContainerExtension.class)
 public class ElasticsearchSupportTest {
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
-        System.out.println("asdasdasd");
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, (long)i, (long)i, (long)i, (long)i*10);
+            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "회사", (long)i, (long)i, (long)i, (long)i*10);
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
@@ -43,8 +44,10 @@ public class ElasticsearchSupportTest {
     }
 
     @AfterAll
-    static void tearDown(@Autowired TechArticleRepository techArticleRepository) {
-        techArticleRepository.deleteAll();
+    static void tearDown(@Autowired TechArticleRepository techArticleRepository,
+                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+        elasticTechArticleRepository.deleteAll();
+        techArticleRepository.deleteAllInBatch();
     }
 
     private static LocalDate createRandomDate() {

@@ -12,7 +12,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@Document(indexName = "articles")
+@Document(indexName = "articles"+"#{@elasticsearchIndexConfigService.getIndexName()}")
 public class ElasticTechArticle {
     @Id
     private String id;
@@ -61,12 +61,17 @@ public class ElasticTechArticle {
     }
 
     public static ElasticTechArticle of(String title, LocalDate regDate, String contents, String techArticleUrl,
+                                        String description, String thumbnailUrl, String author, String company,
                                         Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore) {
         return ElasticTechArticle.builder()
                 .title(title)
                 .regDate(regDate)
                 .contents(contents)
                 .techArticleUrl(techArticleUrl)
+                .description(description)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .company(company)
                 .viewTotalCount(viewTotalCount)
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)

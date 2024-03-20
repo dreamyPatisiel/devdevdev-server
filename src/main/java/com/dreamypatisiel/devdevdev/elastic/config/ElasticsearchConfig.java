@@ -1,6 +1,5 @@
 package com.dreamypatisiel.devdevdev.elastic.config;
 
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,10 +12,9 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-
-@Profile("dev")
+@Profile({"dev", "test"})
 @Configuration
-@EnableElasticsearchRepositories(basePackageClasses = {ElasticTechArticleRepository.class})
+@EnableElasticsearchRepositories(basePackages = {"com.dreamypatisiel.devdevdev.elastic.domain.repository"})
 public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")
@@ -33,7 +31,7 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
     }
 
     @Bean
-    public ElasticsearchRestTemplate elasticsearchRestTemplate(RestHighLevelClient client) {
+    public ElasticsearchOperations elasticsearchOperations(RestHighLevelClient client) {
         return new ElasticsearchRestTemplate(client);
     }
 }

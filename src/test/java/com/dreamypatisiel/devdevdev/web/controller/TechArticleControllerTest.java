@@ -7,21 +7,27 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
+import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -44,19 +50,33 @@ class TechArticleControllerTest extends SupportControllerTest {
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+
+        List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
+        for (int i = 1; i <= 20; i++) {
+            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "회사", (long)i, (long)i, (long)i, (long)i*10);
+            elasticTechArticles.add(elasticTechArticle);
+        }
+        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
+
+
         techArticles = new ArrayList<>();
-        Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll();
-        for (ElasticTechArticle elasticTechArticle : elasticTechArticles) {
+        for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
             TechArticle techArticle = TechArticle.from(elasticTechArticle);
             techArticles.add(techArticle);
         }
-        techArticleRepository.deleteAll();
         techArticleRepository.saveAll(techArticles);
+    }
+
+    @AfterAll
+    static void tearDown(@Autowired TechArticleRepository techArticleRepository,
+                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+        elasticTechArticleRepository.deleteAll();
+        techArticleRepository.deleteAllInBatch();
     }
 
     @Test
     @DisplayName("익명 사용자가 기술블로그 메인을 조회한다.")
-    void getPicksMainByAnonymous() throws Exception {
+    void getTechArticlesByAnonymous() throws Exception {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -108,7 +128,7 @@ class TechArticleControllerTest extends SupportControllerTest {
 
     @Test
     @DisplayName("회원이 기술블로그 메인을 조회한다.")
-    void getPicksMainByMember() throws Exception {
+    void getTechArticlesByMember() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -175,6 +195,27 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.empty").isBoolean());
     }
 
+    @Test
+    @DisplayName("기술블로그 메인을 조회할 때 존재하지 않는 엘라스틱서치 ID를 조회하면 에러가 발생한다.")
+    void getTechArticlesNotFoundElasticIdException() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("elasticId", "elasticId")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
@@ -188,5 +229,16 @@ class TechArticleControllerTest extends SupportControllerTest {
     }
     private boolean creatRandomBoolean() {
         return new Random().nextBoolean();
+    }
+
+    private static LocalDate createRandomDate() {
+        LocalDate startDate = LocalDate.of(2024, 1, 1);
+        LocalDate endDate = LocalDate.of(2024, 3, 10);
+
+        // 시작 날짜와 종료 날짜 사이의 차이 중 랜덤한 일 수 선택
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+        long randomDays = ThreadLocalRandom.current().nextLong(daysBetween + 1);
+
+        return startDate.plusDays(randomDays);
     }
 }
