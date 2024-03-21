@@ -16,11 +16,11 @@ jobs:
       # 작업에서 액세스할 수 있도록 $GITHUB_WORKSPACE에서 저장소를 체크아웃합니다.
       - uses: actions/checkout@v3
 
-      ## open jdk 17 버전 환경 세팅
-      - name: Set up JDK 17
+      ## open jdk 21 버전 환경 세팅
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          java-version: 21
           distribution: corretto
 
       # 환경파일 작성 : github에 올리지 못하는 정보의 설정파일을 runner에 삽입
