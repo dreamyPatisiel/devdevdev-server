@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class GuestTechArticleService extends TechArticleServiceUtils implements TechArticleService {
+public class GuestTechArticleService extends TechArticleCommonService implements TechArticleService {
 
     private final ElasticTechArticleService elasticTechArticleService;
 

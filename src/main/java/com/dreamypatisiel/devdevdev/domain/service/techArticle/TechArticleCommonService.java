@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-class TechArticleServiceUtils {
+class TechArticleCommonService {
 
     private final TechArticleRepository techArticleRepository;
 

@@ -27,7 +27,7 @@ import java.util.Map;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
-public class MemberTechArticleService extends TechArticleServiceUtils implements TechArticleService {
+public class MemberTechArticleService extends TechArticleCommonService implements TechArticleService {
 
     private final ElasticTechArticleService elasticTechArticleService;
     private final MemberRepository memberRepository;
