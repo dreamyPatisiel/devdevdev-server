@@ -1,24 +1,19 @@
 package com.dreamypatisiel.devdevdev;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -27,6 +22,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 @Slf4j
 @Component
@@ -51,6 +49,9 @@ public class LocalInitData {
     private final PickOptionRepository pickOptionRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
+    private final TechArticleRepository techArticleRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final ElasticTechArticleRepository elasticTechArticleRepository;
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -70,6 +71,32 @@ public class LocalInitData {
         pickRepository.saveAll(picks);
         pickVoteRepository.saveAll(pickVotes);
         pickOptionRepository.saveAll(pickOptions);
+
+        List<TechArticle> techArticles = createTechArticles();
+        techArticleRepository.saveAll(techArticles);
+        List<Bookmark> bookmarks = createBookmarks(member, techArticles);
+        bookmarkRepository.saveAll(bookmarks);
+    }
+
+    private List<Bookmark> createBookmarks(Member member, List<TechArticle> techArticles) {
+        List<Bookmark> bookmarks = new ArrayList<>();
+        for (TechArticle techArticle : techArticles) {
+            if(creatRandomBoolean()){
+                Bookmark bookmark = Bookmark.from(member, techArticle);
+                bookmarks.add(bookmark);
+            }
+        }
+        return bookmarks;
+    }
+
+    private List<TechArticle> createTechArticles() {
+        List<TechArticle> techArticles = new ArrayList<>();
+        Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll();
+        for (ElasticTechArticle elasticTechArticle : elasticTechArticles) {
+            TechArticle techArticle = TechArticle.from(elasticTechArticle);
+            techArticles.add(techArticle);
+        }
+        return techArticles;
     }
 
     private List<Member> createMembers() {
@@ -157,5 +184,9 @@ public class LocalInitData {
 
     private int creatRandomNumber() {
         return (int) (Math.random() * 1_000);
+    }
+
+    private boolean creatRandomBoolean() {
+        return new Random().nextBoolean();
     }
 }
