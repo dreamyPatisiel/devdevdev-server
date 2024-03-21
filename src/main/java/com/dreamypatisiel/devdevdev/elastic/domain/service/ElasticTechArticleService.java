@@ -12,7 +12,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -21,9 +20,10 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._ID;
 
 @Slf4j
 @Service
@@ -36,29 +36,31 @@ public class ElasticTechArticleService {
     private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
-    public SearchHits<ElasticTechArticle> findTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort) {
+    public SearchHits<ElasticTechArticle> findTechArticles(Pageable pageable, String elasticId,
+                                                           TechArticleSort techArticleSort) {
         // 쿼리 생성
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withSearchType(SearchType.QUERY_THEN_FETCH)
-                .withPageable(PageRequest.of(0, pageable.getPageSize()))
+                .withPageable(pageable)
                 // 정렬 조건 설정
                 .withSort(sortCondition(techArticleSort))
                 .withSort(sortPrimaryCondition())
                 .build();
 
         // searchAfter 설정
-        setSearchAfterIfApplicable(elasticId, techArticleSort, searchQuery);
+        setSearchAfterCondition(elasticId, techArticleSort, searchQuery);
 
         return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
 
-    public SearchHits<ElasticTechArticle> findTechArticlesByKeyword(Pageable pageable, String elasticId, Float score, TechArticleSort techArticleSort, String keyword) {
+    public SearchHits<ElasticTechArticle> findTechArticlesByKeyword(Pageable pageable, String elasticId, Float score,
+                                                                    TechArticleSort techArticleSort, String keyword) {
         // 무조건 keyword가 있다는 가정하에!!
 
         // 쿼리 생성
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withSearchType(SearchType.QUERY_THEN_FETCH)
-                .withPageable(PageRequest.of(0, pageable.getPageSize()))
+                .withPageable(pageable)
                 // 쿼리스트링
                 .withQuery(QueryBuilders.queryStringQuery(keyword))
                 .withSort(SortBuilders.scoreSort().order(SortOrder.DESC))
@@ -68,7 +70,7 @@ public class ElasticTechArticleService {
                 .build();
 
         // searchAfter 설정
-        setSearchAfterIfApplicable(elasticId, score, techArticleSort, searchQuery);
+        setSearchAfterCondition(elasticId, score, techArticleSort, searchQuery);
 
         return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
@@ -79,46 +81,46 @@ public class ElasticTechArticleService {
     }
 
     private FieldSortBuilder sortPrimaryCondition() {
-        return SortBuilders.fieldSort("_id").order(SortOrder.DESC);
+        return SortBuilders.fieldSort(_ID).order(SortOrder.DESC);
     }
 
     private static String getSortFieldName(TechArticleSort techArticleSort) {
-        return Arrays.stream(TechArticleSort.values())
-                .filter(sort -> sort.equals(techArticleSort))
-                .findFirst()
-                .map(TechArticleSort::getSortFieldName)
-                .orElse(TechArticleSort.LATEST.getSortFieldName());
+        return Optional.ofNullable(techArticleSort).orElse(TechArticleSort.LATEST).getSortFieldName();
     }
 
-    private void setSearchAfterIfApplicable(String elasticId, TechArticleSort techArticleSort, NativeSearchQuery searchQuery) {
-        if(ObjectUtils.isEmpty(elasticId)) return;
+    private void setSearchAfterCondition(String elasticId, TechArticleSort techArticleSort,
+                                         NativeSearchQuery searchQuery) {
+        if(ObjectUtils.isEmpty(elasticId)) {
+            return;
+        }
 
-        elasticTechArticleRepository.findById(elasticId)
-                .map(elasticTechArticle -> {
-                    searchQuery.setSearchAfter(searchAfter(elasticTechArticle, techArticleSort));
-                    return elasticTechArticle;
-                })
+        ElasticTechArticle elasticTechArticle = elasticTechArticleRepository.findById(elasticId)
                 .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE));
+
+        searchQuery.setSearchAfter(getSearchAfter(elasticTechArticle, techArticleSort));
     }
 
-    private void setSearchAfterIfApplicable(String elasticId, Float score, TechArticleSort techArticleSort, NativeSearchQuery searchQuery) {
-        if(ObjectUtils.isEmpty(elasticId)) return;
+    private void setSearchAfterCondition(String elasticId, Float score, TechArticleSort techArticleSort,
+                                         NativeSearchQuery searchQuery) {
+        if(ObjectUtils.isEmpty(elasticId)) {
+            return;
+        }
+
         Float finalScore = Optional.ofNullable(score).orElse(Float.MAX_VALUE);
 
-        elasticTechArticleRepository.findById(elasticId)
-                .map(elasticTechArticle -> {
-                    searchQuery.setSearchAfter(searchAfter(elasticTechArticle, finalScore, techArticleSort));
-                    return elasticTechArticle;
-                })
+        ElasticTechArticle elasticTechArticle = elasticTechArticleRepository.findById(elasticId)
                 .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE));
+
+        searchQuery.setSearchAfter(getSearchAfter(elasticTechArticle, finalScore, techArticleSort));
     }
 
-    private List<Object> searchAfter(ElasticTechArticle elasticTechArticle, TechArticleSort techArticleSort) {
+    private List<Object> getSearchAfter(ElasticTechArticle elasticTechArticle, TechArticleSort techArticleSort) {
         techArticleSort = Optional.ofNullable(techArticleSort).orElse(TechArticleSort.LATEST);
         return List.of(techArticleSort.getCursorCondition(elasticTechArticle), elasticTechArticle.getId());
     }
 
-    private List<Object> searchAfter(ElasticTechArticle elasticTechArticle, Float score, TechArticleSort techArticleSort) {
+    private List<Object> getSearchAfter(ElasticTechArticle elasticTechArticle, Float score,
+                                        TechArticleSort techArticleSort) {
         techArticleSort = Optional.ofNullable(techArticleSort).orElse(TechArticleSort.LATEST);
         return List.of(techArticleSort.getCursorCondition(elasticTechArticle), elasticTechArticle.getId(), score);
     }

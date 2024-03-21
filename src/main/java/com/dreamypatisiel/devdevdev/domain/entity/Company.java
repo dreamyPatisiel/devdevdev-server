@@ -37,8 +37,7 @@ public class Company extends BasicTime {
     private List<TechArticle> techArticles = new ArrayList<>();
 
     @Builder
-    public Company(Long id, CompanyName name, Url thumbnailUrl, Url careerUrl, List<TechArticle> techArticles) {
-        this.id = id;
+    public Company(CompanyName name, Url thumbnailUrl, Url careerUrl, List<TechArticle> techArticles) {
         this.name = name;
         this.thumbnailUrl = thumbnailUrl;
         this.careerUrl = careerUrl;

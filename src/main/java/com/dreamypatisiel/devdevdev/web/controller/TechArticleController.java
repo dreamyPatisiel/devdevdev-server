@@ -33,7 +33,7 @@ public class TechArticleController {
     @Operation(summary = "기술블로그 메인 API")
     @GetMapping("/articles")
     public ResponseEntity<BasicResponse<Slice<TechArticleResponse>>> getTechArticles (
-            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable,
+            @PageableDefault Pageable pageable,
             @RequestParam(required = false) String elasticId,
             @RequestParam(required = false) TechArticleSort techArticleSort) {
 

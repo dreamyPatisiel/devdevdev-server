@@ -51,6 +51,7 @@ public enum TechArticleSort {
 
     abstract public String getSortFieldName();
     abstract public Object getCursorCondition(ElasticTechArticle elasticTechArticle);
+
     private final static String LATEST_SORT_FIELD_NAME = "regDate";
     private final static String POPULAR_SORT_FIELD_NAME = "popularScore";
     private final static String MOST_VIEWED_SORT_FIELD_NAME = "viewTotalCount";

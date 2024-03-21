@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class TechArticleResponse {
 
-    public static final int DESCRIPTION_MAX_LENGTH = 500;
+    private static final int DESCRIPTION_MAX_LENGTH = 500;
 
     public Long id;
     public String elasticId;
@@ -122,8 +122,11 @@ public class TechArticleResponse {
                 .build();
     }
 
-    private static String truncateString(String string, int maxLength) {
-        if(string.length() <= maxLength) return string;
-        return string.substring(0, maxLength);
+    private static String truncateString(String elasticTechArticleContents, int maxLength) {
+        if(elasticTechArticleContents.length() <= maxLength) {
+            return elasticTechArticleContents;
+        }
+
+        return elasticTechArticleContents.substring(0, maxLength);
     }
 }
