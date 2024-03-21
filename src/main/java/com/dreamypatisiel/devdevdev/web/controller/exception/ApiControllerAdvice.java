@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller.exception;
 
 import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
@@ -46,6 +47,12 @@ public class ApiControllerAdvice {
     public ResponseEntity<BasicResponse<Object>> tokenNotFoundException(TokenNotFoundException e) {
         return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.FORBIDDEN.value()),
                 HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(PickOptionImageNameException.class)
+    public ResponseEntity<BasicResponse<Object>> tokenNotFoundException(PickOptionImageNameException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(TokenInvalidException.class)

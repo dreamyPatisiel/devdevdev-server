@@ -12,16 +12,16 @@ import org.springframework.util.StringUtils;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 @Getter
-public class PickContents {
+public class PickOptionContents {
     public static final int MAX_PICK_CONTENTS_LENGTH = 30_000;
     public static final int MIN_PICK_CONTENTS_LENGTH = 1;
     private static final String INVALID_PICK_LENGTH_MESSAGE = "픽픽픽 내용의 길이는 %d ~ %d 사이의 값이어야 합니다.";
 
-    private String pickContents;
+    private String pickOptionContents;
 
-    public PickContents(String topicContents) {
-        validationTopicContents(topicContents);
-        this.pickContents = topicContents;
+    public PickOptionContents(String pickOptionContents) {
+        validationTopicContents(pickOptionContents);
+        this.pickOptionContents = pickOptionContents;
     }
 
     private void validationTopicContents(String topicContents) {

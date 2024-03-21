@@ -1,0 +1,23 @@
+[[Pick]]
+== 픽픽픽 메인 API(GET: /devdevdev/api/v1/pick/image)
+* 픽픽픽 메인 화면을 조회할 수 있다.
+* 회원/익명 사용자에 따라 API 응답값이 상이하다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/pick-main-option-image/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/pick-main-option-image/request-headers.adoc[]
+==== HTTP Request Query Parameters Fields
+include::{snippets}/pick-main-option-image/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/pick-main-option-image/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/pick-main-option-image/response-fields.adoc[]
+
+=== 예외
+==== HTTP Response
+include::{snippets}/pick-main-option-image-exception/response-body.adoc[]
+==== HTTP Response Fields
+include::{snippets}/pick-main-option-image-exception/response-fields.adoc[]

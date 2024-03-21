@@ -21,22 +21,25 @@ public class PickOptionImage extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String imageUrl;
-    private String key;
+    private String imageKey;
+    private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pick_option_id")
     private PickOption pickOption;
 
     @Builder
-    private PickOptionImage(String imageUrl, PickOption pickOption) {
+    private PickOptionImage(String imageUrl, String imageKey, String name) {
         this.imageUrl = imageUrl;
-        this.pickOption = pickOption;
+        this.imageKey = imageKey;
+        this.name = name;
     }
 
-    public static PickOptionImage create(String imageUrl, String key) {
+    public static PickOptionImage create(String imageUrl, String key, String name) {
         PickOptionImage pickOptionImage = new PickOptionImage();
         pickOptionImage.imageUrl = imageUrl;
-        pickOptionImage.key = key;
+        pickOptionImage.imageKey = key;
+        pickOptionImage.name = name;
 
         return pickOptionImage;
     }

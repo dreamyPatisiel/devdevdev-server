@@ -21,31 +21,19 @@ public class AwsS3Uploader {
 
     private final AmazonS3 amazonS3Client;
 
-    public List<S3ImageObject> uploads(List<MultipartFile> multipartFiles, String bucket, String dirName) {
+    public List<S3ImageObject> uploads(List<MultipartFile> multipartFiles, String bucket, String dirName)
+            throws IOException {
         List<S3ImageObject> s3ImageObjects = new ArrayList<>();
 
-        // 와일문과 for 문 순서를 바꾼다 오..
-        for (MultipartFile multipartFile : multipartFiles) {
-            int fileUploadMaxTryCount = 0;
-            boolean fileUploadSuccess = false;
-            while (!fileUploadSuccess && fileUploadMaxTryCount < FILE_UPLOAD_MAX_TRY_COUNT) {
-                try {
-                    ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(multipartFile);
+        for(MultipartFile multipartFile : multipartFiles) {
+            ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(multipartFile);
+            String key = createKey(dirName, multipartFile);
+            PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, multipartFile, objectMetadata);
 
-                    String key = createKey(dirName, multipartFile);
-                    PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, multipartFile, objectMetadata);
+            amazonS3Client.putObject(putObjectRequest);
 
-                    // 파일 업로드
-                    amazonS3Client.putObject(putObjectRequest);
-
-                    String imageUrl = amazonS3Client.getUrl(bucket, key).toString();
-                    s3ImageObjects.add(new S3ImageObject(imageUrl, key));
-                    fileUploadSuccess = true;
-                } catch (IOException e) {
-                    fileUploadMaxTryCount++;
-                    s3ImageObjects.clear();
-                }
-            }
+            String imageUrl = amazonS3Client.getUrl(bucket, key).toString();
+            s3ImageObjects.add(S3ImageObject.of(imageUrl, key));
         }
 
         return s3ImageObjects;
@@ -65,17 +53,17 @@ public class AwsS3Uploader {
                 amazonS3Client.putObject(putObjectRequest);
                 String imageUrl = amazonS3Client.getUrl(bucket, key).toString();
 
-                return new S3ImageObject(imageUrl, key);
+                return S3ImageObject.of(imageUrl, key);
             } catch (IOException e) {
                 fileUploadMaxTryCount++;
             }
         }
 
-        return new S3ImageObject(DEFAULT_IMAGE_URL, EMPTY);
+        return S3ImageObject.of(DEFAULT_IMAGE_URL, EMPTY);
     }
 
-    public void deletePickOptionImage(String bucket, String url) {
-        amazonS3Client.deleteObject(bucket, url);
+    public void deletePickOptionImage(String bucket, String key) {
+        amazonS3Client.deleteObject(bucket, key);
     }
 
     private PutObjectRequest createPutObjectRequest(String bucket, String key, MultipartFile multipartFile,

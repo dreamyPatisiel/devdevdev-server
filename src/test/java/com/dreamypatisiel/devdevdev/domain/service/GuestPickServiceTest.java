@@ -12,7 +12,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
@@ -68,10 +68,10 @@ class GuestPickServiceTest {
     String role = Role.ROLE_USER.name();
 
     Title pickOptionTitle1 = new Title("pickOptionTitle1");
-    PickContents pickContents1 = new PickContents("hello1");
+    PickOptionContents pickOptionContents1 = new PickOptionContents("hello1");
     Count pickOptionVoteCount1 = new Count(10);
     Title pickOptionTitle2 = new Title("pickOptionTitle2");
-    PickContents pickContents2 = new PickContents("hello2");
+    PickOptionContents pickOptionContents2 = new PickOptionContents("hello2");
     Count pickOptionVoteCount2 = new Count(90);
     Title pickTitle = new Title("픽픽픽 제목");
     String thumbnailUrl = "섬네일 이미지 url";
@@ -81,8 +81,8 @@ class GuestPickServiceTest {
     @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 픽픽픽 메인을 조회한다.")
     void findPicksMain() {
         // given
-        PickOption pickOption1 = PickOption.create(pickOptionTitle1, pickContents1, pickOptionVoteCount1);
-        PickOption pickOption2 = PickOption.create(pickOptionTitle2, pickContents2, pickOptionVoteCount2);
+        PickOption pickOption1 = createPickOption(pickOptionTitle1, pickOptionContents1, pickOptionVoteCount1);
+        PickOption pickOption2 = createPickOption(pickOptionTitle2, pickOptionContents2, pickOptionVoteCount2);
 
         Count pickVoteTotalCount = new Count(pickOptionVoteCount1.getCount() + pickOptionVoteCount2.getCount());
         Count pickViewTotalCount = new Count(1);
@@ -124,8 +124,8 @@ class GuestPickServiceTest {
     @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_VIEWED() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2));
 
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
@@ -169,8 +169,8 @@ class GuestPickServiceTest {
     @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 생성시간 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainLATEST() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2));
 
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
@@ -209,8 +209,8 @@ class GuestPickServiceTest {
     @DisplayName("익명 사용자가 커서 방식으로 익명 사용자 전용 댓글수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_COMMENTED() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2));
 
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
@@ -253,8 +253,8 @@ class GuestPickServiceTest {
             + "(현재 가중치 = 댓글수:"+ PickPopularScorePolicy.COMMENT_WEIGHT+", 투표수:"+PickPopularScorePolicy.VOTE_WEIGHT+", 조회수:"+PickPopularScorePolicy.VIEW_WEIGHT+")")
     void findPicksMainPOPULAR() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2));
 
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
@@ -375,5 +375,13 @@ class GuestPickServiceTest {
         pick.changePickVote(pickVotes);
 
         return pick;
+    }
+
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {
+        return PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .voteTotalCount(voteTotalCount)
+                .build();
     }
 }

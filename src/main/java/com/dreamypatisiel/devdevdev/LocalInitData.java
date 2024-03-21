@@ -8,7 +8,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
@@ -18,7 +18,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -150,7 +149,8 @@ public class LocalInitData {
         List<PickOption> pickOptions = new ArrayList<>();
         List<PickOptionImage> pickOptionImages = createPickOptionImage();
         for(int number = 1; number <= DATA_MAX_COUNT*2; number++) {
-            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickContents("픽콘텐츠"+number), new Count(creatRandomNumber()), pickOptionImages);
+            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickOptionContents("픽콘텐츠"+number));
+            pickOption.changePickVoteCount(new Count(creatRandomNumber()));
             pickOptions.add(pickOption);
         }
 
@@ -161,8 +161,10 @@ public class LocalInitData {
         String sampleImageUrl1 = "https://devdevdev-storage.s3.ap-northeast-2.amazonaws.com/test/pickpickpick/hexagonal-architecture.png";
         String sampleImageUrl2 = "https://devdevdev-storage.s3.ap-northeast-2.amazonaws.com/test/pickpickpick/layered-architecture.png";
 
-        PickOptionImage pickOptionImage1 = PickOptionImage.create(sampleImageUrl1, "/test/pickpickpick/hexagonal-architecture.png");
-        PickOptionImage pickOptionImage2 = PickOptionImage.create(sampleImageUrl2, "/test/pickpickpick/layered-architecture.png");
+        PickOptionImage pickOptionImage1 = PickOptionImage.create(
+                sampleImageUrl1, "/test/pickpickpick/hexagonal-architecture.png", "firstPickOptionImage");
+        PickOptionImage pickOptionImage2 = PickOptionImage.create(
+                sampleImageUrl2, "/test/pickpickpick/layered-architecture.png", "firstPickOptionImage");
 
         return List.of(pickOptionImage1, pickOptionImage2);
     }
