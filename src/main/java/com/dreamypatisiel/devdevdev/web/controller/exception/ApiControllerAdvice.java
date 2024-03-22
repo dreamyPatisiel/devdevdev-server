@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller.exception;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
@@ -10,14 +12,34 @@ import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class ApiControllerAdvice {
+
+    // 요청을 하거나 응답을 처리하는 동안 클라이언트에서 오류가 발생한 경우.
+    @ExceptionHandler(SdkClientException.class)
+    public ResponseEntity<BasicResponse<Object>> sdkClientException(SdkClientException e) {
+        log.error("sdkClientException={}", e.getMessage(), e);
+        String errorMessage = "시스템 오류가 발생했습니다.";
+        return new ResponseEntity<>(BasicResponse.fail(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR.value()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // 요청을 처리하는 동안 Amazon S3에서 오류가 발생한 경우.
+    @ExceptionHandler(AmazonServiceException.class)
+    public ResponseEntity<BasicResponse<Object>> amazonServiceException(AmazonServiceException e) {
+        log.error("amazonServiceException={}", e.getMessage(), e);
+        String errorMessage = "시스템 오류가 발생했습니다.";
+        return new ResponseEntity<>(BasicResponse.fail(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR.value()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<BasicResponse<Object>> accessDeniedException(AccessDeniedException e) {

@@ -1,5 +1,5 @@
 [[Pick]]
-== 픽픽픽 메인 API(GET: /devdevdev/api/v1/pick/image)
+== 픽픽픽 메인 API(POST: /devdevdev/api/v1/pick/image)
 * 픽픽픽 메인 화면을 조회할 수 있다.
 * 회원/익명 사용자에 따라 API 응답값이 상이하다.
 

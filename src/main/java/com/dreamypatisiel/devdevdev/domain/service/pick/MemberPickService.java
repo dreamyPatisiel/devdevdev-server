@@ -69,7 +69,7 @@ public class MemberPickService implements PickService {
     public PickUploadImageResponse uploadImages(String name, List<MultipartFile> multipartFiles) throws IOException {
 
         // 픽픽픽은 2개의 옵션이 존재하고 각 옵션마다 이미지를 업로드 할 수 있다.
-        if(!name.equals(FIRST_PICK_OPTION_IMAGE) && !name.equals(SECOND_PICK_OPTION_IMAGE)) {
+        if(!FIRST_PICK_OPTION_IMAGE.equals(name) && !SECOND_PICK_OPTION_IMAGE.equals(name)) {
             throw new PickOptionImageNameException(INVALID_PICK_IMAGE_NAME_MESSAGE);
         }
 

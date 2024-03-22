@@ -40,7 +40,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .leftJoin(pick.pickOptions, pickOption)
                 .leftJoin(pick.pickVotes, pickVote)
                 .leftJoin(pick.member, member).fetchJoin()
-                .where(cursorCondition(pickSort, pickId))
+                .where(getCursorCondition(pickSort, pickId))
                 .orderBy(pickSort(pickSort), pick.id.desc())
                 .limit(limit)
                 .fetch();
@@ -50,7 +50,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
     }
 
-    private BooleanExpression cursorCondition(PickSort pickSort, Long pickId) {
+    private BooleanExpression getCursorCondition(PickSort pickSort, Long pickId) {
         if (ObjectUtils.isEmpty(pickId)) {
             return null;
         }
@@ -65,7 +65,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
             return pick.id.loe(pickId);
         }
 
-        // sort 조건에 맞는 cursorCondition 반환
+        // sort 조건에 맞는 getCursorCondition 반환
         return Arrays.stream(PickSort.values())
                 .filter(sort -> sort.equals(pickSort))
                 .findFirst()
@@ -73,21 +73,9 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .orElse(PickSort.LATEST.getCursorCondition(findPick));
     }
 
-    @Deprecated
-    private BooleanExpression loePickId(Long pickId) {
-        if (ObjectUtils.isEmpty(pickId)) {
-            return null;
-        }
-
-        return pick.id.loe(pickId);
-    }
-
     private OrderSpecifier pickSort(PickSort pickSort) {
-        return Arrays.stream(PickSort.values())
-                .filter(sort -> sort.equals(pickSort))
-                .findFirst()
-                .map(PickSort::getOrderSpecifierByPickSort)
-                .orElseGet(PickSort.LATEST::getOrderSpecifierByPickSort);
+        return Optional.ofNullable(pickSort)
+                .orElse(PickSort.LATEST).getOrderSpecifierByPickSort();
     }
 
     private boolean hasNextPage(List<Pick> contents, int pageSize) {

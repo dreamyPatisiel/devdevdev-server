@@ -81,7 +81,7 @@ public class AwsS3Uploader {
     }
 
     private String createKey(String dirName, MultipartFile multipartFile) {
-        String filName = FileUtils.createRandomFileNameBy(multipartFile.getOriginalFilename());
-        return dirName + FileUtils.SLASH + filName;
+        String fileName = FileUtils.createRandomFileNameBy(multipartFile.getOriginalFilename());
+        return dirName + FileUtils.SLASH + fileName;
     }
 }
