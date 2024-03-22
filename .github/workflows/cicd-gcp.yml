@@ -33,14 +33,17 @@ jobs:
           touch ./application-dev.yml
           touch ./application-jwt-dev.yml
           touch ./application-oauth2-dev.yml
+          touch ./application-storage-s3.yml
         
           echo "${{ secrets.application_dev }}" >> ./application-dev.yml
           echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
           echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
+          echo "${{ secrets.application-storage-s3 }}" >> ./application-storage-s3.yml
           
           cat ./application-dev.yml
           cat ./application-jwt-dev.yml
           cat ./application-oauth2-dev.yml
+          cat ./application-storage-s3.yml
 
 
         shell: bash
