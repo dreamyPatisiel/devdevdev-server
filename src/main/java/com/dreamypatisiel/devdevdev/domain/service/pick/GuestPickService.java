@@ -24,16 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional(readOnly = true)
 public class GuestPickService implements PickService {
 
-    public static final String INVALID_FIND_PICKS_METHODS_CALL_MESSAGE = "익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.";
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
 
     private final PickRepository pickRepository;
 
     @Override
     public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
-        if(!AuthenticationMemberUtils.isAnonymous(authentication)) {
-            throw new IllegalStateException(INVALID_FIND_PICKS_METHODS_CALL_MESSAGE);
-        }
+        // 익명 사용자 호출인지 확인
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 픽픽픽 조회
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);

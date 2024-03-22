@@ -37,10 +37,14 @@ import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -237,6 +241,43 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pickOptionImages[0].pickOptionImageId").isNumber())
                 .andExpect(jsonPath("$.data.pickOptionImages[0].imageUrl").value("http://localhost:8080/xxx.png"))
                 .andExpect(jsonPath("$.data.pickOptionImages[0].imageKey").isString());
+    }
+
+    /**
+     * mockMvc가 yml에 설정을 반영하지 못하는 것 같음..
+     */
+    @Disabled
+    @Test
+    @DisplayName("픽픽픽 이미지를 업로드 할때 10MB 이상의 파일을 업로드하면 예외가 발생한다.")
+    void uploadPickOptionImagesMaxUploadSizeExceededException() throws Exception {
+        // given
+        MockMultipartFile upper10MbMockMultipartFile = new MockMultipartFile("pickOptionImages",
+                new FileInputStream("src/test/resources/testImage/10mb_image.jpg"));
+
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(upper10MbMockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, upper10MbMockMultipartFile, objectMetadata);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
+
+        // then
+        mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+                        .file(upper10MbMockMultipartFile)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").isNumber());
     }
 
     private ObjectMetadata createObjectMetadataByMultipartFile(MultipartFile multipartFile) {

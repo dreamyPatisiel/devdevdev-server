@@ -9,16 +9,7 @@ cors:
     http://localhost:3000,
     https://dev.devdevdev.co.kr
 
-
 spring:
-  servlet:
-    multipart:
-      enabled: true # 멀티파트 업로드 지원여부 (default: true)
-      file-size-threshold: 0B # 파일을 디스크에 저장하지 않고 메모리에 저장하는 최소 크기 (default: 0B)
-      location: /home/dreamy5patisiel/image/temp # 업로드된 파일이 임시로 저장되는 디스크 위치 (default: WAS가 결정)
-      max-file-size: 5MB # 한개 파일의 최대 사이즈 (default: 1MB)
-      max-request-size: 5MB # 한개 요청의 최대 사이즈 (default: 10MB)
-
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -56,3 +47,8 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type: TRACE
+
+elasticsearch:
+  host: es.dev.devdevdev.co.kr
+  port: 9200
+  index: _test

@@ -21,7 +21,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -45,7 +44,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -207,10 +205,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 queryParameters(
-                        parameterWithName("name").optional().description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
@@ -262,7 +260,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 queryParameters(
-                        parameterWithName("name").optional().description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

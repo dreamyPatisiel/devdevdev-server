@@ -13,17 +13,27 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @Slf4j
 @RestControllerAdvice
 public class ApiControllerAdvice {
 
     // 요청을 하거나 응답을 처리하는 동안 클라이언트에서 오류가 발생한 경우.
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<BasicResponse<Object>> maxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+        log.debug("sizeLimitExceededException={}", e.getMessage(), e);
+        String errorMessage = "업로드 가능한 파일 용량(10MB)을 초과했습니다.";
+        return new ResponseEntity<>(BasicResponse.fail(errorMessage, HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(SdkClientException.class)
     public ResponseEntity<BasicResponse<Object>> sdkClientException(SdkClientException e) {
         log.error("sdkClientException={}", e.getMessage(), e);

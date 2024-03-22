@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +13,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,12 +24,14 @@ import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.servlet.http.Cookie;
 import java.util.Date;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -54,7 +58,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -84,7 +88,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/refresh")
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
                         .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -92,6 +96,30 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
 
         // Docs
         actions.andDo(document("token-refresh-exception",
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                ))
+        );
+    }
+
+    @Test
+    @DisplayName("요청에 리프레시 토큰 쿠키가 없으면 예외가 발생한다.")
+    void getRefreshTokenCookieException() throws Exception {
+        // given
+        Cookie cookie = new Cookie(DEVDEVDEV_ACCESS_TOKEN, accessToken);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/token/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(cookie))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // Docs
+        actions.andDo(document("token-refresh-cookie-exception",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
@@ -191,7 +219,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
     @Test
     @DisplayName("USER 테스트 계정이 없으면 예외가 발생한다.")
     void createAdminTokenException() throws Exception {
-        // when // then
+        // given // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

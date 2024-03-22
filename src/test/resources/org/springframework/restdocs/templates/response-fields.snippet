@@ -1,11 +1,12 @@
 |===
-|Path|Type|Authentication|Description
+|Path|Type|Authentication|Description|Format
 
 {{#fields}}
     |{{#tableCellContent}}`+{{path}}+`{{/tableCellContent}}
     |{{#tableCellContent}}`+{{type}}+`{{/tableCellContent}}
     |{{#tableCellContent}}{{#authentication}}{{authentication}}{{/authentication}}{{/tableCellContent}}
     |{{#tableCellContent}}{{description}}{{/tableCellContent}}
+    |{{#tableCellContent}}{{#format}}{{format}}{{/format}}{{/tableCellContent}}
 {{/fields}}
 
 |===

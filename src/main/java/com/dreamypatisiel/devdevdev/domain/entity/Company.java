@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
@@ -21,7 +22,11 @@ public class Company extends BasicTime {
     )
     private CompanyName name;
 
-    private String thumbnail;
+    @Embedded
+    @AttributeOverride(name = "url",
+            column = @Column(name = "thumbnailUrl")
+    )
+    private Url thumbnailUrl;
     @Embedded
     @AttributeOverride(name = "url",
             column = @Column(name = "careerUrl")
@@ -31,4 +36,11 @@ public class Company extends BasicTime {
     @OneToMany(mappedBy = "company")
     private List<TechArticle> techArticles = new ArrayList<>();
 
+    @Builder
+    public Company(CompanyName name, Url thumbnailUrl, Url careerUrl, List<TechArticle> techArticles) {
+        this.name = name;
+        this.thumbnailUrl = thumbnailUrl;
+        this.careerUrl = careerUrl;
+        this.techArticles = techArticles;
+    }
 }
