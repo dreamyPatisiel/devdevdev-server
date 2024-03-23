@@ -45,6 +45,15 @@ jobs:
           cat ./application-oauth2-dev.yml
           cat ./application-storage-s3.yml
 
+      ## 테스트 코드에도 sotrage-s3 가 필요함!
+      - name: make application-storage-s3.yml
+        run: |
+          cd ./src/test/resources
+          touch ./application-storage-s3.yml
+          
+          echo "${{ secrets.application-storage-s3 }}" >> ./application-storage-s3.yml
+          
+          cat ./application-storage-s3.yml
 
         shell: bash
       ## Springboot 프로젝트 빌드
