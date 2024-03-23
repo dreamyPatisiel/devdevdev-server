@@ -75,7 +75,7 @@ public class MemberPickService implements PickService {
 
         // 픽 옵션 이미지 업로드
         S3 s3 = awsS3Properties.getS3();
-        List<S3ImageObject> imageObjects = awsS3Uploader.uploads(multipartFiles, s3.bucket(), s3.createPickPickPickDirectory());
+        List<S3ImageObject> imageObjects = awsS3Uploader.uploadMultipleImage(multipartFiles, s3.bucket(), s3.createPickPickPickDirectory());
 
         // 픽 옵션 이미지 생성
         List<PickOptionImage> pickOptionImage = imageObjects.stream()

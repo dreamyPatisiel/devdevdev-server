@@ -270,6 +270,52 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         ));
     }
 
+    @Test
+    @DisplayName("이미지 형식에 맞지 않으면 픽픽픽 이미지를 업로드에 실패한다.")
+    void uploadPickOptionImagesMediaTypeException() throws Exception {
+        // given
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages",
+                "tesImage.gif", MediaType.IMAGE_GIF_VALUE);
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.gif";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.gif"));
+
+        // then
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+                        .file(mockMultipartFile)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-main-option-image-media-type-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
     private ObjectMetadata createObjectMetadataByMultipartFile(MultipartFile multipartFile) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
@@ -289,6 +335,15 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 name,
                 originalFilename,
                 MediaType.IMAGE_PNG_VALUE,
+                name.getBytes()
+        );
+    }
+
+    private MockMultipartFile createMockMultipartFile(String name, String originalFilename, String mediaTypeValue) {
+        return new MockMultipartFile(
+                name,
+                originalFilename,
+                mediaTypeValue,
                 name.getBytes()
         );
     }

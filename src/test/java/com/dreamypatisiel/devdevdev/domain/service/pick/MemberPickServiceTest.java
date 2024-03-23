@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
+import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -413,7 +414,7 @@ class MemberPickServiceTest {
 
         // s3 이미지 삭제
         S3 s3 = awsS3Properties.getS3();
-        awsS3Uploader.deleteImage(s3.bucket(), pickOptionImage.getImageKey());
+        awsS3Uploader.deleteSingleImage(s3.bucket(), S3ImageObject.from(pickOptionImage));
     }
 
     @ParameterizedTest

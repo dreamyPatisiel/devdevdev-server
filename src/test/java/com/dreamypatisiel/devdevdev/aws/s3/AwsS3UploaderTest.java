@@ -29,14 +29,14 @@ class AwsS3UploaderTest {
 
     @Test
     @DisplayName("AWS S3에 이미지를 업로드 한다.")
-    void uploadImage() {
+    void uploadSingleImage() {
         // given
         MockMultipartFile testImage = createMockMultipartFile("testImage", "testImage.png");
 
         S3 s3 = awsS3Properties.getS3();
 
         // when
-        S3ImageObject s3ImageObject = awsS3Uploader.uploadImage(testImage, s3.bucket(), s3.pickpickpickPath());
+        S3ImageObject s3ImageObject = awsS3Uploader.uploadSingleImage(testImage, s3.bucket(), s3.pickpickpickPath());
 
         // then
         assertAll(
@@ -45,7 +45,7 @@ class AwsS3UploaderTest {
         );
 
         // 이미지 삭제
-        awsS3Uploader.deleteImage(s3.bucket(), s3ImageObject.getKey());
+        awsS3Uploader.deleteSingleImage(s3.bucket(), s3ImageObject);
     }
 
     @Test
@@ -59,7 +59,7 @@ class AwsS3UploaderTest {
         S3 s3 = awsS3Properties.getS3();
 
         // when
-        List<S3ImageObject> s3ImageObjects = awsS3Uploader.uploadImages(testImages, s3.bucket(), s3.pickpickpickPath());
+        List<S3ImageObject> s3ImageObjects = awsS3Uploader.uploadMultipleImage(testImages, s3.bucket(), s3.pickpickpickPath());
 
         // then
         assertThat(s3ImageObjects).hasSize(2)
@@ -67,25 +67,25 @@ class AwsS3UploaderTest {
                 .isNotNull();
 
         // 이미지 여러개 삭제
-        awsS3Uploader.deleteImages(s3.bucket(), s3ImageObjects);
+        awsS3Uploader.deleteMultipleImage(s3.bucket(), s3ImageObjects);
     }
 
     @Test
     @DisplayName("지원하지 않는 이미지 형식을 업로드하면 예외가 발생한다.")
-    void uploadImageMediaTypeException() {
+    void uploadSingleImageMediaTypeException() {
         // given
         MockMultipartFile testImage = createMockMultipartFile("testImage", "testImage.gif",
                 MediaType.IMAGE_GIF_VALUE);
         S3 s3 = awsS3Properties.getS3();
 
         // when // then
-        assertThatThrownBy(() -> awsS3Uploader.uploadImage(testImage, s3.bucket(), s3.pickpickpickPath()))
+        assertThatThrownBy(() -> awsS3Uploader.uploadSingleImage(testImage, s3.bucket(), s3.pickpickpickPath()))
                 .isInstanceOf(ImageFileException.class);
     }
 
     @Test
     @DisplayName("이미지를 업로드 할 때 IOException이 발생하면 빈값이 들어있는 S3ImageObject를 반환한다.")
-    void uploadImageIOException() throws IOException {
+    void uploadSingleImageIOException() throws IOException {
         // given
         MultipartFile mockMultipartFile = mock(MultipartFile.class);
 
@@ -97,14 +97,10 @@ class AwsS3UploaderTest {
         when(mockMultipartFile.getContentType()).thenReturn(MediaType.IMAGE_PNG_VALUE);
         when(mockMultipartFile.getInputStream()).thenThrow(new IOException("Test IOException"));
 
-        S3ImageObject s3ImageObject = awsS3Uploader.uploadImage(mockMultipartFile, s3.bucket(), s3.pickpickpickPath());
+        S3ImageObject s3ImageObject = awsS3Uploader.uploadSingleImage(mockMultipartFile, s3.bucket(), s3.pickpickpickPath());
 
         // then
-        assertThat(s3ImageObject).isNotNull();
-        assertAll(
-                () -> assertThat(s3ImageObject.getImageUrl()).isEmpty(),
-                () -> assertThat(s3ImageObject.getKey()).isEmpty()
-        );
+        assertThat(s3ImageObject).isEqualTo(S3ImageObject.fail());
     }
 
     private static MockMultipartFile createMockMultipartFile(String name, String originalFilename) {

@@ -4,6 +4,7 @@ import static com.dreamypatisiel.devdevdev.web.controller.exception.SystemErrorC
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
+import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
@@ -26,8 +27,12 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 @RestControllerAdvice
 public class ApiControllerAdvice {
 
+    @ExceptionHandler(ImageFileException.class)
+    public ResponseEntity<BasicResponse<Object>> maxUploadSizeExceededException(ImageFileException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
+    }
 
-    // 요청을 하거나 응답을 처리하는 동안 클라이언트에서 오류가 발생한 경우.
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<BasicResponse<Object>> maxUploadSizeExceededException(MaxUploadSizeExceededException e) {
         log.debug("sizeLimitExceededException={}", e.getMessage(), e);
@@ -36,6 +41,7 @@ public class ApiControllerAdvice {
                 HttpStatus.BAD_REQUEST);
     }
 
+    // 요청을 하거나 응답을 처리하는 동안 클라이언트에서 오류가 발생한 경우.
     @ExceptionHandler(SdkClientException.class)
     public ResponseEntity<BasicResponse<Object>> sdkClientException(SdkClientException e) {
         log.error("sdkClientException={}", e.getMessage(), e);

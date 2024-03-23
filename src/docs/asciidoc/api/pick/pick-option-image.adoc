@@ -21,5 +21,6 @@ include::{snippets}/pick-main-option-image/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/pick-main-option-image-exception/response-body.adoc[]
+include::{snippets}/pick-main-option-image-media-type-exception/response-body.adoc[]
 ==== HTTP Response Fields
 include::{snippets}/pick-main-option-image-exception/response-fields.adoc[]
