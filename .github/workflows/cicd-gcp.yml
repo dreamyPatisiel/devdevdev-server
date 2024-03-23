@@ -33,15 +33,27 @@ jobs:
           touch ./application-dev.yml
           touch ./application-jwt-dev.yml
           touch ./application-oauth2-dev.yml
+          touch ./application-storage-s3.yml
         
           echo "${{ secrets.application_dev }}" >> ./application-dev.yml
           echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
           echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
+          echo "${{ secrets.application-storage-s3 }}" >> ./application-storage-s3.yml
           
           cat ./application-dev.yml
           cat ./application-jwt-dev.yml
           cat ./application-oauth2-dev.yml
+          cat ./application-storage-s3.yml
 
+      ## 테스트 코드에도 sotrage-s3 가 필요함!
+      - name: make application-storage-s3.yml
+        run: |
+          cd ./src/test/resources
+          touch ./application-storage-s3.yml
+          
+          echo "${{ secrets.application-storage-s3 }}" >> ./application-storage-s3.yml
+          
+          cat ./application-storage-s3.yml
 
         shell: bash
       ## Springboot 프로젝트 빌드
