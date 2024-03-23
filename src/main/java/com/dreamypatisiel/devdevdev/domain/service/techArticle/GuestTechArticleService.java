@@ -26,19 +26,21 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
     private final ElasticTechArticleService elasticTechArticleService;
 
-    public GuestTechArticleService(TechArticleRepository techArticleRepository, ElasticTechArticleService elasticTechArticleService) {
+    public GuestTechArticleService(TechArticleRepository techArticleRepository,
+                                   ElasticTechArticleService elasticTechArticleService) {
         super(techArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
     }
 
     @Override
-    public Slice<TechArticleResponse> findTechArticles(Pageable pageable, String elasticId,
-                                                       TechArticleSort techArticleSort, Authentication authentication) {
+    public Slice<TechArticleResponse> getTechArticles(Pageable pageable, String elasticId,
+                                                         TechArticleSort techArticleSort, String keyword,
+                                                         Float score, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 기술블로그 조회
-        SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.findTechArticles(pageable, elasticId, techArticleSort);
+        SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score);
 
         // 데이터 가공
         List<TechArticleResponse> techArticleResponses = getTechArticleResponses(searchHits);
@@ -59,7 +61,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         return findTechArticles.stream()
                 .map(findTechArticle -> {
                     ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(findTechArticle.getElasticId());
-                    return TechArticleResponse.of(elasticResponse.content(), findTechArticle);
+                    return TechArticleResponse.of(elasticResponse.content(), findTechArticle, elasticResponse.score());
                 })
                 .toList();
     }

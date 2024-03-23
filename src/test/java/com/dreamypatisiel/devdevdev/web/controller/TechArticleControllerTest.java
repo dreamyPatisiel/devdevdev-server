@@ -211,7 +211,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_EXCEPTION_MESSAGE))
+                .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 

@@ -2,7 +2,6 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -24,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-class GuestTechArticleServiceTestTest extends ElasticsearchSupportTest {
+class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
 
     @Autowired
     GuestTechArticleService guestTechArticleService;
@@ -41,17 +40,16 @@ class GuestTechArticleServiceTestTest extends ElasticsearchSupportTest {
 
     @Test
     @DisplayName("익명 사용자가 커서 방식으로 기술블로그를 조회하여 응답을 생성한다.")
-    void findTechArticles() {
+    void getTechArticles() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        String elasticId = "";
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        Slice<TechArticleResponse> techArticles = guestTechArticleService.findTechArticles(pageable, elasticId, TechArticleSort.LATEST, authentication);
+        Slice<TechArticleResponse> techArticles = guestTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
 
         // then
         assertThat(techArticles)
@@ -60,7 +58,7 @@ class GuestTechArticleServiceTestTest extends ElasticsearchSupportTest {
 
     @Test
     @DisplayName("커서 방식으로 익명 사용자 전용 기술블로그 메인을 조회할 때 익명 사용자가 아니면 예외가 발생한다.")
-    void findTechArticlesException() {
+    void getTechArticlesException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -71,7 +69,7 @@ class GuestTechArticleServiceTestTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.findTechArticles(pageable, null, null, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.getTechArticles(pageable, null, null, null, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE);
     }

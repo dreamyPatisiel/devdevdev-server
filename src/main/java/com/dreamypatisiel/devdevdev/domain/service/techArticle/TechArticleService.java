@@ -9,6 +9,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface TechArticleService {
-    Slice<TechArticleResponse> findTechArticles(Pageable pageable, String elasticId,
-                                                TechArticleSort techArticleSort, Authentication authentication);
+    Slice<TechArticleResponse> getTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort,
+                                                  String keyword, Float score, Authentication authentication);
 }
