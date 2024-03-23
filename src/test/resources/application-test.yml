@@ -9,7 +9,6 @@ cors:
     http://localhost:3000,
     https://dev.devdevdev.co.kr
 
-
 spring:
   jpa:
     hibernate:

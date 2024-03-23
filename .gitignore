@@ -43,3 +43,11 @@ src/main/resources/application-oauth2-prod.yml
 src/main/resources/application-dev.yml
 src/main/resources/application-jwt-dev.yml
 src/main/resources/application-oauth2-dev.yml
+src/main/resources/application-storage-s3.yml
+src/main/resources/application-storage-s3-local.yml
+src/main/resources/application-storage-s3-dev.yml
+src/test/resources/application-storage-s3.yml
+
+### json
+src/main/resources/storage/gcs-key.json
+src/test/resources/storage/gcs-key.json

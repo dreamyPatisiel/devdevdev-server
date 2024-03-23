@@ -3,12 +3,13 @@ package com.dreamypatisiel.devdevdev.domain.service.response;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 제외
+@JsonInclude(Include.NON_NULL) // null 인 필드는 제외
 public class PicksResponse {
     private final Long id;
     private final String title;

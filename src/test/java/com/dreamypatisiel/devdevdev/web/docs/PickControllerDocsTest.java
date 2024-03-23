@@ -2,6 +2,12 @@ package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -13,9 +19,14 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
@@ -23,25 +34,32 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.multipart.MultipartFile;
 
 public class PickControllerDocsTest extends SupportControllerDocsTest {
 
@@ -53,13 +71,15 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     MemberRepository memberRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
+    @MockBean
+    AmazonS3 amazonS3Client;
 
     @Test
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
     void getPicksMainByMember() throws Exception {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(1));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(1));
         Title title = new Title("픽1타이틀");
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/tumbnail/1";
@@ -99,7 +119,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 queryParameters(
                     parameterWithName("pickId").optional().description("픽픽픽 아이디"),
-                    parameterWithName("pickSort").optional().description("정렬 조건(LATEST(최신순), POPULAR(인기순), MOST_VIEWED(조회순), MOST_COMMENTED(댓글순))"),
+                    parameterWithName("pickSort").optional().description("픽픽픽 정렬 조건").attributes(pickSortType()),
                     parameterWithName("size").optional().description("조회되는 데이터 수")
                 ),
                 responseFields(
@@ -153,6 +173,181 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         ));
     }
 
+    @Test
+    @DisplayName("픽픽픽 이미지를 업로드 한다.")
+    void uploadPickOptionImages() throws Exception {
+        // given
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
+
+        // then
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+                        .file(mockMultipartFile)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-main-option-image",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickOptionImages").type(JsonFieldType.ARRAY).description("픽픽픽 옵션 이미지 배열")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickOptionImages[].name").type(JsonFieldType.STRING).description("픽픽픽 옵션 이미지 이름")
+                                .attributes(pickOptionImageNameType(), authenticationType()),
+                        fieldWithPath("data.pickOptionImages[].pickOptionImageId").type(JsonFieldType.NUMBER).description("픽픽픽 옵션 이미지 아이디")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickOptionImages[].imageUrl").type(JsonFieldType.STRING).description("픽픽픽 옵션 이미지 URL")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickOptionImages[].imageKey").type(JsonFieldType.STRING).description("픽픽픽 옵션 이미지 KEY(경로)")
+                                .attributes(authenticationType())
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("비회원은 픽픽픽 이미지를 업로드에 실패한다.")
+    void uploadPickOptionImagesException() throws Exception {
+        // given
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
+
+        // then
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+                        .file(mockMultipartFile)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-main-option-image-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                queryParameters(
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("이미지 형식에 맞지 않으면 픽픽픽 이미지를 업로드에 실패한다.")
+    void uploadPickOptionImagesMediaTypeException() throws Exception {
+        // given
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages",
+                "tesImage.gif", MediaType.IMAGE_GIF_VALUE);
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.gif";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.gif"));
+
+        // then
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+                        .file(mockMultipartFile)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-main-option-image-media-type-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    private ObjectMetadata createObjectMetadataByMultipartFile(MultipartFile multipartFile) {
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(multipartFile.getContentType());
+        objectMetadata.setContentLength(multipartFile.getSize());
+
+        return objectMetadata;
+    }
+
+    private PutObjectRequest createPutObjectRequest(String bucket, String key, MultipartFile multipartFile,
+                                                    ObjectMetadata objectMetadata) throws IOException {
+
+        return new PutObjectRequest(bucket, key, multipartFile.getInputStream(), objectMetadata);
+    }
+
+    private MockMultipartFile createMockMultipartFile(String name, String originalFilename) {
+        return new MockMultipartFile(
+                name,
+                originalFilename,
+                MediaType.IMAGE_PNG_VALUE,
+                name.getBytes()
+        );
+    }
+
+    private MockMultipartFile createMockMultipartFile(String name, String originalFilename, String mediaTypeValue) {
+        return new MockMultipartFile(
+                name,
+                originalFilename,
+                mediaTypeValue,
+                name.getBytes()
+        );
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
@@ -183,5 +378,13 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         pick.changePickVote(pickVotes);
 
         return pick;
+    }
+
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {
+        return PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .voteTotalCount(voteTotalCount)
+                .build();
     }
 }

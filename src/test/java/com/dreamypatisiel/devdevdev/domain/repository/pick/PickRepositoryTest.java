@@ -6,7 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
@@ -41,10 +41,10 @@ class PickRepositoryTest {
     @DisplayName("findPicksByCursor 쿼리 확인")
     void findPicksByCursor() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickContents("픽콘텐츠2"), new Count(2));
-        PickOption pickOption3 = PickOption.create(new Title("픽옵션3"), new PickContents("픽콘텐츠3"), new Count(3));
-        PickOption pickOption4 = PickOption.create(new Title("픽옵션4"), new PickContents("픽콘텐츠4"), new Count(4));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2));
+        PickOption pickOption3 = createPickOption(new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"), new Count(3));
+        PickOption pickOption4 = createPickOption(new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"), new Count(4));
 
         Count pick1VoteTotalCount = new Count(pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
         Count pick2VoteTotalCount = new Count(pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
@@ -236,5 +236,13 @@ class PickRepositoryTest {
         pick.changePickVote(pickVotes);
 
         return pick;
+    }
+
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {
+        return PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .voteTotalCount(voteTotalCount)
+                .build();
     }
 }

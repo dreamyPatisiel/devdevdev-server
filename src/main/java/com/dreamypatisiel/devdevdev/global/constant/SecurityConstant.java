@@ -32,6 +32,7 @@ public class SecurityConstant {
             "/devdevdev/api/v1/authentication",
             "/devdevdev/api/v1/token/**",
             "/devdevdev/api/v1/picks/**",
+            "/devdevdev/api/v1/pick/image",
             "/devdevdev/api/v1/articles/**"
     };
     public static final String[] JWT_FILTER_WHITELIST_URL = new String[] {
@@ -60,6 +61,7 @@ public class SecurityConstant {
             "/devdevdev/api/v1/token/**"
     };
 
-    public static final String[] POST_WHITELIST = new String[]{
+    public static final String[] POST_WHITELIST = new String[] {
+
     };
 }

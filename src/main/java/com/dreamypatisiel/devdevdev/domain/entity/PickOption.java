@@ -1,7 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.global.utils.BigDecimalUtils;
 import jakarta.persistence.AttributeOverride;
@@ -27,7 +27,6 @@ import lombok.ToString;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(of = {"id"})
 public class PickOption {
 
     @Id
@@ -46,7 +45,7 @@ public class PickOption {
     @AttributeOverride(name = "pickContents",
             column = @Column(name = "contents")
     )
-    private PickContents contents;
+    private PickOptionContents contents;
 
     @Embedded
     @AttributeOverride(name = "count",
@@ -57,18 +56,21 @@ public class PickOption {
     @OneToMany(mappedBy = "pickOption")
     private List<PickVote> pickVotes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pickOption")
+    private List<PickOptionImage> pickOptionImages = new ArrayList<>();
+
     @Builder
-    private PickOption(Title title, PickContents contents, Count voteTotalCount) {
+    private PickOption(Title title, PickOptionContents contents, Count voteTotalCount) {
         this.title = title;
         this.contents = contents;
         this.voteTotalCount = voteTotalCount;
     }
 
-    public static PickOption create(Title title, PickContents pickContents, Count voteTotalCount) {
+    public static PickOption create(Title title, PickOptionContents pickOptionContents) {
         PickOption pickOption = new PickOption();
         pickOption.title = title;
-        pickOption.contents = pickContents;
-        pickOption.voteTotalCount = voteTotalCount;
+        pickOption.contents = pickOptionContents;
+        pickOption.voteTotalCount = new Count(0);
 
         return pickOption;
     }
@@ -84,5 +86,17 @@ public class PickOption {
 
     public void changePick(Pick pick) {
         this.pick = pick;
+    }
+
+    // 연관관계 편의 메소드
+    public void changePickOptionImages(List<PickOptionImage> pickOptionImages) {
+        for(PickOptionImage pickOptionImage : pickOptionImages) {
+            pickOptionImage.changePickOptionImage(this);
+            this.getPickOptionImages().add(pickOptionImage);
+        }
+    }
+
+    public void changePickVoteCount(Count voteTotalCount) {
+        this.voteTotalCount = voteTotalCount;
     }
 }

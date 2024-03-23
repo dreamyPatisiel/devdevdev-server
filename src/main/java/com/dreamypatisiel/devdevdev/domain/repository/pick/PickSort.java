@@ -6,12 +6,14 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberExpression;
-import io.swagger.v3.oas.models.security.SecurityScheme.In;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
+@Getter
+@RequiredArgsConstructor
 public enum PickSort {
 
-    LATEST {
+    LATEST("최신순") {
         @Override
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.createdAt);
@@ -22,7 +24,7 @@ public enum PickSort {
             return pick.id.lt(findPick.getId());
         }
     },
-    POPULAR {
+    POPULAR("인기순") {
         @Override
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.popularScore.count);
@@ -35,7 +37,7 @@ public enum PickSort {
                             .and(pick.id.lt(findPick.getId())));
         }
     },
-    MOST_VIEWED {
+    MOST_VIEWED("조회수") {
         @Override
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.viewTotalCount.count);
@@ -48,7 +50,7 @@ public enum PickSort {
                             .and(pick.id.lt(findPick.getId())));
         }
     },
-    MOST_COMMENTED {
+    MOST_COMMENTED("댓글순") {
         @Override
         public OrderSpecifier getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.commentTotalCount.count);
@@ -65,4 +67,6 @@ public enum PickSort {
 
     abstract public OrderSpecifier getOrderSpecifierByPickSort();
     abstract public BooleanExpression getCursorCondition(Pick pick);
+
+    private final String description;
 }

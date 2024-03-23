@@ -39,8 +39,10 @@ public class LogoutController {
 
         // 로그아웃 처리
         request.logout();
+
         // 인증 객체 초기화
         SecurityContextHolder.clearContext();
+
         // 쿠키 설정
         CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,

@@ -1,0 +1,12 @@
+spring:
+  config:
+    activate:
+      on-profile: storage-gcp
+
+  cloud:
+    gcp:
+      storage:
+        credentials:
+          location: src/main/resources/storage/gcs-key.json
+    project-id: airy-charmer-406518
+    bucket: devdevdev-storage
