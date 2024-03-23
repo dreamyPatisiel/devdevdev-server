@@ -49,7 +49,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -414,7 +413,7 @@ class MemberPickServiceTest {
 
         // s3 이미지 삭제
         S3 s3 = awsS3Properties.getS3();
-        awsS3Uploader.deletePickOptionImage(s3.bucket(), pickOptionImage.getImageKey());
+        awsS3Uploader.deleteImage(s3.bucket(), pickOptionImage.getImageKey());
     }
 
     @ParameterizedTest
