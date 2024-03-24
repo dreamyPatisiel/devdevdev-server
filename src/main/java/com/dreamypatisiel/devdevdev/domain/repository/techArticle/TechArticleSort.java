@@ -1,11 +1,15 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.elasticsearch.search.sort.*;
 
+@Getter
+@RequiredArgsConstructor
 public enum TechArticleSort {
 
-    LATEST {
+    LATEST("최신순") {
         @Override
         public SortBuilder<?> getSortCondition() {
             return getFieldSortBuilder(LATEST_SORT_FIELD_NAME);
@@ -16,7 +20,7 @@ public enum TechArticleSort {
             return elasticTechArticle.getRegDate().toString();
         }
     },
-    POPULAR {
+    POPULAR("인기순") {
         @Override
         public SortBuilder<?> getSortCondition() {
             return getFieldSortBuilder(POPULAR_SORT_FIELD_NAME);
@@ -27,7 +31,7 @@ public enum TechArticleSort {
             return elasticTechArticle.getPopularScore();
         }
     },
-    MOST_VIEWED {
+    MOST_VIEWED("조회순") {
         @Override
         public SortBuilder<?> getSortCondition() {
             return getFieldSortBuilder(MOST_VIEWED_SORT_FIELD_NAME);
@@ -38,7 +42,7 @@ public enum TechArticleSort {
             return elasticTechArticle.getViewTotalCount();
         }
     },
-    MOST_COMMENTED {
+    MOST_COMMENTED("댓글순") {
         @Override
         public SortBuilder<?> getSortCondition() {
             return getFieldSortBuilder(MOST_COMMENTED_SORT_FIELD_NAME);
@@ -50,7 +54,7 @@ public enum TechArticleSort {
         }
     },
 
-    HIGHEST_SCORE {
+    HIGHEST_SCORE("정확도순") {
         @Override
         public SortBuilder<?> getSortCondition() {
             return SortBuilders.scoreSort().order(SortOrder.DESC);
@@ -73,4 +77,6 @@ public enum TechArticleSort {
     private final static String POPULAR_SORT_FIELD_NAME = "popularScore";
     private final static String MOST_VIEWED_SORT_FIELD_NAME = "viewTotalCount";
     private final static String MOST_COMMENTED_SORT_FIELD_NAME = "commentTotalCount";
+
+    private final String description;
 }

@@ -30,6 +30,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techArticleSortType;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -66,7 +67,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
 
-
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
             TechArticle techArticle = TechArticle.from(elasticTechArticle);
@@ -101,12 +101,19 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         }
         bookmarkRepository.saveAll(bookmarks);
 
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable1 = PageRequest.of(0, 10);
+        Pageable pageable2 = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(pageable1).stream().toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
-                        .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("size", String.valueOf(pageable2.getPageSize()))
+                        .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
+                        .queryParam("keyword", keyword)
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -121,9 +128,11 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
                 ),
                 queryParameters(
+                        parameterWithName("size").optional().description("조회되는 데이터 수"),
+                        parameterWithName("techArticleSort").optional().description("정렬 조건").attributes(techArticleSortType()),
+                        parameterWithName("keyword").optional().description("검색어"),
                         parameterWithName("elasticId").optional().description("마지막 데이터의 엘라스틱서치 아이디"),
-                        parameterWithName("techArticleSort").optional().description("정렬 조건(LATEST(최신순), POPULAR(인기순), MOST_VIEWED(조회순), MOST_COMMENTED(댓글순))"),
-                        parameterWithName("size").optional().description("조회되는 데이터 수")
+                        parameterWithName("score").optional().description("마지막 데이터의 엘라스틱서치 아이디(정확도순 검색일 때에만 필수)")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
@@ -143,6 +152,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content.[].commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.content.[].popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
                         fieldWithPath("data.content.[].isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                        fieldWithPath("data.content.[].score").type(JsonFieldType.NUMBER).description("정확도 점수"),
 
                         fieldWithPath("data.pageable").type(JsonFieldType.OBJECT).description("페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(JsonFieldType.NUMBER).description("페이지 번호"),
@@ -190,7 +200,40 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(status().isBadRequest());
 
         // Docs
-        actions.andDo(document("not-found-exception",
+        actions.andDo(document("not-found-tech-article-exception",
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때," +
+            "정확도 내림차순으로 조회하기 위한 점수가 없다면 예외가 발생한다.")
+    void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCOREWithoutScoreException() throws Exception {
+        // given
+        Pageable pageable1 = PageRequest.of(0, 1);
+        Pageable pageable2 = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(pageable1).stream().toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
+                        .queryParam("size", String.valueOf(pageable2.getPageSize()))
+                        .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("keyword", keyword)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // Docs
+        actions.andDo(document("not-found-score-exception",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

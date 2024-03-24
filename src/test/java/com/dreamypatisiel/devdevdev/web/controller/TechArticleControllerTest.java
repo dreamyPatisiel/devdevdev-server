@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -212,6 +213,32 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @Test
+    @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때," +
+            "정확도 내림차순으로 조회하기 위한 점수가 없다면 예외가 발생한다.")
+    void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCOREWithoutScoreException() throws Exception {
+        // given
+        Pageable pageable1 = PageRequest.of(0, 1);
+        Pageable pageable2 = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(pageable1).stream().toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles")
+                        .queryParam("size", String.valueOf(pageable2.getPageSize()))
+                        .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("keyword", keyword)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_CURSOR_SCORE_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 

@@ -34,7 +34,7 @@ public class ElasticTechArticleService {
 
     public static final String NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE = "존재하지 않는 기술블로그입니다.";
     public static final String INVALID_ELASTIC_METHODS_CALL_MESSAGE = "검색어가 없습니다. 잘못된 메소드 호출입니다.";
-    public static final String NOT_FOUND_CURSOR_SCORE_MESSAGE = "커서의 score를 입력해주세요.";
+    public static final String NOT_FOUND_CURSOR_SCORE_MESSAGE = "정확도순 페이지네이션을 위한 커서의 score를 입력해주세요.";
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
