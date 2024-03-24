@@ -4,8 +4,7 @@ name: Build Test on PR
 on:
   pull_request:
     branches: ["main", "develop"]
-    types:
-      - synchronize
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
