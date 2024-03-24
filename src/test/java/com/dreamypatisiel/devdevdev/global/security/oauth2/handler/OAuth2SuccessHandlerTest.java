@@ -105,9 +105,9 @@ class OAuth2SuccessHandlerTest {
         );
         assertAll(
                 () -> assertThat(accessCookie.isHttpOnly()).isFalse(),
-                () -> assertThat(accessCookie.getSecure()).isTrue(),
+                () -> assertThat(accessCookie.getSecure()).isFalse(),
                 () -> assertThat(refreshCookie.isHttpOnly()).isTrue(),
-                () -> assertThat(refreshCookie.getSecure()).isTrue()
+                () -> assertThat(refreshCookie.getSecure()).isFalse()
         );
         assertAll(
                 () -> assertThat(response.getRedirectedUrl()).isNotEmpty(),

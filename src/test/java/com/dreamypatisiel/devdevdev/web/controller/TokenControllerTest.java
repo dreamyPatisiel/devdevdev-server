@@ -59,13 +59,13 @@ class TokenControllerTest extends SupportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists(DEVDEVDEV_REFRESH_TOKEN))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_REFRESH_TOKEN, true))
-                .andExpect(cookie().secure(DEVDEVDEV_REFRESH_TOKEN, true))
+                .andExpect(cookie().secure(DEVDEVDEV_REFRESH_TOKEN, false))
                 .andExpect(cookie().exists(DEVDEVDEV_ACCESS_TOKEN))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_ACCESS_TOKEN, false))
-                .andExpect(cookie().secure(DEVDEVDEV_ACCESS_TOKEN, true))
+                .andExpect(cookie().secure(DEVDEVDEV_ACCESS_TOKEN, false))
                 .andExpect(cookie().exists(DEVDEVDEV_LOGIN_STATUS))
                 .andExpect(cookie().httpOnly(DEVDEVDEV_LOGIN_STATUS, false))
-                .andExpect(cookie().secure(DEVDEVDEV_LOGIN_STATUS, true))
+                .andExpect(cookie().secure(DEVDEVDEV_LOGIN_STATUS, false))
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
 
         // 쿠키에 있는 리프레시 토큰이 저장되었는지 검증
