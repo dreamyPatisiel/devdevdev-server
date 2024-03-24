@@ -14,14 +14,12 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
 public class GuestTechArticleService extends TechArticleCommonService implements TechArticleService {
 
     private final ElasticTechArticleService elasticTechArticleService;

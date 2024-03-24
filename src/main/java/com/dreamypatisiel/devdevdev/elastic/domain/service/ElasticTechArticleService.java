@@ -19,7 +19,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,11 +28,10 @@ import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstan
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ElasticTechArticleService {
 
     public static final String NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE = "존재하지 않는 기술블로그입니다.";
-    public static final String INVALID_ELASTIC_METHODS_CALL_MESSAGE = "검색어가 없습니다. 잘못된 메소드 호출입니다.";
+    public static final String INVALID_ELASTIC_METHODS_CALL_MESSAGE = "검색어가 없습니다. 검색어를 입력해주세요.";
     public static final String NOT_FOUND_CURSOR_SCORE_MESSAGE = "정확도순 페이지네이션을 위한 커서의 score를 입력해주세요.";
 
     private final ElasticsearchOperations elasticsearchOperations;
@@ -58,7 +56,7 @@ public class ElasticTechArticleService {
                 .withPageable(pageable)
                 // 정렬 조건 설정
                 .withSort(getSortCondition(techArticleSort))
-                .withSort(getPrimarySortCondition())
+                .withSort(getPrimarySortCondition(_ID))
                 .build();
 
         // searchAfter 설정
@@ -85,7 +83,7 @@ public class ElasticTechArticleService {
                 .withQuery(QueryBuilders.queryStringQuery(keyword))
                 // 정렬 조건 설정
                 .withSort(getSortCondition(techArticleSort))
-                .withSort(getPrimarySortCondition())
+                .withSort(getPrimarySortCondition(_ID))
                 .build();
 
         // searchAfter 설정
@@ -94,8 +92,8 @@ public class ElasticTechArticleService {
         return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
 
-    private FieldSortBuilder getPrimarySortCondition() {
-        return SortBuilders.fieldSort(_ID).order(SortOrder.DESC);
+    private FieldSortBuilder getPrimarySortCondition(String fieldName) {
+        return SortBuilders.fieldSort(fieldName).order(SortOrder.DESC);
     }
 
     private SortBuilder<?> getSortCondition(TechArticleSort techArticleSort) {
