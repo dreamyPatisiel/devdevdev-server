@@ -46,7 +46,7 @@ public class LogoutController {
         // 쿠키 설정
         CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
-                CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, false);
+                CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, true);
 
         return ResponseEntity.ok().body(BasicResponse.success());
     }

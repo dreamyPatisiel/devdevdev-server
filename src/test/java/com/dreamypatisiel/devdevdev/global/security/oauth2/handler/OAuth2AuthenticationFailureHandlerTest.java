@@ -42,7 +42,7 @@ class OAuth2AuthenticationFailureHandlerTest {
         assertAll(
                 () -> assertThat(cookie.getValue()).isEqualTo(CookieUtils.INACTIVE),
                 () -> assertThat(cookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
-                () -> assertThat(cookie.getSecure()).isFalse(),
+                () -> assertThat(cookie.getSecure()).isTrue(),
                 () -> assertThat(cookie.isHttpOnly()).isFalse()
         );
     }

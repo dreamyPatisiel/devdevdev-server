@@ -31,7 +31,7 @@ public class OAuth2AuthenticationFailureHandler implements AuthenticationFailure
                                         AuthenticationException exception) {
         // 응답 쿠키 설정
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
-                INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, false);
+                INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, true);
         throw new OAuth2LoginException(INVALID_OAUTH2_AUTHENTICATION_FAIL_MESSAGE);
     }
 }
