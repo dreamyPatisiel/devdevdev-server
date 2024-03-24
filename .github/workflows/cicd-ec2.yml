@@ -23,21 +23,40 @@ jobs:
       # 작업에서 액세스할 수 있도록 $GITHUB_WORKSPACE에서 저장소를 체크아웃합니다.
       - uses: actions/checkout@v3
 
-      ## open jdk 17 버전 환경 세팅
-      - name: Set up JDK 17
+      ## open jdk 21 버전 환경 세팅
+      - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
-          java-version: 17
+          java-version: 21
           distribution: corretto
 
       # 환경파일 작성 : github에 올리지 못하는 정보의 설정파일을 runner에 삽입
       ## create application-prod.yml
       - name: make application-prod.yml
         run: |
-           ## create application-prod.yml
-           cd ./src/main/resources
-           touch ./application-prod.yml
-           echo "${{ secrets.application_prod }}" >> ./application-prod.yml
+          ## create application-prod.yml
+          cd ./src/main/resources
+          
+          touch ./application-prod.yml
+          touch ./application-jwt-prod.yml
+          touch ./application-oauth2-prod.yml
+          touch ./application-storage-s3.yml
+
+          echo "${{ secrets.application_prod }}" >> ./application-prod.yml
+          echo "${{ secrets.application_jwt_prod }}" >> ./application-jwt-prod.yml
+          echo "${{ secrets.application_oauth2_prod }}" >> ./application-oauth2-prod.yml
+          echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+
+      ## 테스트 코드에도 sotrage-s3 가 필요함!
+      - name: make application-storage-s3.yml
+        run: |
+          cd ./src/test/resources
+          touch ./application-storage-s3.yml
+          
+          echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          
+          cat ./application-storage-s3.yml
+
         shell: bash
 
       ## Springboot 프로젝트 빌드
@@ -77,9 +96,9 @@ jobs:
       - name: action-slack
         uses: 8398a7/action-slack@v3
         with:
-            status: ${{ job.status }}
-            author_name: 배포 결과를 알려드려요 # default: 8398a7@action-slack
-            fields: repo,message,commit,author,eventName,ref,took
+          status: ${{ job.status }}
+          author_name: 배포 결과를 알려드려요 # default: 8398a7@action-slack
+          fields: repo,message,commit,author,eventName,ref,took
         env:
-           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
         if: always() # Pick up events even if the job fails or is canceled.
