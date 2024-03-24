@@ -220,7 +220,7 @@ class CookieUtilsTest {
                 () -> assertThat(accessTokenCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN),
                 () -> assertThat(accessTokenCookie.getValue()).isEqualTo(accessToken),
                 () -> assertThat(accessTokenCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
-                () -> assertThat(accessTokenCookie.getSecure()).isTrue(),
+                () -> assertThat(accessTokenCookie.getSecure()).isFalse(),
                 () -> assertThat(accessTokenCookie.isHttpOnly()).isFalse()
         );
 
@@ -228,7 +228,7 @@ class CookieUtilsTest {
                 () -> assertThat(refreshTokenCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN),
                 () -> assertThat(refreshTokenCookie.getValue()).isEqualTo(refreshToken),
                 () -> assertThat(refreshTokenCookie.getMaxAge()).isEqualTo(CookieUtils.REFRESH_MAX_AGE),
-                () -> assertThat(refreshTokenCookie.getSecure()).isTrue(),
+                () -> assertThat(refreshTokenCookie.getSecure()).isFalse(),
                 () -> assertThat(refreshTokenCookie.isHttpOnly()).isTrue()
         );
 
@@ -236,7 +236,7 @@ class CookieUtilsTest {
                 () -> assertThat(loginStatusCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS),
                 () -> assertThat(loginStatusCookie.getValue()).isEqualTo(CookieUtils.ACTIVE),
                 () -> assertThat(loginStatusCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
-                () -> assertThat(loginStatusCookie.getSecure()).isTrue(),
+                () -> assertThat(loginStatusCookie.getSecure()).isFalse(),
                 () -> assertThat(loginStatusCookie.isHttpOnly()).isFalse()
         );
     }
