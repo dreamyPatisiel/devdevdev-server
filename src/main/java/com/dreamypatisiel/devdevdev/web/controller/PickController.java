@@ -10,6 +10,8 @@ import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import java.io.IOException;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Tag(name = "픽픽픽 API", description = "픽픽픽 메인, 상세, 작성 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/devdevdev/api/v1")

@@ -33,8 +33,8 @@ public class TechArticleResponse {
 
     @Builder
     private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String company, LocalDate regDate,
-                               String author, String description, Long viewTotalCount, Long recommendTotalCount,
-                               Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
+                                String author, String description, Long viewTotalCount, Long recommendTotalCount,
+                                Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
@@ -51,40 +51,6 @@ public class TechArticleResponse {
         this.score = score;
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle) {
-        return TechArticleResponse.builder()
-                .id(techArticle.getId())
-                .viewTotalCount(techArticle.getViewTotalCount().getCount())
-                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
-                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
-                .popularScore(techArticle.getPopularScore().getCount())
-                .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
-                .title(elasticTechArticle.getTitle())
-                .company(elasticTechArticle.getCompany())
-                .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getAuthor())
-                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
-                .build();
-    }
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, boolean isBookmarked) {
-        return TechArticleResponse.builder()
-                .id(techArticle.getId())
-                .viewTotalCount(techArticle.getViewTotalCount().getCount())
-                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
-                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
-                .popularScore(techArticle.getPopularScore().getCount())
-                .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
-                .title(elasticTechArticle.getTitle())
-                .company(elasticTechArticle.getCompany())
-                .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getAuthor())
-                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
-                .isBookmarked(isBookmarked)
-                .build();
-    }
-
     public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, Float score) {
         return TechArticleResponse.builder()
                 .id(techArticle.getId())
@@ -99,7 +65,7 @@ public class TechArticleResponse {
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
-                .score(score)
+                .score(getValidScore(score))
                 .build();
     }
 
@@ -117,9 +83,13 @@ public class TechArticleResponse {
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
-                .score(score)
+                .score(getValidScore(score))
                 .isBookmarked(isBookmarked)
                 .build();
+    }
+
+    private static Float getValidScore(Float score) {
+        return Float.isNaN(score) ? null : score;
     }
 
     private static String truncateString(String elasticTechArticleContents, int maxLength) {
