@@ -156,24 +156,24 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그 메인을 최신순으로 조회한다.")
     void getTechArticlesWithCursorOrderByLATEST() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.LATEST,null, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.LATEST,null, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.LATEST, null, null);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.LATEST, null, null);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
 
         // then
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(date -> !date.isAfter(cursor.getRegDate()));
@@ -183,24 +183,24 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그 메인을 조회수 내림차순으로 조회한다.")
     void getTechArticlesWithCursorOrderByMOST_VIEWED() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.MOST_VIEWED, null, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.MOST_VIEWED, null, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.MOST_VIEWED, null, null);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.MOST_VIEWED, null, null);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
 
         // then
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getViewTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(viewCount -> viewCount <= cursor.getViewTotalCount());
@@ -210,24 +210,24 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그 메인을 댓글수 내림차순으로 조회한다.")
     void getTechArticlesWithCursorOrderByMOST_COMMENTED() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.MOST_COMMENTED, null, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.MOST_COMMENTED, null, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.MOST_COMMENTED, null, null);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.MOST_COMMENTED, null, null);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
 
         // then
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getCommentTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(commentCount -> commentCount <= cursor.getCommentTotalCount());
@@ -237,24 +237,24 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그 메인을 인기점수 내림차순으로 조회한다.")
     void getTechArticlesWithCursorOrderByPOPULAR_SCORE() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.POPULAR, null, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.POPULAR, null, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.POPULAR, null, null);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.POPULAR, null, null);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
 
         // then
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getPopularScore)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(popularScore -> popularScore <= cursor.getPopularScore());
@@ -264,24 +264,24 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그 메인을 정확도순으로 조회하면 최신순으로 조회된다.")
     void getTechArticlesWithCursorOrderByHIGHEST_SCORE() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.HIGHEST_SCORE,null, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.HIGHEST_SCORE,null, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.HIGHEST_SCORE, null, null);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.HIGHEST_SCORE, null, null);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
 
         // then
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(date -> !date.isAfter(cursor.getRegDate()));
@@ -421,11 +421,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때 정확도 내림차순으로 조회한다.")
     void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCORE() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.HIGHEST_SCORE,keyword, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.HIGHEST_SCORE,keyword, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -436,7 +436,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.HIGHEST_SCORE, keyword, cursorScore);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.HIGHEST_SCORE, keyword, cursorScore);
         List<Float> elasticTechArticleScores2 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getScore)
                 .toList();
@@ -454,18 +454,18 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
             "정확도 내림차순으로 조회하기 위한 점수가 없다면 예외가 발생한다.")
     void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCOREWithoutScoreException() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.HIGHEST_SCORE,keyword, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.HIGHEST_SCORE,keyword, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when // then
-        assertThatThrownBy(() -> elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.HIGHEST_SCORE, keyword, null))
+        assertThatThrownBy(() -> elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.HIGHEST_SCORE, keyword, null))
                 .isInstanceOf(ElasticTechArticleException.class)
                 .hasMessage(ElasticTechArticleService.NOT_FOUND_CURSOR_SCORE_MESSAGE);
     }
@@ -474,11 +474,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때 최신순 내림차순으로 조회한다.")
     void getTechArticlesWithKeywordWithCursorOrderByLATEST() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.LATEST,keyword, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.LATEST,keyword, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -489,7 +489,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.LATEST, keyword, cursorScore);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.LATEST, keyword, cursorScore);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -499,7 +499,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isEqualTo(TEST_ARTICLES_COUNT);
 
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(date -> !date.isAfter(cursor.getRegDate()));
@@ -509,11 +509,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때 조회순 내림차순으로 조회한다.")
     void getTechArticlesWithKeywordWithCursorOrderByMOST_VIEWED() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.MOST_VIEWED,keyword, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.MOST_VIEWED,keyword, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -524,7 +524,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.MOST_VIEWED, keyword, cursorScore);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.MOST_VIEWED, keyword, cursorScore);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -534,7 +534,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isEqualTo(TEST_ARTICLES_COUNT);
 
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getViewTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder());
     }
@@ -543,11 +543,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때 댓글순 내림차순으로 조회한다.")
     void getTechArticlesWithKeywordWithCursorOrderByMOST_COMMENTED() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.MOST_COMMENTED,keyword, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.MOST_COMMENTED,keyword, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -558,7 +558,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.MOST_COMMENTED, keyword, cursorScore);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.MOST_COMMENTED, keyword, cursorScore);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -568,7 +568,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isEqualTo(TEST_ARTICLES_COUNT);
 
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getCommentTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder());
     }
@@ -577,11 +577,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때 인기점수 내림차순으로 조회한다.")
     void getTechArticlesWithKeywordWithCursorOrderByPOPULAR_SCORE() {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable1, null, TechArticleSort.POPULAR,keyword, null);
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null, TechArticleSort.POPULAR,keyword, null);
         List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -592,7 +592,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable2, cursor.getId(), TechArticleSort.POPULAR, keyword, cursorScore);
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.POPULAR, keyword, cursorScore);
         List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
                 .map(SearchHit::getContent)
                 .toList();
@@ -602,7 +602,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isEqualTo(TEST_ARTICLES_COUNT);
 
         assertThat(elasticTechArticles2)
-                .hasSize(pageable2.getPageSize())
+                .hasSize(pageable.getPageSize())
                 .extracting(ElasticTechArticle::getPopularScore)
                 .isSortedAccordingTo(Comparator.reverseOrder());
     }

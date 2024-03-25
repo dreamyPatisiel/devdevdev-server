@@ -221,15 +221,15 @@ class TechArticleControllerTest extends SupportControllerTest {
             "정확도 내림차순으로 조회하기 위한 점수가 없다면 예외가 발생한다.")
     void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCOREWithoutScoreException() throws Exception {
         // given
-        Pageable pageable1 = PageRequest.of(0, 1);
-        Pageable pageable2 = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(pageable1).stream().toList();
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream().toList();
         ElasticTechArticle cursor = elasticTechArticles.getLast();
         String keyword = "타이틀";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
-                        .queryParam("size", String.valueOf(pageable2.getPageSize()))
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
                         .queryParam("elasticId", cursor.getId())
                         .queryParam("keyword", keyword)
