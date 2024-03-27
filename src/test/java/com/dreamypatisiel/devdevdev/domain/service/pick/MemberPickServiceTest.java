@@ -1,20 +1,13 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
-
+import com.amazonaws.SdkClientException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
 import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -27,17 +20,18 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
+import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import jakarta.persistence.EntityManager;
-import java.io.IOException;
-import java.util.List;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -50,6 +44,16 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Transactional
@@ -69,12 +73,14 @@ class MemberPickServiceTest {
     PickOptionImageRepository pickOptionImageRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
-    @Autowired
+    @PersistenceContext
     EntityManager em;
     @Autowired
     AwsS3Uploader awsS3Uploader;
     @Autowired
     AwsS3Properties awsS3Properties;
+    @Autowired
+    AmazonS3 amazonS3Client;
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -395,7 +401,7 @@ class MemberPickServiceTest {
     @ParameterizedTest
     @ValueSource(strings = {MemberPickService.FIRST_PICK_OPTION_IMAGE, MemberPickService.SECOND_PICK_OPTION_IMAGE})
     @DisplayName("픽픽픽 이미지를 업로드 하고 DB에 픽픽픽 이미지 정보를 저장한다.")
-    void uploadImages(String name) throws IOException {
+    void uploadImages(String name) {
 
         // given
         MockMultipartFile mockMultipartFile = createMockMultipartFile("testImage", "tesImage.png");
@@ -414,7 +420,7 @@ class MemberPickServiceTest {
 
         // s3 이미지 삭제
         S3 s3 = awsS3Properties.getS3();
-        awsS3Uploader.deleteSingleImage(s3.bucket(), S3ImageObject.from(pickOptionImage));
+        awsS3Uploader.deleteSingleImage(s3.bucket(), pickOptionImage.getImageKey());
     }
 
     @ParameterizedTest
@@ -427,7 +433,45 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.uploadImages(name, List.of(mockMultipartFile)))
                 .isInstanceOf(PickOptionImageNameException.class)
-                .hasMessage(MemberPickService.INVALID_PICK_IMAGE_NAME_MESSAGE);
+                .hasMessage(MemberPickService.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 S3에 업로드 된 이미지를 삭제하고 DB에 저장된 이미지 정보도 삭제한다.")
+    void deleteImage() {
+        // given
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("testImage", "tesImage.png");
+        S3 s3 = awsS3Properties.getS3();
+        S3ImageObject s3ImageObject = awsS3Uploader.uploadSingleImage(mockMultipartFile, s3.bucket(), s3.createPickPickPickDirectory());
+
+        PickOptionImage pickOptionImage = createPickOptionImage(s3ImageObject.getImageUrl(), s3ImageObject.getKey());
+        pickOptionImageRepository.save(pickOptionImage);
+
+        // when
+        memberPickService.deleteImage(pickOptionImage.getId());
+
+        // then
+        assertThatThrownBy(() -> pickOptionImageRepository.findById(pickOptionImage.getId()).get())
+                .isInstanceOf(NoSuchElementException.class);
+
+        assertThatThrownBy(() -> amazonS3Client.getObject(s3.bucket(), s3ImageObject.getKey()))
+                .isInstanceOf(SdkClientException.class);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 이미지를 삭제할 때 DB에 이미지 정보가 없으면 예외가 발생한다.")
+    void deleteImageException() {
+        // given // when // then
+        assertThatThrownBy(() -> memberPickService.deleteImage(1L))
+                .isInstanceOf(ImageFileException.class)
+                .hasMessage(MemberPickService.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE);
+    }
+
+    private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
+        return PickOptionImage.builder()
+                .imageUrl(imageUrl)
+                .imageKey(imageKey)
+                .build();
     }
 
     private MockMultipartFile createMockMultipartFile(String name, String originalFilename) {

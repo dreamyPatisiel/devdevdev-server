@@ -15,9 +15,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
+import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
-import java.io.IOException;
+
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +37,8 @@ public class MemberPickService implements PickService {
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
     public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";
     public static final int START_INCLUSIVE = 0;
-    public static final String INVALID_PICK_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
+    public static final String INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
+    public static final String INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE = "이미지가 존재하지 않습니다.";
 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
@@ -62,15 +64,23 @@ public class MemberPickService implements PickService {
     }
 
     /**
-     * 이미지 업로드와 DB 저장을 하나의 작업(Transcation)으로 묶어서, 데이터 정합성을 유지한다.
+     * @Note:
+     * 이미지 업로드와 DB 저장을 하나의 작업(Transcation)으로 묶어서, 데이터 정합성을 유지한다.<br/><br/>
+     * 이미지 업로드 실패시 IOException이 발생할 수 있는데, 이때 catch로 처리하여 데이터 정합성 유지.<br/><br/>
+     * 단, 트랜잭션이 길게 유지되면 추후 DB Connection을 오랫동안 유지하기 때문에 안 좋은 영향을 줄 수 있음.<br/><br/>
+     * (Transcation은 기본적으로 RuntimeException에 대해서만 Rollback 한다.
+     * AmazonClient의 putObject(...)는 RuntimeException을 발생시킨다.)<br/><br/>
+     *
+     * @Since: 2024.03.26
+     * @Author: 장세웅
      */
     @Override
     @Transactional
-    public PickUploadImageResponse uploadImages(String name, List<MultipartFile> multipartFiles) throws IOException {
+    public PickUploadImageResponse uploadImages(String name, List<MultipartFile> multipartFiles) {
 
         // 픽픽픽은 2개의 옵션이 존재하고 각 옵션마다 이미지를 업로드 할 수 있다.
         if(!FIRST_PICK_OPTION_IMAGE.equals(name) && !SECOND_PICK_OPTION_IMAGE.equals(name)) {
-            throw new PickOptionImageNameException(INVALID_PICK_IMAGE_NAME_MESSAGE);
+            throw new PickOptionImageNameException(INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE);
         }
 
         // 픽 옵션 이미지 업로드
@@ -86,6 +96,26 @@ public class MemberPickService implements PickService {
         List<PickOptionImage> pickOptionImages = pickOptionImageRepository.saveAll(pickOptionImage);
 
         return PickUploadImageResponse.from(pickOptionImages);
+    }
+
+    /**
+     * 게시글을 작성 중에 이미지를 삭제
+     * (아직 다른 entity와 연관관계가 맺어지지 않을 때)
+     */
+    @Override
+    @Transactional
+    public void deleteImage(Long pickOptionImageId) {
+        // 픽 옵션 이미지 조회
+        PickOptionImage findPickOptionImage = pickOptionImageRepository.findById(pickOptionImageId)
+                .orElseThrow(() -> new ImageFileException(INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE));
+
+        // 이미지 삭제
+        S3 s3 = awsS3Properties.getS3();
+        String imageKey = findPickOptionImage.getImageKey();
+        awsS3Uploader.deleteSingleImage(s3.bucket(), imageKey);
+
+        // 픽 옵션 이미지 삭제
+        pickOptionImageRepository.deleteById(pickOptionImageId);
     }
 
     private PicksResponse mapToPickResponse(Pick pick, Member member) {

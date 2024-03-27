@@ -49,6 +49,11 @@ public class GuestPickService implements PickService {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
+    @Override
+    public void deleteImage(Long pickOptionImageId) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
     private PicksResponse mapToPickResponse(Pick pick) {
         return PicksResponse.builder()
                 .id(pick.getId())
