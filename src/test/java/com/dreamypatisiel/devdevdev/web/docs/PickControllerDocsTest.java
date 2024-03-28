@@ -396,6 +396,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터")
                                 .attributes(authenticationType()),
                         fieldWithPath("data.pickId").type(JsonFieldType.NUMBER).description("픽픽픽 아이디")
+                                .attributes(authenticationType())
                 )
         ));
     }
