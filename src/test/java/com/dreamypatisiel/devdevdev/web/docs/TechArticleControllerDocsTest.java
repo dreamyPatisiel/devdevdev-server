@@ -1,7 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
@@ -48,6 +51,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @Autowired
     TechArticleRepository techArticleRepository;
     @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
     ElasticTechArticleRepository elasticTechArticleRepository;
     @Autowired
     MemberRepository memberRepository;
@@ -58,6 +63,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
+                      @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
@@ -66,10 +72,12 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
+        Company savedCompany = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.from(elasticTechArticle);
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
             techArticles.add(techArticle);
         }
         techArticleRepository.saveAll(techArticles);
@@ -143,7 +151,10 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content.[].elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
                         fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.content.[].title").type(JsonFieldType.STRING).description("기술블로그 제목"),
-                        fieldWithPath("data.content.[].company").type(JsonFieldType.STRING).description("기술블로그 회사"),
+                        fieldWithPath("data.content.[].company").type(JsonFieldType.OBJECT).description("기술블로그 회사"),
+                        fieldWithPath("data.content.[].company.id").type(JsonFieldType.NUMBER).description("기술블로그 회사 id"),
+                        fieldWithPath("data.content.[].company.name").type(JsonFieldType.STRING).description("기술블로그 회사 이름"),
+                        fieldWithPath("data.content.[].company.careerUrl").type(JsonFieldType.STRING).description("기술블로그 회사 채용페이지"),
                         fieldWithPath("data.content.[].regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.content.[].author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
                         fieldWithPath("data.content.[].description").type(JsonFieldType.STRING).description("기술블로그 설명"),

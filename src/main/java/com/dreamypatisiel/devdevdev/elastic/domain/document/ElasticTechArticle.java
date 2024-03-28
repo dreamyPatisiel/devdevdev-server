@@ -1,9 +1,7 @@
 package com.dreamypatisiel.devdevdev.elastic.domain.document;
 
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -12,7 +10,6 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.time.LocalDate;
 
 @Getter
-@Setter(AccessLevel.PRIVATE)
 @Document(indexName = "articles"+"#{@elasticsearchIndexConfigService.getIndexName()}")
 public class ElasticTechArticle {
     @Id
@@ -41,6 +38,9 @@ public class ElasticTechArticle {
 
     @Field(type = FieldType.Text)
     private String company;
+
+    @Field(type = FieldType.Long)
+    private Long companyId;
 
     @Field(type = FieldType.Long)
     private Long viewTotalCount;

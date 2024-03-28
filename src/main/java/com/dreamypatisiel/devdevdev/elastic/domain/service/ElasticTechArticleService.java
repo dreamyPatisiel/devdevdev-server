@@ -31,6 +31,7 @@ import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstan
 public class ElasticTechArticleService {
 
     public static final String NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE = "존재하지 않는 기술블로그입니다.";
+    public static final String NOT_FOUND_TECH_ARTICLE_MESSAGE = "존재하지 않는 기술블로그입니다.";
     public static final String INVALID_ELASTIC_METHODS_CALL_MESSAGE = "검색어가 없습니다. 검색어를 입력해주세요.";
     public static final String NOT_FOUND_CURSOR_SCORE_MESSAGE = "정확도순 페이지네이션을 위한 커서의 score를 입력해주세요.";
 

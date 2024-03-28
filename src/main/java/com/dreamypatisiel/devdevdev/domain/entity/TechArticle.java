@@ -71,7 +71,8 @@ public class TechArticle extends BasicTime {
         this.company = company;
         this.elasticId = elasticId;
     }
-    public static TechArticle from(ElasticTechArticle elasticTechArticle) {
+
+    public static TechArticle of(ElasticTechArticle elasticTechArticle, Company company) {
         return TechArticle.builder()
                 .techArticleUrl(new Url(elasticTechArticle.getTechArticleUrl()))
                 .viewTotalCount(new Count(elasticTechArticle.getViewTotalCount()))
@@ -79,6 +80,7 @@ public class TechArticle extends BasicTime {
                 .commentTotalCount(new Count(elasticTechArticle.getCommentTotalCount()))
                 .popularScore(new Count(elasticTechArticle.getPopularScore()))
                 .elasticId(elasticTechArticle.getId())
+                .company(company)
                 .build();
     }
 
@@ -91,6 +93,10 @@ public class TechArticle extends BasicTime {
 
     public void changePopularScore(TechArticlePopularScorePolicy policy) {
         this.popularScore = this.calculatePopularScore(policy);
+    }
+
+    public void changeCompany(Company company) {
+        this.company = company;
     }
 
     private Count calculatePopularScore(TechArticlePopularScorePolicy policy) {

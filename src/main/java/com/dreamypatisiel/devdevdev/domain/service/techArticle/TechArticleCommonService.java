@@ -2,10 +2,13 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
+import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -14,8 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +30,17 @@ import java.util.stream.Collectors;
 class TechArticleCommonService {
 
     private final TechArticleRepository techArticleRepository;
+    private final ElasticTechArticleRepository elasticTechArticleRepository;
+
+    protected ElasticTechArticle findElasticTechArticle(String elasticId) {
+        return elasticTechArticleRepository.findById(elasticId)
+                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
+    }
+
+    protected TechArticle findTechArticle(Long id) {
+        return techArticleRepository.findById(id)
+                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_TECH_ARTICLE_MESSAGE));
+    }
 
     protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticResponses(SearchHits<ElasticTechArticle> searchHits) {
         return searchHits.stream()
@@ -36,7 +54,8 @@ class TechArticleCommonService {
                 .toList();
     }
 
-    protected List<TechArticle> getTechArticlesByElasticIdsIn(List<String> elasticIds) {
+    protected List<TechArticle> getTechArticlesByElasticIdsIn(List<ElasticResponse<ElasticTechArticle>> elasticResponses) {
+        List<String> elasticIds = getElasticIds(elasticResponses);
         return techArticleRepository.findAllByElasticIdIn(elasticIds);
     }
 
@@ -50,6 +69,12 @@ class TechArticleCommonService {
         long totalHits = searchHits.getTotalHits();
         boolean hasNext = hasNextPage(pageable, searchHits);
         return new ElasticSlice<>(techArticleResponses, pageable, totalHits, hasNext);
+    }
+
+    protected static CompanyResponse createCompanyResponse(TechArticle findTechArticle) {
+        return Optional.ofNullable(findTechArticle.getCompany())
+                .map(CompanyResponse::from)
+                .orElse(null);
     }
 
     protected boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {

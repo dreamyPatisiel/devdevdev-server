@@ -14,10 +14,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "기술블로그 API", description = "기술블로그 메인, 상세 API")
 @RestController
@@ -27,7 +24,7 @@ public class TechArticleController {
 
     private final TechArticleServiceStrategy techArticleServiceStrategy;
 
-    @Operation(summary = "기술블로그 메인")
+    @Operation(summary = "기술블로그 메인 조회 및 검색")
     @GetMapping("/articles")
     public ResponseEntity<BasicResponse<Slice<TechArticleResponse>>> getTechArticles (
             @PageableDefault Pageable pageable,
@@ -39,6 +36,17 @@ public class TechArticleController {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         Slice<TechArticleResponse> response = techArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 상세")
+    @GetMapping("/articles/{id}")
+    public ResponseEntity<BasicResponse<TechArticleResponse>> getTechArticle (@PathVariable Long id) {
+
+        TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        TechArticleResponse response = techArticleService.getTechArticle(id, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

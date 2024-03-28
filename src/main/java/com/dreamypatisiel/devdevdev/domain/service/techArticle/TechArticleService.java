@@ -11,4 +11,6 @@ import org.springframework.stereotype.Service;
 public interface TechArticleService {
     Slice<TechArticleResponse> getTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort,
                                                   String keyword, Float score, Authentication authentication);
+
+    TechArticleResponse getTechArticle(Long id, Authentication authentication);
 }

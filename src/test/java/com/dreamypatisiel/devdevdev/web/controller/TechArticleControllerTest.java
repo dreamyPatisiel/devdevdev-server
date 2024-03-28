@@ -1,7 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
@@ -16,7 +19,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -50,19 +52,21 @@ class TechArticleControllerTest extends SupportControllerTest {
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
+                      @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "회사", (long)i, (long)i, (long)i, (long)i*10);
+            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "DP", (long)i, (long)i, (long)i, (long)i*10);
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
-
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
+        Company savedCompany = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.from(elasticTechArticle);
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
             techArticles.add(techArticle);
         }
         techArticleRepository.saveAll(techArticles);
@@ -96,7 +100,10 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].elasticId").isString())
                 .andExpect(jsonPath("$.data.content.[0].thumbnailUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
-                .andExpect(jsonPath("$.data.content.[0].company").isString())
+                .andExpect(jsonPath("$.data.content.[0].company").isMap())
+                .andExpect(jsonPath("$.data.content.[0].company.id").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].company.name").isString())
+                .andExpect(jsonPath("$.data.content.[0].company.careerUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].regDate").isString())
                 .andExpect(jsonPath("$.data.content.[0].author").isString())
                 .andExpect(jsonPath("$.data.content.[0].description").isString())
@@ -164,7 +171,10 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].elasticId").isString())
                 .andExpect(jsonPath("$.data.content.[0].thumbnailUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
-                .andExpect(jsonPath("$.data.content.[0].company").isString())
+                .andExpect(jsonPath("$.data.content.[0].company").isMap())
+                .andExpect(jsonPath("$.data.content.[0].company.id").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].company.name").isString())
+                .andExpect(jsonPath("$.data.content.[0].company.careerUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].regDate").isString())
                 .andExpect(jsonPath("$.data.content.[0].author").isString())
                 .andExpect(jsonPath("$.data.content.[0].description").isString())

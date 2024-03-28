@@ -1,14 +1,15 @@
 package com.dreamypatisiel.devdevdev.elastic.domain.service;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.elastic.config.ContainerExtension;
-//import com.dreamypatisiel.devdevdev.elastic.config.ElasticsearchTestConfig;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +30,7 @@ public class ElasticsearchSupportTest {
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
+                      @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
@@ -37,10 +39,12 @@ public class ElasticsearchSupportTest {
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
+        Company savedCompany = companyRepository.save(company);
 
         List<TechArticle> techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.from(elasticTechArticle);
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
             techArticles.add(techArticle);
         }
         techArticleRepository.saveAll(techArticles);

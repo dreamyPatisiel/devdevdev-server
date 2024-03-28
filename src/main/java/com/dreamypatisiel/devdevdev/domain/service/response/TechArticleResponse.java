@@ -15,12 +15,14 @@ import java.time.LocalDate;
 public class TechArticleResponse {
 
     private static final int DESCRIPTION_MAX_LENGTH = 500;
+    public static final int CONTENTS_MAX_LENGTH = 1000;
 
     public Long id;
     public String elasticId;
     public String thumbnailUrl;
     public String title;
-    public String company;
+    public String contents;
+    public CompanyResponse company;
     public LocalDate regDate;
     public String author;
     public String description;
@@ -32,13 +34,14 @@ public class TechArticleResponse {
     public Float score;
 
     @Builder
-    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String company, LocalDate regDate,
-                                String author, String description, Long viewTotalCount, Long recommendTotalCount,
-                                Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
+    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String contents,
+                                CompanyResponse company, LocalDate regDate, String author, String description, Long viewTotalCount,
+                                Long recommendTotalCount, Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
         this.title = title;
+        this.contents = contents;
         this.company = company;
         this.regDate = regDate;
         this.author = author;
@@ -51,7 +54,7 @@ public class TechArticleResponse {
         this.score = score;
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, Float score) {
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse) {
         return TechArticleResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
@@ -61,7 +64,44 @@ public class TechArticleResponse {
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
                 .title(elasticTechArticle.getTitle())
-                .company(elasticTechArticle.getCompany())
+                .company(companyResponse)
+                .regDate(elasticTechArticle.getRegDate())
+                .author(elasticTechArticle.getAuthor())
+                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
+                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .build();
+    }
+
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle,  CompanyResponse companyResponse, boolean isBookmarked) {
+        return TechArticleResponse.builder()
+                .id(techArticle.getId())
+                .viewTotalCount(techArticle.getViewTotalCount().getCount())
+                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
+                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
+                .popularScore(techArticle.getPopularScore().getCount())
+                .elasticId(elasticTechArticle.getId())
+                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .title(elasticTechArticle.getTitle())
+                .company(companyResponse)
+                .regDate(elasticTechArticle.getRegDate())
+                .author(elasticTechArticle.getAuthor())
+                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
+                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .isBookmarked(isBookmarked)
+                .build();
+    }
+
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle,  CompanyResponse companyResponse, Float score) {
+        return TechArticleResponse.builder()
+                .id(techArticle.getId())
+                .viewTotalCount(techArticle.getViewTotalCount().getCount())
+                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
+                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
+                .popularScore(techArticle.getPopularScore().getCount())
+                .elasticId(elasticTechArticle.getId())
+                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .title(elasticTechArticle.getTitle())
+                .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
@@ -69,7 +109,7 @@ public class TechArticleResponse {
                 .build();
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, Float score, boolean isBookmarked) {
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, Float score, boolean isBookmarked) {
         return TechArticleResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
@@ -79,7 +119,7 @@ public class TechArticleResponse {
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
                 .title(elasticTechArticle.getTitle())
-                .company(elasticTechArticle.getCompany())
+                .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
                 .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))

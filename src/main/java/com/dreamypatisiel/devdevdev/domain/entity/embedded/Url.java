@@ -4,11 +4,13 @@ import com.dreamypatisiel.devdevdev.exception.UrlException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
 
 import java.util.regex.Pattern;
 
+@Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
