@@ -110,9 +110,6 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 픽픽픽 메인을 조회한다.")
     void findPicksMain() {
         // given
-        PickOption pickOption1 = createPickOption(pickOptionTitle1, pickContents1, pickOptionVoteCount1);
-        PickOption pickOption2 = createPickOption(pickOptionTitle2, pickContents2, pickOptionVoteCount2);
-
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
@@ -123,9 +120,6 @@ class MemberPickServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        PickVote pickVote = PickVote.create(member, pickOption1);
-        pickVoteRepository.save(pickVote);
-
         Count pickVoteTotalCount = new Count(pickOptionVoteCount1.getCount() + pickOptionVoteCount2.getCount());
         Count pickViewTotalCount = new Count(1);
         Count pickCommentTotalCount = new Count(0);
@@ -133,11 +127,16 @@ class MemberPickServiceTest {
         String thumbnailUrl = "섬네일 이미지 url";
         String author = "운영자";
         Pick pick = createPick(pickTitle, pickVoteTotalCount, pickViewTotalCount, pickCommentTotalCount,
-                pickPopularScore, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of(pickVote));
+                pickPopularScore, thumbnailUrl, author);
         pick.changePopularScore(pickPopularScorePolicy);
-
         pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, pickContents1, pickOptionVoteCount1);
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, pickContents2, pickOptionVoteCount2);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickVote pickVote = createPickVote(member, pickOption1, pick);
+        pickVoteRepository.save(pickVote);
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -183,12 +182,9 @@ class MemberPickServiceTest {
         Count pick3ViewTotalCount = new Count(3);
 
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, pick1ViewTotalCount, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(title2, count, pick2ViewTotalCount, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = createPick(title3, count, pick3ViewTotalCount, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick1 = createPick(title1, count, pick1ViewTotalCount, count, count, thumbnailUrl, author);
+        Pick pick2 = createPick(title2, count, pick2ViewTotalCount, count, count, thumbnailUrl, author);
+        Pick pick3 = createPick(title3, count, pick3ViewTotalCount, count, count, thumbnailUrl, author);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -231,12 +227,9 @@ class MemberPickServiceTest {
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(title2, count, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = createPick(title3, count, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick1 = createPick(title1, count, count, count, count, thumbnailUrl, author);
+        Pick pick2 = createPick(title2, count, count, count, count, thumbnailUrl, author);
+        Pick pick3 = createPick(title3, count, count, count, count, thumbnailUrl, author);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -283,12 +276,9 @@ class MemberPickServiceTest {
         Count pick2commentTotalCount = new Count(2);
         Count pick3commentTotalCount = new Count(3);
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, count, pick1commentTotalCount, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(title2, count, count, pick2commentTotalCount, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = createPick(title3, count, count, pick3commentTotalCount, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick1 = createPick(title1, count, count, pick1commentTotalCount, count, thumbnailUrl, author);
+        Pick pick2 = createPick(title2, count, count, pick2commentTotalCount, count, thumbnailUrl, author);
+        Pick pick3 = createPick(title3, count, count, pick3commentTotalCount, count, thumbnailUrl, author);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -493,7 +483,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("픽픽픽을 작성할 때 회원가입을 안했을 경우 예외가 발생한다.")
+    @DisplayName("픽픽픽을 작성할 때 회원이 없는 경우 예외가 발생한다.")
     void registerPickMemberException() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -538,6 +528,19 @@ class MemberPickServiceTest {
         assertThatThrownBy(() -> memberPickService.registerPick(pickRegisterRequest, authentication))
                 .isInstanceOf(PickOptionNameException.class)
                 .hasMessage(INVALID_PICK_OPTION_NAME_MESSAGE);
+    }
+
+    private PickVote createPickVote(Member member, PickOption pickOption, Pick pick) {
+        PickVote pickVote = PickVote.builder()
+                .member(member)
+                .pickOption(pickOption)
+                .pick(pick)
+                .build();
+
+        pickVote.changePick(pick);
+        pickVote.changePickOption(pickOption);
+
+        return pickVote;
     }
 
     private PickOptionImage createPickOptionImage(String name, String imageUrl, String imageKey) {
@@ -586,7 +589,7 @@ class MemberPickServiceTest {
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, Count pickPopularScore, String thumbnailUrl,
-                            String author, List<PickOption> pickOptions, List<PickVote> pickVotes
+                            String author
     ) {
 
         Pick pick = Pick.builder()
@@ -598,9 +601,6 @@ class MemberPickServiceTest {
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
                 .build();
-
-        pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
 
         return pick;
     }
@@ -619,18 +619,21 @@ class MemberPickServiceTest {
                 .author(author)
                 .build();
 
-        pick.changePickOptions(pickOptions);
         pick.changePickVote(pickVotes);
 
         return pick;
     }
 
-    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count pickOptionVoteCount) {
-        return PickOption.builder()
+    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {
+        PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
-                .voteTotalCount(pickOptionVoteCount)
+                .voteTotalCount(voteTotalCount)
                 .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
     }
 
     private PickOption createPickOption(Title title, PickOptionContents pickOptionContents) {

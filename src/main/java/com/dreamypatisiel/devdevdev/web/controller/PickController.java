@@ -67,9 +67,10 @@ public class PickController {
         return ResponseEntity.ok(BasicResponse.success(pickUploadImageResponse));
     }
 
-    @Operation(summary = "픽픽픽 이미지 업로드", description = "픽픽픽 작성 단계에서 픽픽픽 옵션에 해당하는 이미지를 업로드 합니다.")
+    @Operation(summary = "픽픽픽 작성", description = "픽픽픽을 작성합니다.")
     @PostMapping("/picks")
-    public ResponseEntity<BasicResponse<PickRegisterResponse>> registerPick(@RequestBody @Validated PickRegisterRequest pickRegisterRequest) {
+    public ResponseEntity<BasicResponse<PickRegisterResponse>> registerPick(
+            @RequestBody @Validated PickRegisterRequest pickRegisterRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
