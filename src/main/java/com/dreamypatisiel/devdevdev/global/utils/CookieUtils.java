@@ -84,12 +84,12 @@ public class CookieUtils {
     }
 
     public static void configJwtCookie(HttpServletResponse response, Token token) {
-        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN,
-                token.getAccessToken(), CookieUtils.DEFAULT_MAX_AGE, false, true);
-        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN,
-                token.getRefreshToken(), CookieUtils.REFRESH_MAX_AGE, true, true);
-        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
-                ACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, true);
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN,
+                token.getAccessToken(), DEFAULT_MAX_AGE, false, true);
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN,
+                token.getRefreshToken(), REFRESH_MAX_AGE, true, true);
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
+                ACTIVE, DEFAULT_MAX_AGE, false, true);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {
