@@ -24,12 +24,15 @@ import java.util.concurrent.ThreadLocalRandom;
 @SpringBootTest
 @Transactional
 public class ElasticsearchSupportTest {
+
+    public static final int TEST_ARTICLES_COUNT = 20;
+
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 1; i <= 20; i++) {
+        for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
             ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "회사", (long)i, (long)i, (long)i, (long)i*10);
             elasticTechArticles.add(elasticTechArticle);
         }

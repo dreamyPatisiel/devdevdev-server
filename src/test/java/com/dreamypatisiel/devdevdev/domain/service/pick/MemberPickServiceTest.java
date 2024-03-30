@@ -160,7 +160,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("화원이 커서 방식으로 회원 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
+    @DisplayName("회원이 커서 방식으로 회원 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_VIEWED() {
         // given
         PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));

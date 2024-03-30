@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and Deploy to GCP
+    name: build
     # 실행 환경 설정
     runs-on: ubuntu-latest
 
