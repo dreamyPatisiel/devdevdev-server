@@ -10,13 +10,9 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import java.io.IOException;
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AccessLevel;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort.Direction;
@@ -25,7 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,11 +32,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Tag(name = "픽픽픽 API", description = "픽픽픽 메인, 상세, 작성 API")
+@Tag(name = "픽픽픽 API", description = "픽픽픽 메인, 상세, 작성/수정/삭제, 이미지 업로드/삭제 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/devdevdev/api/v1")
-@Setter(AccessLevel.PRIVATE)
 public class PickController {
 
     private final PickServiceStrategy pickServiceStrategy;
@@ -81,5 +78,15 @@ public class PickController {
         PickRegisterResponse response = pickService.registerPick(pickRegisterRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "픽픽픽 이미지 삭제", description = "픽픽픽 이미지를 삭제합니다.")
+    @DeleteMapping("/picks/image/{pickImageOptionId}")
+    public ResponseEntity<BasicResponse<Void>> deletePickImage(@PathVariable Long pickImageOptionId) {
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        pickService.deleteImage(pickImageOptionId);
+
+        return ResponseEntity.ok(BasicResponse.success());
     }
 }
