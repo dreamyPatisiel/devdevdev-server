@@ -4,7 +4,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
@@ -25,7 +24,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class MemberTechArticleServiceTestTest extends ElasticsearchSupportTest {
+class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
 
     @Autowired
     MemberTechArticleService memberTechArticleService;
@@ -44,10 +43,9 @@ class MemberTechArticleServiceTestTest extends ElasticsearchSupportTest {
 
     @Test
     @DisplayName("회원이 커서 방식으로 기술블로그를 조회하여 응답을 생성한다.")
-    void findTechArticles() {
+    void getTechArticles() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        String elasticId = "";
 
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -60,7 +58,7 @@ class MemberTechArticleServiceTestTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        Slice<TechArticleResponse> techArticles = memberTechArticleService.findTechArticles(pageable, elasticId, TechArticleSort.LATEST, authentication);
+        Slice<TechArticleResponse> techArticles = memberTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
 
         // then
         assertThat(techArticles)
@@ -70,7 +68,7 @@ class MemberTechArticleServiceTestTest extends ElasticsearchSupportTest {
 
     @Test
     @DisplayName("커서 방식으로 기술블로그 메인을 조회할 때 회원이 없으면 예외가 발생한다.")
-    void findTechArticlesException() {
+    void getTechArticlesException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -81,7 +79,7 @@ class MemberTechArticleServiceTestTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.findTechArticles(pageable, null, null, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticles(pageable, null, null, null, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }

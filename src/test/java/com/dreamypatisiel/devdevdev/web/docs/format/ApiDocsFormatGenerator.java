@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.docs.format;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -26,5 +27,13 @@ public interface ApiDocsFormatGenerator {
                 .collect(Collectors.joining(", "));
 
         return key(FORMAT).value(pickSortType);
+    }
+
+    static Attributes.Attribute techArticleSortType() {
+        String techArticleSortType = Arrays.stream(TechArticleSort.values())
+                .map(techArticleSort -> techArticleSort.name()+"("+techArticleSort.getDescription()+")")
+                .collect(Collectors.joining(", "));
+
+        return key(FORMAT).value(techArticleSortType);
     }
 }
