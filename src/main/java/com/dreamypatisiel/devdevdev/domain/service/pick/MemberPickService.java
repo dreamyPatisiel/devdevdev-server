@@ -65,13 +65,19 @@ public class MemberPickService implements PickService {
 
     /**
      * @Note:
-     * 이미지 업로드와 DB 저장을 하나의 작업(Transcation)으로 묶어서, 데이터 정합성을 유지한다.<br/><br/>
-     * 이미지 업로드 실패시 IOException이 발생할 수 있는데, 이때 catch로 처리하여 데이터 정합성 유지.<br/><br/>
-     * 단, 트랜잭션이 길게 유지되면 추후 DB Connection을 오랫동안 유지하기 때문에 안 좋은 영향을 줄 수 있음.<br/><br/>
-     * (Transcation은 기본적으로 RuntimeException에 대해서만 Rollback 한다.
-     * AmazonClient의 putObject(...)는 RuntimeException을 발생시킨다.)<br/><br/>
+     * 이미지 업로드와 DB 저장을 하나의 작업(Transcation)으로 묶어서, 데이터 정합성을 유지한다.<br/>
+     * 이때 pick_option_id는 null 인 상태 입니다.<br/><br/>
      *
-     * @Since: 2024.03.26
+     * 이미지 업로드 실패시 IOException이 발생할 수 있는데, 이때 catch로 처리하여 데이터 정합성 유지합니다.<br/>
+     * 즉, IOException이 발생해도 rollback하지 않는다는 의미 입니다. <br/><br/>
+     *
+     * 단, Transcation이 길게 유지되면 추후 DB Connection을 오랫동안 유지하기 때문에
+     * 많은 트래픽이 발생할 때 DB Connection이 부족해지는 현상이 발생할 수 있습니다.<br/><br/>
+     *
+     * (Transcation은 기본적으로 RuntimeException에 대해서만 Rollback 합니다.
+     * AmazonClient의 putObject(...)는 RuntimeException을 발생시킵니다.)<br/><br/>
+     *
+     * @Since: 2024.03.30
      * @Author: 장세웅
      */
     @Override
@@ -99,8 +105,11 @@ public class MemberPickService implements PickService {
     }
 
     /**
-     * 게시글을 작성 중에 이미지를 삭제
-     * (아직 다른 entity와 연관관계가 맺어지지 않을 때)
+     * @Note:
+     * 픽픽픽 픽 옵션에 대한 이미지를 삭제 합니다.<br/><br/>
+     *
+     * @Author: 장세웅
+     * @Since: 2024.03.30
      */
     @Override
     @Transactional

@@ -50,14 +50,17 @@ public class TestController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication;
     }
+
     @GetMapping("/admin")
     public ResponseEntity<String> adminTest() {
         return new ResponseEntity<>("관리자만 들어올 수 있는 페이지", HttpStatus.OK);
     }
+
     @GetMapping("/user")
     public ResponseEntity<String> userTest() {
         return new ResponseEntity<>("유저만 접근 가능한 페이지", HttpStatus.OK);
     }
+
     @GetMapping("/public")
     public ResponseEntity<String> publicTest() {
         return new ResponseEntity<>("모두에게 공개된 페이지", HttpStatus.OK);
