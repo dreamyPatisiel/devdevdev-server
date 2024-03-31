@@ -56,7 +56,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
         // 기술블로그 조회
         TechArticle techArticle = findTechArticle(id);
-        ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle.getElasticId());
+        ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle);
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
 
         // 데이터 가공

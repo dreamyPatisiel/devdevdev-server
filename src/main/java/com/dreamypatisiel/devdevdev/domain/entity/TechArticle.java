@@ -84,6 +84,19 @@ public class TechArticle extends BasicTime {
                 .build();
     }
 
+    public static TechArticle of(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount,
+                                 Count popularScore, String elasticId, Company company) {
+        return TechArticle.builder()
+                .techArticleUrl(techArticleUrl)
+                .viewTotalCount(viewTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .elasticId(elasticId)
+                .company(company)
+                .build();
+    }
+
     public void changeBookmarks(List<Bookmark> bookmarks) {
         for(Bookmark bookmark : bookmarks) {
             bookmark.changeTechArticle(this);

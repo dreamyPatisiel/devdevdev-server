@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSor
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -23,17 +24,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._ID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ElasticTechArticleService {
-
-    public static final String NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE = "존재하지 않는 기술블로그입니다.";
-    public static final String NOT_FOUND_TECH_ARTICLE_MESSAGE = "존재하지 않는 기술블로그입니다.";
-    public static final String INVALID_ELASTIC_METHODS_CALL_MESSAGE = "검색어가 없습니다. 검색어를 입력해주세요.";
-    public static final String NOT_FOUND_CURSOR_SCORE_MESSAGE = "정확도순 페이지네이션을 위한 커서의 score를 입력해주세요.";
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
@@ -118,7 +115,7 @@ public class ElasticTechArticleService {
         }
 
         ElasticTechArticle elasticTechArticle = elasticTechArticleRepository.findById(elasticId)
-                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
 
         searchQuery.setSearchAfter(getSearchAfter(elasticTechArticle, techArticleSort));
     }
@@ -130,7 +127,7 @@ public class ElasticTechArticleService {
         }
 
         ElasticTechArticle elasticTechArticle = elasticTechArticleRepository.findById(elasticId)
-                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
+                .orElseThrow(() -> new com.dreamypatisiel.devdevdev.exception.NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
 
         searchQuery.setSearchAfter(getSearchAfterWhenSearch(elasticTechArticle, techArticleSort, score));
     }

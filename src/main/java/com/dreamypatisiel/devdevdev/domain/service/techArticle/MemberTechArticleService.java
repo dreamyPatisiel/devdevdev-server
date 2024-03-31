@@ -60,7 +60,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     public TechArticleResponse getTechArticle(Long id, Authentication authentication) {
         // 기술블로그 조회
         TechArticle techArticle = findTechArticle(id);
-        ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle.getElasticId());
+        ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle);
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
 
         // 회원 조회

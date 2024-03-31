@@ -27,6 +27,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class ElasticsearchSupportTest {
 
     public static final int TEST_ARTICLES_COUNT = 20;
+    public static Long FIRST_TECH_ARTICLE_ID;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
@@ -47,7 +48,8 @@ public class ElasticsearchSupportTest {
             TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
             techArticles.add(techArticle);
         }
-        techArticleRepository.saveAll(techArticles);
+        List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
+        FIRST_TECH_ARTICLE_ID = savedTechArticles.getFirst().getId();
     }
 
     @AfterAll

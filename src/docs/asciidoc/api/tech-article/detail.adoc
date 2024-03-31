@@ -1,0 +1,25 @@
+[[TechArticleDetail]]
+== 기술블로그 상세 API(GET: /devdevdev/api/v1/articles/{id})
+* 기술블로그 상세 페이지를 조회한다.
+* 회원/익명 사용자에 따라 API 응답값이 상이하다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/tech-article-detail/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/tech-article-detail/request-headers.adoc[]
+==== HTTP Request Path Parameters Fields
+include::{snippets}/tech-article-detail/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/tech-article-detail/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/tech-article-detail/response-fields.adoc[]
+
+
+=== 예외
+==== HTTP Response
+include::{snippets}/not-found-elastic-id-exception/response-body.adoc[]
+include::{snippets}/not-found-tech-article-exception/response-body.adoc[]
+==== HTTP Response Fields
+include::{snippets}/not-found-elastic-id-exception/response-fields.adoc[]

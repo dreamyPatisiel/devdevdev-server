@@ -8,7 +8,9 @@ import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
-import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
+import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -21,8 +23,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 
 @Component
 @RequiredArgsConstructor
@@ -32,14 +33,17 @@ class TechArticleCommonService {
     private final TechArticleRepository techArticleRepository;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
-    protected ElasticTechArticle findElasticTechArticle(String elasticId) {
+    protected ElasticTechArticle findElasticTechArticle(TechArticle techArticle) {
+        String elasticId = Optional.ofNullable(techArticle.getElasticId())
+                .orElseThrow(() -> new TechArticleException(NOT_FOUND_ELASTIC_ID_MESSAGE));
+
         return elasticTechArticleRepository.findById(elasticId)
-                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
     }
 
     protected TechArticle findTechArticle(Long id) {
         return techArticleRepository.findById(id)
-                .orElseThrow(() -> new ElasticTechArticleException(NOT_FOUND_TECH_ARTICLE_MESSAGE));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_TECH_ARTICLE_MESSAGE));
     }
 
     protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticResponses(SearchHits<ElasticTechArticle> searchHits) {

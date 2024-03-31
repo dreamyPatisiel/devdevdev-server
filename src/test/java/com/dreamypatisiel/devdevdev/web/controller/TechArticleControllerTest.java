@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
@@ -10,7 +11,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
@@ -32,12 +32,16 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
+import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class TechArticleControllerTest extends SupportControllerTest {
+
+    private static Long FIRST_TECH_ARTICLE_ID;
 
     @Autowired
     TechArticleRepository techArticleRepository;
@@ -69,7 +73,8 @@ class TechArticleControllerTest extends SupportControllerTest {
             TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
             techArticles.add(techArticle);
         }
-        techArticleRepository.saveAll(techArticles);
+        List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
+        FIRST_TECH_ARTICLE_ID = savedTechArticles.getFirst().getId();
     }
 
     @AfterAll
@@ -220,10 +225,10 @@ class TechArticleControllerTest extends SupportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE))
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
     @Test
@@ -248,10 +253,169 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").value(ElasticTechArticleService.NOT_FOUND_CURSOR_SCORE_MESSAGE))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_CURSOR_SCORE_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
+    @Test
+    @DisplayName("익명 사용자가 기술블로그 상세를 조회한다.")
+    void getTechArticleByAnonymous() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.id").isNumber())
+                .andExpect(jsonPath("$.data.elasticId").isString())
+                .andExpect(jsonPath("$.data.thumbnailUrl").isString())
+                .andExpect(jsonPath("$.data.title").isString())
+                .andExpect(jsonPath("$.data.contents").isString())
+                .andExpect(jsonPath("$.data.company").isMap())
+                .andExpect(jsonPath("$.data.company.id").isNumber())
+                .andExpect(jsonPath("$.data.company.name").isString())
+                .andExpect(jsonPath("$.data.company.careerUrl").isString())
+                .andExpect(jsonPath("$.data.regDate").isString())
+                .andExpect(jsonPath("$.data.author").isString())
+                .andExpect(jsonPath("$.data.description").isString())
+                .andExpect(jsonPath("$.data.viewTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.commentTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.popularScore").isNumber());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회한다.")
+    void getTechArticleByMember() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.id").isNumber())
+                .andExpect(jsonPath("$.data.elasticId").isString())
+                .andExpect(jsonPath("$.data.thumbnailUrl").isString())
+                .andExpect(jsonPath("$.data.title").isString())
+                .andExpect(jsonPath("$.data.contents").isString())
+                .andExpect(jsonPath("$.data.company").isMap())
+                .andExpect(jsonPath("$.data.company.id").isNumber())
+                .andExpect(jsonPath("$.data.company.name").isString())
+                .andExpect(jsonPath("$.data.company.careerUrl").isString())
+                .andExpect(jsonPath("$.data.regDate").isString())
+                .andExpect(jsonPath("$.data.author").isString())
+                .andExpect(jsonPath("$.data.description").isString())
+                .andExpect(jsonPath("$.data.viewTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.commentTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.popularScore").isNumber())
+                .andExpect(jsonPath("$.data.isBookmarked").isBoolean());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 회원이 없으면 예외가 발생한다.")
+    void getTechArticleNotFoundMemberException() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
+    void getTechArticleNotFoundTechArticleException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), null, null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId()+1;
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+    
+    @Test
+    @DisplayName("기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
+    void getTechArticleNotFoundElasticIdException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), null, null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId();
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_ELASTIC_ID_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @Test
+    @DisplayName("기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
+    void getTechArticleNotFoundElasticTechArticleException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), "elasticId", null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId();
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
