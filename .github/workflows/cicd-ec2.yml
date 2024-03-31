@@ -3,7 +3,7 @@ name: Build and Deploy to EC2
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "develop"]
 
 # 환경 변수 $변수명으로 사용
 env:
