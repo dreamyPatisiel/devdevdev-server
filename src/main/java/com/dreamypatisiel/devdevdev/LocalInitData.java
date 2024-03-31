@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@Profile(value = {"local", "dev"})
+@Profile(value = {"local"})
 @RequiredArgsConstructor
 @Transactional
 public class LocalInitData {
@@ -60,7 +60,6 @@ public class LocalInitData {
     private final TechArticleRepository techArticleRepository;
     private final BookmarkRepository bookmarkRepository;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
-
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {
@@ -184,7 +183,7 @@ public class LocalInitData {
         List<PickOption> pickOptions = new ArrayList<>();
         List<PickOptionImage> pickOptionImages = createPickOptionImage();
         for(int number = 1; number <= DATA_MAX_COUNT*2; number++) {
-            PickOption pickOption = PickOption.create(new Title("픽옵션"+number), new PickOptionContents("픽콘텐츠"+number));
+            PickOption pickOption = createPickOption(new Title("픽옵션"+number), new PickOptionContents("픽콘텐츠"+number));
             pickOption.changePickVoteCount(new Count(creatRandomNumber()));
             pickOptions.add(pickOption);
         }
@@ -210,5 +209,12 @@ public class LocalInitData {
 
     private boolean creatRandomBoolean() {
         return new Random().nextBoolean();
+    }
+
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents) {
+        return PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .build();
     }
 }
