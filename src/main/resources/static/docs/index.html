@@ -482,16 +482,22 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_정상_요청응답_5">정상 요청/응답</a></li>
 </ul>
 </li>
-<li><a href="#Register-Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a>
+<li><a href="#Pick-Register">픽픽픽 작성 API(POST: /devdevdev/api/v1/picks)</a>
 <ul class="sectlevel2">
 <li><a href="#_정상_요청응답_6">정상 요청/응답</a></li>
 <li><a href="#_예외_5">예외</a></li>
 </ul>
 </li>
-<li><a href="#TechArticleMain">기술블로그 메인 API(GET: /devdevdev/api/v1/articles)</a>
+<li><a href="#Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a>
 <ul class="sectlevel2">
 <li><a href="#_정상_요청응답_7">정상 요청/응답</a></li>
 <li><a href="#_예외_6">예외</a></li>
+</ul>
+</li>
+<li><a href="#TechArticleMain">기술블로그 메인 API(GET: /devdevdev/api/v1/articles)</a>
+<ul class="sectlevel2">
+<li><a href="#_정상_요청응답_8">정상 요청/응답</a></li>
+<li><a href="#_예외_7">예외</a></li>
 </ul>
 </li>
 </ul>
@@ -614,8 +620,8 @@ Content-Length: 518
 {
   "resultType" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTc5NDk3NCwiZXhwIjoxNzExNzk2Nzc0fQ.4ac7I7NPHvcnZml1nr9l3I3-Ne-MZUkxDgXEGuBvCE4",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTc5NDk3NCwiZXhwIjoxNzEyMzk5Nzc0fQ.uA5QhQYJ__9ObH9Ugkpi54PpWz-KEEEASxzAzLr5x70"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTg5NzYwOCwiZXhwIjoxNzExODk5NDA4fQ.Fm7AYy3_E-W_dZ1ZBdXiiaziR5XFqJxVfo3Gk8L80KA",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTg5NzYwOCwiZXhwIjoxNzEyNTAyNDA4fQ.W6mpP8Q51r20JUFO3oOHgcaVEnxdR-ev-wprmF4yNiU"
   }
 }</code></pre>
 </div>
@@ -776,8 +782,8 @@ Content-Length: 522
 {
   "resultType" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTE3OTY3NzR9.3rWscjbduHQdjsN488oMO__jaxZ0N45flZ-Qc-KR0lU",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTIzOTk3NzR9.Q_RunjKqEurCBDPP5rdMU2qUIroDig70cnS5kqZqgRA"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExODk3NjA4LCJleHAiOjE3MTE4OTk0MDh9.a2l-akDPzhKNV3Hmuh1yGgJFgQqXi7Pz9G4io1IgtHo",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExODk3NjA4LCJleHAiOjE3MTI1MDI0MDh9.phlovdSw6altItkQ5AbsNeq_X8-VdzK9YPW6x3VDmrs"
   }
 }</code></pre>
 </div>
@@ -915,7 +921,7 @@ Content-Length: 522
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/token/refresh HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Host: localhost:8080
-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTIzOTk3NzR9.vF-GLUpiu50YxjpoFOSRl3J4xS5-MlUjkXlMNpIv7vE</code></pre>
+Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA4LCJleHAiOjE3MTI1MDI0MDh9.8G7pLsAzrWKoIgv7mHSty5hmAfCBzZ4uvYUwHXaJx24</code></pre>
 </div>
 </div>
 </div>
@@ -951,9 +957,9 @@ Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXR
 Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
-Set-Cookie: DEVDEVDEV_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTE3OTY3NzR9.BxOIetyHoX0X7HeyZjzoTdMdToa-Aziiv5WnDMwn2Y8; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sat, 30 Mar 2024 10:39:14 GMT; Secure
-Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTIzOTk3NzR9.vF-GLUpiu50YxjpoFOSRl3J4xS5-MlUjkXlMNpIv7vE; Path=/; Domain=devdevdev.co.kr; Max-Age=604800; Expires=Sat, 06 Apr 2024 10:36:14 GMT; Secure; HttpOnly
-Set-Cookie: DEVDEVDEV_LOGIN_STATUS=active; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sat, 30 Mar 2024 10:39:14 GMT; Secure
+Set-Cookie: DEVDEVDEV_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA4LCJleHAiOjE3MTE4OTk0MDh9.Xve0WP3UudBJLtkUHBKfYkY1p0bk5wV_IbIzWTG7HDc; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sun, 31 Mar 2024 15:09:48 GMT; Secure
+Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA4LCJleHAiOjE3MTI1MDI0MDh9.8G7pLsAzrWKoIgv7mHSty5hmAfCBzZ4uvYUwHXaJx24; Path=/; Domain=devdevdev.co.kr; Max-Age=604800; Expires=Sun, 07 Apr 2024 15:06:48 GMT; Secure; HttpOnly
+Set-Cookie: DEVDEVDEV_LOGIN_STATUS=active; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sun, 31 Mar 2024 15:09:48 GMT; Secure
 Content-Type: application/json
 X-Content-Type-Options: nosniff
 X-XSS-Protection: 0
@@ -1116,7 +1122,7 @@ Content-Length: 30
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/logout HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTcwLCJleHAiOjE3MTE3OTY3NzB9.FHVokXWYggfhi1Kp9ec9fT9stZ6pxph_VNP0aWeXE2w
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA0LCJleHAiOjE3MTE4OTk0MDR9.hfnQYoAzx4RD6hwX7kbsSLjO9vmAnoZA4xbAFYhUIhQ
 Host: localhost:8080
 Cookie: DEVDEVDEV_REFRESH_TOKEN=</code></pre>
 </div>
@@ -1179,7 +1185,7 @@ Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
 Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT
-Set-Cookie: DEVDEVDEV_LOGIN_STATUS=inactive; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sat, 30 Mar 2024 10:39:10 GMT; Secure
+Set-Cookie: DEVDEVDEV_LOGIN_STATUS=inactive; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sun, 31 Mar 2024 15:09:44 GMT; Secure
 Content-Type: application/json
 X-Content-Type-Options: nosniff
 X-XSS-Protection: 0
@@ -1337,7 +1343,7 @@ Content-Length: 30
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/picks?size=10&amp;pickId=9223372036854775807&amp;pickSort=LATEST HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTcyLCJleHAiOjE3MTE3OTY3NzJ9.beUd6fbI1IZEWdjxBKyUQhlFBpzvdVTeuK9AG9hptcY
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA2LCJleHAiOjE3MTE4OTk0MDZ9.vngXaCsAj3SKIGMZxfB945toSLWSkm3zF30k3h5yilY
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -1420,13 +1426,13 @@ Cache-Control: no-cache, no-store, max-age=0, must-revalidate
 Pragma: no-cache
 Expires: 0
 X-Frame-Options: DENY
-Content-Length: 971
+Content-Length: 1195
 
 {
   "resultType" : "SUCCESS",
   "data" : {
     "content" : [ {
-      "id" : 1,
+      "id" : 3,
       "title" : "픽1타이틀",
       "voteTotalCount" : 2,
       "commentTotalCount" : 2,
@@ -1434,12 +1440,22 @@ Content-Length: 971
       "popularScore" : 20,
       "isVoted" : false,
       "pickOptions" : [ {
-        "id" : 1,
+        "id" : 3,
         "title" : "픽옵션1",
         "percent" : 50,
         "isPicked" : false
       }, {
-        "id" : 2,
+        "id" : 3,
+        "title" : "픽옵션1",
+        "percent" : 50,
+        "isPicked" : false
+      }, {
+        "id" : 4,
+        "title" : "픽옵션2",
+        "percent" : 50,
+        "isPicked" : false
+      }, {
+        "id" : 4,
         "title" : "픽옵션2",
         "percent" : 50,
         "isPicked" : false
@@ -1773,7 +1789,311 @@ Content-Length: 971
 </div>
 </div>
 <div class="sect1">
-<h2 id="Register-Pick-Option-Image"><a class="link" href="#Register-Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a></h2>
+<h2 id="Pick-Register"><a class="link" href="#Pick-Register">픽픽픽 작성 API(POST: /devdevdev/api/v1/picks)</a></h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>픽픽픽 작성</p>
+</li>
+<li>
+<p>회원만 픽픽픽 작성을 할 수 있다.</p>
+</li>
+<li>
+<p>픽픽픽 작성시 이미지는 있을 수도 없을 수도 있다.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_정상_요청응답_6"><a class="link" href="#_정상_요청응답_6">정상 요청/응답</a></h3>
+<div class="sect3">
+<h4 id="_http_request_6"><a class="link" href="#_http_request_6">HTTP Request</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/picks HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA2LCJleHAiOjE3MTE4OTk0MDZ9.vngXaCsAj3SKIGMZxfB945toSLWSkm3zF30k3h5yilY
+Content-Length: 465
+Host: localhost:8080
+
+{
+  "pickTitle" : "Svelte VS React",
+  "pickOptions" : {
+    "secondPickOption" : {
+      "pickOptionTitle" : "React가 짱이다!",
+      "pickOptionContent" : "대형 커뮤니티, 대기업에서 라이브러리 관리!",
+      "pickOptionImageIds" : [ 7 ]
+    },
+    "firstPickOption" : {
+      "pickOptionTitle" : "Svelte가 짱이다!",
+      "pickOptionContent" : "낮은 러닝커브 그리고 빠른 속도!",
+      "pickOptionImageIds" : [ 6 ]
+    }
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_http_request_header_fields_3"><a class="link" href="#_http_request_header_fields_3">HTTP Request Header Fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Optional</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Authorization</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Bearer 엑세스 토큰</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_http_request_fields"><a class="link" href="#_http_request_fields">HTTP Request Fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Optional</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickTitle</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 타이틀</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 옵션</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.firstPickOption</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 첫 번째 옵션 선택지</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.firstPickOption.pickOptionTitle</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 첫 번째 옵션 선택지 제목</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.firstPickOption.pickOptionContent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 첫 번째 옵션 선택지 내용</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.firstPickOption.pickOptionImageIds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 첫 번째 옵션 이미지 아이디 배열</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.secondPickOption</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 두 번째 옵션 선택지</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.secondPickOption.pickOptionTitle</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 두 번째 옵션 선택지 제목</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.secondPickOption.pickOptionContent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 두 번째 옵션 선택지 내용</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pickOptions.secondPickOption.pickOptionImageIds</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 두 번째 옵션 이미지 아이디 배열</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_http_response_12"><a class="link" href="#_http_response_12">HTTP Response</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+X-Frame-Options: DENY
+Content-Length: 65
+
+{
+  "resultType" : "SUCCESS",
+  "data" : {
+    "pickId" : 2
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_http_response_fields_10"><a class="link" href="#_http_response_fields_10">HTTP Response Fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Authentication</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resultType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">O</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 결과</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">O</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 데이터</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>data.pickId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">O</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">픽픽픽 아이디</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_예외_5"><a class="link" href="#_예외_5">예외</a></h3>
+<div class="sect3">
+<h4 id="_http_response_13"><a class="link" href="#_http_response_13">HTTP Response</a></h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "resultType" : "FAIL",
+  "message" : "비회원은 현재 해당 기능을 이용할 수 없습니다.",
+  "errorCode" : 401
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
+  "resultType" : "FAIL",
+  "message" : "잘못된 형식의 픽픽픽 선택지 입니다.",
+  "errorCode" : 400
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_http_response_fields_11"><a class="link" href="#_http_response_fields_11">HTTP Response Fields</a></h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Authentication</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resultType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">응답 결과</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>message</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">에러 메시지</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>errorCode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">에러 코드</p></td>
+<td class="tableblock halign-left valign-top"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="Pick-Option-Image"><a class="link" href="#Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a></h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
@@ -1796,14 +2116,14 @@ Content-Length: 971
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_정상_요청응답_6"><a class="link" href="#_정상_요청응답_6">정상 요청/응답</a></h3>
+<h3 id="_정상_요청응답_7"><a class="link" href="#_정상_요청응답_7">정상 요청/응답</a></h3>
 <div class="sect3">
-<h4 id="_http_request_6"><a class="link" href="#_http_request_6">HTTP Request</a></h4>
+<h4 id="_http_request_7"><a class="link" href="#_http_request_7">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/picks/image?name=firstPickOptionImage HTTP/1.1
 Content-Type: multipart/form-data;charset=UTF-8; boundary=6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTcwLCJleHAiOjE3MTE3OTY3NzB9.FHVokXWYggfhi1Kp9ec9fT9stZ6pxph_VNP0aWeXE2w
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA2LCJleHAiOjE3MTE4OTk0MDZ9.vngXaCsAj3SKIGMZxfB945toSLWSkm3zF30k3h5yilY
 Host: localhost:8080
 
 --6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm
@@ -1816,7 +2136,7 @@ pickOptionImages
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_request_header_fields_3"><a class="link" href="#_http_request_header_fields_3">HTTP Request Header Fields</a></h4>
+<h4 id="_http_request_header_fields_4"><a class="link" href="#_http_request_header_fields_4">HTTP Request Header Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -1867,7 +2187,7 @@ pickOptionImages
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_12"><a class="link" href="#_http_response_12">HTTP Response</a></h4>
+<h4 id="_http_response_14"><a class="link" href="#_http_response_14">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -1888,9 +2208,9 @@ Content-Length: 296
   "data" : {
     "pickOptionImages" : [ {
       "name" : "firstPickOptionImage",
-      "pickOptionImageId" : 1,
+      "pickOptionImageId" : 3,
       "imageUrl" : "http://localhost:8080/xxx.png",
-      "imageKey" : "test/pickpickpick/73f5de82-48c4-44c7-b64f-7794a5831d7b-tesImage.png"
+      "imageKey" : "test/pickpickpick/5e95b34e-8583-49bc-a7e6-217fd54afced-tesImage.png"
     } ]
   }
 }</code></pre>
@@ -1898,7 +2218,7 @@ Content-Length: 296
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response_fields_10"><a class="link" href="#_http_response_fields_10">HTTP Response Fields</a></h4>
+<h4 id="_http_response_fields_12"><a class="link" href="#_http_response_fields_12">HTTP Response Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 20%;">
@@ -1971,9 +2291,9 @@ Content-Length: 296
 </div>
 </div>
 <div class="sect2">
-<h3 id="_예외_5"><a class="link" href="#_예외_5">예외</a></h3>
+<h3 id="_예외_6"><a class="link" href="#_예외_6">예외</a></h3>
 <div class="sect3">
-<h4 id="_http_response_13"><a class="link" href="#_http_response_13">HTTP Response</a></h4>
+<h4 id="_http_response_15"><a class="link" href="#_http_response_15">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
@@ -1994,7 +2314,7 @@ Content-Length: 296
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response_fields_11"><a class="link" href="#_http_response_fields_11">HTTP Response Fields</a></h4>
+<h4 id="_http_response_fields_13"><a class="link" href="#_http_response_fields_13">HTTP Response Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 20%;">
@@ -2054,20 +2374,20 @@ Content-Length: 296
 </ul>
 </div>
 <div class="sect2">
-<h3 id="_정상_요청응답_7"><a class="link" href="#_정상_요청응답_7">정상 요청/응답</a></h3>
+<h3 id="_정상_요청응답_8"><a class="link" href="#_정상_요청응답_8">정상 요청/응답</a></h3>
 <div class="sect3">
-<h4 id="_http_request_7"><a class="link" href="#_http_request_7">HTTP Request</a></h4>
+<h4 id="_http_request_8"><a class="link" href="#_http_request_8">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/articles?size=10&amp;techArticleSort=HIGHEST_SCORE&amp;keyword=%ED%83%80%EC%9D%B4%ED%8B%80&amp;elasticId=QRHujo4B26VCvf0zZre1&amp;score=10 HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/articles?size=10&amp;techArticleSort=HIGHEST_SCORE&amp;keyword=%ED%83%80%EC%9D%B4%ED%8B%80&amp;elasticId=qhEMlY4B26VCvf0zer4_&amp;score=10 HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTczLCJleHAiOjE3MTE3OTY3NzN9.aZ0kWSe-IEiC2WEYUPWJoX0Z4IAUaSKpv2b6Nn_xTmI
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk3NjA3LCJleHAiOjE3MTE4OTk0MDd9.JBfHsyFU43I37qcT66_-JYTnfIOJJQu1HRdyWJGTJr0
 Host: localhost:8080</code></pre>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_request_header_fields_4"><a class="link" href="#_http_request_header_fields_4">HTTP Request Header Fields</a></h4>
+<h4 id="_http_request_header_fields_5"><a class="link" href="#_http_request_header_fields_5">HTTP Request Header Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 33.3333%;">
@@ -2142,7 +2462,7 @@ Host: localhost:8080</code></pre>
 </table>
 </div>
 <div class="sect3">
-<h4 id="_http_response_14"><a class="link" href="#_http_response_14">HTTP Response</a></h4>
+<h4 id="_http_response_16"><a class="link" href="#_http_response_16">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
@@ -2156,26 +2476,26 @@ Cache-Control: no-cache, no-store, max-age=0, must-revalidate
 Pragma: no-cache
 Expires: 0
 X-Frame-Options: DENY
-Content-Length: 992
+Content-Length: 993
 
 {
   "resultType" : "SUCCESS",
   "data" : {
     "content" : [ {
       "id" : 1,
-      "elasticId" : "QRHujo4B26VCvf0zZre1",
+      "elasticId" : "qhEMlY4B26VCvf0zer4_",
       "thumbnailUrl" : "http://example.com/",
       "title" : "타이틀1",
       "company" : "회사",
-      "regDate" : "2024-02-16",
+      "regDate" : "2024-02-19",
       "author" : "작성자",
       "description" : "내용",
       "viewTotalCount" : 1,
       "recommendTotalCount" : 1,
       "commentTotalCount" : 1,
       "popularScore" : 10,
-      "isBookmarked" : true,
-      "score" : 0.0024660926
+      "isBookmarked" : false,
+      "score" : 0.0049140146
     } ],
     "pageable" : {
       "pageNumber" : 0,
@@ -2207,7 +2527,7 @@ Content-Length: 992
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response_fields_12"><a class="link" href="#_http_response_fields_12">HTTP Response Fields</a></h4>
+<h4 id="_http_response_fields_14"><a class="link" href="#_http_response_fields_14">HTTP Response Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 20%;">
@@ -2497,9 +2817,9 @@ Content-Length: 992
 </div>
 </div>
 <div class="sect2">
-<h3 id="_예외_6"><a class="link" href="#_예외_6">예외</a></h3>
+<h3 id="_예외_7"><a class="link" href="#_예외_7">예외</a></h3>
 <div class="sect3">
-<h4 id="_http_response_15"><a class="link" href="#_http_response_15">HTTP Response</a></h4>
+<h4 id="_http_response_17"><a class="link" href="#_http_response_17">HTTP Response</a></h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
@@ -2520,7 +2840,7 @@ Content-Length: 992
 </div>
 </div>
 <div class="sect3">
-<h4 id="_http_response_fields_13"><a class="link" href="#_http_response_fields_13">HTTP Response Fields</a></h4>
+<h4 id="_http_response_fields_15"><a class="link" href="#_http_response_fields_15">HTTP Response Fields</a></h4>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 20%;">
@@ -2570,7 +2890,7 @@ Content-Length: 992
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-03-30 19:10:05 +0900
+Last updated 2024-04-01 00:05:31 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
