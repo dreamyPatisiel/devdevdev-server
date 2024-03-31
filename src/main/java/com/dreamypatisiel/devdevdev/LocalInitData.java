@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
-@Profile(value = {"local", "dev"})
+@Profile(value = {"local"})
 @RequiredArgsConstructor
 @Transactional
 public class LocalInitData {
@@ -60,7 +60,6 @@ public class LocalInitData {
     private final TechArticleRepository techArticleRepository;
     private final BookmarkRepository bookmarkRepository;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
-
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {

@@ -1,5 +1,5 @@
 [[Pick-Register]]
-== 픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks)
+== 픽픽픽 작성 API(POST: /devdevdev/api/v1/picks)
 * 픽픽픽 작성
 * 회원만 픽픽픽 작성을 할 수 있다.
 * 픽픽픽 작성시 이미지는 있을 수도 없을 수도 있다.
