@@ -482,7 +482,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_정상_요청응답_5">정상 요청/응답</a></li>
 </ul>
 </li>
-<li><a href="#Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a>
+<li><a href="#Register-Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a>
 <ul class="sectlevel2">
 <li><a href="#_정상_요청응답_6">정상 요청/응답</a></li>
 <li><a href="#_예외_5">예외</a></li>
@@ -614,8 +614,8 @@ Content-Length: 518
 {
   "resultType" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTY0ODE0MSwiZXhwIjoxNzExNjQ5OTQxfQ.00R5SLatzmOsN2M-huXOjqMR8bGi-xoIB9t9HNTpTxc",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTY0ODE0MSwiZXhwIjoxNzEyMjUyOTQxfQ.kImJSuC34QSWTtpb9zhBYA_U7vIMOUdxL67Gveu2Wqk"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTc5NDk3NCwiZXhwIjoxNzExNzk2Nzc0fQ.4ac7I7NPHvcnZml1nr9l3I3-Ne-MZUkxDgXEGuBvCE4",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfdXNlckBkZXZkZXZkZXYuY29tIiwic29jaWFsVHlwZSI6IktBS0FPIiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTcxMTc5NDk3NCwiZXhwIjoxNzEyMzk5Nzc0fQ.uA5QhQYJ__9ObH9Ugkpi54PpWz-KEEEASxzAzLr5x70"
   }
 }</code></pre>
 </div>
@@ -776,8 +776,8 @@ Content-Length: 522
 {
   "resultType" : "SUCCESS",
   "data" : {
-    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExNjQ4MTQxLCJleHAiOjE3MTE2NDk5NDF9.g1feceZh7FYV_IzVOjvKChDe7a9a15RHk6e2ofRgJm4",
-    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExNjQ4MTQxLCJleHAiOjE3MTIyNTI5NDF9.hhzrsvasWmlRByXlSbZo5C_q2IldNFBrYF8vJYn23j8"
+    "accessToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTE3OTY3NzR9.3rWscjbduHQdjsN488oMO__jaxZ0N45flZ-Qc-KR0lU",
+    "refreshToken" : "eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6InRlc3RfYWRtaW5AZGV2ZGV2ZGV2LmNvbSIsInNvY2lhbFR5cGUiOiJLQUtBTyIsInJvbGUiOiJST0xFX0FETUlOIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTIzOTk3NzR9.Q_RunjKqEurCBDPP5rdMU2qUIroDig70cnS5kqZqgRA"
   }
 }</code></pre>
 </div>
@@ -915,7 +915,7 @@ Content-Length: 522
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/token/refresh HTTP/1.1
 Content-Type: application/json;charset=UTF-8
 Host: localhost:8080
-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTQxLCJleHAiOjE3MTIyNTI5NDF9.wgaX8LzSzXyoDyjj4xTfWNMVoEvo5VMNjqPw30CIMc4</code></pre>
+Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTIzOTk3NzR9.vF-GLUpiu50YxjpoFOSRl3J4xS5-MlUjkXlMNpIv7vE</code></pre>
 </div>
 </div>
 </div>
@@ -951,9 +951,9 @@ Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXR
 Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
-Set-Cookie: DEVDEVDEV_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTQxLCJleHAiOjE3MTE2NDk5NDF9.47qa1xzRjmrky84fE1TZ8PQGhAIAxKfRwrsKFJ8JYTY; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Thu, 28 Mar 2024 17:52:01 GMT; Secure
-Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTQxLCJleHAiOjE3MTIyNTI5NDF9.wgaX8LzSzXyoDyjj4xTfWNMVoEvo5VMNjqPw30CIMc4; Path=/; Domain=devdevdev.co.kr; Max-Age=604800; Expires=Thu, 04 Apr 2024 17:49:01 GMT; Secure; HttpOnly
-Set-Cookie: DEVDEVDEV_LOGIN_STATUS=active; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Thu, 28 Mar 2024 17:52:01 GMT; Secure
+Set-Cookie: DEVDEVDEV_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTE3OTY3NzR9.BxOIetyHoX0X7HeyZjzoTdMdToa-Aziiv5WnDMwn2Y8; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sat, 30 Mar 2024 10:39:14 GMT; Secure
+Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTc0LCJleHAiOjE3MTIzOTk3NzR9.vF-GLUpiu50YxjpoFOSRl3J4xS5-MlUjkXlMNpIv7vE; Path=/; Domain=devdevdev.co.kr; Max-Age=604800; Expires=Sat, 06 Apr 2024 10:36:14 GMT; Secure; HttpOnly
+Set-Cookie: DEVDEVDEV_LOGIN_STATUS=active; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sat, 30 Mar 2024 10:39:14 GMT; Secure
 Content-Type: application/json
 X-Content-Type-Options: nosniff
 X-XSS-Protection: 0
@@ -1116,7 +1116,7 @@ Content-Length: 30
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/logout HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTM3LCJleHAiOjE3MTE2NDk5Mzd9.MLj1bwIvp8V6jJKck5SN2zZfwA4aTMN1BbO-WQdDfxk
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTcwLCJleHAiOjE3MTE3OTY3NzB9.FHVokXWYggfhi1Kp9ec9fT9stZ6pxph_VNP0aWeXE2w
 Host: localhost:8080
 Cookie: DEVDEVDEV_REFRESH_TOKEN=</code></pre>
 </div>
@@ -1179,7 +1179,7 @@ Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
 Set-Cookie: DEVDEVDEV_REFRESH_TOKEN=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT
-Set-Cookie: DEVDEVDEV_LOGIN_STATUS=inactive; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Thu, 28 Mar 2024 17:51:57 GMT; Secure
+Set-Cookie: DEVDEVDEV_LOGIN_STATUS=inactive; Path=/; Domain=devdevdev.co.kr; Max-Age=180; Expires=Sat, 30 Mar 2024 10:39:10 GMT; Secure
 Content-Type: application/json
 X-Content-Type-Options: nosniff
 X-XSS-Protection: 0
@@ -1337,7 +1337,7 @@ Content-Length: 30
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/picks?size=10&amp;pickId=9223372036854775807&amp;pickSort=LATEST HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTM5LCJleHAiOjE3MTE2NDk5Mzl9.ecK7yGKi9nQ8kSO3B1fz2rU8Hcaj90cu7WC3FoJ7AXo
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTcyLCJleHAiOjE3MTE3OTY3NzJ9.beUd6fbI1IZEWdjxBKyUQhlFBpzvdVTeuK9AG9hptcY
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -1420,13 +1420,13 @@ Cache-Control: no-cache, no-store, max-age=0, must-revalidate
 Pragma: no-cache
 Expires: 0
 X-Frame-Options: DENY
-Content-Length: 1195
+Content-Length: 971
 
 {
   "resultType" : "SUCCESS",
   "data" : {
     "content" : [ {
-      "id" : 3,
+      "id" : 1,
       "title" : "픽1타이틀",
       "voteTotalCount" : 2,
       "commentTotalCount" : 2,
@@ -1434,22 +1434,12 @@ Content-Length: 1195
       "popularScore" : 20,
       "isVoted" : false,
       "pickOptions" : [ {
-        "id" : 3,
+        "id" : 1,
         "title" : "픽옵션1",
         "percent" : 50,
         "isPicked" : false
       }, {
-        "id" : 3,
-        "title" : "픽옵션1",
-        "percent" : 50,
-        "isPicked" : false
-      }, {
-        "id" : 4,
-        "title" : "픽옵션2",
-        "percent" : 50,
-        "isPicked" : false
-      }, {
-        "id" : 4,
+        "id" : 2,
         "title" : "픽옵션2",
         "percent" : 50,
         "isPicked" : false
@@ -1460,23 +1450,23 @@ Content-Length: 1195
       "pageSize" : 10,
       "sort" : {
         "empty" : false,
-        "unsorted" : false,
-        "sorted" : true
+        "sorted" : true,
+        "unsorted" : false
       },
       "offset" : 0,
       "paged" : true,
       "unpaged" : false
     },
+    "first" : true,
+    "last" : true,
     "size" : 10,
     "number" : 0,
     "sort" : {
       "empty" : false,
-      "unsorted" : false,
-      "sorted" : true
+      "sorted" : true,
+      "unsorted" : false
     },
     "numberOfElements" : 1,
-    "first" : true,
-    "last" : true,
     "empty" : false
   }
 }</code></pre>
@@ -1783,7 +1773,7 @@ Content-Length: 1195
 </div>
 </div>
 <div class="sect1">
-<h2 id="Pick-Option-Image"><a class="link" href="#Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a></h2>
+<h2 id="Register-Pick-Option-Image"><a class="link" href="#Register-Pick-Option-Image">픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)</a></h2>
 <div class="sectionbody">
 <div class="ulist">
 <ul>
@@ -1813,7 +1803,7 @@ Content-Length: 1195
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/picks/image?name=firstPickOptionImage HTTP/1.1
 Content-Type: multipart/form-data;charset=UTF-8; boundary=6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTM5LCJleHAiOjE3MTE2NDk5Mzl9.ecK7yGKi9nQ8kSO3B1fz2rU8Hcaj90cu7WC3FoJ7AXo
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTcwLCJleHAiOjE3MTE3OTY3NzB9.FHVokXWYggfhi1Kp9ec9fT9stZ6pxph_VNP0aWeXE2w
 Host: localhost:8080
 
 --6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm
@@ -1898,9 +1888,9 @@ Content-Length: 296
   "data" : {
     "pickOptionImages" : [ {
       "name" : "firstPickOptionImage",
-      "pickOptionImageId" : 3,
+      "pickOptionImageId" : 1,
       "imageUrl" : "http://localhost:8080/xxx.png",
-      "imageKey" : "test/pickpickpick/04d8f6d4-5c28-4304-8f9a-61e087ed82ab-tesImage.png"
+      "imageKey" : "test/pickpickpick/73f5de82-48c4-44c7-b64f-7794a5831d7b-tesImage.png"
     } ]
   }
 }</code></pre>
@@ -2069,9 +2059,9 @@ Content-Length: 296
 <h4 id="_http_request_7"><a class="link" href="#_http_request_7">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/articles?size=10&amp;techArticleSort=HIGHEST_SCORE&amp;keyword=%ED%83%80%EC%9D%B4%ED%8B%80&amp;elasticId=kxH-b44B26VCvf0zoJ7m&amp;score=10 HTTP/1.1
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/articles?size=10&amp;techArticleSort=HIGHEST_SCORE&amp;keyword=%ED%83%80%EC%9D%B4%ED%8B%80&amp;elasticId=QRHujo4B26VCvf0zZre1&amp;score=10 HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNjQ4MTQwLCJleHAiOjE3MTE2NDk5NDB9.LvR9v0mnHmYu6z-IEiAbROZ262ZzuNIJPSmPXA4vSmo
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExNzk0OTczLCJleHAiOjE3MTE3OTY3NzN9.aZ0kWSe-IEiC2WEYUPWJoX0Z4IAUaSKpv2b6Nn_xTmI
 Host: localhost:8080</code></pre>
 </div>
 </div>
@@ -2166,50 +2156,50 @@ Cache-Control: no-cache, no-store, max-age=0, must-revalidate
 Pragma: no-cache
 Expires: 0
 X-Frame-Options: DENY
-Content-Length: 993
+Content-Length: 992
 
 {
   "resultType" : "SUCCESS",
   "data" : {
     "content" : [ {
       "id" : 1,
-      "elasticId" : "xxEtho4B26VCvf0z67B2",
+      "elasticId" : "QRHujo4B26VCvf0zZre1",
       "thumbnailUrl" : "http://example.com/",
       "title" : "타이틀1",
       "company" : "회사",
-      "regDate" : "2024-02-06",
+      "regDate" : "2024-02-16",
       "author" : "작성자",
       "description" : "내용",
       "viewTotalCount" : 1,
       "recommendTotalCount" : 1,
       "commentTotalCount" : 1,
       "popularScore" : 10,
-      "isBookmarked" : false,
-      "score" : 0.0049140146
+      "isBookmarked" : true,
+      "score" : 0.0024660926
     } ],
     "pageable" : {
       "pageNumber" : 0,
       "pageSize" : 10,
       "sort" : {
         "empty" : true,
-        "unsorted" : true,
-        "sorted" : false
+        "sorted" : false,
+        "unsorted" : true
       },
       "offset" : 0,
       "paged" : true,
       "unpaged" : false
     },
     "totalElements" : 1,
+    "first" : true,
+    "last" : true,
     "size" : 10,
     "number" : 0,
     "sort" : {
       "empty" : true,
-      "unsorted" : true,
-      "sorted" : false
+      "sorted" : false,
+      "unsorted" : true
     },
     "numberOfElements" : 1,
-    "first" : true,
-    "last" : true,
     "empty" : false
   }
 }</code></pre>
@@ -2523,7 +2513,7 @@ Content-Length: 993
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{
   "resultType" : "FAIL",
-  "message" : "커서의 score를 입력해주세요.",
+  "message" : "정확도순 페이지네이션을 위한 커서의 score를 입력해주세요.",
   "errorCode" : 400
 }</code></pre>
 </div>
@@ -2580,7 +2570,7 @@ Content-Length: 993
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-03-24 21:56:37 +0900
+Last updated 2024-03-30 19:10:05 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>
