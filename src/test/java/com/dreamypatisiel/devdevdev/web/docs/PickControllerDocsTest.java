@@ -1,6 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.FIRST_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.SECOND_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
@@ -15,12 +19,15 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.pr
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -30,6 +37,7 @@ import com.amazonaws.services.s3.model.PutObjectResult;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
@@ -38,16 +46,22 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
+import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +69,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -71,6 +86,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     MemberRepository memberRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
+    @Autowired
+    PickOptionImageRepository pickOptionImageRepository;
     @MockBean
     AmazonS3 amazonS3Client;
 
@@ -191,7 +208,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
 
         // then
-        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
                         .file(mockMultipartFile)
                         .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -247,7 +264,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
 
         // then
-        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
                         .file(mockMultipartFile)
                         .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -289,7 +306,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.gif"));
 
         // then
-        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/pick/image")
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
                         .file(mockMultipartFile)
                         .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -314,6 +331,205 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
                 )
         ));
+    }
+
+    @Test
+    @DisplayName("회원만 픽픽픽을 작성할 수 있다.")
+    void registerPicks() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
+        String secondImageUrl = "http://devdevdev.co.kr/pickpickpick/second.jpg";
+        String imageKey = "/pickpickpick/xxx.jpg";
+
+        PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        PickOptionRequest firstPickOptionRequest = createPickOptionRequest("Svelte가 짱이다!", "낮은 러닝커브 그리고 빠른 속도!",
+                List.of(firstPickOptionImage.getId()));
+        PickOptionRequest secondPickOptionRequest = createPickOptionRequest("React가 짱이다!", "대형 커뮤니티, 대기업에서 라이브러리 관리!",
+                List.of(secondPickOptionImage.getId()));
+
+        Map<String, PickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondPickOptionRequest);
+
+        PickRegisterRequest pickRegisterRequest = createPickRegisterRequest("Svelte VS React", pickOptions);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(pickRegisterRequest)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-register",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(JsonFieldType.STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(JsonFieldType.OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickId").type(JsonFieldType.NUMBER).description("픽픽픽 아이디")
+                                .attributes(authenticationType())
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("비회원은 픽픽픽 작성을 할 수 없다.")
+    void registerPicksAnonymousException() throws Exception {
+        // given
+        String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
+        String secondImageUrl = "http://devdevdev.co.kr/pickpickpick/second.jpg";
+        String imageKey = "/pickpickpick/xxx.jpg";
+
+        PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        PickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+                List.of(firstPickOptionImage.getId()));
+        PickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+                List.of(secondPickOptionImage.getId()));
+
+        Map<String, PickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondPickOptionRequest);
+
+        PickRegisterRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(pickRegisterRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-register-anonymous-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestFields(
+                        fieldWithPath("pickTitle").type(JsonFieldType.STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(JsonFieldType.OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("잘못된 형식의 픽픽픽 옵션 필드 이름 이면 예외가 발생한다.")
+    void registerPickPickOptionNameException() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
+        String secondImageUrl = "http://devdevdev.co.kr/pickpickpick/second.jpg";
+        String imageKey = "/pickpickpick/xxx.jpg";
+
+        PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        PickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+                List.of(firstPickOptionImage.getId()));
+        PickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+                List.of(secondPickOptionImage.getId()));
+
+        Map<String, PickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put("thirdPickOption", firstPickOptionRequest);
+        pickOptions.put("fourthPickOption", secondPickOptionRequest);
+
+        PickRegisterRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsString(pickRegisterRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-register-pick-option-name-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    private PickOptionImage createPickOptionImage(String name, String imageUrl, String imageKey) {
+        return PickOptionImage.builder()
+                .name(name)
+                .imageUrl(imageUrl)
+                .imageKey(imageKey)
+                .build();
+    }
+
+    private PickRegisterRequest createPickRegisterRequest(String pickTitle, Map<String, PickOptionRequest> pickOptions) {
+        return PickRegisterRequest.builder()
+                .pickTitle(pickTitle)
+                .pickOptions(pickOptions)
+                .build();
+    }
+
+    private PickOptionRequest createPickOptionRequest(String pickOptionTitle, String pickOptionContent, List<Long> pickOptionImageIds) {
+        return PickOptionRequest.builder()
+                .pickOptionTitle(pickOptionTitle)
+                .pickOptionContent(pickOptionContent)
+                .pickOptionImageIds(pickOptionImageIds)
+                .build();
     }
 
     private ObjectMetadata createObjectMetadataByMultipartFile(MultipartFile multipartFile) {

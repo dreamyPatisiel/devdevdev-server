@@ -44,7 +44,8 @@ public class PickOptionImage extends BasicTime {
         return pickOptionImage;
     }
 
-    public void changePickOptionImage(PickOption pickOption) {
+    public void changePickOption(PickOption pickOption) {
+        pickOption.getPickOptionImages().add(this);
         this.pickOption = pickOption;
     }
 }
