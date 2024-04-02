@@ -22,13 +22,12 @@ public class AwsS3Uploader {
             MediaType.IMAGE_JPEG_VALUE,
             MediaType.IMAGE_PNG_VALUE
     };
-    public static final String INVALID_CAN_NOT_DELETE_IMAGE_MESSAGE = "일시적인 오류로 이미지 삭제를 실패 했습니다.";
 
     private final AmazonS3 amazonS3Client;
 
-    public List<S3ImageObject> uploadMultipleImage(List<MultipartFile> multipartFiles, String bucket, String dirName) {
+    public List<S3ImageObject> uploadMultipleImage(List<MultipartFile> multipartFiles, String bucket, String path) {
         return multipartFiles.stream()
-                .map(multipartFile -> uploadImage(multipartFile, bucket, dirName))
+                .map(multipartFile -> uploadImage(multipartFile, bucket, path))
                 .toList();
     }
 
@@ -53,7 +52,7 @@ public class AwsS3Uploader {
             String imageUrl = amazonS3Client.getUrl(bucket, key).toString();
 
             return S3ImageObject.of(imageUrl, key);
-        } catch (IOException e) {
+        } catch (IOException | SdkClientException e) {
             log.error("uploadAnyFile={}", e.getMessage(), e);
             return S3ImageObject.fail();
         }
@@ -68,12 +67,7 @@ public class AwsS3Uploader {
     }
 
     private void deleteAnyFile(String bucket, String key) {
-        try {
-            amazonS3Client.deleteObject(bucket, key);
-        } catch (SdkClientException e) {
-            log.error("deleteAnyFile={}", e.getMessage(), e);
-            throw new SdkClientException(INVALID_CAN_NOT_DELETE_IMAGE_MESSAGE);
-        }
+        amazonS3Client.deleteObject(bucket, key);
     }
 
     private PutObjectRequest createPutObjectRequest(String bucket, String key, MultipartFile multipartFile,
