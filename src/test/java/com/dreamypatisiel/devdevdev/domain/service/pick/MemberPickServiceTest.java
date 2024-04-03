@@ -73,6 +73,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -582,6 +583,23 @@ class MemberPickServiceTest {
                 .pickOptionContent(pickOptionContent)
                 .pickOptionImageIds(pickOptionImageIds)
                 .build();
+    }
+
+    @Test
+    @DisplayName("픽픽픽 이미지를 업로드할 때 "+MemberPickService.MAX_IMAGE_SIZE +"개 초과로 이미지를 업로드하면 예외가 발생한다.")
+    void uploadImagesImageMaxSizeException() {
+        // given
+        MockMultipartFile mockMultipartFile1 = createMockMultipartFile("testImage1", "tesImage1.png");
+        MockMultipartFile mockMultipartFile2 = createMockMultipartFile("testImage2", "tesImage2.png");
+        MockMultipartFile mockMultipartFile3 = createMockMultipartFile("testImage3", "tesImage3.png");
+        MockMultipartFile mockMultipartFile4 = createMockMultipartFile("testImage4", "tesImage4.png");
+
+        List<MultipartFile> mockMultipartFiles = List.of(mockMultipartFile1, mockMultipartFile2, mockMultipartFile3, mockMultipartFile4);
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.uploadImages(name, mockMultipartFiles))
+                .isInstanceOf(ImageFileException.class)
+                .hasMessage(String.format(MemberPickService.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE, MemberPickService.MAX_IMAGE_SIZE));
     }
 
     @Test
