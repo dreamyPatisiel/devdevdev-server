@@ -89,14 +89,4 @@ public class PickController {
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
-
-    @Operation(summary = "픽픽픽 이미지 삭제", description = "픽픽픽 이미지를 삭제합니다.")
-    @DeleteMapping("/picks/image/{pickImageOptionId}")
-    public ResponseEntity<BasicResponse<Void>> deletePickImage(@PathVariable Long pickImageOptionId) {
-
-        PickService pickService = pickServiceStrategy.getPickService();
-        pickService.deleteImage(pickImageOptionId);
-
-        return ResponseEntity.ok(BasicResponse.success());
-    }
 }
