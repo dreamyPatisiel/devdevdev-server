@@ -36,9 +36,10 @@ public class MemberPickService implements PickService {
 
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
     public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";
-    public static final int START_INCLUSIVE = 0;
     public static final String INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
     public static final String INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE = "이미지가 존재하지 않습니다.";
+    public static final String INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE = "이미지 파일은 최대 %d개 까지 업로드 할 수 있습니다.";
+    public static final int MAX_IMAGE_SIZE = 3;
 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
@@ -83,6 +84,12 @@ public class MemberPickService implements PickService {
     @Override
     @Transactional
     public PickUploadImageResponse uploadImages(String name, List<MultipartFile> multipartFiles) {
+
+        // 이미지 갯수 제한
+        if(multipartFiles.size() > MAX_IMAGE_SIZE) {
+            String exceptionMessage = String.format(INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE, MAX_IMAGE_SIZE);
+            throw new ImageFileException(exceptionMessage);
+        }
 
         // 픽픽픽은 2개의 옵션이 존재하고 각 옵션마다 이미지를 업로드 할 수 있다.
         if(!FIRST_PICK_OPTION_IMAGE.equals(name) && !SECOND_PICK_OPTION_IMAGE.equals(name)) {

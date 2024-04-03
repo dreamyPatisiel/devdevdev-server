@@ -326,6 +326,46 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
+    @DisplayName("")
+    void uploadPickOptionImageSizeException() throws Exception {
+        // given
+        MockMultipartFile mockMultipartFile1 = createMockMultipartFile("pickOptionImages", "tesImage1.png");
+        MockMultipartFile mockMultipartFile2 = createMockMultipartFile("pickOptionImages", "tesImage2.png");
+        MockMultipartFile mockMultipartFile3 = createMockMultipartFile("pickOptionImages", "tesImage3.png");
+        MockMultipartFile mockMultipartFile4 = createMockMultipartFile("pickOptionImages", "tesImage4.png");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
+                        .file(mockMultipartFile1)
+                        .file(mockMultipartFile2)
+                        .file(mockMultipartFile3)
+                        .file(mockMultipartFile4)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-main-option-image-size-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
     @DisplayName("회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 있다.")
     void deletePickImage() throws Exception {
         // given
