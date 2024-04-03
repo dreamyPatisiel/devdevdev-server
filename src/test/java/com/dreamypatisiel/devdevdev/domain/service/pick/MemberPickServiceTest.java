@@ -1,5 +1,8 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import com.amazonaws.SdkClientException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.*;
 import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,6 +35,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
+import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionNameException;
@@ -42,6 +46,7 @@ import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName;
 import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +55,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -62,6 +68,16 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Transactional
@@ -81,12 +97,14 @@ class MemberPickServiceTest {
     PickOptionImageRepository pickOptionImageRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
-    @Autowired
+    @PersistenceContext
     EntityManager em;
     @Autowired
     AwsS3Uploader awsS3Uploader;
     @Autowired
     AwsS3Properties awsS3Properties;
+    @Autowired
+    AmazonS3 amazonS3Client;
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -416,7 +434,7 @@ class MemberPickServiceTest {
 
         // s3 이미지 삭제
         S3 s3 = awsS3Properties.getS3();
-        awsS3Uploader.deleteSingleImage(s3.bucket(), S3ImageObject.from(pickOptionImage));
+        awsS3Uploader.deleteSingleImage(s3.bucket(), pickOptionImage.getImageKey());
     }
 
     @ParameterizedTest
@@ -563,6 +581,44 @@ class MemberPickServiceTest {
                 .pickOptionTitle(pickOptionTitle)
                 .pickOptionContent(pickOptionContent)
                 .pickOptionImageIds(pickOptionImageIds)
+                .build();
+    }
+
+    @Test
+    @DisplayName("픽픽픽 S3에 업로드 된 이미지를 삭제하고 DB에 저장된 이미지 정보도 삭제한다.")
+    void deleteImage() {
+        // given
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("testImage", "tesImage.png");
+        S3 s3 = awsS3Properties.getS3();
+        S3ImageObject s3ImageObject = awsS3Uploader.uploadSingleImage(mockMultipartFile, s3.bucket(), s3.createPickPickPickDirectory());
+
+        PickOptionImage pickOptionImage = createPickOptionImage(s3ImageObject.getImageUrl(), s3ImageObject.getKey());
+        pickOptionImageRepository.save(pickOptionImage);
+
+        // when
+        memberPickService.deleteImage(pickOptionImage.getId());
+
+        // then
+        assertThatThrownBy(() -> pickOptionImageRepository.findById(pickOptionImage.getId()).get())
+                .isInstanceOf(NoSuchElementException.class);
+
+        assertThatThrownBy(() -> amazonS3Client.getObject(s3.bucket(), s3ImageObject.getKey()))
+                .isInstanceOf(SdkClientException.class);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 이미지를 삭제할 때 DB에 이미지 정보가 없으면 예외가 발생한다.")
+    void deleteImageException() {
+        // given // when // then
+        assertThatThrownBy(() -> memberPickService.deleteImage(1L))
+                .isInstanceOf(ImageFileException.class)
+                .hasMessage(MemberPickService.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE);
+    }
+
+    private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
+        return PickOptionImage.builder()
+                .imageUrl(imageUrl)
+                .imageKey(imageKey)
                 .build();
     }
 
