@@ -117,7 +117,11 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         // then
         assertThat(techArticleResponse)
                 .isNotNull()
-                .isInstanceOf(TechArticleResponse.class);
+                .isInstanceOf(TechArticleResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull();
+                });
     }
 
     @Test

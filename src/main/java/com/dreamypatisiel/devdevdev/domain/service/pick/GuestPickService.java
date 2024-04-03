@@ -39,11 +39,11 @@ public class GuestPickService implements PickService {
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
 
         // 데이터 가공
-        List<PicksResponse> picksResponses = picks.stream()
+        List<PicksResponse> picksResponse = picks.stream()
                 .map(this::mapToPickResponse)
                 .toList();
 
-        return new SliceImpl<>(picksResponses, pageable, picks.hasNext());
+        return new SliceImpl<>(picksResponse, pageable, picks.hasNext());
     }
 
     @Override

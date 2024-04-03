@@ -127,7 +127,7 @@ public class ElasticTechArticleService {
         }
 
         ElasticTechArticle elasticTechArticle = elasticTechArticleRepository.findById(elasticId)
-                .orElseThrow(() -> new com.dreamypatisiel.devdevdev.exception.NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
+                .orElseThrow(() -> new NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
 
         searchQuery.setSearchAfter(getSearchAfterWhenSearch(elasticTechArticle, techArticleSort, score));
     }

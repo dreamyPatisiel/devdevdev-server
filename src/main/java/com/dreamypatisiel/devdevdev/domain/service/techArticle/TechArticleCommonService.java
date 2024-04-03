@@ -8,7 +8,6 @@ import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
-import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +33,11 @@ class TechArticleCommonService {
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
     protected ElasticTechArticle findElasticTechArticle(TechArticle techArticle) {
-        String elasticId = Optional.ofNullable(techArticle.getElasticId())
-                .orElseThrow(() -> new TechArticleException(NOT_FOUND_ELASTIC_ID_MESSAGE));
+        String elasticId = techArticle.getElasticId();
+
+        if(elasticId == null) {
+            throw new TechArticleException(NOT_FOUND_ELASTIC_ID_MESSAGE);
+        }
 
         return elasticTechArticleRepository.findById(elasticId)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
@@ -46,33 +48,33 @@ class TechArticleCommonService {
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_TECH_ARTICLE_MESSAGE));
     }
 
-    protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticResponses(SearchHits<ElasticTechArticle> searchHits) {
+    protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits) {
         return searchHits.stream()
                 .map(searchHit -> new ElasticResponse<>(searchHit.getContent(), searchHit.getScore()))
                 .toList();
     }
 
-    protected static List<String> getElasticIds(List<ElasticResponse<ElasticTechArticle>> elasticResponses) {
-        return elasticResponses.stream()
+    protected static List<String> getElasticIds(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+        return elasticTechArticlesResponse.stream()
                 .map(elasticResponse -> elasticResponse.content().getId())
                 .toList();
     }
 
-    protected List<TechArticle> getTechArticlesByElasticIdsIn(List<ElasticResponse<ElasticTechArticle>> elasticResponses) {
-        List<String> elasticIds = getElasticIds(elasticResponses);
+    protected List<TechArticle> getTechArticlesByElasticIdsIn(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+        List<String> elasticIds = getElasticIds(elasticTechArticlesResponse);
         return techArticleRepository.findAllByElasticIdIn(elasticIds);
     }
 
-    protected static Map<String, ElasticResponse<ElasticTechArticle>> getElasticResponseMap(List<ElasticResponse<ElasticTechArticle>> elasticResponses) {
-        return elasticResponses.stream()
+    protected static Map<String, ElasticResponse<ElasticTechArticle>> getElasticResponseMap(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+        return elasticTechArticlesResponse.stream()
                 .collect(Collectors.toMap(el -> el.content().getId(), Function.identity()));
     }
 
     protected ElasticSlice<TechArticleResponse> createElasticSlice(Pageable pageable, SearchHits<ElasticTechArticle> searchHits,
-                                                                 List<TechArticleResponse> techArticleResponses) {
+                                                                 List<TechArticleResponse> techArticlesResponse) {
         long totalHits = searchHits.getTotalHits();
         boolean hasNext = hasNextPage(pageable, searchHits);
-        return new ElasticSlice<>(techArticleResponses, pageable, totalHits, hasNext);
+        return new ElasticSlice<>(techArticlesResponse, pageable, totalHits, hasNext);
     }
 
     protected static CompanyResponse createCompanyResponse(TechArticle findTechArticle) {

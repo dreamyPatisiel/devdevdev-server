@@ -51,9 +51,9 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 데이터 가공
-        List<TechArticleResponse> techArticleResponses = getTechArticleResponses(searchHits, member);
+        List<TechArticleResponse> techArticlesResponse = getTechArticlesResponse(searchHits, member);
 
-        return createElasticSlice(pageable, searchHits, techArticleResponses);
+        return createElasticSlice(pageable, searchHits, techArticlesResponse);
     }
 
     @Override
@@ -70,14 +70,14 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         return getTechArticleResponse(techArticle, elasticTechArticle, companyResponse, member);
     }
 
-    private List<TechArticleResponse> getTechArticleResponses(SearchHits<ElasticTechArticle> searchHits, Member member) {
-        List<ElasticResponse<ElasticTechArticle>> elasticResponses = mapToElasticResponses(searchHits);
-        return mapToTechArticleResponses(elasticResponses, member);
+    private List<TechArticleResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits, Member member) {
+        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(searchHits);
+        return mapToTechArticlesResponse(elasticTechArticlesResponse, member);
     }
 
-    private List<TechArticleResponse> mapToTechArticleResponses(List<ElasticResponse<ElasticTechArticle>> elasticResponses, Member member) {
-        List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticResponses);
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticResponses);
+    private List<TechArticleResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse, Member member) {
+        List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticTechArticlesResponse);
+        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
 
         return findTechArticles.stream()
                 .map(findTechArticle -> {
