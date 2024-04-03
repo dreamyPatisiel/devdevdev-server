@@ -19,7 +19,7 @@ include::{snippets}/tech-article-main/response-fields.adoc[]
 
 === 예외
 ==== HTTP Response
-include::{snippets}/not-found-tech-article-exception/response-body.adoc[]
+include::{snippets}/not-found-elastic-tech-article-cursor-exception/response-body.adoc[]
 include::{snippets}/not-found-score-exception/response-body.adoc[]
 ==== HTTP Response Fields
 include::{snippets}/not-found-score-exception/response-fields.adoc[]

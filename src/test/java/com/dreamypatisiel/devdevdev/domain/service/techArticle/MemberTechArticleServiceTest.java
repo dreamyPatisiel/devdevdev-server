@@ -3,10 +3,18 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
+import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import jakarta.persistence.EntityManager;
@@ -21,6 +29,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,6 +37,8 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
 
     @Autowired
     MemberTechArticleService memberTechArticleService;
+    @Autowired
+    TechArticleRepository techArticleRepository;
     @Autowired
     MemberRepository memberRepository;
     @Autowired
@@ -68,7 +79,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
 
     @Test
     @DisplayName("커서 방식으로 기술블로그 메인을 조회할 때 회원이 없으면 예외가 발생한다.")
-    void getTechArticlesException() {
+    void getTechArticlesNotFoundMemberException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -82,6 +93,128 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThatThrownBy(() -> memberTechArticleService.getTechArticles(pageable, null, null, null, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회한다.")
+    void getTechArticle() {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        TechArticleResponse techArticleResponse = memberTechArticleService.getTechArticle(id, authentication);
+
+        // then
+        assertThat(techArticleResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 회원이 없으면 예외가 발생한다.")
+    void getTechArticleNotFoundMemberException() {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
+    void getTechArticleNotFoundTechArticleException() {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), null, null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId()+1;
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
+    void getTechArticleNotFoundElasticIdException() {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), null, null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+                .isInstanceOf(TechArticleException.class)
+                .hasMessage(NOT_FOUND_ELASTIC_ID_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
+    void getTechArticleNotFoundElasticTechArticleException() {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), "elasticId", null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {

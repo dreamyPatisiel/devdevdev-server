@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_CURSOR_SCORE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -148,8 +151,8 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
 
         // when // then
         assertThatThrownBy(() -> elasticTechArticleService.getTechArticles(pageable, "dontExistElasticId", null, null, null))
-                .isInstanceOf(ElasticTechArticleException.class)
-                .hasMessage(ElasticTechArticleService.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
     }
 
     @Test
@@ -467,7 +470,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         // when // then
         assertThatThrownBy(() -> elasticTechArticleService.getTechArticles(pageable, cursor.getId(), TechArticleSort.HIGHEST_SCORE, keyword, null))
                 .isInstanceOf(ElasticTechArticleException.class)
-                .hasMessage(ElasticTechArticleService.NOT_FOUND_CURSOR_SCORE_MESSAGE);
+                .hasMessage(NOT_FOUND_CURSOR_SCORE_MESSAGE);
     }
 
     @Test

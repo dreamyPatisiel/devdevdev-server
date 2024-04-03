@@ -1,22 +1,9 @@
 package com.dreamypatisiel.devdevdev;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.*;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -24,7 +11,11 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -60,6 +51,7 @@ public class LocalInitData {
     private final TechArticleRepository techArticleRepository;
     private final BookmarkRepository bookmarkRepository;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
+    private final CompanyRepository companyRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {
@@ -79,10 +71,32 @@ public class LocalInitData {
         pickVoteRepository.saveAll(pickVotes);
         pickOptionRepository.saveAll(pickOptions);
 
-        List<TechArticle> techArticles = createTechArticles();
+        List<Company> companies = createCompanies();
+        List<Company> savedCompanies = companyRepository.saveAll(companies);
+
+        Map<Long, Company> companyIdMap = getCompanyIdMap(savedCompanies);
+        List<TechArticle> techArticles = createTechArticles(companyIdMap);
         techArticleRepository.saveAll(techArticles);
+
         List<Bookmark> bookmarks = createBookmarks(member, techArticles);
         bookmarkRepository.saveAll(bookmarks);
+    }
+
+    private List<Company> createCompanies() {
+        List<Company> companies = new ArrayList<>();
+        companies.add(Company.of(new CompanyName("Toss"), new Url("https://toss.tech"), new Url("https://toss.im/career/jobs")));
+        companies.add(Company.of(new CompanyName("우아한 형제들"), new Url("https://techblog.woowahan.com"), new Url("https://career.woowahan.com")));
+        companies.add(Company.of(new CompanyName("AWS"), new Url("https://aws.amazon.com/ko/blogs/tech"), new Url("https://aws.amazon.com/ko/careers")));
+        companies.add(Company.of(new CompanyName("채널톡"), new Url("https://channel.io/ko/blog"), new Url("https://channel.io/ko/jobs")));
+        return companies;
+    }
+
+    private static Map<Long, Company> getCompanyIdMap(List<Company> companies) {
+        return companies.stream()
+                .collect(Collectors.toMap(
+                        Company::getId,
+                        Function.identity()
+                ));
     }
 
     private List<Bookmark> createBookmarks(Member member, List<TechArticle> techArticles) {
@@ -96,11 +110,12 @@ public class LocalInitData {
         return bookmarks;
     }
 
-    private List<TechArticle> createTechArticles() {
+    private List<TechArticle> createTechArticles(Map<Long, Company> companyIdMap) {
         List<TechArticle> techArticles = new ArrayList<>();
         Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticles) {
-            TechArticle techArticle = TechArticle.from(elasticTechArticle);
+            Company company = companyIdMap.get(elasticTechArticle.getCompanyId());
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         return techArticles;
