@@ -2065,10 +2065,17 @@ Content-Length: 296
 <h4 id="_http_request_7"><a class="link" href="#_http_request_7">HTTP Request</a></h4>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /devdevdev/api/v1/articles?size=10&amp;techArticleSort=HIGHEST_SCORE&amp;keyword=%ED%83%80%EC%9D%B4%ED%8B%80&amp;elasticId=lBFllY4B26VCvf0zX8G7&amp;score=10 HTTP/1.1
-Content-Type: application/json;charset=UTF-8
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExOTAzNDMzLCJleHAiOjE3MTE5MDUyMzN9.S_Jt-rgIMB8L-0_odaGmyzAClH_qQOxUPf-1EdAvxbE
-Host: localhost:8080</code></pre>
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /devdevdev/api/v1/picks/image?name=firstPickOptionImage HTTP/1.1
+Content-Type: multipart/form-data;charset=UTF-8; boundary=6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImRyZWFteTVwYXRpc2llbEBrYWthby5jb20iLCJzb2NpYWxUeXBlIjoiS0FLQU8iLCJyb2xlIjoiUk9MRV9VU0VSIiwiaWF0IjoxNzExODk4MjY5LCJleHAiOjE3MTE5MDAwNjl9.maQm6uHCh4kvg-SEmrcKRHKQGUveiKr56KD1kVEHMBc
+Host: localhost:8080
+
+--6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm
+Content-Disposition: form-data; name=pickOptionImages; filename=tesImage.png
+Content-Type: image/png
+
+pickOptionImages
+--6o2knFse3p53ty9dmcQvWAIx1zInP11uCfbm--</code></pre>
 </div>
 </div>
 </div>
@@ -2698,15 +2705,42 @@ Content-Length: 550
       "id" : 1,
       "name" : "꿈빛 파티시엘",
       "careerUrl" : "https://example.com"
+      "elasticId" : "DxEWlY4B26VCvf0zmb_3",
+      "thumbnailUrl" : "http://example.com/",
+      "title" : "타이틀1",
+      "company" : "회사",
+      "regDate" : "2024-02-23",
+      "author" : "작성자",
+      "description" : "내용",
+      "viewTotalCount" : 1,
+      "recommendTotalCount" : 1,
+      "commentTotalCount" : 1,
+      "popularScore" : 10,
+      "isBookmarked" : false,
+      "score" : 0.0049140146
+    } ],
+    "pageable" : {
+      "pageNumber" : 0,
+      "pageSize" : 10,
+      "sort" : {
+        "empty" : true,
+        "sorted" : false,
+        "unsorted" : true
+      },
+      "offset" : 0,
+      "paged" : true,
+      "unpaged" : false
     },
-    "regDate" : "2024-02-05",
-    "author" : "작성자",
-    "description" : "내용",
-    "viewTotalCount" : 1,
-    "recommendTotalCount" : 1,
-    "commentTotalCount" : 1,
-    "popularScore" : 10,
-    "isBookmarked" : false
+    "totalElements" : 1,
+    "first" : true,
+    "last" : true,
+    "size" : 10,
+    "number" : 0,
+    "sort" : {
+      "empty" : true,
+      "sorted" : false,
+      "unsorted" : true
+    }
   }
 }</code></pre>
 </div>

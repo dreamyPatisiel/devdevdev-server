@@ -44,7 +44,7 @@ public class SecurityConfig {
     private final CorsConfig corsConfig;
 
     @Bean
-    @Profile({"test", "local", "dev"})
+    @Profile({"test", "local"})
     public SecurityFilterChain securityFilterChainOnLocal(HttpSecurity http) throws Exception {
 
         http
@@ -53,6 +53,53 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(WHITELIST_URL).permitAll()
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
+                        .requestMatchers("/devdevdev/api/v1/public").permitAll()
+                        .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
+                        .requestMatchers("/devdevdev/api/v1/user").hasAnyRole(ADMIN, USER)
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable);
+
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint(jwtAuthenticationEntryPointHandler)
+                .accessDeniedHandler(jwtAccessDeniedHandler));
+
+        http.oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
+                        .userService(oAuth2UserServiceImpl))
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+                .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
+                        .baseUri(OAUTH2_LOGIN_URL_PREFIX)
+                )
+                .redirectionEndpoint(redirectionEndpointConfig -> redirectionEndpointConfig
+                        .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))
+        );
+
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(securityExceptionFilter, JwtAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    @Profile({"local"})
+    @ConditionalOnProperty(name = SPRING_H2_CONSOLE_ENABLED, havingValue = "true")
+    public WebSecurityCustomizer configH2ConsoleEnable() {
+        return web -> web.ignoring()
+                .requestMatchers(PathRequest.toH2Console());
+    }
+
+    @Bean
+    @Profile({"dev"})
+    public SecurityFilterChain securityFilterChainOnDev(HttpSecurity http) throws Exception {
+
+        http
+                .cors(cors -> cors.configurationSource(corsConfig.apiCorsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers(WHITELIST_URL).permitAll()
                         .requestMatchers("/devdevdev/api/v1/public").permitAll()
                         .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
                         .requestMatchers("/devdevdev/api/v1/user").hasAnyRole(ADMIN, USER)
@@ -81,13 +128,5 @@ public class SecurityConfig {
         http.addFilterBefore(securityExceptionFilter, JwtAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    @Profile({"local", "dev"})
-    @ConditionalOnProperty(name = SPRING_H2_CONSOLE_ENABLED, havingValue = "true")
-    public WebSecurityCustomizer configH2ConsoleEnable() {
-        return web -> web.ignoring()
-                .requestMatchers(PathRequest.toH2Console());
     }
 }
