@@ -52,5 +52,5 @@ src/test/resources/application-storage-s3.yml
 src/main/resources/storage/gcs-key.json
 src/test/resources/storage/gcs-key.json
 
-## index.html
+### index.html
 src/main/resources/static/docs/index.html

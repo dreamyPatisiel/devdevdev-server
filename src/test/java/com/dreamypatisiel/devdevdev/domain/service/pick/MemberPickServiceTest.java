@@ -1,13 +1,22 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import com.amazonaws.SdkClientException;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
+
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
-import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -20,18 +29,17 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
-import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -44,17 +52,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import org.springframework.web.multipart.MultipartFile;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Transactional
@@ -105,9 +102,6 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 픽픽픽 메인을 조회한다.")
     void findPicksMain() {
         // given
-        PickOption pickOption1 = createPickOption(pickOptionTitle1, pickContents1, pickOptionVoteCount1);
-        PickOption pickOption2 = createPickOption(pickOptionTitle2, pickContents2, pickOptionVoteCount2);
-
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
@@ -118,9 +112,6 @@ class MemberPickServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        PickVote pickVote = PickVote.create(member, pickOption1);
-        pickVoteRepository.save(pickVote);
-
         Count pickVoteTotalCount = new Count(pickOptionVoteCount1.getCount() + pickOptionVoteCount2.getCount());
         Count pickViewTotalCount = new Count(1);
         Count pickCommentTotalCount = new Count(0);
@@ -128,11 +119,16 @@ class MemberPickServiceTest {
         String thumbnailUrl = "섬네일 이미지 url";
         String author = "운영자";
         Pick pick = createPick(pickTitle, pickVoteTotalCount, pickViewTotalCount, pickCommentTotalCount,
-                pickPopularScore, thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of(pickVote));
+                pickPopularScore, thumbnailUrl, author);
         pick.changePopularScore(pickPopularScorePolicy);
-
         pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, pickContents1, pickOptionVoteCount1);
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, pickContents2, pickOptionVoteCount2);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickVote pickVote = createPickVote(member, pickOption1, pick);
+        pickVoteRepository.save(pickVote);
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -160,12 +156,24 @@ class MemberPickServiceTest {
                 );
     }
 
+    private PickVote createPickVote(Member member, PickOption pickOption, Pick pick) {
+        PickVote pickVote = PickVote.builder()
+                .member(member)
+                .pickOption(pickOption)
+                .pick(pick)
+                .build();
+
+        pickVote.changePick(pick);
+
+        return pickVote;
+    }
+
     @Test
     @DisplayName("회원이 커서 방식으로 회원 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_VIEWED() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
         pickOption1.changePickVoteCount(new Count(1));
         pickOption2.changePickVoteCount(new Count(2));
 
@@ -178,12 +186,9 @@ class MemberPickServiceTest {
         Count pick3ViewTotalCount = new Count(3);
 
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, pick1ViewTotalCount, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(title2, count, pick2ViewTotalCount, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = createPick(title3, count, pick3ViewTotalCount, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick1 = createPick(title1, count, pick1ViewTotalCount, count, count, thumbnailUrl, author);
+        Pick pick2 = createPick(title2, count, pick2ViewTotalCount, count, count, thumbnailUrl, author);
+        Pick pick3 = createPick(title3, count, pick3ViewTotalCount, count, count, thumbnailUrl, author);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -217,8 +222,8 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 익명 사용자 전용 생성시간 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainLATEST() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
         pickOption1.changePickVoteCount(new Count(1));
         pickOption2.changePickVoteCount(new Count(2));
 
@@ -226,12 +231,9 @@ class MemberPickServiceTest {
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(title2, count, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = createPick(title3, count, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick1 = createPick(title1, count, count, count, count, thumbnailUrl, author);
+        Pick pick2 = createPick(title2, count, count, count, count, thumbnailUrl, author);
+        Pick pick3 = createPick(title3, count, count, count, count, thumbnailUrl, author);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -266,8 +268,8 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 익명 사용자 전용 댓글수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_COMMENTED() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
         pickOption1.changePickVoteCount(new Count(1));
         pickOption2.changePickVoteCount(new Count(2));
 
@@ -278,12 +280,9 @@ class MemberPickServiceTest {
         Count pick2commentTotalCount = new Count(2);
         Count pick3commentTotalCount = new Count(3);
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, count, pick1commentTotalCount, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(title2, count, count, pick2commentTotalCount, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick3 = createPick(title3, count, count, pick3commentTotalCount, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+        Pick pick1 = createPick(title1, count, count, pick1commentTotalCount, count, thumbnailUrl, author);
+        Pick pick2 = createPick(title2, count, count, pick2commentTotalCount, count, thumbnailUrl, author);
+        Pick pick3 = createPick(title3, count, count, pick3commentTotalCount, count, thumbnailUrl, author);
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
@@ -319,8 +318,8 @@ class MemberPickServiceTest {
             + "(현재 가중치 = 댓글수:"+ PickPopularScorePolicy.COMMENT_WEIGHT+", 투표수:"+PickPopularScorePolicy.VOTE_WEIGHT+", 조회수:"+PickPopularScorePolicy.VIEW_WEIGHT+")")
     void findPicksMainPOPULAR() {
         // given
-        PickOption pickOption1 = PickOption.create(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = PickOption.create(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
         pickOption1.changePickVoteCount(new Count(1));
         pickOption2.changePickVoteCount(new Count(2));
 
@@ -400,7 +399,7 @@ class MemberPickServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {MemberPickService.FIRST_PICK_OPTION_IMAGE, MemberPickService.SECOND_PICK_OPTION_IMAGE})
+    @ValueSource(strings = {FIRST_PICK_OPTION_IMAGE, SECOND_PICK_OPTION_IMAGE})
     @DisplayName("픽픽픽 이미지를 업로드 하고 DB에 픽픽픽 이미지 정보를 저장한다.")
     void uploadImages(String name) {
 
@@ -434,62 +433,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.uploadImages(name, List.of(mockMultipartFile)))
                 .isInstanceOf(PickOptionImageNameException.class)
-                .hasMessage(MemberPickService.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("픽픽픽 이미지를 업로드할 때 "+MemberPickService.MAX_IMAGE_SIZE +"개 초과로 이미지를 업로드하면 예외가 발생한다.")
-    void uploadImagesImageMaxSizeException() {
-        // given
-        MockMultipartFile mockMultipartFile1 = createMockMultipartFile("testImage1", "tesImage1.png");
-        MockMultipartFile mockMultipartFile2 = createMockMultipartFile("testImage2", "tesImage2.png");
-        MockMultipartFile mockMultipartFile3 = createMockMultipartFile("testImage3", "tesImage3.png");
-        MockMultipartFile mockMultipartFile4 = createMockMultipartFile("testImage4", "tesImage4.png");
-
-        List<MultipartFile> mockMultipartFiles = List.of(mockMultipartFile1, mockMultipartFile2, mockMultipartFile3, mockMultipartFile4);
-
-        // when // then
-        assertThatThrownBy(() -> memberPickService.uploadImages(name, mockMultipartFiles))
-                .isInstanceOf(ImageFileException.class)
-                .hasMessage(String.format(MemberPickService.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE, MemberPickService.MAX_IMAGE_SIZE));
-    }
-
-    @Test
-    @DisplayName("픽픽픽 S3에 업로드 된 이미지를 삭제하고 DB에 저장된 이미지 정보도 삭제한다.")
-    void deleteImage() {
-        // given
-        MockMultipartFile mockMultipartFile = createMockMultipartFile("testImage", "tesImage.png");
-        S3 s3 = awsS3Properties.getS3();
-        S3ImageObject s3ImageObject = awsS3Uploader.uploadSingleImage(mockMultipartFile, s3.bucket(), s3.createPickPickPickDirectory());
-
-        PickOptionImage pickOptionImage = createPickOptionImage(s3ImageObject.getImageUrl(), s3ImageObject.getKey());
-        pickOptionImageRepository.save(pickOptionImage);
-
-        // when
-        memberPickService.deleteImage(pickOptionImage.getId());
-
-        // then
-        assertThatThrownBy(() -> pickOptionImageRepository.findById(pickOptionImage.getId()).get())
-                .isInstanceOf(NoSuchElementException.class);
-
-        assertThatThrownBy(() -> amazonS3Client.getObject(s3.bucket(), s3ImageObject.getKey()))
-                .isInstanceOf(SdkClientException.class);
-    }
-
-    @Test
-    @DisplayName("픽픽픽 이미지를 삭제할 때 DB에 이미지 정보가 없으면 예외가 발생한다.")
-    void deleteImageException() {
-        // given // when // then
-        assertThatThrownBy(() -> memberPickService.deleteImage(1L))
-                .isInstanceOf(ImageFileException.class)
-                .hasMessage(MemberPickService.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE);
-    }
-
-    private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
-        return PickOptionImage.builder()
-                .imageUrl(imageUrl)
-                .imageKey(imageKey)
-                .build();
+                .hasMessage(MemberPickService.INVALID_PICK_IMAGE_NAME_MESSAGE);
     }
 
     private MockMultipartFile createMockMultipartFile(String name, String originalFilename) {
@@ -515,7 +459,7 @@ class MemberPickServiceTest {
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, Count pickPopularScore, String thumbnailUrl,
-                            String author, List<PickOption> pickOptions, List<PickVote> pickVotes
+                            String author
     ) {
 
         Pick pick = Pick.builder()
@@ -527,9 +471,6 @@ class MemberPickServiceTest {
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
                 .build();
-
-        pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
 
         return pick;
     }
@@ -548,17 +489,27 @@ class MemberPickServiceTest {
                 .author(author)
                 .build();
 
-        pick.changePickOptions(pickOptions);
         pick.changePickVote(pickVotes);
 
         return pick;
     }
 
-    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count pickOptionVoteCount) {
+    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .voteTotalCount(voteTotalCount)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents) {
         return PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
-                .voteTotalCount(pickOptionVoteCount)
                 .build();
     }
 }

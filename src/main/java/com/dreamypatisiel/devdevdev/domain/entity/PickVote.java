@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,9 +27,11 @@ public class PickVote extends BasicTime {
     @JoinColumn(name = "pick_id")
     private Pick pick;
 
-    public PickVote(Member member, PickOption pickOption) {
+    @Builder
+    private PickVote(Member member, PickOption pickOption, Pick pick) {
         this.member = member;
         this.pickOption = pickOption;
+        this.pick = pick;
     }
 
     public static PickVote create(Member member, PickOption pickOption) {
@@ -41,5 +44,11 @@ public class PickVote extends BasicTime {
 
     public void changePick(Pick pick) {
         this.pick = pick;
+        pick.getPickVotes().add(this);
+    }
+
+    public void changePickOption(PickOption pickOption) {
+        this.pickOption = pickOption;
+        pickOption.getPickVotes().add(this);
     }
 }

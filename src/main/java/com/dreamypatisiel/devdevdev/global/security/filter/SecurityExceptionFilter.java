@@ -38,7 +38,7 @@ public class SecurityExceptionFilter extends OncePerRequestFilter {
         } catch (JwtAccessDeniedException e) {
             sendErrorMessage(response, HttpServletResponse.SC_FORBIDDEN, e);
         } catch (OAuth2LoginException e) {
-            sendErrorMessage(response, HttpServletResponse.SC_REQUEST_TIMEOUT, e);
+            sendErrorMessage(response, HttpServletResponse.SC_SERVICE_UNAVAILABLE, e);
         } catch (Exception e) {
             sendErrorMessage(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e);
         }

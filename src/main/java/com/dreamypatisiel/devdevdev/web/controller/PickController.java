@@ -3,16 +3,15 @@ package com.dreamypatisiel.devdevdev.web.controller;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import java.util.List;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AccessLevel;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -21,10 +20,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -74,5 +75,18 @@ public class PickController {
         pickService.deleteImage(pickImageOptionId);
 
         return ResponseEntity.ok(BasicResponse.success());
+    }
+
+    @Operation(summary = "픽픽픽 작성", description = "픽픽픽을 작성합니다.")
+    @PostMapping("/picks")
+    public ResponseEntity<BasicResponse<PickRegisterResponse>> registerPick(
+            @RequestBody @Validated PickRegisterRequest pickRegisterRequest) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        PickRegisterResponse response = pickService.registerPick(pickRegisterRequest, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
     }
 }

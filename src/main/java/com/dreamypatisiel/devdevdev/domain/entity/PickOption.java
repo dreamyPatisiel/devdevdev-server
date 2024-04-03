@@ -5,6 +5,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.global.utils.BigDecimalUtils;
 import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -66,11 +67,13 @@ public class PickOption {
         this.voteTotalCount = voteTotalCount;
     }
 
-    public static PickOption create(Title title, PickOptionContents pickOptionContents) {
+    public static PickOption create(Title title, PickOptionContents pickOptionContents, List<PickOptionImage> pickOptionImages, Pick pick) {
         PickOption pickOption = new PickOption();
         pickOption.title = title;
         pickOption.contents = pickOptionContents;
         pickOption.voteTotalCount = new Count(0);
+        pickOption.changePickOptionImages(pickOptionImages);
+        pickOption.changePick(pick);
 
         return pickOption;
     }
@@ -85,13 +88,14 @@ public class PickOption {
     }
 
     public void changePick(Pick pick) {
+        pick.getPickOptions().add(this);
         this.pick = pick;
     }
 
     // 연관관계 편의 메소드
     public void changePickOptionImages(List<PickOptionImage> pickOptionImages) {
         for(PickOptionImage pickOptionImage : pickOptionImages) {
-            pickOptionImage.changePickOptionImage(this);
+            pickOptionImage.changePickOption(this);
             this.getPickOptionImages().add(pickOptionImage);
         }
     }

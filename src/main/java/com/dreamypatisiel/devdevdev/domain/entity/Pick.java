@@ -82,8 +82,7 @@ public class Pick extends BasicTime {
         this.member = member;
     }
 
-    public static Pick create(Title title, String thumbnailUrl, String author, Member member,
-                              List<PickOption> pickOptions, List<PickVote> pickVotes) {
+    public static Pick create(Title title, String author, Member member) {
         Pick pick = new Pick();
         pick.title = title;
         pick.voteTotalCount = new Count(0);
@@ -92,9 +91,6 @@ public class Pick extends BasicTime {
         pick.popularScore = new Count(0);
         pick.member = member;
         pick.author = author;
-        pick.thumbnailUrl = thumbnailUrl;
-        pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
 
         return pick;
     }
