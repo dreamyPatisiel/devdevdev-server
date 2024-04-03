@@ -5,6 +5,7 @@ import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService
 import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.FIRST_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.SECOND_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
+import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -418,7 +419,7 @@ class PickControllerTest extends SupportControllerTest {
                         .content(om.writeValueAsString(pickRegisterRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
                 .andExpect(jsonPath("$.data.pickId").isNumber());
     }
 
