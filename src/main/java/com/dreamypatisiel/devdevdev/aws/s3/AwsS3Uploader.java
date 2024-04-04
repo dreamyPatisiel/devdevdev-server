@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.aws.s3;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -24,48 +25,45 @@ public class AwsS3Uploader {
 
     private final AmazonS3 amazonS3Client;
 
-    public List<S3ImageObject> uploadMultipleImage(List<MultipartFile> multipartFiles, String bucket, String dirName) {
+    public List<S3ImageObject> uploadMultipleImage(List<MultipartFile> multipartFiles, String bucket, String path) {
         return multipartFiles.stream()
-                .map(multipartFile -> uploadImage(multipartFile, bucket, dirName))
+                .map(multipartFile -> uploadImage(multipartFile, bucket, path))
                 .toList();
     }
 
-    public S3ImageObject uploadSingleImage(MultipartFile multipartFile, String bucket, String dirName) {
-        return uploadImage(multipartFile, bucket, dirName);
+    public S3ImageObject uploadSingleImage(MultipartFile multipartFile, String bucket, String path) {
+        return uploadImage(multipartFile, bucket, path);
     }
 
-    private S3ImageObject uploadImage(MultipartFile multipartFile, String bucket, String dirName) {
+    private S3ImageObject uploadImage(MultipartFile multipartFile, String bucket, String path) {
+        FileUtils.validateMediaType(multipartFile, ALLOW_IMAGE_MEDIA_TYPES);
+        return uploadAnyFile(multipartFile, bucket, path);
+    }
+
+    public S3ImageObject uploadAnyFile(MultipartFile multipartFile, String bucket, String path) {
         try {
-            // 파일 형식 검사
-            FileUtils.validateMediaType(multipartFile, ALLOW_IMAGE_MEDIA_TYPES);
-            return uploadAnyFile(multipartFile, bucket, dirName);
-        } catch (IOException e) {
-            // 업로드에 실패하면 UPLOAD_FAIL 객체 반환
-            log.error("uploadImage={}", e.getMessage(), e);
+            // S3 업로드에 필요한 objectMetadata, key, putObjectRequest 생성
+            String key = createKey(multipartFile, path);
+            ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(multipartFile);
+            PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, multipartFile, objectMetadata);
+
+            // 파일 업로드
+            amazonS3Client.putObject(putObjectRequest);
+            String imageUrl = amazonS3Client.getUrl(bucket, key).toString();
+
+            return S3ImageObject.of(imageUrl, key);
+        } catch (IOException | SdkClientException e) {
+            log.error("uploadAnyFile={}", e.getMessage(), e);
             return S3ImageObject.fail();
         }
     }
 
-    public S3ImageObject uploadAnyFile(MultipartFile multipartFile, String bucket, String dirName)
-            throws IOException {
-        // S3 업로드에 필요한 objectMetadata, key, putObjectRequest 생성
-        String key = createKey(dirName, multipartFile);
-        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(multipartFile);
-        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, multipartFile, objectMetadata);
-
-        // 파일 업로드
-        amazonS3Client.putObject(putObjectRequest);
-        String imageUrl = amazonS3Client.getUrl(bucket, key).toString();
-
-        return S3ImageObject.of(imageUrl, key);
+    public void deleteMultipleImage(String bucket, List<String> keys) {
+        keys.forEach(key -> deleteAnyFile(bucket, key));
     }
 
-    public void deleteMultipleImage(String bucket, List<S3ImageObject> s3ImageObjects) {
-        s3ImageObjects.forEach(s3ImageObject -> deleteAnyFile(bucket, s3ImageObject.getKey()));
-    }
-
-    public void deleteSingleImage(String bucket, S3ImageObject s3ImageObjects) {
-        deleteAnyFile(bucket, s3ImageObjects.getKey());
+    public void deleteSingleImage(String bucket, String key) {
+        deleteAnyFile(bucket, key);
     }
 
     private void deleteAnyFile(String bucket, String key) {
@@ -86,7 +84,7 @@ public class AwsS3Uploader {
         return objectMetadata;
     }
 
-    private String createKey(String dirName, MultipartFile multipartFile) {
+    private String createKey(MultipartFile multipartFile, String dirName) {
         String fileName = FileUtils.createRandomFileNameBy(multipartFile.getOriginalFilename());
         return dirName + FileUtils.SLASH + fileName;
     }

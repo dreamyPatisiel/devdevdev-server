@@ -9,7 +9,7 @@ import lombok.Data;
 public class S3ImageObject {
 
     @JsonIgnore
-    private static final String UPLOAD_FAIL = "UPLOAD_FAIL";
+    public static final String UPLOAD_FAIL = "UPLOAD_FAIL";
 
     private Long pickOptionImageId;
     private final String imageUrl;

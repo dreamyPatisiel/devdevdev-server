@@ -1,9 +1,9 @@
 [[Pick-Option-Image]]
-== 픽픽픽 이미지 업로드 API(POST: /devdevdev/api/v1/picks/image)
+== 픽픽픽 이미지 업로드API(POST: /devdevdev/api/v1/picks/image)
 * 픽픽픽 이미지를 업로드 합니다.
 * 비회원은 이미지를 업로드할 수 없습니다.
 * 이미지 여러개를 업로드할 수 있습니다.
-** 갯수 제한은 없고 용량 제한(10MB)이 있습니다.
+** 갯수 제한(3개), 용량 제한(10MB)이 있습니다.
 
 === 정상 요청/응답
 ==== HTTP Request
@@ -22,5 +22,6 @@ include::{snippets}/pick-main-option-image/response-fields.adoc[]
 ==== HTTP Response
 include::{snippets}/pick-main-option-image-exception/response-body.adoc[]
 include::{snippets}/pick-main-option-image-media-type-exception/response-body.adoc[]
+include::{snippets}/pick-main-option-image-media-size-exception/response-body.adoc[]
 ==== HTTP Response Fields
 include::{snippets}/pick-main-option-image-exception/response-fields.adoc[]

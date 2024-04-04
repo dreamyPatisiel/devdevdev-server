@@ -8,6 +8,7 @@ import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
+import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -22,7 +23,9 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWit
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -72,6 +75,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.multipart.MultipartFile;
@@ -99,7 +103,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(1));
         Title title = new Title("픽1타이틀");
         Count count = new Count(2);
-        String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/tumbnail/1";
+        String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/picks/image/tumbnail/1";
         String author = "운영자";
         Pick pick = createPick(title, count, count, count, thumbnailUrl,
                 author, List.of(pickOption1, pickOption2), List.of());
@@ -331,6 +335,213 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
                 )
         ));
+    }
+
+    @Test
+    @DisplayName("이미지를 업로드할 때 3개 초과로 업로드하면 예외가 발생한다.")
+    void uploadPickOptionImageSizeException() throws Exception {
+        // given
+        MockMultipartFile mockMultipartFile1 = createMockMultipartFile("pickOptionImages", "tesImage1.png");
+        MockMultipartFile mockMultipartFile2 = createMockMultipartFile("pickOptionImages", "tesImage2.png");
+        MockMultipartFile mockMultipartFile3 = createMockMultipartFile("pickOptionImages", "tesImage3.png");
+        MockMultipartFile mockMultipartFile4 = createMockMultipartFile("pickOptionImages", "tesImage4.png");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
+                        .file(mockMultipartFile1)
+                        .file(mockMultipartFile2)
+                        .file(mockMultipartFile3)
+                        .file(mockMultipartFile4)
+                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-main-option-image-size-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 있다.")
+    void deletePickImage() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        URL url = new URL("http", "localhost", 8080, "/xxx.png");
+
+        PickOptionImage pickOptionImage = createPickOptionImage(url.toString(), key);
+        pickOptionImageRepository.save(pickOptionImage);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(url);
+
+        // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/picks/image/{pickOptionImageId}"
+                                        , pickOptionImage.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-main-option-delete-image",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickOptionImageId").description("픽픽픽 옵션 이미지 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                                .attributes(authenticationType())
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 있다.")
+    void deleteImageAnonymousException() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        URL url = new URL("http", "localhost", 8080, "/xxx.png");
+
+        PickOptionImage pickOptionImage = createPickOptionImage(url.toString(), key);
+        pickOptionImageRepository.save(pickOptionImage);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(url);
+
+        // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/picks/image/{pickOptionImageId}"
+                                        , pickOptionImage.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+
+        // docs
+        actions.andDo(document("pick-main-option-delete-image-anonymous-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickOptionImageId").description("픽픽픽 옵션 이미지 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원은 존재하지 않은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
+    void deletePickImageFileException() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        URL url = new URL("http", "localhost", 8080, "/xxx.png");
+
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(url);
+
+        // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/picks/image/{pickOptionImageId}", 1L)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-main-option-delete-image-not-found-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickOptionImageId").description("픽픽픽 옵션 이미지 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
+        return PickOptionImage.builder()
+                .imageUrl(imageUrl)
+                .imageKey(imageKey)
+                .build();
     }
 
     @Test

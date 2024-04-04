@@ -4,10 +4,13 @@ import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
 import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.FIRST_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.SECOND_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
+import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,6 +25,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
 import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
+import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
@@ -123,7 +127,7 @@ class PickControllerTest extends SupportControllerTest {
                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content.[0].id").isNumber())
@@ -192,7 +196,7 @@ class PickControllerTest extends SupportControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content.[0].id").isNumber())
@@ -248,15 +252,15 @@ class PickControllerTest extends SupportControllerTest {
         // then
         mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
                         .file(mockMultipartFile)
-                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .queryParam("name", FIRST_PICK_OPTION_IMAGE)
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
                 .andExpect(jsonPath("$.data.pickOptionImages").isArray())
-                .andExpect(jsonPath("$.data.pickOptionImages[0].name").value(MemberPickService.FIRST_PICK_OPTION_IMAGE))
+                .andExpect(jsonPath("$.data.pickOptionImages[0].name").value(FIRST_PICK_OPTION_IMAGE))
                 .andExpect(jsonPath("$.data.pickOptionImages[0].pickOptionImageId").isNumber())
                 .andExpect(jsonPath("$.data.pickOptionImages[0].imageUrl").value("http://localhost:8080/xxx.png"))
                 .andExpect(jsonPath("$.data.pickOptionImages[0].imageKey").isString());
@@ -288,13 +292,92 @@ class PickControllerTest extends SupportControllerTest {
         // then
         mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
                         .file(upper10MbMockMultipartFile)
-                        .queryParam("name", MemberPickService.FIRST_PICK_OPTION_IMAGE)
+                        .queryParam("name", FIRST_PICK_OPTION_IMAGE)
                         .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.resultType").value(FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").isNumber());
+    }
+
+    @Test
+    @DisplayName("회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 있다.")
+    void deletePickImage() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        URL url = new URL("http", "localhost", 8080, "/xxx.png");
+
+        PickOptionImage pickOptionImage = createPickOptionImage(url.toString(), key);
+        pickOptionImageRepository.save(pickOptionImage);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(url);
+
+        // then
+        mockMvc.perform(delete("/devdevdev/api/v1/picks/image/{pickOptionImageId}"
+                        , pickOptionImage.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8)
+                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()));
+    }
+
+    @Test
+    @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
+    void deleteImageAnonymousException() throws Exception{
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
+        String bucket = "bucket";
+        String key = "/pick/pickOption/image/xxx.png";
+
+        ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(mockMultipartFile);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, mockMultipartFile, objectMetadata);
+
+        URL url = new URL("http", "localhost", 8080, "/xxx.png");
+
+        PickOptionImage pickOptionImage = createPickOptionImage(url.toString(), key);
+        pickOptionImageRepository.save(pickOptionImage);
+
+        // when
+        PutObjectResult putObjectResult = mock(PutObjectResult.class);
+
+        when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(url);
+
+        // then
+        mockMvc.perform(delete("/devdevdev/api/v1/picks/image/{pickOptionImageId}"
+                        , pickOptionImage.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultType").value(FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").isNumber());
     }
@@ -336,7 +419,7 @@ class PickControllerTest extends SupportControllerTest {
                         .content(om.writeValueAsString(pickRegisterRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
                 .andExpect(jsonPath("$.data.pickId").isNumber());
     }
 
@@ -395,6 +478,13 @@ class PickControllerTest extends SupportControllerTest {
                 .pickOptionTitle(pickOptionTitle)
                 .pickOptionContent(pickOptionContent)
                 .pickOptionImageIds(pickOptionImageIds)
+                .build();
+    }
+
+    private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
+        return PickOptionImage.builder()
+                .imageUrl(imageUrl)
+                .imageKey(imageKey)
                 .build();
     }
 
