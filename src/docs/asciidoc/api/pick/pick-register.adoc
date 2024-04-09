@@ -19,7 +19,7 @@ include::{snippets}/pick-register/response-fields.adoc[]
 
 === 예외
 ==== HTTP Response
-include::{snippets}/pick-register-exception/response-body.adoc[]
+include::{snippets}/pick-register-anonymous-exception/response-body.adoc[]
 include::{snippets}/pick-register-pick-option-name-exception/response-body.adoc[]
 ==== HTTP Response Fields
-include::{snippets}/pick-register-exception/response-fields.adoc[]
+include::{snippets}/pick-register-anonymous-exception/response-fields.adoc[]
