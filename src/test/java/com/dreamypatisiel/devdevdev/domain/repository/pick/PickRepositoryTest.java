@@ -1,15 +1,16 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,8 @@ class PickRepositoryTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
+    @Autowired
+    PickOptionImageRepository pickOptionImageRepository;
     @Autowired
     EntityManager em;
 
@@ -184,6 +187,65 @@ class PickRepositoryTest {
                 );
     }
 
+    @Test
+    @DisplayName("findPickAndPickOptionByPickId 쿼리 확인")
+    void findPickAndPickOptionAndPickOptionImageById() {
+        // given
+        Pick pick = createPick(new Title("픽1타이틀"));
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽옵션콘텐츠1"), new Count(1), pick);
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽옵션콘텐츠2"), new Count(2), pick);
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = cratePickOptionImage("픽옵션1이미지1", pickOption1);
+        PickOptionImage pickOption1Image2 = cratePickOptionImage("픽옵션1이미지2", pickOption1);
+        PickOptionImage pickOption2Image1 = cratePickOptionImage("픽옵션2이미지1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+
+        // when
+        Pick findPick = pickRepository.findPickAndPickOptionByPickId(pick.getId()).get();
+
+        // then
+        assertThat(findPick.getTitle()).isEqualTo(new Title("픽1타이틀"));
+
+        List<PickOption> findPickOptions = findPick.getPickOptions();
+        assertThat(findPickOptions).hasSize(2)
+                .extracting("title", "contents", "voteTotalCount")
+                .containsExactly(
+                        tuple(new Title("픽옵션1"), new PickOptionContents("픽옵션콘텐츠1"), new Count(1)),
+                        tuple(new Title("픽옵션2"), new PickOptionContents("픽옵션콘텐츠2"), new Count(2))
+                );
+
+        PickOption findPickOption1 = findPickOptions.get(0);
+        List<PickOptionImage> findPickOption1Images = findPickOption1.getPickOptionImages();
+        assertThat(findPickOption1Images).hasSize(2)
+                .extracting("name")
+                .containsExactly(
+                        "픽옵션1이미지1", "픽옵션1이미지2"
+                );
+
+        PickOption findPickOption2 = findPickOptions.get(1);
+        List<PickOptionImage> findPickOption2Images = findPickOption2.getPickOptionImages();
+        assertThat(findPickOption2Images).hasSize(1)
+                .extracting("name")
+                .containsExactly(
+                        "픽옵션2이미지1"
+                );
+
+
+    }
+
+    private PickOptionImage cratePickOptionImage(String name, PickOption pickOption) {
+        PickOptionImage pickOptionImage = PickOptionImage.builder()
+                .name(name)
+                .build();
+
+        pickOptionImage.changePickOption(pickOption);
+
+        return pickOptionImage;
+    }
+
     private Pick createPick(Title title) {
         return Pick.builder()
                 .title(title)
@@ -236,6 +298,18 @@ class PickRepositoryTest {
         pick.changePickVote(pickVotes);
 
         return pick;
+    }
+
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount, Pick pick) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .voteTotalCount(voteTotalCount)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
     }
 
     private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {

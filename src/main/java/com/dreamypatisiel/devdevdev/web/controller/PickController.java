@@ -7,7 +7,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,11 +68,11 @@ public class PickController {
     }
 
     @Operation(summary = "픽픽픽 이미지 삭제", description = "픽픽픽 이미지를 삭제합니다.")
-    @DeleteMapping("/picks/image/{pickImageOptionId}")
-    public ResponseEntity<BasicResponse<Void>> deletePickImage(@PathVariable Long pickImageOptionId) {
+    @DeleteMapping("/picks/image/{pickOptionImageId}")
+    public ResponseEntity<BasicResponse<Void>> deletePickImage(@PathVariable Long pickOptionImageId) {
 
         PickService pickService = pickServiceStrategy.getPickService();
-        pickService.deleteImage(pickImageOptionId);
+        pickService.deleteImage(pickOptionImageId);
 
         return ResponseEntity.ok(BasicResponse.success());
     }
@@ -80,12 +80,12 @@ public class PickController {
     @Operation(summary = "픽픽픽 작성", description = "픽픽픽을 작성합니다.")
     @PostMapping("/picks")
     public ResponseEntity<BasicResponse<PickRegisterResponse>> registerPick(
-            @RequestBody @Validated PickRegisterRequest pickRegisterRequest) {
+            @RequestBody @Validated RegisterPickRequest registerPickRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickService pickService = pickServiceStrategy.getPickService();
-        PickRegisterResponse response = pickService.registerPick(pickRegisterRequest, authentication);
+        PickRegisterResponse response = pickService.registerPick(registerPickRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

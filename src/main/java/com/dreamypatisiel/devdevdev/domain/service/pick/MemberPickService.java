@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.*;
+import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.FIRST_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.SECOND_PICK_OPTION;
 
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
 import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
@@ -12,26 +13,32 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
-import com.dreamypatisiel.devdevdev.domain.repository.PickOptionImageRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.exception.ImageFileException;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionNameException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName;
-import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +58,9 @@ public class MemberPickService implements PickService {
     public static final int START_INCLUSIVE = 0;
     public static final String INVALID_PICK_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
     public static final String INVALID_PICK_OPTION_NAME_MESSAGE = "잘못된 형식의 픽픽픽 선택지 입니다.";
+    public static final String INVALID_NOT_FOUND_PICK_MESSAGE = "수정할 수 있는 픽픽픽 게시글이 없습니다.";
+    public static final String INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE = "회원이 작성한 게시글만 수정할 수 있습니다.";
+    public static final String INVALID_NOT_FOUND_PICK_OPTION_MESSAGE = "수정하려는 픽픽픽 선택지가 없습니다.";
 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
@@ -59,6 +69,9 @@ public class MemberPickService implements PickService {
     private final PickOptionRepository pickOptionRepository;
     private final PickOptionImageRepository pickOptionImageRepository;
 
+    /**
+     * 픽픽픽 메인 조회
+     */
     @Override
     public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
         // 픽픽픽 조회
@@ -150,41 +163,96 @@ public class MemberPickService implements PickService {
      */
     @Override
     @Transactional
-    public PickRegisterResponse registerPick(PickRegisterRequest pickRegisterRequest, Authentication authentication) {
+    public PickRegisterResponse registerPick(RegisterPickRequest registerPickRequest, Authentication authentication) {
 
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 생성 및 저장
-        String pickTitle = pickRegisterRequest.getPickTitle();
+        String pickTitle = registerPickRequest.getPickTitle();
         Pick pick = Pick.create(new Title(pickTitle), member.getName(), member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성 및 저장
-        savePickOptionWithPickOptionImages(FIRST_PICK_OPTION, pick, pickRegisterRequest);
-        savePickOptionWithPickOptionImages(SECOND_PICK_OPTION, pick, pickRegisterRequest);
+        Map<String, RegisterPickOptionRequest> pickOptions = registerPickRequest.getPickOptions();
+        savePickOptionWithPickOptionImages(FIRST_PICK_OPTION, pick, pickOptions);
+        savePickOptionWithPickOptionImages(SECOND_PICK_OPTION, pick, pickOptions);
 
         return new PickRegisterResponse(pick.getId());
     }
 
-    private void savePickOptionWithPickOptionImages(PickOptionName pickOptionName, Pick pick, PickRegisterRequest pickRegisterRequest) {
+    /**
+     * 픽픽픽 수정
+     */
+    @Override
+    @Transactional
+    public PickModifyResponse modifyPick(Long pickId, ModifyPickRequest modifyPickRequest, Authentication authentication) {
+
+        // 회원 조회
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+
+        // 픽픽픽 조회
+        Pick findPick = pickRepository.findPickAndPickOptionByPickId(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 회원이 작성한 픽픽픽이 아닌 경우
+        if(!findPick.isEqualMember(member)) {
+            throw new AccessDeniedException(INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE);
+        }
+
+        // 픽픽픽 타이틀 수정
+        findPick.changeTitle(modifyPickRequest.getPickTitle());
+
+        // 픽픽픽 옵션1,2 수정 / 픽픽픽 옵션 관련 연관관계 설정
+        List<PickOption> pickOptions = findPick.getPickOptions();
+        Map<String, ModifyPickOptionRequest> modifyPickRequestPickOptions = modifyPickRequest.getPickOptions();
+        changePickOptionAndPickOptionImages(FIRST_PICK_OPTION.getDescription(), modifyPickRequestPickOptions, pickOptions);
+        changePickOptionAndPickOptionImages(SECOND_PICK_OPTION.getDescription(), modifyPickRequestPickOptions, pickOptions);
+
+        return new PickModifyResponse(findPick.getId());
+    }
+
+    private void changePickOptionAndPickOptionImages(String pickOptionName, Map<String, ModifyPickOptionRequest> modifyPickRequestPickOptions,
+                                                     List<PickOption> pickOptions) {
+
+        // firstPickOption 또는 secondPickOption key 값이 아니면
+        if(!modifyPickRequestPickOptions.containsKey(pickOptionName)) {
+            throw new PickOptionNameException(INVALID_PICK_OPTION_NAME_MESSAGE);
+        }
+
+        List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(pickOptionName)
+                .getPickOptionImageIds();
+        List<PickOptionImage> pickOptionImages = pickOptionImageRepository.findByIdIn(pickOptionImageIds);
+
+        // 픽픽픽 옵션 수정, 픽픽픽 옵션과 픽픽픽 옵션 이미지 연관관계 설정
+        ModifyPickOptionRequest pickOptionsRequest = modifyPickRequestPickOptions.get(pickOptionName);
+        pickOptions.stream()
+                .filter(pickOption -> pickOption.getId().equals(pickOptionsRequest.getPickOptionId()))
+                .forEach(pickOption -> {
+                    pickOption.changePickOption(pickOptionsRequest);
+                    pickOption.changePickOptionImages(pickOptionImages);
+                });
+    }
+
+    // 픽옵션 이미지가 없을 수도 있다.
+    private void savePickOptionWithPickOptionImages(PickOptionName pickOptionName, Pick pick, Map<String, RegisterPickOptionRequest> registerPickOptionsRequest) {
 
         // firstPickOption 또는 secondPickOption key 값이 아니면
         String pickOptionNameDescription = pickOptionName.getDescription();
-        if(!pickRegisterRequest.getPickOptions().containsKey(pickOptionNameDescription)) {
+        if(!registerPickOptionsRequest.containsKey(pickOptionNameDescription)) {
             throw new PickOptionNameException(INVALID_PICK_OPTION_NAME_MESSAGE);
         }
 
         // 픽픽픽 이미지 조회에 필요한 픽픽픽 옵션 이미지 아이디 목록 꺼내기
-        PickOptionRequest pickOptionRequest = pickRegisterRequest.getPickOptions().get(pickOptionNameDescription);
-        List<Long> pickOptionImageIds = pickOptionRequest.getPickOptionImageIds();
+        RegisterPickOptionRequest registerPickOptionRequest = registerPickOptionsRequest.get(pickOptionNameDescription);
+        List<Long> pickOptionImageIds = registerPickOptionRequest.getPickOptionImageIds();
 
         // 픽픽픽 이미지 조회
         List<PickOptionImage> findPickOptionImages = pickOptionImageRepository.findByIdIn(pickOptionImageIds);
 
         // 픽픽픽 옵션 생성
-        String pickOptionTitle = pickOptionRequest.getPickOptionTitle();
-        String pickOptionContent = pickOptionRequest.getPickOptionContent();
+        String pickOptionTitle = registerPickOptionRequest.getPickOptionTitle();
+        String pickOptionContent = registerPickOptionRequest.getPickOptionContent();
         PickOption pickOption = PickOption.create(new Title(pickOptionTitle), new PickOptionContents(pickOptionContent),
                 findPickOptionImages, pick);
 

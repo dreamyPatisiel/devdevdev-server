@@ -121,4 +121,12 @@ public class Pick extends BasicTime {
     private Count calculatePopularScore(PickPopularScorePolicy policy) {
         return policy.calculatePopularScore(this);
     }
+
+    public boolean isEqualMember(Member member) {
+        return this.member.isEqualsMember(member);
+    }
+
+    public void changeTitle(String title) {
+        this.title = new Title(title);
+    }
 }

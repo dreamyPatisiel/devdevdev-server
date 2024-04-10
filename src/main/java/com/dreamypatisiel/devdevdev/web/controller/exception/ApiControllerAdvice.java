@@ -53,10 +53,11 @@ public class ApiControllerAdvice {
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    // 권한 문제가 발생한 경우(403)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<BasicResponse<Object>> accessDeniedException(AccessDeniedException e) {
-        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.UNAUTHORIZED.value()),
-                HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.FORBIDDEN.value()),
+                HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

@@ -8,7 +8,6 @@ import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
-import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -49,16 +48,15 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickOptionImageRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.PickOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.PickRegisterRequest;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -72,7 +70,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -562,23 +559,23 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
-        PickOptionRequest firstPickOptionRequest = createPickOptionRequest("Svelte가 짱이다!", "낮은 러닝커브 그리고 빠른 속도!",
+        RegisterPickOptionRequest firstRegisterPickOptionRequest = createPickOptionRequest("Svelte가 짱이다!", "낮은 러닝커브 그리고 빠른 속도!",
                 List.of(firstPickOptionImage.getId()));
-        PickOptionRequest secondPickOptionRequest = createPickOptionRequest("React가 짱이다!", "대형 커뮤니티, 대기업에서 라이브러리 관리!",
+        RegisterPickOptionRequest secondRegisterPickOptionRequest = createPickOptionRequest("React가 짱이다!", "대형 커뮤니티, 대기업에서 라이브러리 관리!",
                 List.of(secondPickOptionImage.getId()));
 
-        Map<String, PickOptionRequest> pickOptions = new HashMap<>();
-        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstPickOptionRequest);
-        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondPickOptionRequest);
+        Map<String, RegisterPickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstRegisterPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondRegisterPickOptionRequest);
 
-        PickRegisterRequest pickRegisterRequest = createPickRegisterRequest("Svelte VS React", pickOptions);
+        RegisterPickRequest registerPickRequest = createPickRegisterRequest("Svelte VS React", pickOptions);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(pickRegisterRequest)))
+                        .content(om.writeValueAsString(registerPickRequest)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -624,22 +621,22 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
-        PickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+        RegisterPickOptionRequest firstRegisterPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
                 List.of(firstPickOptionImage.getId()));
-        PickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+        RegisterPickOptionRequest secondRegisterPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
                 List.of(secondPickOptionImage.getId()));
 
-        Map<String, PickOptionRequest> pickOptions = new HashMap<>();
-        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstPickOptionRequest);
-        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondPickOptionRequest);
+        Map<String, RegisterPickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstRegisterPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondRegisterPickOptionRequest);
 
-        PickRegisterRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+        RegisterPickRequest registerPickRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(pickRegisterRequest)))
+                        .content(om.writeValueAsString(registerPickRequest)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
@@ -685,23 +682,23 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
-        PickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+        RegisterPickOptionRequest firstRegisterPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
                 List.of(firstPickOptionImage.getId()));
-        PickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+        RegisterPickOptionRequest secondRegisterPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
                 List.of(secondPickOptionImage.getId()));
 
-        Map<String, PickOptionRequest> pickOptions = new HashMap<>();
-        pickOptions.put("thirdPickOption", firstPickOptionRequest);
-        pickOptions.put("fourthPickOption", secondPickOptionRequest);
+        Map<String, RegisterPickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put("thirdPickOption", firstRegisterPickOptionRequest);
+        pickOptions.put("fourthPickOption", secondRegisterPickOptionRequest);
 
-        PickRegisterRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+        RegisterPickRequest registerPickRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .content(om.writeValueAsString(pickRegisterRequest)))
+                        .content(om.writeValueAsString(registerPickRequest)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
 
@@ -728,15 +725,15 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 .build();
     }
 
-    private PickRegisterRequest createPickRegisterRequest(String pickTitle, Map<String, PickOptionRequest> pickOptions) {
-        return PickRegisterRequest.builder()
+    private RegisterPickRequest createPickRegisterRequest(String pickTitle, Map<String, RegisterPickOptionRequest> pickOptions) {
+        return RegisterPickRequest.builder()
                 .pickTitle(pickTitle)
                 .pickOptions(pickOptions)
                 .build();
     }
 
-    private PickOptionRequest createPickOptionRequest(String pickOptionTitle, String pickOptionContent, List<Long> pickOptionImageIds) {
-        return PickOptionRequest.builder()
+    private RegisterPickOptionRequest createPickOptionRequest(String pickOptionTitle, String pickOptionContent, List<Long> pickOptionImageIds) {
+        return RegisterPickOptionRequest.builder()
                 .pickOptionTitle(pickOptionTitle)
                 .pickOptionContent(pickOptionContent)
                 .pickOptionImageIds(pickOptionImageIds)

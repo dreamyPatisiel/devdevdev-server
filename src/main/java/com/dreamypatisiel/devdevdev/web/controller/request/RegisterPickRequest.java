@@ -6,14 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class PickRegisterRequest {
+public class RegisterPickRequest {
 
     @NotBlank(message = "제목을 작성해주세요.")
     private final String pickTitle;
-    private final Map<String, PickOptionRequest> pickOptions;
+    private final Map<String, RegisterPickOptionRequest> pickOptions;
 
     @Builder
-    public PickRegisterRequest(String pickTitle, Map<String, PickOptionRequest> pickOptions) {
+    public RegisterPickRequest(String pickTitle, Map<String, RegisterPickOptionRequest> pickOptions) {
         this.pickTitle = pickTitle;
         this.pickOptions = pickOptions;
     }

@@ -1,5 +1,5 @@
 [[Delete-Pick-Option-Image]]
-== 픽픽픽 이미지 삭제 API(DELETE: /devdevdev/api/v1/picks/image)
+== 픽픽픽 이미지 삭제 API(DELETE: /devdevdev/api/v1/picks/image/{pickOptionImageId})
 * 픽픽픽 옵션 이미지 1개를 삭제 합니다.
 * 비회원은 이미지를 삭제 할 수 없습니다.
 
