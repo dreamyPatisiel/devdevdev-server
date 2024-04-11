@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
@@ -36,6 +37,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionNameException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -60,6 +62,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -641,8 +644,6 @@ class MemberPickServiceTest {
         // when
         PickModifyResponse pickModifyResponse = memberPickService.modifyPick(pick.getId(), modifyPickRequest, authentication);
 
-        System.out.println("============");
-
         em.flush();
         em.clear();
 
@@ -671,7 +672,162 @@ class MemberPickServiceTest {
                 .containsExactly("픽옵션2사진1수정");
     }
 
+    @Test
+    @DisplayName("픽픽픽을 수정할 때 회원이 조회되지 않으면 예외가 발생한다.")
+    void modifyPickMemberException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
 
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        ModifyPickRequest modifyPickRequest = mock(ModifyPickRequest.class);
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.modifyPick(1L, modifyPickRequest, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽을 수정할 때 수정할 픽픽픽이 없으면 예외가 발생한다.")
+    void modifyPickNotFoundPickException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        ModifyPickRequest modifyPickRequest = mock(ModifyPickRequest.class);
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.modifyPick(1L, modifyPickRequest, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(MemberPickService.INVALID_NOT_FOUND_PICK_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽을 수정할 때 회원 본인이 작성한 픽픽픽이 아닐경우 예외가 발생한다.")
+    void modifyPickAccessDeniedException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // == 픽픽픽 작성 환경 == //
+        SocialMemberDto socialOtherMemberDto = createSocialDto("otherUserId", "otherName",
+                nickname, password, "otherDreamy5patisiel@kakao.com", socialType, role);
+        Member otherMember = Member.createMemberBy(socialOtherMemberDto);
+        memberRepository.save(otherMember);
+
+        Pick pick = createPick(pickTitle, otherMember); // 다른회윈이 작성한 픽픽픽
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.modifyPick(pick.getId(), modifyPickRequest, authentication))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage(MemberPickService.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽을 수정할 때 잘못된 형식의 픽 옵션 필드명이면 예외가 발생한다.")
+    void modifyPickInvalidPickOptionDescription() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(pickTitle, member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put("INVALID_PICK_OPTION1", modifyPickOptionRequest1);
+        modifyPickOptionRequests.put("INVALID_PICK_OPTION2", modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.modifyPick(pick.getId(), modifyPickRequest, authentication))
+                .isInstanceOf(PickOptionNameException.class)
+                .hasMessage(MemberPickService.INVALID_PICK_OPTION_NAME_MESSAGE);
+
+    }
 
     private ModifyPickRequest createModifyPickRequest(String pickTitle, Map<String, ModifyPickOptionRequest> modifyPickOptionRequests) {
         return ModifyPickRequest.builder()

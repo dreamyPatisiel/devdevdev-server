@@ -68,7 +68,7 @@ public class LocalInitData {
 
         List<PickOption> pickOptions = createPickOptions();
         List<PickVote> pickVotes = createPickVotes(member, pickOptions);
-        List<Pick> picks = creatPicks(pickOptions, pickVotes);
+        List<Pick> picks = creatPicks(pickOptions, pickVotes, member);
         pickRepository.saveAll(picks);
         pickVoteRepository.saveAll(pickVotes);
         pickOptionRepository.saveAll(pickOptions);
@@ -144,7 +144,7 @@ public class LocalInitData {
         return pickVotes;
     }
 
-    private List<Pick> creatPicks(List<PickOption> pickOptions, List<PickVote> pickVotes) {
+    private List<Pick> creatPicks(List<PickOption> pickOptions, List<PickVote> pickVotes, Member member) {
         String thumbnailUrl = "픽 섬네일 이미지 url";
         String author = "운영자";
 
@@ -156,7 +156,7 @@ public class LocalInitData {
 
             Pick pick = createPick(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author,
-                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(pickVotes.get(number)));
+                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(pickVotes.get(number)), member);
             pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
@@ -168,7 +168,7 @@ public class LocalInitData {
 
             Pick pick = createPick(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl+number, author,
-                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of());
+                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(), member);
             pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
@@ -178,11 +178,12 @@ public class LocalInitData {
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
-                            List<PickOption> pickOptions, List<PickVote> pickVotes
+                            List<PickOption> pickOptions, List<PickVote> pickVotes, Member member
     ) {
 
         Pick pick = Pick.builder()
                 .title(title)
+                .member(member)
                 .voteTotalCount(pickVoteTotalCount)
                 .viewTotalCount(pickViewTotalCount)
                 .commentTotalCount(pickcommentTotalCount)

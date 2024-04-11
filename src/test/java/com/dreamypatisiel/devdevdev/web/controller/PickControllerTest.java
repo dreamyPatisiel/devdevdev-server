@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,8 +39,11 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageReposi
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
@@ -362,7 +366,7 @@ class PickControllerTest extends SupportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.resultType").value(FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").isNumber());
@@ -441,7 +445,104 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.UNAUTHORIZED.value()));
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.FORBIDDEN.value()));
+    }
+
+    @Test
+    @DisplayName("이미 작성된 픽픽픽을 수정한다.")
+    void modifyPick() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data.pickId").isNumber());
+    }
+
+    private Pick createPick(Title title, Member member) {
+        return Pick.builder()
+                .title(title)
+                .member(member)
+                .build();
+    }
+
+    private PickOptionImage createPickOptionImage(String name) {
+        return PickOptionImage.builder()
+                .name(name)
+                .build();
+    }
+
+    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private PickOptionImage createPickOptionImage(String name, PickOption pickOption) {
+        PickOptionImage pickOptionImage = PickOptionImage.builder()
+                .name(name)
+                .build();
+
+        pickOptionImage.changePickOption(pickOption);
+
+        return pickOptionImage;
+    }
+
+
+    private ModifyPickRequest createModifyPickRequest(String pickTitle, Map<String, ModifyPickOptionRequest> modifyPickOptionRequests) {
+        return ModifyPickRequest.builder()
+                .pickTitle(pickTitle)
+                .pickOptions(modifyPickOptionRequests)
+                .build();
     }
 
     private PickOptionImage createPickOptionImage(String name, String imageUrl, String imageKey) {

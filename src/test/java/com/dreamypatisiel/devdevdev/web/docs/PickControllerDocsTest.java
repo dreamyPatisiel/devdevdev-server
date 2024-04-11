@@ -430,7 +430,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 있다.")
+    @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다")
     void deleteImageAnonymousException() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -464,7 +464,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
 
         // docs
         actions.andDo(document("pick-main-option-delete-image-anonymous-exception",
