@@ -47,6 +47,7 @@ import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -57,6 +58,10 @@ import java.util.Map;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
@@ -501,6 +506,238 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data.pickId").isNumber());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 제목이 빈값이거나 null이면 예외가 발생한다.")
+    void modifyPickTitleBindException(String pickTitle) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest(pickTitle, modifyPickOptionRequests);
+
+        // when // then
+        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 제목이 빈값이거나 null이면 예외가 발생한다.")
+    void modifyPickPickOptionTitleBindException(String pickOptionTitle) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), pickOptionTitle,
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), pickOptionTitle,
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 내용이 빈값이거나 null이면 예외가 발생한다.")
+    void modifyPickPickOptionContentBindException(String pickOptionContent) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                pickOptionContent, List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                pickOptionContent, List.of(newPickOption2Image1.getId()));
+
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 아이디가 null이면 예외가 발생한다.")
+    void modifyPickPickOptionIdBindException(Long pickOptionId) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOptionId, "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOptionId, "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
     private Pick createPick(Title title, Member member) {

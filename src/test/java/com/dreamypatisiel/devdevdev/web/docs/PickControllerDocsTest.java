@@ -18,6 +18,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
@@ -27,6 +28,7 @@ import static org.springframework.restdocs.request.RequestDocumentation.queryPar
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,8 +57,11 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -65,11 +70,15 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
@@ -141,52 +150,54 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                     parameterWithName("size").optional().description("조회되는 데이터 수")
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
 
-                        fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("픽픽픽 메인 배열"),
-                        fieldWithPath("data.content[].id").type(JsonFieldType.NUMBER).description("픽픽픽 아이디"),
-                        fieldWithPath("data.content[].title").type(JsonFieldType.STRING).description("픽픽픽 제목"),
-                        fieldWithPath("data.content[].voteTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 전체 투표 수"),
-                        fieldWithPath("data.content[].commentTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 전체 댓글 수"),
-                        fieldWithPath("data.content[].viewTotalCount").type(JsonFieldType.NUMBER).description("픽픽픽 조회 수"),
-                        fieldWithPath("data.content[].popularScore").type(JsonFieldType.NUMBER).description("픽픽픽 인기점수"),
-                        fieldWithPath("data.content[].isVoted").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("픽픽픽 투표 여부(익명 사용자는 필드가 없다.)"),
+                        fieldWithPath("data.content").type(ARRAY).description("픽픽픽 메인 배열"),
+                        fieldWithPath("data.content[].id").type(NUMBER).description("픽픽픽 아이디"),
+                        fieldWithPath("data.content[].title").type(STRING).description("픽픽픽 제목"),
+                        fieldWithPath("data.content[].voteTotalCount").type(NUMBER).description("픽픽픽 전체 투표 수"),
+                        fieldWithPath("data.content[].commentTotalCount").type(NUMBER).description("픽픽픽 전체 댓글 수"),
+                        fieldWithPath("data.content[].viewTotalCount").type(NUMBER).description("픽픽픽 조회 수"),
+                        fieldWithPath("data.content[].popularScore").type(NUMBER).description("픽픽픽 인기점수"),
+                        fieldWithPath("data.content[].isVoted").attributes(authenticationType()).type(BOOLEAN).description("픽픽픽 투표 여부(익명 사용자는 필드가 없다.)"),
 
-                        fieldWithPath("data.content[].pickOptions").type(JsonFieldType.ARRAY).description("픽픽픽 옵션 배열"),
-                        fieldWithPath("data.content[].pickOptions[].id").type(JsonFieldType.NUMBER).description("픽픽픽 옵션 아이디"),
-                        fieldWithPath("data.content[].pickOptions[].title").type(JsonFieldType.STRING).description("픽픽픽 옵션 제목"),
-                        fieldWithPath("data.content[].pickOptions[].percent").type(JsonFieldType.NUMBER).description("픽픽픽 옵션 투표율(%)"),
-                        fieldWithPath("data.content[].pickOptions[].isPicked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("픽픽픽 옵션 투표 여부(익명 사용자는 필드가 없다.)"),
-                        fieldWithPath("data.content[].pickOptions[].id").type(JsonFieldType.NUMBER).description("픽픽픽 옵션 아이디"),
-                        fieldWithPath("data.content[].pickOptions[].title").type(JsonFieldType.STRING).description("픽픽픽 옵션 제목"),
-                        fieldWithPath("data.content[].pickOptions[].percent").type(JsonFieldType.NUMBER).description("픽픽픽 옵션 투표율(%)"),
-                        fieldWithPath("data.content[].pickOptions[].isPicked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("픽픽픽 옵션 투표 여부(익명 사용자는 필드가 없다.)"),
+                        fieldWithPath("data.content[].pickOptions").type(ARRAY).description("픽픽픽 옵션 배열"),
+                        fieldWithPath("data.content[].pickOptions[].id").type(NUMBER).description("픽픽픽 옵션 아이디"),
+                        fieldWithPath("data.content[].pickOptions[].title").type(STRING).description("픽픽픽 옵션 제목"),
+                        fieldWithPath("data.content[].pickOptions[].percent").type(NUMBER).description("픽픽픽 옵션 투표율(%)"),
+                        fieldWithPath("data.content[].pickOptions[].isPicked").attributes(authenticationType()).type(
+                                BOOLEAN).description("픽픽픽 옵션 투표 여부(익명 사용자는 필드가 없다.)"),
+                        fieldWithPath("data.content[].pickOptions[].id").type(NUMBER).description("픽픽픽 옵션 아이디"),
+                        fieldWithPath("data.content[].pickOptions[].title").type(STRING).description("픽픽픽 옵션 제목"),
+                        fieldWithPath("data.content[].pickOptions[].percent").type(NUMBER).description("픽픽픽 옵션 투표율(%)"),
+                        fieldWithPath("data.content[].pickOptions[].isPicked").attributes(authenticationType()).type(
+                                BOOLEAN).description("픽픽픽 옵션 투표 여부(익명 사용자는 필드가 없다.)"),
 
-                        fieldWithPath("data.pageable").type(JsonFieldType.OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
-                        fieldWithPath("data.pageable.pageNumber").type(JsonFieldType.NUMBER).description("페이지 번호"),
-                        fieldWithPath("data.pageable.pageSize").type(JsonFieldType.NUMBER).description("페이지 사이즈"),
+                        fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
+                        fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
+                        fieldWithPath("data.pageable.pageSize").type(NUMBER).description("페이지 사이즈"),
 
-                        fieldWithPath("data.pageable.sort").type(JsonFieldType.OBJECT).description("정렬 정보"),
-                        fieldWithPath("data.pageable.sort.empty").type(JsonFieldType.BOOLEAN).description("정렬 정보가 비어있는지 여부"),
-                        fieldWithPath("data.pageable.sort.sorted").type(JsonFieldType.BOOLEAN).description("정렬 여부"),
-                        fieldWithPath("data.pageable.sort.unsorted").type(JsonFieldType.BOOLEAN).description("비정렬 여부"),
+                        fieldWithPath("data.pageable.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.pageable.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.pageable.sort.sorted").type(BOOLEAN).description("정렬 여부"),
+                        fieldWithPath("data.pageable.sort.unsorted").type(BOOLEAN).description("비정렬 여부"),
 
-                        fieldWithPath("data.pageable.offset").type(JsonFieldType.NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
-                        fieldWithPath("data.pageable.paged").type(JsonFieldType.BOOLEAN).description("페이지 정보 포함 여부"),
-                        fieldWithPath("data.pageable.unpaged").type(JsonFieldType.BOOLEAN).description("페이지 정보 비포함 여부"),
+                        fieldWithPath("data.pageable.offset").type(NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
+                        fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
+                        fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
 
-                        fieldWithPath("data.first").type(JsonFieldType.BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
-                        fieldWithPath("data.last").type(JsonFieldType.BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
-                        fieldWithPath("data.size").type(JsonFieldType.NUMBER).description("페이지 크기"),
-                        fieldWithPath("data.number").type(JsonFieldType.NUMBER).description("현재 페이지"),
+                        fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
+                        fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
+                        fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),
+                        fieldWithPath("data.number").type(NUMBER).description("현재 페이지"),
 
-                        fieldWithPath("data.sort").type(JsonFieldType.OBJECT).description("정렬 정보"),
-                        fieldWithPath("data.sort.empty").type(JsonFieldType.BOOLEAN).description("정렬 정보가 비어있는지 여부"),
-                        fieldWithPath("data.sort.sorted").type(JsonFieldType.BOOLEAN).description("정렬 상태 여부"),
-                        fieldWithPath("data.sort.unsorted").type(JsonFieldType.BOOLEAN).description("비정렬 상태 여부"),
-                        fieldWithPath("data.numberOfElements").type(JsonFieldType.NUMBER).description("현재 페이지 데이터 수"),
-                        fieldWithPath("data.empty").type(JsonFieldType.BOOLEAN).description("현재 빈 페이지 여부")
+                        fieldWithPath("data.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.sort.sorted").type(BOOLEAN).description("정렬 상태 여부"),
+                        fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
+                        fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
+                        fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
                 )
         ));
     }
@@ -229,19 +240,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터")
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data.pickOptionImages").type(JsonFieldType.ARRAY).description("픽픽픽 옵션 이미지 배열")
+                        fieldWithPath("data.pickOptionImages").type(ARRAY).description("픽픽픽 옵션 이미지 배열")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data.pickOptionImages[].name").type(JsonFieldType.STRING).description("픽픽픽 옵션 이미지 이름")
+                        fieldWithPath("data.pickOptionImages[].name").type(STRING).description("픽픽픽 옵션 이미지 이름")
                                 .attributes(pickOptionImageNameType(), authenticationType()),
-                        fieldWithPath("data.pickOptionImages[].pickOptionImageId").type(JsonFieldType.NUMBER).description("픽픽픽 옵션 이미지 아이디")
+                        fieldWithPath("data.pickOptionImages[].pickOptionImageId").type(NUMBER).description("픽픽픽 옵션 이미지 아이디")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data.pickOptionImages[].imageUrl").type(JsonFieldType.STRING).description("픽픽픽 옵션 이미지 URL")
+                        fieldWithPath("data.pickOptionImages[].imageUrl").type(STRING).description("픽픽픽 옵션 이미지 URL")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data.pickOptionImages[].imageKey").type(JsonFieldType.STRING).description("픽픽픽 옵션 이미지 KEY(경로)")
+                        fieldWithPath("data.pickOptionImages[].imageKey").type(STRING).description("픽픽픽 옵션 이미지 KEY(경로)")
                                 .attributes(authenticationType())
                 )
         ));
@@ -280,11 +291,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 queryParameters(
                         parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
                 ),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
+                exceptionResponseFields()
         ));
     }
 
@@ -326,11 +333,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 queryParameters(
                         parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
                 ),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
+                exceptionResponseFields()
         ));
     }
 
@@ -366,11 +369,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 queryParameters(
                         parameterWithName("name").description("픽픽픽 옵션 이미지 이름").attributes(pickOptionImageNameType())
                 ),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
+                exceptionResponseFields()
         ));
     }
 
@@ -423,7 +422,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("pickOptionImageId").description("픽픽픽 옵션 이미지 아이디")
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
                                 .attributes(authenticationType())
                 )
         ));
@@ -473,11 +472,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 pathParameters(
                         parameterWithName("pickOptionImageId").description("픽픽픽 옵션 이미지 아이디")
                 ),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
+                exceptionResponseFields()
         ));
     }
 
@@ -526,11 +521,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 pathParameters(
                         parameterWithName("pickOptionImageId").description("픽픽픽 옵션 이미지 아이디")
                 ),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
+                exceptionResponseFields()
         ));
     }
 
@@ -587,23 +578,23 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 requestFields(
-                        fieldWithPath("pickTitle").type(JsonFieldType.STRING).description("픽픽픽 타이틀"),
-                        fieldWithPath("pickOptions").type(JsonFieldType.OBJECT).description("픽픽픽 옵션"),
-                        fieldWithPath("pickOptions.firstPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
-                        fieldWithPath("pickOptions.secondPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터")
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터")
                                 .attributes(authenticationType()),
-                        fieldWithPath("data.pickId").type(JsonFieldType.NUMBER).description("픽픽픽 아이디")
+                        fieldWithPath("data.pickId").type(NUMBER).description("픽픽픽 아이디")
                                 .attributes(authenticationType())
                 )
         ));
@@ -638,34 +629,30 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(om.writeValueAsString(registerPickRequest)))
                 .andDo(print())
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isForbidden());
 
         // docs
         actions.andDo(document("pick-register-anonymous-exception",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestFields(
-                        fieldWithPath("pickTitle").type(JsonFieldType.STRING).description("픽픽픽 타이틀"),
-                        fieldWithPath("pickOptions").type(JsonFieldType.OBJECT).description("픽픽픽 옵션"),
-                        fieldWithPath("pickOptions.firstPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
-                        fieldWithPath("pickOptions.secondPickOption").type(JsonFieldType.OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(JsonFieldType.STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(JsonFieldType.ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
                 ),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
+                exceptionResponseFields()
         ));
     }
 
     @Test
-    @DisplayName("잘못된 형식의 픽픽픽 옵션 필드 이름 이면 예외가 발생한다.")
+    @DisplayName("픽픽픽을 작성할 때 잘못된 형식의 픽픽픽 옵션 필드 이름 이면 예외가 발생한다.")
     void registerPickPickOptionNameException() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -709,12 +696,528 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("이미 작성된 픽픽픽을 수정한다.")
+    void modifyPick() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-modify",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER).description("픽픽픽 첫 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NUMBER).description("픽픽픽 두 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
                 responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickId").type(NUMBER).description("픽픽픽 아이디")
+                                .attributes(authenticationType())
                 )
         ));
+    }
+
+    @Test
+    @DisplayName("픽픽픽을 수정할 때 회원 본인이 작성하지 않은 픽픽픽이면 예외가 발생한다.")
+    void modifyPickAccessDeniedException() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        SocialMemberDto otherSocialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", "ohterDreamy5patisiel@gmail.com", socialType, role);
+        Member otherMember = Member.createMemberBy(otherSocialMemberDto);
+        memberRepository.save(otherMember);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), otherMember);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        // docs
+        actions.andDo(document("pick-modify-access-denied-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER).description("픽픽픽 첫 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NUMBER).description("픽픽픽 두 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " "})
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 제목이 빈값이거나 null이면 예외가 발생한다.")
+    void modifyPickTitleBindException(String pickTitle) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest(pickTitle, modifyPickOptionRequests);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-modify-pick-title-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER).description("픽픽픽 첫 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NUMBER).description("픽픽픽 두 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " "})
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 제목이 빈값이거나 null이면 예외가 발생한다.")
+    void modifyPickPickOptionTitleBindException(String pickOptionTitle) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), pickOptionTitle,
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), pickOptionTitle,
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print());
+
+        // docs
+        actions.andDo(document("pick-modify-pick-option-title-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER).description("픽픽픽 첫 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NUMBER).description("픽픽픽 두 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " "})
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 내용이 빈값이거나 null이면 예외가 발생한다.")
+    void modifyPickPickOptionContentBindException(String pickOptionContent) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), "픽옵션1제목수정",
+                pickOptionContent, List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
+                pickOptionContent, List.of(newPickOption2Image1.getId()));
+
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-modify-pick-option-content-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER).description("픽픽픽 첫 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NUMBER).description("픽픽픽 두 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 아이디가 null이면 예외가 발생한다.")
+    void modifyPickPickOptionIdBindException(Long pickOptionId) throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // == 픽픽픽 작성 환경 == //
+        Pick pick = createPick(new Title("픽제목"), member);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
+
+        PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
+        PickOptionImage pickOption1Image2 = createPickOptionImage("픽옵션1사진2", pickOption1);
+        PickOptionImage pickOption2Image1 = createPickOptionImage("픽옵션2사진1", pickOption2);
+        pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
+        // == 픽픽픽 작성 환경 == //
+
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+        pickOptionImageRepository.deleteAllById(List.of(pickOption1Image1.getId(), pickOption1Image2.getId(),
+                pickOption2Image1.getId()));
+
+        PickOptionImage newPickOption1Image1 = createPickOptionImage("픽옵션1사진1수정");
+        PickOptionImage newPickOption2Image1 = createPickOptionImage("픽옵션2사진1수정");
+        pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
+        // == 픽픽픽 새로운 사진 업로드 환경 == //
+
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOptionId, "픽옵션1제목수정",
+                "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOptionId, "픽옵션2제목수정",
+                "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
+
+        Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+
+        ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(modifyPickRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-modify-pick-option-id-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
+                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
+                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NULL).description("픽픽픽 첫 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING).description("픽픽픽 첫 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NULL).description("픽픽픽 두 번째 옵션 선택지 아이디"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING).description("픽픽픽 두 번째 옵션 선택지 제목"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING).description("픽픽픽 두 번째 옵션 선택지 내용"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY).description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    private Pick createPick(Title title, Member member) {
+        return Pick.builder()
+                .title(title)
+                .member(member)
+                .build();
+    }
+
+    private PickOptionImage createPickOptionImage(String name) {
+        return PickOptionImage.builder()
+                .name(name)
+                .build();
+    }
+
+    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .contents(pickOptionContents)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private PickOptionImage createPickOptionImage(String name, PickOption pickOption) {
+        PickOptionImage pickOptionImage = PickOptionImage.builder()
+                .name(name)
+                .build();
+
+        pickOptionImage.changePickOption(pickOption);
+
+        return pickOptionImage;
+    }
+
+
+    private ModifyPickRequest createModifyPickRequest(String pickTitle, Map<String, ModifyPickOptionRequest> modifyPickOptionRequests) {
+        return ModifyPickRequest.builder()
+                .pickTitle(pickTitle)
+                .pickOptions(modifyPickOptionRequests)
+                .build();
     }
 
     private PickOptionImage createPickOptionImage(String name, String imageUrl, String imageKey) {
@@ -740,6 +1243,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 .build();
     }
 
+
     private ObjectMetadata createObjectMetadataByMultipartFile(MultipartFile multipartFile) {
         ObjectMetadata objectMetadata = new ObjectMetadata();
         objectMetadata.setContentType(multipartFile.getContentType());
@@ -763,11 +1267,11 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         );
     }
 
-    private MockMultipartFile createMockMultipartFile(String name, String originalFilename, String mediaTypeValue) {
+    private MockMultipartFile createMockMultipartFile(String name, String originalFilename, String mediaType) {
         return new MockMultipartFile(
                 name,
                 originalFilename,
-                mediaTypeValue,
+                mediaType,
                 name.getBytes()
         );
     }
@@ -785,8 +1289,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
-                            Count pickcommentTotalCount, String thumbnailUrl,
-                            String author, List<PickOption> pickOptions, List<PickVote> pickVotes
+                            Count pickcommentTotalCount, String thumbnailUrl, String author,
+                            List<PickOption> pickOptions, List<PickVote> pickVotes
     ) {
 
         Pick pick = Pick.builder()

@@ -11,10 +11,14 @@ import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -105,5 +109,14 @@ public class ApiControllerAdvice {
 
         return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.UNAUTHORIZED.value()),
                 HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<BasicResponse<Object>> methodArgumentNotValidException(MethodArgumentNotValidException e) {
+        BindingResult bindingResult = e.getBindingResult();
+        String defaultMessage = Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage();
+
+        return new ResponseEntity<>(BasicResponse.fail(defaultMessage, HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
     }
 }

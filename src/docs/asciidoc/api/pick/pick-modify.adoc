@@ -1,0 +1,29 @@
+[[Pick-Modify]]
+== 픽픽픽 수정 API(PATCH: /devdevdev/api/v1/picks)
+* 픽픽픽 수정
+* 회원만 픽픽픽 수정 할 수 있다.
+* 자신이 작성한 픽픽픽이 아니면 수정할 수 없다.
+* 픽픽픽 수정시 이미지는 있을 수도 없을 수도 있다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/pick-modify/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/pick-modify/request-headers.adoc[]
+==== HTTP Request Fields
+include::{snippets}/pick-modify/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/pick-modify/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/pick-modify/response-fields.adoc[]
+
+=== 예외
+==== HTTP Response
+include::{snippets}/pick-modify-access-denied-exception/response-body.adoc[]
+include::{snippets}/pick-modify-pick-title-bind-exception/response-body.adoc[]
+include::{snippets}/pick-modify-pick-option-title-bind-exception/response-body.adoc[]
+include::{snippets}/pick-modify-pick-option-content-bind-exception/response-body.adoc[]
+include::{snippets}/pick-modify-pick-option-id-bind-exception/response-body.adoc[]
+==== HTTP Response Fields
+include::{snippets}/pick-modify-pick-option-content-bind-exception/response-fields.adoc[]
