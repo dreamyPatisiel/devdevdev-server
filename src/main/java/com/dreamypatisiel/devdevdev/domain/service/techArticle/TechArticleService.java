@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -13,4 +14,6 @@ public interface TechArticleService {
                                                   String keyword, Float score, Authentication authentication);
 
     TechArticleResponse getTechArticle(Long id, Authentication authentication);
+
+    BookmarkResponse toggleBookmark(Long id, Authentication authentication);
 }

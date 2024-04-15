@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,8 @@ import java.util.Map;
 @Slf4j
 @Service
 public class GuestTechArticleService extends TechArticleCommonService implements TechArticleService {
+
+    public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
 
     private final ElasticTechArticleService elasticTechArticleService;
 
@@ -61,6 +65,11 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
         // 데이터 가공
         return getTechArticleResponse(techArticle, elasticTechArticle, companyResponse);
+    }
+
+    @Override
+    public BookmarkResponse toggleBookmark(Long id, Authentication authentication) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     private List<TechArticleResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits) {

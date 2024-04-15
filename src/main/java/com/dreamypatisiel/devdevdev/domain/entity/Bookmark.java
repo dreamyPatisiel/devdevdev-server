@@ -2,16 +2,16 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bookmark extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private Boolean value;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -22,7 +22,8 @@ public class Bookmark extends BasicTime {
     private TechArticle techArticle;
 
     @Builder
-    private Bookmark(Member member, TechArticle techArticle) {
+    public Bookmark(Boolean value, Member member, TechArticle techArticle) {
+        this.value = value;
         this.member = member;
         this.techArticle = techArticle;
     }
@@ -34,8 +35,23 @@ public class Bookmark extends BasicTime {
                 .build();
     }
 
+    public static Bookmark from(Member member, TechArticle techArticle, boolean value) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .value(value)
+                .build();
+    }
+
     public void changeTechArticle(TechArticle techArticle) {
         this.techArticle = techArticle;
     }
 
+    public void toggleBookmark(){
+        this.value = !value;
+    }
+
+    public boolean isBookmarked() {
+        return this.value;
+    }
 }
