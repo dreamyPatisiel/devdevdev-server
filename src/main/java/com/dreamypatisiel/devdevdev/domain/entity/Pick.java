@@ -3,8 +3,6 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.policy.PopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -122,7 +120,7 @@ public class Pick extends BasicTime {
         return policy.calculatePopularScore(this);
     }
 
-    public boolean isEqualMember(Member member) {
+    public boolean isEqualsMember(Member member) {
         return this.member.isEqualsMember(member);
     }
 

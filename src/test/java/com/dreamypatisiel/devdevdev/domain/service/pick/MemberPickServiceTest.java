@@ -591,6 +591,45 @@ class MemberPickServiceTest {
     }
 
     @Test
+    @DisplayName("회원이 존재하지 않는 이미지를 작성할 경우 예외가 발생한다.")
+    void registerPickOptionImageNotSaveException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
+        String secondImageUrl = "http://devdevdev.co.kr/pickpickpick/second.jpg";
+        String imageKey = "/pickpickpick/xxx.jpg";
+
+        PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        RegisterPickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+                List.of(firstPickOptionImage.getId() + 1_000L));
+        RegisterPickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+                List.of(secondPickOptionImage.getId() + 1_000L));
+
+        Map<String, RegisterPickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondPickOptionRequest);
+
+        RegisterPickRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.registerPick(pickRegisterRequest, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(MemberPickService.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
     @DisplayName("픽픽픽을 수정한다.")
     void modifyPick() {
         // given
@@ -826,8 +865,9 @@ class MemberPickServiceTest {
         assertThatThrownBy(() -> memberPickService.modifyPick(pick.getId(), modifyPickRequest, authentication))
                 .isInstanceOf(PickOptionNameException.class)
                 .hasMessage(MemberPickService.INVALID_PICK_OPTION_NAME_MESSAGE);
-
     }
+
+
 
     private ModifyPickRequest createModifyPickRequest(String pickTitle, Map<String, ModifyPickOptionRequest> modifyPickOptionRequests) {
         return ModifyPickRequest.builder()

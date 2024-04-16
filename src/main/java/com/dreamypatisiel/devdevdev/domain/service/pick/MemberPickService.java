@@ -32,7 +32,6 @@ import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +63,7 @@ public class MemberPickService implements PickService {
     public static final String INVALID_NOT_FOUND_PICK_MESSAGE = "수정할 수 있는 픽픽픽 게시글이 없습니다.";
     public static final String INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE = "회원 본인이 작성한 게시글만 수정할 수 있습니다.";
     public static final String INVALID_NOT_FOUND_PICK_OPTION_MESSAGE = "수정하려는 픽픽픽 선택지가 없습니다.";
+    public static final String INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE = "알맞은 픽픽픽 선택지 이미지가 존재하지 않습니다.";
 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
@@ -199,7 +199,7 @@ public class MemberPickService implements PickService {
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 회원이 작성한 픽픽픽이 아닌 경우
-        if(!findPick.isEqualMember(member)) {
+        if(!findPick.isEqualsMember(member)) {
             throw new AccessDeniedException(INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE);
         }
 
@@ -225,7 +225,7 @@ public class MemberPickService implements PickService {
 
         List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(pickOptionName)
                 .getPickOptionImageIds();
-        List<PickOptionImage> pickOptionImages = getPickOptionImages(pickOptionImageIds);
+        List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
 
         // 픽픽픽 옵션 수정, 픽픽픽 옵션과 픽픽픽 옵션 이미지 연관관계 설정
         ModifyPickOptionRequest pickOptionsRequest = modifyPickRequestPickOptions.get(pickOptionName);
@@ -251,7 +251,7 @@ public class MemberPickService implements PickService {
         List<Long> pickOptionImageIds = registerPickOptionRequest.getPickOptionImageIds();
 
         // 픽픽픽 이미지 조회
-        List<PickOptionImage> findPickOptionImages = getPickOptionImages(pickOptionImageIds);
+        List<PickOptionImage> findPickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
 
         // 픽픽픽 옵션 생성
         String pickOptionTitle = registerPickOptionRequest.getPickOptionTitle();
@@ -264,11 +264,19 @@ public class MemberPickService implements PickService {
     }
 
     // 픽 옵션 이미지 아이디가 없으면 select 할 필요가 없음
-    private List<PickOptionImage> getPickOptionImages(List<Long> pickOptionImageIds) {
+    private List<PickOptionImage> getPickOptionImagesOrEmptyList(List<Long> pickOptionImageIds) {
         if(!ObjectUtils.isEmpty(pickOptionImageIds)) {
-            return pickOptionImageRepository.findByIdIn(pickOptionImageIds);
+            List<PickOptionImage> findPickOptionImages = pickOptionImageRepository.findByIdIn(pickOptionImageIds);
+            return getPickOptionImages(findPickOptionImages);
         }
         return Collections.emptyList();
+    }
+
+    private List<PickOptionImage> getPickOptionImages(List<PickOptionImage> findPickOptionImages) {
+        if(ObjectUtils.isEmpty(findPickOptionImages)) {
+            throw new NotFoundException(INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE);
+        }
+        return findPickOptionImages;
     }
 
     private PicksResponse mapToPickResponse(Pick pick, Member member) {
