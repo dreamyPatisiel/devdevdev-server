@@ -54,11 +54,12 @@ public class TechArticleController {
 
     @Operation(summary = "기술블로그 북마크")
     @PostMapping("/articles/{id}/bookmark")
-    public ResponseEntity<BasicResponse<BookmarkResponse>> toggleBookmark (@PathVariable Long id) {
+    public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark (@PathVariable Long id,
+                                                                           @RequestParam Boolean status) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        BookmarkResponse response = techArticleService.toggleBookmark(id, authentication);
+        BookmarkResponse response = techArticleService.updateBookmark(id, status, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -11,7 +12,8 @@ public class Bookmark extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Boolean value;
+    @Setter
+    private Boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -22,8 +24,8 @@ public class Bookmark extends BasicTime {
     private TechArticle techArticle;
 
     @Builder
-    public Bookmark(Boolean value, Member member, TechArticle techArticle) {
-        this.value = value;
+    public Bookmark(Boolean status, Member member, TechArticle techArticle) {
+        this.status = status;
         this.member = member;
         this.techArticle = techArticle;
     }
@@ -35,11 +37,11 @@ public class Bookmark extends BasicTime {
                 .build();
     }
 
-    public static Bookmark from(Member member, TechArticle techArticle, boolean value) {
+    public static Bookmark of(Member member, TechArticle techArticle, Boolean status) {
         return Bookmark.builder()
                 .member(member)
                 .techArticle(techArticle)
-                .value(value)
+                .status(status)
                 .build();
     }
 
@@ -47,11 +49,7 @@ public class Bookmark extends BasicTime {
         this.techArticle = techArticle;
     }
 
-    public void toggleBookmark(){
-        this.value = !value;
-    }
-
     public boolean isBookmarked() {
-        return this.value;
+        return this.status;
     }
 }

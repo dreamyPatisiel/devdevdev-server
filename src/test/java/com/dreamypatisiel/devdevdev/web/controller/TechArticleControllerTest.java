@@ -35,6 +35,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -151,8 +152,8 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
-            if(creatRandomBoolean()){
-                Bookmark bookmark = Bookmark.from(member, techArticle);
+            if(createRandomBoolean()){
+                Bookmark bookmark = Bookmark.of(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
@@ -336,11 +337,6 @@ class TechArticleControllerTest extends SupportControllerTest {
     void getTechArticleNotFoundMemberException() throws Exception {
         // given
         Long id = FIRST_TECH_ARTICLE_ID;
-        // given
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        member.updateRefreshToken(refreshToken);
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
@@ -417,6 +413,79 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
+    @Test
+    @DisplayName("회원이 기술블로그 북마크를 요청한다.")
+    void updateBookmark() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
+                        .queryParam("status", String.valueOf(true))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.techArticleId").isNumber())
+                .andExpect(jsonPath("$.data.status").isBoolean());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 북마크를 요청할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
+    void updateBookmarkNotFoundTechArticleException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+                new Count(1L), null, null);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId()+1;
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
+                        .queryParam("status", String.valueOf(true))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 북마크를 요청할 때 존재하지 않는 회원이라면 예외가 발생한다.")
+    void updateBookmarkNotFoundMemberException() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
+                        .queryParam("status", String.valueOf(true))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
@@ -428,7 +497,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .role(Role.valueOf(role))
                 .build();
     }
-    private boolean creatRandomBoolean() {
+    private boolean createRandomBoolean() {
         return new Random().nextBoolean();
     }
 

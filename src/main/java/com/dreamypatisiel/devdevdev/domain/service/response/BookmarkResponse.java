@@ -6,10 +6,10 @@ import lombok.Data;
 public class BookmarkResponse {
 
     public Long techArticleId;
-    public boolean value;
+    public Boolean status;
 
-    public BookmarkResponse(Long techArticleId, boolean value) {
+    public BookmarkResponse(Long techArticleId, Boolean status) {
         this.techArticleId = techArticleId;
-        this.value = value;
+        this.status = status;
     }
 }

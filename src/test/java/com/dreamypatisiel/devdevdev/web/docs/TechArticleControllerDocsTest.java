@@ -42,6 +42,7 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.headerWit
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
@@ -328,7 +329,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         member.updateRefreshToken(refreshToken);
 
         // when // then
-        mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -337,6 +338,16 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+
+        // Docs
+        actions.andDo(document("not-found-member-exception",
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
     }
 
     @Test
@@ -416,6 +427,48 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 북마크를 요청한다.")
+    void updateBookmark() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
+                        .queryParam("status", String.valueOf(true))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print());
+
+        // Docs
+        actions.andDo(document("tech-article-bookmark",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("status").description("북마크 상태")
+                ),
+                pathParameters(
+                        parameterWithName("id").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.techArticleId").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
+                        fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("북마크 상태")
                 )
         ));
     }

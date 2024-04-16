@@ -68,7 +68,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     }
 
     @Override
-    public BookmarkResponse toggleBookmark(Long id, Authentication authentication) {
+    public BookmarkResponse updateBookmark(Long id, Boolean status, Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
