@@ -1,11 +1,15 @@
-package com.dreamypatisiel.devdevdev.domain.repository.pick;
+package com.dreamypatisiel.devdevdev.domain.repository.pick.custom;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
+import static com.dreamypatisiel.devdevdev.domain.entity.QPick.*;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
+import static com.dreamypatisiel.devdevdev.domain.entity.QPickOptionImage.pickOptionImage;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.QPick;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -18,11 +22,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.ObjectUtils;
 
-/**
- * @Note: ToMany 페치 조인과 페이징은 불가
- * ToOne은 페치 조인, ToMany는 지연로딩으로...! (where in 절)
- *  - default_batch_fetch_size: 1000
- */
 @RequiredArgsConstructor
 public class PickRepositoryImpl implements PickRepositoryCustom {
 
@@ -31,6 +30,11 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
 
     private final JPQLQueryFactory query;
 
+    /**
+     * @Note: ToMany 페치 조인과 페이징은 불가
+     * ToOne은 페치 조인, ToMany는 지연로딩으로...! (where in 절)
+     *  - default_batch_fetch_size: 1000
+     */
     @Override
     public Slice<Pick> findPicksByCursor(Pageable pageable, Long pickId, PickSort pickSort) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
@@ -48,6 +52,16 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
         int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
 
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
+    }
+
+    @Override
+    public Optional<Pick> findPickAndPickOptionByPickId(Long pickId) {
+        Pick findPick = query.selectFrom(pick)
+                .where(pick.id.eq(pickId))
+                .innerJoin(pick.pickOptions, pickOption).fetchJoin()
+                .fetchOne();
+
+        return Optional.ofNullable(findPick);
     }
 
     private BooleanExpression getCursorCondition(PickSort pickSort, Long pickId) {

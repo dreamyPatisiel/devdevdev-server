@@ -1,6 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
 import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
+import static org.springframework.restdocs.payload.JsonFieldType.STRING;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 
 import com.dreamypatisiel.devdevdev.LocalInitData;
 import com.dreamypatisiel.devdevdev.domain.entity.Role;
@@ -16,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,5 +61,13 @@ public class SupportControllerDocsTest {
         Token token = tokenService.generateTokenBy(email, socialType, role);
         refreshToken = token.getRefreshToken();
         accessToken = token.getAccessToken();
+    }
+
+    protected ResponseFieldsSnippet exceptionResponseFields() {
+        return responseFields(
+                fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                fieldWithPath("message").type(STRING).description("에러 메시지"),
+                fieldWithPath("errorCode").type(NUMBER).description("에러 코드")
+        );
     }
 }

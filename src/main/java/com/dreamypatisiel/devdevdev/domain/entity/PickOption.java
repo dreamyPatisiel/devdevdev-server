@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.global.utils.BigDecimalUtils;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -24,6 +25,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.security.core.parameters.P;
 
 @Entity
 @Getter
@@ -102,5 +104,10 @@ public class PickOption {
 
     public void changePickVoteCount(Count voteTotalCount) {
         this.voteTotalCount = voteTotalCount;
+    }
+
+    public void changePickOption(ModifyPickOptionRequest modifyPickOptionRequest) {
+        this.title = new Title(modifyPickOptionRequest.getPickOptionTitle());
+        this.contents = new PickOptionContents(modifyPickOptionRequest.getPickOptionContent());
     }
 }

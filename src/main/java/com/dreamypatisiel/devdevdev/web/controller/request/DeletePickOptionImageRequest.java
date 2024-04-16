@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.pick.request;
+package com.dreamypatisiel.devdevdev.web.controller.request;
 
 import lombok.Builder;
 import lombok.Data;

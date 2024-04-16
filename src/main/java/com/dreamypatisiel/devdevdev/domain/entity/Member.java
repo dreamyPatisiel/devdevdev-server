@@ -104,7 +104,7 @@ public class Member extends BasicTime {
         return email.getEmail();
     }
 
-    public boolean isEqualsMember(Member member) {
+    public boolean isEqualMember(Member member) {
         return this.equals(member);
     }
 }

@@ -1,0 +1,13 @@
+|===
+|Path|Type|Optional|Description
+
+    |`+resultType+`
+    |`+String+`
+    |
+    |응답 결과
+    |`+data+`
+    |`+Object+`
+    |O
+    |응답 데이터
+
+|===

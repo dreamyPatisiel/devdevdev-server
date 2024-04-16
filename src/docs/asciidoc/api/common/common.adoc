@@ -1,5 +1,18 @@
 [[common]]
 == 예외 응답
+=== HTTP 공통 응답
+==== HTTP Response Fields
+* 정상 응답 필드
+include::response.adoc[]
+
+==== HTTP Exception Response Fields
+* 예외 응답 필드
+include::excetion-response.adoc[]
+
+==== HTTP Pagination Response Fields
+* 페이지네이션에 사용되는 공통 응답 필드
+include::pagination-response.adoc[]
+
 === Cookie 예외
 * 쿠키의 name에 해당하는 value가 빈값인 경우
 ** name: DEVDEVDEV_REFRESH_TOKEN, DEVDEVDEV_ACCESS_TOKEN
@@ -14,4 +27,3 @@ include::{snippets}/token-refresh-cookie-exception/response-body.adoc[]
 include::{snippets}/token-invalid-signature-accessToken-exception/response-body.adoc[]
 include::{snippets}/token-invalid-expired-accessToken-exception/response-body.adoc[]
 include::{snippets}/token-invalid-blanked-accessToken-exception/response-body.adoc[]
-
