@@ -94,6 +94,6 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     private boolean isBookmarkedByMember(TechArticle techArticle, Member member) {
         return techArticle.getBookmarks().stream()
-                .anyMatch(bookmark -> bookmark.getMember().isEqualsMember(member));
+                .anyMatch(bookmark -> bookmark.getMember().isEqualMember(member));
     }
 }

@@ -199,7 +199,7 @@ public class MemberPickService implements PickService {
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 회원이 작성한 픽픽픽이 아닌 경우
-        if(!findPick.isEqualsMember(member)) {
+        if(!findPick.isEqualMember(member)) {
             throw new AccessDeniedException(INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE);
         }
 
@@ -295,7 +295,7 @@ public class MemberPickService implements PickService {
     private boolean isVotedByPickAndMember(Pick pick, Member member) {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
-                .anyMatch(pickVote -> pickVote.getMember().isEqualsMember(member));
+                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 
     private List<PickOptionResponse> mapToPickOptionsResponse(Pick pick, Member member) {
