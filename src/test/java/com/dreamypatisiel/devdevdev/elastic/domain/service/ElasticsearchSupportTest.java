@@ -28,6 +28,7 @@ public class ElasticsearchSupportTest {
 
     public static final int TEST_ARTICLES_COUNT = 20;
     public static Long FIRST_TECH_ARTICLE_ID;
+    public static TechArticle firstTechArticle;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
@@ -49,7 +50,8 @@ public class ElasticsearchSupportTest {
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
-        FIRST_TECH_ARTICLE_ID = savedTechArticles.getFirst().getId();
+        firstTechArticle = savedTechArticles.getFirst();
+        FIRST_TECH_ARTICLE_ID = firstTechArticle.getId();
     }
 
     @AfterAll

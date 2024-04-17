@@ -1,9 +1,6 @@
-package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
+package com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQueryFactory;
 import lombok.RequiredArgsConstructor;
 

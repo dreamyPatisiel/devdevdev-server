@@ -1,17 +1,14 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
-import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
-import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
@@ -41,6 +38,8 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     TechArticleRepository techArticleRepository;
     @Autowired
     MemberRepository memberRepository;
+    @Autowired
+    BookmarkRepository bookmarkRepository;
     @Autowired
     EntityManager em;
 
@@ -215,6 +214,64 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 북마크 한 적 없는 기술블로그의 북마크를 요청하면 새로운 북마크가 생성된다.")
+    void createBookmark() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long id = FIRST_TECH_ARTICLE_ID;
+        Boolean status = true;
+
+        // when
+        BookmarkResponse response = memberTechArticleService.updateBookmark(id, status, authentication);
+
+        // then
+        assertThat(response)
+                .isNotNull()
+                .extracting(techArticleId -> response.techArticleId, updatedStatus -> response.status)
+                .containsExactly(id, status);
+    }
+
+    @Test
+    @DisplayName("회원이 북마크한 적 있는 기술블로그의 북마크의 갱신을 요청하면 북마크 값이 갱신된다.")
+    void updateBookmark() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        TechArticle techArticle = firstTechArticle;
+        Bookmark bookmark = Bookmark.create(member, techArticle, true);
+        bookmarkRepository.save(bookmark);
+
+        Long id = FIRST_TECH_ARTICLE_ID;
+        Boolean status = false;
+
+        // when
+        BookmarkResponse response = memberTechArticleService.updateBookmark(id, status, authentication);
+
+        // then
+        assertThat(response)
+                .isNotNull()
+                .extracting(techArticleId -> response.techArticleId, updatedStatus -> response.status)
+                .containsExactly(id, status);
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {

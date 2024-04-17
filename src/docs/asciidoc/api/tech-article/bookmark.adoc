@@ -1,0 +1,26 @@
+[[TechArticleBookmark]]
+== 기술블로그 북마크 API(POST: /devdevdev/api/v1/articles/{id}/bookmark)
+* 회원은 기술블로그 북마크 여부를 생성/갱신할 수 있다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/tech-article-bookmark/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/tech-article-bookmark/request-headers.adoc[]
+==== HTTP Request Path Parameters Fields
+include::{snippets}/tech-article-bookmark/path-parameters.adoc[]
+==== HTTP Request Query Parameters Fields
+include::{snippets}/tech-article-bookmark/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/tech-article-bookmark/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/tech-article-bookmark/response-fields.adoc[]
+
+
+=== 예외
+==== HTTP Response
+include::{snippets}/not-found-tech-article-exception/response-body.adoc[]
+include::{snippets}/not-found-member-exception/response-body.adoc[]
+==== HTTP Response Fields
+include::{snippets}/not-found-elastic-id-exception/response-fields.adoc[]

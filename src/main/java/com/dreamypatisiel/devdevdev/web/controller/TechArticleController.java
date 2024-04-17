@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
@@ -47,6 +48,18 @@ public class TechArticleController {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         TechArticleResponse response = techArticleService.getTechArticle(id, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 북마크")
+    @PostMapping("/articles/{id}/bookmark")
+    public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark (@PathVariable Long id,
+                                                                           @RequestParam boolean status) {
+
+        TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        BookmarkResponse response = techArticleService.updateBookmark(id, status, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

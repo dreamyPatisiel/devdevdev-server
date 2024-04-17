@@ -1,9 +1,12 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -28,15 +32,17 @@ import java.util.Map;
 public class MemberTechArticleService extends TechArticleCommonService implements TechArticleService {
 
     private final ElasticTechArticleService elasticTechArticleService;
+    private final BookmarkRepository bookmarkRepository;
     private final MemberProvider memberProvider;
 
 
     public MemberTechArticleService(TechArticleRepository techArticleRepository,
                                     ElasticTechArticleRepository elasticTechArticleRepository,
-                                    ElasticTechArticleService elasticTechArticleService,
+                                    ElasticTechArticleService elasticTechArticleService, BookmarkRepository bookmarkRepository,
                                     MemberProvider memberProvider) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
+        this.bookmarkRepository = bookmarkRepository;
         this.memberProvider = memberProvider;
     }
 
@@ -70,6 +76,31 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         return getTechArticleResponse(techArticle, elasticTechArticle, companyResponse, member);
     }
 
+    @Override
+    @Transactional
+    public BookmarkResponse updateBookmark(Long id, boolean status, Authentication authentication) {
+        // 회원 조회
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원의 해당 개시글 북마크 조회
+        TechArticle techArticle = findTechArticle(id);
+        Optional<Bookmark> findBookmark = bookmarkRepository.findByTechArticleAndMember(techArticle, member);
+
+        // 북마크 존재하면 갱신, 없으면 생성
+        findBookmark.ifPresentOrElse(
+                bookmark -> {
+                    bookmark.changeStatus(status);
+                    bookmarkRepository.save(bookmark);
+                },
+                () -> {
+                    Bookmark bookmark = Bookmark.create(member, techArticle, status);
+                    bookmarkRepository.save(bookmark);
+                }
+        );
+
+        return new BookmarkResponse(techArticle.getId(), status);
+    }
+
     private List<TechArticleResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits, Member member) {
         List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(searchHits);
         return mapToTechArticlesResponse(elasticTechArticlesResponse, member);
@@ -93,7 +124,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     }
 
     private boolean isBookmarkedByMember(TechArticle techArticle, Member member) {
-        return techArticle.getBookmarks().stream()
-                .anyMatch(bookmark -> bookmark.getMember().isEqualMember(member));
+        boolean isBookmarked = bookmarkRepository.findByTechArticleAndMember(techArticle, member).map(Bookmark::isBookmarked).orElse(false);
+        return isBookmarked;
     }
 }

@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class TechArticleResponse {
 
-    private static final int DESCRIPTION_MAX_LENGTH = 500;
     public static final int CONTENTS_MAX_LENGTH = 1000;
 
     public Long id;
@@ -25,7 +24,6 @@ public class TechArticleResponse {
     public CompanyResponse company;
     public LocalDate regDate;
     public String author;
-    public String description;
     public Long viewTotalCount;
     public Long recommendTotalCount;
     public Long commentTotalCount;
@@ -35,7 +33,7 @@ public class TechArticleResponse {
 
     @Builder
     private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String contents,
-                                CompanyResponse company, LocalDate regDate, String author, String description, Long viewTotalCount,
+                                CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
                                 Long recommendTotalCount, Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
@@ -45,7 +43,6 @@ public class TechArticleResponse {
         this.company = company;
         this.regDate = regDate;
         this.author = author;
-        this.description = description;
         this.isBookmarked = isBookmarked;
         this.viewTotalCount = viewTotalCount;
         this.recommendTotalCount = recommendTotalCount;
@@ -67,12 +64,11 @@ public class TechArticleResponse {
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
-                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .build();
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle,  CompanyResponse companyResponse, boolean isBookmarked) {
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, boolean isBookmarked) {
         return TechArticleResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
@@ -85,13 +81,12 @@ public class TechArticleResponse {
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
-                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .isBookmarked(isBookmarked)
                 .build();
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle,  CompanyResponse companyResponse, Float score) {
+    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, Float score) {
         return TechArticleResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
@@ -101,10 +96,10 @@ public class TechArticleResponse {
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
                 .title(elasticTechArticle.getTitle())
+                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
-                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .score(getValidScore(score))
                 .build();
     }
@@ -119,10 +114,10 @@ public class TechArticleResponse {
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
                 .title(elasticTechArticle.getTitle())
+                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
-                .description(truncateString(elasticTechArticle.getContents(), DESCRIPTION_MAX_LENGTH))
                 .score(getValidScore(score))
                 .isBookmarked(isBookmarked)
                 .build();

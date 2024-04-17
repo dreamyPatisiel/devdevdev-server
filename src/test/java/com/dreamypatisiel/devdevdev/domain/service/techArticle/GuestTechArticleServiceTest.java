@@ -20,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -179,5 +181,22 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 기술블로그 북마크를 요청하면 예외가 발생한다.")
+    void updateBookmarkAccessDeniedException() {
+        // given
+        when(authentication.getPrincipal()).thenReturn("anonymousUser");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        Long id = FIRST_TECH_ARTICLE_ID;
+        Boolean status = true;
+
+        // when // then
+        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, status, authentication))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 }

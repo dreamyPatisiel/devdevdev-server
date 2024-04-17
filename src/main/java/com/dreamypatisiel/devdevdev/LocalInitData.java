@@ -105,7 +105,7 @@ public class LocalInitData {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
             if(creatRandomBoolean()){
-                Bookmark bookmark = Bookmark.from(member, techArticle);
+                Bookmark bookmark = Bookmark.create(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
