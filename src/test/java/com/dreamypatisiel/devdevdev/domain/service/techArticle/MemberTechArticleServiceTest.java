@@ -258,7 +258,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         TechArticle techArticle = firstTechArticle;
-        Bookmark bookmark = Bookmark.from(member, techArticle);
+        Bookmark bookmark = Bookmark.create(member, techArticle, true);
         bookmarkRepository.save(bookmark);
 
         Long id = FIRST_TECH_ARTICLE_ID;

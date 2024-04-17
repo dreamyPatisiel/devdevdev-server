@@ -12,8 +12,7 @@ public class Bookmark extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Setter
-    private Boolean status;
+    private boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -24,7 +23,7 @@ public class Bookmark extends BasicTime {
     private TechArticle techArticle;
 
     @Builder
-    public Bookmark(Boolean status, Member member, TechArticle techArticle) {
+    private Bookmark(Boolean status, Member member, TechArticle techArticle) {
         this.status = status;
         this.member = member;
         this.techArticle = techArticle;
@@ -37,7 +36,7 @@ public class Bookmark extends BasicTime {
                 .build();
     }
 
-    public static Bookmark of(Member member, TechArticle techArticle, Boolean status) {
+    public static Bookmark create(Member member, TechArticle techArticle, boolean status) {
         return Bookmark.builder()
                 .member(member)
                 .techArticle(techArticle)
@@ -47,6 +46,10 @@ public class Bookmark extends BasicTime {
 
     public void changeTechArticle(TechArticle techArticle) {
         this.techArticle = techArticle;
+    }
+
+    public void changeStatus(boolean status) {
+        this.status = status;
     }
 
     public boolean isBookmarked() {

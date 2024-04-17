@@ -1,5 +1,5 @@
 [[TechArticleBookmark]]
-== 기술블로그 상세 API(POST: /devdevdev/api/v1/articles/{id}/bookmark)
+== 기술블로그 북마크 API(POST: /devdevdev/api/v1/articles/{id}/bookmark)
 * 회원은 기술블로그 북마크 여부를 생성/갱신할 수 있다.
 
 === 정상 요청/응답

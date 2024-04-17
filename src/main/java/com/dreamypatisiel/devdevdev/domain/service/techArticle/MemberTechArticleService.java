@@ -78,7 +78,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     @Override
     @Transactional
-    public BookmarkResponse updateBookmark(Long id, Boolean status, Authentication authentication) {
+    public BookmarkResponse updateBookmark(Long id, boolean status, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
@@ -89,11 +89,11 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         // 북마크 존재하면 갱신, 없으면 생성
         findBookmark.ifPresentOrElse(
                 bookmark -> {
-                    bookmark.setStatus(status);
+                    bookmark.changeStatus(status);
                     bookmarkRepository.save(bookmark);
                 },
                 () -> {
-                    Bookmark bookmark = Bookmark.of(member, techArticle, status);
+                    Bookmark bookmark = Bookmark.create(member, techArticle, status);
                     bookmarkRepository.save(bookmark);
                 }
         );
@@ -124,7 +124,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     }
 
     private boolean isBookmarkedByMember(TechArticle techArticle, Member member) {
-        Optional<Bookmark> bookmark = bookmarkRepository.findByTechArticleAndMember(techArticle, member);
-        return bookmark.isPresent() && bookmark.get().isBookmarked();
+        boolean isBookmarked = bookmarkRepository.findByTechArticleAndMember(techArticle, member).map(Bookmark::isBookmarked).orElse(false);
+        return isBookmarked;
     }
 }

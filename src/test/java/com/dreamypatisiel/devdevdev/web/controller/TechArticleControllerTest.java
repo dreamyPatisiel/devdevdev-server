@@ -153,7 +153,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
             if(createRandomBoolean()){
-                Bookmark bookmark = Bookmark.of(member, techArticle, true);
+                Bookmark bookmark = Bookmark.create(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }

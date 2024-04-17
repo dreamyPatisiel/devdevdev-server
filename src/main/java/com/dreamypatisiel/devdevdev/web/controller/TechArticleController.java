@@ -55,7 +55,7 @@ public class TechArticleController {
     @Operation(summary = "기술블로그 북마크")
     @PostMapping("/articles/{id}/bookmark")
     public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark (@PathVariable Long id,
-                                                                           @RequestParam Boolean status) {
+                                                                           @RequestParam boolean status) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
