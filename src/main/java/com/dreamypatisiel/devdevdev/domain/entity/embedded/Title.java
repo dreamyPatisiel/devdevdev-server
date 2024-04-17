@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 @EqualsAndHashCode
 @Getter
 public class Title {
-    public static final String INVALID_TITLE_MESSAGE = "제목은 빈 값이거나 %d자 초과일 수 없습니다.";
+    public static final String INVALID_TITLE_MESSAGE = "제목은 빈 값이거나 %d자를 초과 할 수 없습니다.";
     public static final int MAX_TITLE_LENGTH = 150;
     public static final int MIN_TITLE_LENGTH = 1;
 
