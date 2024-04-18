@@ -1,50 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.FIRST_PICK_OPTION;
-import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.SECOND_PICK_OPTION;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.JsonFieldType.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectResult;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -61,13 +21,6 @@ import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionReque
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -78,13 +31,40 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.FIRST_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.web.controller.request.PickOptionName.SECOND_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class PickControllerDocsTest extends SupportControllerDocsTest {
 
@@ -429,7 +409,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다")
+    @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
     void deleteImageAnonymousException() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -758,6 +738,9 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디")
                 ),
                 requestFields(
                         fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
