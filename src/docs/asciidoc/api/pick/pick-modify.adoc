@@ -1,5 +1,5 @@
 [[Pick-Modify]]
-== 픽픽픽 수정 API(PATCH: /devdevdev/api/v1/picks)
+== 픽픽픽 수정 API(PATCH: /devdevdev/api/v1/picks/{pickId})
 * 픽픽픽을 수정한다.
 * 회원만 픽픽픽 수정 할 수 있다.
 * 회원 본인이 작성한 픽픽픽만 수정할 수 있다.
@@ -10,6 +10,8 @@
 include::{snippets}/pick-modify/http-request.adoc[]
 ==== HTTP Request Header Fields
 include::{snippets}/pick-modify/request-headers.adoc[]
+==== HTTP Request Path Parameters Fields
+include::{snippets}/pick-modify/path-parameters.adoc[]
 ==== HTTP Request Fields
 include::{snippets}/pick-modify/request-fields.adoc[]
 

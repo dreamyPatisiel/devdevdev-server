@@ -1,5 +1,5 @@
 [[TechArticleDetail]]
-== 기술블로그 상세 API(GET: /devdevdev/api/v1/articles/{id})
+== 기술블로그 상세 API(GET: /devdevdev/api/v1/articles/{techArticleId})
 * 기술블로그 상세 페이지를 조회한다.
 * 회원/익명 사용자에 따라 API 응답값이 상이하다.
 
