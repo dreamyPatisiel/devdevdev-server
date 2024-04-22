@@ -1,7 +1,10 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
@@ -11,8 +14,11 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.IteratorUtils;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 
@@ -83,7 +90,30 @@ class TechArticleCommonService {
                 .orElse(null);
     }
 
-    protected boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {
+    private boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {
         return searchHits.getSearchHits().size() >= pageable.getPageSize();
+    }
+
+    protected Slice<TechArticle> findBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Member member) {
+        return techArticleRepository.findBookmarkedByCursor(pageable, techArticleId, bookmarkSort, member);
+    }
+
+    protected List<ElasticTechArticle> getElasticTechArticlesByElasticIdsIn(List<TechArticle> techArticles) {
+        List<String> elasticIds = getElasticIdsFromTechArticles(techArticles);
+        Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAllById(elasticIds);
+        List<ElasticTechArticle> myList = StreamSupport.stream(elasticTechArticles.spliterator(), false).toList();
+        return myList;
+    }
+
+    protected static List<String> getElasticIdsFromTechArticles(List<TechArticle> techArticles) {
+        return techArticles.stream()
+                .map(TechArticle::getElasticId)
+                .toList();
+    }
+
+    protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticTechArticlesResponse(List<ElasticTechArticle> elasticTechArticles) {
+        return elasticTechArticles.stream()
+                .map(elasticTechArticle -> new ElasticResponse<>(elasticTechArticle, null))
+                .toList();
     }
 }

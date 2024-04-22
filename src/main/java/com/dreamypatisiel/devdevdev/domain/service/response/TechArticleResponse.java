@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 제외
@@ -124,7 +125,7 @@ public class TechArticleResponse {
     }
 
     private static Float getValidScore(Float score) {
-        return Float.isNaN(score) ? null : score;
+        return Objects.isNull(score) || Float.isNaN(score) ? null : score;
     }
 
     private static String truncateString(String elasticTechArticleContents, int maxLength) {

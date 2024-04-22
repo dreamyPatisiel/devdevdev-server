@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
@@ -17,6 +18,7 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -38,7 +40,8 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     public MemberTechArticleService(TechArticleRepository techArticleRepository,
                                     ElasticTechArticleRepository elasticTechArticleRepository,
-                                    ElasticTechArticleService elasticTechArticleService, BookmarkRepository bookmarkRepository,
+                                    ElasticTechArticleService elasticTechArticleService,
+                                    BookmarkRepository bookmarkRepository,
                                     MemberProvider memberProvider) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
@@ -99,6 +102,31 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         );
 
         return new BookmarkResponse(techArticle.getId(), status);
+    }
+
+    @Override
+    public Slice<TechArticleResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
+        // 회원 조회
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+
+        // 북마크 조회(rds, elasticsearch)
+        Slice<TechArticle> techArticleSlices = findBookmarkedTechArticles(pageable, techArticleId, bookmarkSort, member);
+        List<TechArticle> techArticles = techArticleSlices.getContent();
+
+        List<ElasticTechArticle> elasticTechArticles = getElasticTechArticlesByElasticIdsIn(techArticles);
+        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(elasticTechArticles);
+        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
+
+        // 데이터 가공
+        List<TechArticleResponse> techArticleResponses = techArticles.stream()
+                .map(techArticle -> {
+                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(techArticle.getElasticId());
+                    CompanyResponse companyResponse = createCompanyResponse(techArticle);
+                    return TechArticleResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), true);
+                })
+                .toList();
+
+        return new SliceImpl<>(techArticleResponses, pageable, techArticleSlices.hasNext());
     }
 
     private List<TechArticleResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits, Member member) {
