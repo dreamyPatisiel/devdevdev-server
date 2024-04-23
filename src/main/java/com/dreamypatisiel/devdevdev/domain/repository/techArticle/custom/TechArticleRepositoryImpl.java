@@ -57,6 +57,10 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     private Predicate getCursorCondition(BookmarkSort bookmarkSort, Long techArticleId) {
+        if (ObjectUtils.isEmpty(techArticleId)) {
+            return null;
+        }
+
         // techArticleId로 북마크, 기술블로그 조회
         Bookmark findBookmark = query.selectFrom(bookmark)
                 .where(bookmark.techArticle.id.eq(techArticleId))
