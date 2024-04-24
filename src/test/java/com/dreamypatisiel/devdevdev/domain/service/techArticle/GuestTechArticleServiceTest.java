@@ -86,7 +86,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     }
 
     @Test
-    @DisplayName("익명 사용자가 기술블로그 상세를 조회한다. 이때 북마크 여부는 응답에 포함되지 않는다.")
+    @DisplayName("익명 사용자가 기술블로그 상세를 조회한다. 이때 북마크 값은 false 이다.")
     void getTechArticle() {
         // given
         Long id = FIRST_TECH_ARTICLE_ID;
@@ -104,7 +104,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isInstanceOf(TechArticleResponse.class)
                 .satisfies(article -> {
                     assertThat(article.getId()).isNotNull();
-                    assertThat(article.getIsBookmarked()).isNull();
+                    assertThat(article.getIsBookmarked()).isFalse();
                 });
     }
 

@@ -312,7 +312,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 추천수"),
                         fieldWithPath("data.commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
-                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
+                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                        fieldWithPath("data.score").attributes(authenticationType()).type(JsonFieldType.NULL).description("기술블로그 검색 점수(정확도)")
                 )
         ));
     }
