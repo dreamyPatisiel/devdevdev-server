@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-@JsonInclude(Include.NON_NULL) // null 인 필드는 제외
 public class PicksResponse {
     private final Long id;
     private final String title;

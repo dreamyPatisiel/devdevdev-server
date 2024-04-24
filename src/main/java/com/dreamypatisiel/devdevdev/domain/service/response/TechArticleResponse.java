@@ -2,15 +2,12 @@ package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDate;
-
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 제외
 @RequiredArgsConstructor
 public class TechArticleResponse {
 
@@ -65,6 +62,7 @@ public class TechArticleResponse {
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .isBookmarked(false)
                 .build();
     }
 
@@ -100,6 +98,7 @@ public class TechArticleResponse {
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
+                .isBookmarked(false)
                 .score(getValidScore(score))
                 .build();
     }
