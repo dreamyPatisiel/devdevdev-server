@@ -157,6 +157,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("기술블로그 메인 배열"),
                         fieldWithPath("data.content.[].id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.content.[].elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
+                        fieldWithPath("data.content.[].techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
                         fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.content.[].title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.content.[].contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
@@ -298,6 +299,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
+                        fieldWithPath("data.techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
                         fieldWithPath("data.thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
