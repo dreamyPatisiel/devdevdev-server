@@ -1,7 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import lombok.Builder;
 import lombok.Data;
 

@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import java.util.Map;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 

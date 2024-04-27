@@ -2,14 +2,12 @@ package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class PicksResponse {
+public class PickMainResponse {
     private final Long id;
     private final String title;
     private final long voteTotalCount;
@@ -17,12 +15,12 @@ public class PicksResponse {
     private final long viewTotalCount;
     private final long popularScore;
     private final Boolean isVoted;
-    private final List<PickOptionResponse> pickOptions;
+    private final List<PickMainOptionResponse> pickOptions;
 
     @Builder
-    public PicksResponse(Long id, Title title, Count voteTotalCount, Count commentTotalCount,
-                         Count viewTotalCount, Count popularScore, Boolean isVoted,
-                         List<PickOptionResponse> pickOptions) {
+    public PickMainResponse(Long id, Title title, Count voteTotalCount, Count commentTotalCount,
+                            Count viewTotalCount, Count popularScore, Boolean isVoted,
+                            List<PickMainOptionResponse> pickOptions) {
         this.id = id;
         this.title = title.getTitle();
         this.voteTotalCount = voteTotalCount.getCount();

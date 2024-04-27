@@ -1,14 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick.custom;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
-import static com.dreamypatisiel.devdevdev.domain.entity.QPick.*;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
-import static com.dreamypatisiel.devdevdev.domain.entity.QPickOptionImage.pickOptionImage;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.QPick;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -31,9 +28,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     private final JPQLQueryFactory query;
 
     /**
-     * @Note: ToMany 페치 조인과 페이징은 불가
-     * ToOne은 페치 조인, ToMany는 지연로딩으로...! (where in 절)
-     *  - default_batch_fetch_size: 1000
+     * @Note: ToMany 페치 조인과 페이징은 불가 ToOne은 페치 조인, ToMany는 지연로딩으로...! (where in 절) - default_batch_fetch_size: 1000
      */
     @Override
     public Slice<Pick> findPicksByCursor(Pageable pageable, Long pickId, PickSort pickSort) {
@@ -57,8 +52,20 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     @Override
     public Optional<Pick> findPickAndPickOptionByPickId(Long pickId) {
         Pick findPick = query.selectFrom(pick)
-                .where(pick.id.eq(pickId))
                 .innerJoin(pick.pickOptions, pickOption).fetchJoin()
+                .leftJoin(pick.pickVotes, pickVote)
+                .leftJoin(pick.member, member).fetchJoin()
+                .where(pick.id.eq(pickId))
+                .fetchOne();
+
+        return Optional.ofNullable(findPick);
+    }
+
+    @Override
+    public Optional<Pick> findPickDetailByPickId(Long pickId) {
+        Pick findPick = query.selectFrom(pick)
+                .leftJoin(pick.pickOptions, pickOption).fetchJoin()
+                .where(pick.id.eq(pickId))
                 .fetchOne();
 
         return Optional.ofNullable(findPick);

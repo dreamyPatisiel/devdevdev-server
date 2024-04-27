@@ -1,15 +1,11 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.util.ObjectUtils;
 
 @RequiredArgsConstructor
 public abstract class SocialUserProvider implements OAuth2UserProvider {

@@ -1,16 +1,16 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 public class MemberResponse {
-    private String name;
-    private Email email;
-    private SocialType socialType;
+    private final String name;
+    private final Email email;
+    private final SocialType socialType;
 
     @Builder
     private MemberResponse(String name, Email email, SocialType socialType) {

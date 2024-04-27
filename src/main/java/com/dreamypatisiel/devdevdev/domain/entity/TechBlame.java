@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Reason;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.TechBlameType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
