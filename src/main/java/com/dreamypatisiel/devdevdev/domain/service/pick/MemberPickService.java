@@ -2,6 +2,14 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.FIRST_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.SECOND_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_NAME_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
 import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
@@ -57,18 +65,8 @@ public class MemberPickService implements PickService {
 
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
     public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";
-    public static final String INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
-    public static final String INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE = "이미지가 존재하지 않습니다.";
-    public static final String INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE = "이미지 파일은 최대 %d개 까지 업로드 할 수 있습니다.";
     public static final int MAX_IMAGE_SIZE = 3;
     public static final int START_INCLUSIVE = 0;
-    public static final String INVALID_PICK_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
-    public static final String INVALID_PICK_OPTION_NAME_MESSAGE = "잘못된 형식의 픽픽픽 선택지 입니다.";
-    public static final String INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE = "수정할 수 있는 픽픽픽 게시글이 없습니다.";
-    public static final String INVALID_NOT_FOUND_PICK_MESSAGE = "픽픽픽 게시글이 없습니다.";
-    public static final String INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE = "회원 본인이 작성한 게시글만 수정할 수 있습니다.";
-    public static final String INVALID_NOT_FOUND_PICK_OPTION_MESSAGE = "수정하려는 픽픽픽 선택지가 없습니다.";
-    public static final String INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE = "알맞은 픽픽픽 선택지 이미지가 존재하지 않습니다.";
 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
@@ -144,7 +142,7 @@ public class MemberPickService implements PickService {
     }
 
     /**
-     * @Note: 픽픽픽 픽 옵션에 대한 이미지를 삭제 합니다.<br/><br/>
+     * @Note: 픽픽픽 픽 옵션에 대한 이미지를 삭제 합니다.<br/>
      * @Author: 장세웅
      * @Since: 2024.03.30
      */
@@ -237,8 +235,7 @@ public class MemberPickService implements PickService {
                         pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick, member)));
 
         // 픽픽픽 상세
-        return PickDetailResponse.of(findPick, member, pickDetailOptions);
-
+        return PickDetailResponse.of(findPick, findPick.getMember(), member, pickDetailOptions);
     }
 
     private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick,

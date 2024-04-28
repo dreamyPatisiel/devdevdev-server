@@ -3,10 +3,11 @@ package com.dreamypatisiel.devdevdev.web.controller;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
@@ -103,6 +104,17 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
         PickModifyResponse response = pickService.modifyPick(pickId, modifyPickRequest, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "픽픽픽 상세 조회", description = "픽픽픽 상세 페이지를 조회합니다.")
+    @GetMapping("/picks/{pickId}")
+    public ResponseEntity<BasicResponse<PickDetailResponse>> getPickDetail(@PathVariable Long pickId) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        PickDetailResponse response = pickService.findPickDetail(pickId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

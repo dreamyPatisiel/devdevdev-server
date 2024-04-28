@@ -33,13 +33,25 @@ public class PickDetailResponse {
         this.pickOptions = pickOptions;
     }
 
-    public static PickDetailResponse of(Pick findPick, Member member,
+    public static PickDetailResponse of(Pick findPick, Member pickMember, Member member,
                                         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions) {
         return PickDetailResponse.builder()
                 .isMemberPick(findPick.isEqualMember(member))
                 .pickCreatedAt(findPick.getCreatedAt())
-                .nickname(member.getNickname().getNickname())
-                .username(member.getName())
+                .nickname(pickMember.getNickname().getNickname())
+                .username(pickMember.getName())
+                .pickTitle(findPick.getTitle().getTitle())
+                .pickOptions(pickDetailOptions)
+                .build();
+    }
+
+    public static PickDetailResponse of(Pick findPick, Member pickMember,
+                                        Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions) {
+        return PickDetailResponse.builder()
+                .isMemberPick(false)
+                .pickCreatedAt(findPick.getCreatedAt())
+                .nickname(pickMember.getNickname().getNickname())
+                .username(pickMember.getName())
                 .pickTitle(findPick.getTitle().getTitle())
                 .pickOptions(pickDetailOptions)
                 .build();

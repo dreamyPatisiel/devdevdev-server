@@ -2,9 +2,13 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.FIRST_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.SECOND_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_IMAGE_NAME_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_NAME_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.INVALID_NOT_FOUND_PICK_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.INVALID_PICK_OPTION_NAME_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -175,18 +179,6 @@ class MemberPickServiceTest {
                         tuple(pickOptions.get(0).getId(), pickOptions.get(0).getTitle().getTitle(), 10, true),
                         tuple(pickOptions.get(1).getId(), pickOptions.get(1).getTitle().getTitle(), 90, false)
                 );
-    }
-
-    private PickVote createPickVote(Member member, PickOption pickOption, Pick pick) {
-        PickVote pickVote = PickVote.builder()
-                .member(member)
-                .pickOption(pickOption)
-                .pick(pick)
-                .build();
-
-        pickVote.changePick(pick);
-
-        return pickVote;
     }
 
     @Test
@@ -459,7 +451,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.uploadImages(name, List.of(mockMultipartFile)))
                 .isInstanceOf(PickOptionImageNameException.class)
-                .hasMessage(MemberPickService.INVALID_PICK_IMAGE_NAME_MESSAGE);
+                .hasMessage(INVALID_PICK_IMAGE_NAME_MESSAGE);
     }
 
     @Test
@@ -638,7 +630,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.registerPick(pickRegisterRequest, authentication))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage(MemberPickService.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -764,7 +756,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.modifyPick(1L, modifyPickRequest, authentication))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage(MemberPickService.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE);
+                .hasMessage(INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE);
     }
 
     @Test
@@ -823,7 +815,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.modifyPick(pick.getId(), modifyPickRequest, authentication))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(MemberPickService.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE);
+                .hasMessage(INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE);
     }
 
     @Test
@@ -877,11 +869,11 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.modifyPick(pick.getId(), modifyPickRequest, authentication))
                 .isInstanceOf(PickOptionNameException.class)
-                .hasMessage(MemberPickService.INVALID_PICK_OPTION_NAME_MESSAGE);
+                .hasMessage(INVALID_PICK_OPTION_NAME_MESSAGE);
     }
 
     @Test
-    @DisplayName("회원이 픽픽픽 상세를 조회한다.")
+    @DisplayName("회원이 자신이 작성한 픽픽픽 상세를 조회한다.")
     void findPickDetail() {
         // given
 
@@ -978,7 +970,108 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("픽픽픽 상세 조회할 때 픽픽픽이 없으면 예외가 발생한다.")
+    @DisplayName("회원이 다른 회원이 작성한 픽픽픽 상세를 조회한다.")
+    void findPickDetailByOtherMember() {
+        // given
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽을 작성한 회원 생성
+        SocialMemberDto ohterSocialMemberDto = createSocialDto("howisitgoing", "유소영", "쏘영쏘", password,
+                "merooongg@naver.com", socialType, role);
+        Member otherMember = Member.createMemberBy(ohterSocialMemberDto);
+        memberRepository.save(otherMember);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), otherMember);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption fristPickOption = createPickOption(pick, new Title("픽픽픽 옵션1"), new PickOptionContents("픽픽픽 옵션1 내용"),
+                new Count(1), FIRST_PICK_OPTION);
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2"), new PickOptionContents("픽픽픽 옵션2 내용"),
+                new Count(0), SECOND_PICK_OPTION);
+        pickOptionRepository.saveAll(List.of(fristPickOption, secondPickOption));
+
+        // 픽픽픽 옵션 이미지 생성
+        PickOptionImage fristPickOptionImage = createPickOptionImage("이미지1", "http://iamge1.png", fristPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("이미지2", "http://iamge2.png", secondPickOption);
+        pickOptionImageRepository.saveAll(List.of(fristPickOptionImage, secondPickOptionImage));
+
+        // 픽픽픽 옵션 투표 여부
+        PickVote pickVote = createPickVote(member, fristPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickDetailResponse pickDetail = memberPickService.findPickDetail(pick.getId(), authentication);
+
+        // then
+        assertThat(pickDetail).isNotNull();
+        assertAll(
+                () -> assertThat(pickDetail.getUsername()).isEqualTo(otherMember.getName()),
+                () -> assertThat(pickDetail.getNickname()).isEqualTo(otherMember.getNickname().getNickname()),
+                () -> assertThat(pickDetail.getPickCreatedAt()).isEqualTo(pick.getCreatedAt()),
+                () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
+                () -> assertThat(pickDetail.isMemberPick()).isEqualTo(false)
+        );
+
+        Map<PickOptionType, PickDetailOptionResponse> pickOptions = pickDetail.getPickOptions();
+        PickDetailOptionResponse findFirstPickOptionResponse = pickOptions.get(FIRST_PICK_OPTION);
+        PickDetailOptionResponse findSecondPickOptionResponse = pickOptions.get(SECOND_PICK_OPTION);
+
+        PickOption findFirstPickOption = pickOptionRepository.findById(findFirstPickOptionResponse.getId()).get();
+        assertThat(findFirstPickOptionResponse).isNotNull();
+        assertAll(
+                () -> assertThat(findFirstPickOptionResponse.getId()).isEqualTo(findFirstPickOption.getId()),
+                () -> assertThat(findFirstPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션1"),
+                () -> assertThat(findFirstPickOptionResponse.isPicked()).isEqualTo(true),
+                () -> assertThat(findFirstPickOptionResponse.getPercent()).isEqualTo(100),
+                () -> assertThat(findFirstPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션1 내용"),
+                () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
+        );
+
+        List<PickDetailOptionImage> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
+        PickOptionImage findFristPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
+        assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
+                .extracting("id", "imageUrl")
+                .containsExactly(
+                        tuple(findFristPickOptionImage.getId(), "http://iamge1.png")
+                );
+
+        PickOption findSecondPickOption = pickOptionRepository.findById(findSecondPickOptionResponse.getId()).get();
+        assertThat(findSecondPickOptionResponse).isNotNull();
+        assertAll(
+                () -> assertThat(findSecondPickOptionResponse.getId()).isEqualTo(findSecondPickOption.getId()),
+                () -> assertThat(findSecondPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션2"),
+                () -> assertThat(findSecondPickOptionResponse.isPicked()).isEqualTo(false),
+                () -> assertThat(findSecondPickOptionResponse.getPercent()).isEqualTo(0),
+                () -> assertThat(findSecondPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션2 내용"),
+                () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
+        );
+
+        List<PickDetailOptionImage> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
+        PickOptionImage findSecondpickOptionImage = secondPickOption.getPickOptionImages().get(0);
+        assertThat(findSecondPickOptionPickOptionImagesResponse).hasSize(1)
+                .extracting("id", "imageUrl")
+                .containsExactly(
+                        tuple(findSecondpickOptionImage.getId(), "http://iamge2.png")
+                );
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 상세 조회할 때 픽픽픽이 없으면 예외가 발생한다.")
     void findPickDetailNotFoundPickDetail() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -1175,5 +1268,17 @@ class MemberPickServiceTest {
                 .title(title)
                 .contents(pickOptionContents)
                 .build();
+    }
+
+    private PickVote createPickVote(Member member, PickOption pickOption, Pick pick) {
+        PickVote pickVote = PickVote.builder()
+                .member(member)
+                .pickOption(pickOption)
+                .pick(pick)
+                .build();
+
+        pickVote.changePick(pick);
+
+        return pickVote;
     }
 }
