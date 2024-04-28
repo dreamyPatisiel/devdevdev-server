@@ -157,6 +157,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("기술블로그 메인 배열"),
                         fieldWithPath("data.content.[].id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.content.[].elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
+                        fieldWithPath("data.content.[].techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
                         fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.content.[].title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.content.[].contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
@@ -275,7 +276,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -290,7 +291,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
-                        parameterWithName("id").description("기술블로그 아이디")
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
@@ -298,6 +299,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
+                        fieldWithPath("data.techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
                         fieldWithPath("data.thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
@@ -312,7 +314,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 추천수"),
                         fieldWithPath("data.commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
-                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
+                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                        fieldWithPath("data.score").attributes(authenticationType()).type(JsonFieldType.NULL).description("기술블로그 검색 점수(정확도)")
                 )
         ));
     }
@@ -329,7 +332,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         member.updateRefreshToken(refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -360,7 +363,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         Long id = savedTechArticle.getId()+1;
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -387,7 +390,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         Long id = savedTechArticle.getId();
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -414,7 +417,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         Long id = savedTechArticle.getId();
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -443,7 +446,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // when // then
-        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/bookmark", id)
                         .queryParam("status", String.valueOf(true))
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -461,7 +464,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("status").description("북마크 상태")
                 ),
                 pathParameters(
-                        parameterWithName("id").description("기술블로그 아이디")
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

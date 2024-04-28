@@ -2,16 +2,14 @@ package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 제외
 @RequiredArgsConstructor
 public class TechArticleResponse {
 
@@ -20,6 +18,7 @@ public class TechArticleResponse {
     public Long id;
     public String elasticId;
     public String thumbnailUrl;
+    public String techArticleUrl;
     public String title;
     public String contents;
     public CompanyResponse company;
@@ -33,12 +32,13 @@ public class TechArticleResponse {
     public Float score;
 
     @Builder
-    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String contents,
+    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String techArticleUrl, String title, String contents,
                                 CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
                                 Long recommendTotalCount, Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
+        this.techArticleUrl = techArticleUrl;
         this.title = title;
         this.contents = contents;
         this.company = company;
@@ -61,11 +61,13 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .isBookmarked(false)
                 .build();
     }
 
@@ -78,6 +80,7 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
@@ -96,11 +99,13 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
                 .author(elasticTechArticle.getAuthor())
+                .isBookmarked(false)
                 .score(getValidScore(score))
                 .build();
     }
@@ -114,6 +119,7 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .company(companyResponse)

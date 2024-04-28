@@ -77,6 +77,7 @@ public class GuestPickService implements PickService {
                 .viewTotalCount(pick.getViewTotalCount())
                 .popularScore(pick.getPopularScore())
                 .pickOptions(mapToPickOptionsResponse(pick))
+                .isVoted(false)
                 .build();
     }
 
@@ -91,6 +92,7 @@ public class GuestPickService implements PickService {
                 .id(pickOption.getId())
                 .title(pickOption.getTitle())
                 .percent(PickOption.calculatePercentBy(pick, pickOption))
+                .isPicked(false)
                 .build();
     }
 }

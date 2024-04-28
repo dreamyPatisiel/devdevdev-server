@@ -1,13 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL) // null 인 필드는 제외
 @RequiredArgsConstructor
 public class CompanyResponse {
 

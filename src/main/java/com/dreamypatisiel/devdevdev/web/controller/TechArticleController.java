@@ -42,24 +42,24 @@ public class TechArticleController {
     }
 
     @Operation(summary = "기술블로그 상세")
-    @GetMapping("/articles/{id}")
-    public ResponseEntity<BasicResponse<TechArticleResponse>> getTechArticle (@PathVariable Long id) {
+    @GetMapping("/articles/{techArticleId}")
+    public ResponseEntity<BasicResponse<TechArticleResponse>> getTechArticle (@PathVariable Long techArticleId) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        TechArticleResponse response = techArticleService.getTechArticle(id, authentication);
+        TechArticleResponse response = techArticleService.getTechArticle(techArticleId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
     @Operation(summary = "기술블로그 북마크")
-    @PostMapping("/articles/{id}/bookmark")
-    public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark (@PathVariable Long id,
+    @PostMapping("/articles/{techArticleId}/bookmark")
+    public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark (@PathVariable Long techArticleId,
                                                                            @RequestParam boolean status) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        BookmarkResponse response = techArticleService.updateBookmark(id, status, authentication);
+        BookmarkResponse response = techArticleService.updateBookmark(techArticleId, status, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

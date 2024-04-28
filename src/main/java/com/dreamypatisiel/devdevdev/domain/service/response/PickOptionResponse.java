@@ -1,14 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
-@JsonInclude(Include.NON_NULL) // null 인 필드는 제외
 public class PickOptionResponse {
     private final Long id;
     private final String title;
