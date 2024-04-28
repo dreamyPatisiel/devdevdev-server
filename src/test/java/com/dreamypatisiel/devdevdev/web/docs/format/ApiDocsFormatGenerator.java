@@ -18,12 +18,13 @@ public interface ApiDocsFormatGenerator {
     }
 
     static Attributes.Attribute pickOptionImageNameType() {
-        return key(FORMAT).value(MemberPickService.FIRST_PICK_OPTION_IMAGE +" | "+ MemberPickService.SECOND_PICK_OPTION_IMAGE);
+        return key(FORMAT).value(
+                MemberPickService.FIRST_PICK_OPTION_IMAGE + " | " + MemberPickService.SECOND_PICK_OPTION_IMAGE);
     }
 
     static Attributes.Attribute pickSortType() {
         String pickSortType = Arrays.stream(PickSort.values())
-                .map(pickSort -> pickSort.name()+"("+pickSort.getDescription()+")")
+                .map(pickSort -> pickSort.name() + "(" + pickSort.getDescription() + ")")
                 .collect(Collectors.joining(", "));
 
         return key(FORMAT).value(pickSortType);
@@ -31,7 +32,7 @@ public interface ApiDocsFormatGenerator {
 
     static Attributes.Attribute techArticleSortType() {
         String techArticleSortType = Arrays.stream(TechArticleSort.values())
-                .map(techArticleSort -> techArticleSort.name()+"("+techArticleSort.getDescription()+")")
+                .map(techArticleSort -> techArticleSort.name() + "(" + techArticleSort.getDescription() + ")")
                 .collect(Collectors.joining(", "));
 
         return key(FORMAT).value(techArticleSortType);

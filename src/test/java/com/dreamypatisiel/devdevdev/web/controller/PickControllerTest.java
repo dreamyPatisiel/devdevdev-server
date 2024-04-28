@@ -1,9 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
-import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.FIRST_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.SECOND_PICK_OPTION;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
 import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
 import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -28,11 +28,11 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
@@ -111,12 +111,12 @@ class PickControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/picks")
-                .queryParam("size", String.valueOf(pageable.getPageSize()))
-                .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
-                .queryParam("pickSort", PickSort.LATEST.name())
-                .contentType(MediaType.APPLICATION_JSON)
-                .characterEncoding(StandardCharsets.UTF_8)
-                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
+                        .queryParam("pickSort", PickSort.LATEST.name())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
@@ -239,7 +239,8 @@ class PickControllerTest extends SupportControllerTest {
         PutObjectResult putObjectResult = mock(PutObjectResult.class);
 
         when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
-        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(
+                new URL("http", "localhost", 8080, "/xxx.png"));
 
         // then
         mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
@@ -273,13 +274,15 @@ class PickControllerTest extends SupportControllerTest {
         String key = "/pick/pickOption/image/xxx.png";
 
         ObjectMetadata objectMetadata = createObjectMetadataByMultipartFile(upper10MbMockMultipartFile);
-        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, upper10MbMockMultipartFile, objectMetadata);
+        PutObjectRequest putObjectRequest = createPutObjectRequest(bucket, key, upper10MbMockMultipartFile,
+                objectMetadata);
 
         // when
         PutObjectResult putObjectResult = mock(PutObjectResult.class);
 
         when(amazonS3Client.putObject(eq(putObjectRequest))).thenReturn(putObjectResult);
-        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(new URL("http", "localhost", 8080, "/xxx.png"));
+        when(amazonS3Client.getUrl(anyString(), anyString())).thenReturn(
+                new URL("http", "localhost", 8080, "/xxx.png"));
 
         // then
         mockMvc.perform(multipart(HttpMethod.POST, "/devdevdev/api/v1/picks/image")
@@ -326,9 +329,9 @@ class PickControllerTest extends SupportControllerTest {
         // then
         mockMvc.perform(delete("/devdevdev/api/v1/picks/image/{pickOptionImageId}"
                         , pickOptionImage.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .characterEncoding(StandardCharsets.UTF_8)
-                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(SUCCESS.name()));
@@ -336,7 +339,7 @@ class PickControllerTest extends SupportControllerTest {
 
     @Test
     @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
-    void deleteImageAnonymousException() throws Exception{
+    void deleteImageAnonymousException() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -389,7 +392,8 @@ class PickControllerTest extends SupportControllerTest {
         String imageKey = "/pickpickpick/xxx.jpg";
 
         PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
-        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl,
+                imageKey);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         RegisterPickOptionRequest firstRegisterPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
@@ -398,8 +402,8 @@ class PickControllerTest extends SupportControllerTest {
                 List.of(secondPickOptionImage.getId()));
 
         Map<String, RegisterPickOptionRequest> pickOptions = new HashMap<>();
-        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstRegisterPickOptionRequest);
-        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondRegisterPickOptionRequest);
+        pickOptions.put(FIRST_PICK_OPTION.getLabel(), firstRegisterPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getLabel(), secondRegisterPickOptionRequest);
 
         RegisterPickRequest registerPickRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
 
@@ -424,7 +428,8 @@ class PickControllerTest extends SupportControllerTest {
         String imageKey = "/pickpickpick/xxx.jpg";
 
         PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
-        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl,
+                imageKey);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         RegisterPickOptionRequest firstRegisterPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
@@ -433,8 +438,8 @@ class PickControllerTest extends SupportControllerTest {
                 List.of(secondPickOptionImage.getId()));
 
         Map<String, RegisterPickOptionRequest> pickOptions = new HashMap<>();
-        pickOptions.put(FIRST_PICK_OPTION.getDescription(), firstRegisterPickOptionRequest);
-        pickOptions.put(SECOND_PICK_OPTION.getDescription(), secondRegisterPickOptionRequest);
+        pickOptions.put(FIRST_PICK_OPTION.getLabel(), firstRegisterPickOptionRequest);
+        pickOptions.put(SECOND_PICK_OPTION.getLabel(), secondRegisterPickOptionRequest);
 
         RegisterPickRequest registerPickRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
 
@@ -488,8 +493,8 @@ class PickControllerTest extends SupportControllerTest {
                 "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
 
         Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
-        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getLabel(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getLabel(), modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -545,8 +550,8 @@ class PickControllerTest extends SupportControllerTest {
                 "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
 
         Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
-        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getLabel(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getLabel(), modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest(pickTitle, modifyPickOptionRequests);
 
@@ -597,14 +602,16 @@ class PickControllerTest extends SupportControllerTest {
         pickOptionImageRepository.saveAll(List.of(newPickOption1Image1, newPickOption2Image1));
         // == 픽픽픽 새로운 사진 업로드 환경 == //
 
-        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(), pickOptionTitle,
+        ModifyPickOptionRequest modifyPickOptionRequest1 = new ModifyPickOptionRequest(pickOption1.getId(),
+                pickOptionTitle,
                 "픽옵션1콘텐츠수정", List.of(newPickOption1Image1.getId()));
-        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), pickOptionTitle,
+        ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(),
+                pickOptionTitle,
                 "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
 
         Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
-        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getLabel(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getLabel(), modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -660,10 +667,9 @@ class PickControllerTest extends SupportControllerTest {
         ModifyPickOptionRequest modifyPickOptionRequest2 = new ModifyPickOptionRequest(pickOption2.getId(), "픽옵션2제목수정",
                 pickOptionContent, List.of(newPickOption2Image1.getId()));
 
-
         Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
-        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getLabel(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getLabel(), modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -719,8 +725,8 @@ class PickControllerTest extends SupportControllerTest {
                 "픽옵션2콘텐츠수정", List.of(newPickOption2Image1.getId()));
 
         Map<String, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
-        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getDescription(), modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getDescription(), modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(FIRST_PICK_OPTION.getLabel(), modifyPickOptionRequest1);
+        modifyPickOptionRequests.put(SECOND_PICK_OPTION.getLabel(), modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -772,7 +778,8 @@ class PickControllerTest extends SupportControllerTest {
     }
 
 
-    private ModifyPickRequest createModifyPickRequest(String pickTitle, Map<String, ModifyPickOptionRequest> modifyPickOptionRequests) {
+    private ModifyPickRequest createModifyPickRequest(String pickTitle,
+                                                      Map<String, ModifyPickOptionRequest> modifyPickOptionRequests) {
         return ModifyPickRequest.builder()
                 .pickTitle(pickTitle)
                 .pickOptions(modifyPickOptionRequests)
@@ -787,14 +794,16 @@ class PickControllerTest extends SupportControllerTest {
                 .build();
     }
 
-    private RegisterPickRequest createPickRegisterRequest(String pickTitle, Map<String, RegisterPickOptionRequest> pickOptions) {
+    private RegisterPickRequest createPickRegisterRequest(String pickTitle,
+                                                          Map<String, RegisterPickOptionRequest> pickOptions) {
         return RegisterPickRequest.builder()
                 .pickTitle(pickTitle)
                 .pickOptions(pickOptions)
                 .build();
     }
 
-    private RegisterPickOptionRequest createPickOptionRequest(String pickOptionTitle, String pickOptionContent, List<Long> pickOptionImageIds) {
+    private RegisterPickOptionRequest createPickOptionRequest(String pickOptionTitle, String pickOptionContent,
+                                                              List<Long> pickOptionImageIds) {
         return RegisterPickOptionRequest.builder()
                 .pickOptionTitle(pickOptionTitle)
                 .pickOptionContent(pickOptionContent)
@@ -832,7 +841,8 @@ class PickControllerTest extends SupportControllerTest {
         );
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

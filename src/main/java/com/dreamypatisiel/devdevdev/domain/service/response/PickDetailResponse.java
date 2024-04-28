@@ -38,8 +38,8 @@ public class PickDetailResponse {
         return PickDetailResponse.builder()
                 .isMemberPick(findPick.isEqualMember(member))
                 .pickCreatedAt(findPick.getCreatedAt())
-                .nickname(member.getName())
-                .username(member.getNickname().toString())
+                .nickname(member.getNickname().getNickname())
+                .username(member.getName())
                 .pickTitle(findPick.getTitle().getTitle())
                 .pickOptions(pickDetailOptions)
                 .build();

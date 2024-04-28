@@ -219,6 +219,9 @@ public class MemberPickService implements PickService {
         return new PickModifyResponse(findPick.getId());
     }
 
+    /**
+     * 픽픽픽 상세 조회
+     */
     @Override
     public PickDetailResponse findPickDetail(Long pickId, Authentication authentication) {
         // 회원 조회
@@ -226,7 +229,7 @@ public class MemberPickService implements PickService {
 
         // 픽픽픽 상세 조회(pickOption 페치조인)
         Pick findPick = pickRepository.findPickDetailByPickId(pickId)
-                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE));
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
