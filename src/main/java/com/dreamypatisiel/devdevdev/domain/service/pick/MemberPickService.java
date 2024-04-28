@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.FIRST_PICK_OPTION;
-import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.SECOND_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
@@ -9,7 +7,6 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_NAME_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
 import com.dreamypatisiel.devdevdev.aws.s3.S3ImageObject;
@@ -37,7 +34,6 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageRespo
 import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
-import com.dreamypatisiel.devdevdev.exception.PickOptionNameException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
@@ -64,7 +60,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberPickService implements PickService {
 
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
-    public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";
+    public static final String SECOND_PICK_OPTION_IMAGE = "firstPickOptionImage";
     public static final int MAX_IMAGE_SIZE = 3;
     public static final int START_INCLUSIVE = 0;
 
@@ -178,9 +174,9 @@ public class MemberPickService implements PickService {
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성 및 저장
-        Map<String, RegisterPickOptionRequest> pickOptions = registerPickRequest.getPickOptions();
-        savePickOptionWithPickOptionImages(FIRST_PICK_OPTION, pick, pickOptions);
-        savePickOptionWithPickOptionImages(SECOND_PICK_OPTION, pick, pickOptions);
+        Map<PickOptionType, RegisterPickOptionRequest> pickOptions = registerPickRequest.getPickOptions();
+        savePickOptionWithPickOptionImages(pick, pickOptions);
+        //savePickOptionWithPickOptionImages(pick, pickOptions);
 
         return new PickRegisterResponse(pick.getId());
     }
@@ -210,9 +206,10 @@ public class MemberPickService implements PickService {
 
         // 픽픽픽 옵션1,2 수정 / 픽픽픽 옵션 관련 연관관계 설정
         List<PickOption> pickOptions = findPick.getPickOptions();
-        Map<String, ModifyPickOptionRequest> modifyPickRequestPickOptions = modifyPickRequest.getPickOptions();
-        changePickOptionAndPickOptionImages(FIRST_PICK_OPTION.getLabel(), modifyPickRequestPickOptions, pickOptions);
-        changePickOptionAndPickOptionImages(SECOND_PICK_OPTION.getLabel(), modifyPickRequestPickOptions, pickOptions);
+        Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions = modifyPickRequest.getPickOptions();
+
+        changePickOptionAndPickOptionImages(modifyPickRequestPickOptions, pickOptions);
+        //changePickOptionAndPickOptionImages(modifyPickRequestPickOptions, pickOptions);
 
         return new PickModifyResponse(findPick.getId());
     }
@@ -264,55 +261,74 @@ public class MemberPickService implements PickService {
                 .build();
     }
 
-    private void changePickOptionAndPickOptionImages(String pickOptionName,
-                                                     Map<String, ModifyPickOptionRequest> modifyPickRequestPickOptions,
-                                                     List<PickOption> pickOptions) {
+    private void changePickOptionAndPickOptionImages(
+            Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions, List<PickOption> pickOptions) {
 
-        // firstPickOption 또는 secondPickOption key 값이 아니면
-        if (!modifyPickRequestPickOptions.containsKey(pickOptionName)) {
-            throw new PickOptionNameException(INVALID_PICK_OPTION_NAME_MESSAGE);
-        }
+        modifyPickRequestPickOptions.forEach((key, value) -> {
+            List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(key).getPickOptionImageIds();
+            List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
+            pickOptions.stream()
+                    .filter(pickOption -> pickOption.getId().equals(value.getPickOptionId()))
+                    .forEach(pickOption -> {
+                        pickOption.changePickOption(value);
+                        pickOption.changePickOptionImages(pickOptionImages);
+                    });
+        });
 
-        List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(pickOptionName)
-                .getPickOptionImageIds();
-        List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
-
-        // 픽픽픽 옵션 수정, 픽픽픽 옵션과 픽픽픽 옵션 이미지 연관관계 설정
-        ModifyPickOptionRequest pickOptionsRequest = modifyPickRequestPickOptions.get(pickOptionName);
-        pickOptions.stream()
-                .filter(pickOption -> pickOption.getId().equals(pickOptionsRequest.getPickOptionId()))
-                .forEach(pickOption -> {
-                    pickOption.changePickOption(pickOptionsRequest);
-                    pickOption.changePickOptionImages(pickOptionImages);
-                });
+//        // firstPickOption 또는 firstPickOption key 값이 아니면
+//        if (!modifyPickRequestPickOptions.containsKey(pickOptionName)) {
+//            throw new PickOptionNameException(INVALID_PICK_OPTION_NAME_MESSAGE);
+//        }
+//
+//        List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(pickOptionName)
+//                .getPickOptionImageIds();
+//        List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
+//
+//        // 픽픽픽 옵션 수정, 픽픽픽 옵션과 픽픽픽 옵션 이미지 연관관계 설정
+//        ModifyPickOptionRequest pickOptionsRequest = modifyPickRequestPickOptions.get(pickOptionName);
+//        pickOptions.stream()
+//                .filter(pickOption -> pickOption.getId().equals(pickOptionsRequest.getPickOptionId()))
+//                .forEach(pickOption -> {
+//                    pickOption.changePickOption(pickOptionsRequest);
+//                    pickOption.changePickOptionImages(pickOptionImages);
+//                });
     }
 
     // 픽옵션 이미지가 없을 수도 있다.
-    private void savePickOptionWithPickOptionImages(PickOptionType pickOptionType, Pick pick,
-                                                    Map<String, RegisterPickOptionRequest> registerPickOptionsRequest) {
+    private void savePickOptionWithPickOptionImages(Pick pick,
+                                                    Map<PickOptionType, RegisterPickOptionRequest> registerPickOptionsRequest) {
 
-        // firstPickOption 또는 secondPickOption key 값이 아니면
-        String pickOptionNameDescription = pickOptionType.getLabel();
-        if (!registerPickOptionsRequest.containsKey(pickOptionNameDescription)) {
-            throw new PickOptionNameException(INVALID_PICK_OPTION_NAME_MESSAGE);
-        }
+        registerPickOptionsRequest.forEach((key, value) -> {
+            RegisterPickOptionRequest registerPickOptionRequest = registerPickOptionsRequest.get(key);
+            List<Long> pickOptionImageIds = registerPickOptionRequest.getPickOptionImageIds();
 
-        // 픽픽픽 이미지 조회에 필요한 픽픽픽 옵션 이미지 아이디 목록 꺼내기
-        RegisterPickOptionRequest registerPickOptionRequest = registerPickOptionsRequest.get(pickOptionNameDescription);
-        List<Long> pickOptionImageIds = registerPickOptionRequest.getPickOptionImageIds();
+            List<PickOptionImage> findPickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
 
-        // 픽픽픽 이미지 조회
-        List<PickOptionImage> findPickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
+            String pickOptionTitle = registerPickOptionRequest.getPickOptionTitle();
+            String pickOptionContent = registerPickOptionRequest.getPickOptionContent();
+            PickOption pickOption = PickOption.create(new Title(pickOptionTitle),
+                    new PickOptionContents(pickOptionContent), key,
+                    findPickOptionImages, pick);
 
-        // 픽픽픽 옵션 생성
-        String pickOptionTitle = registerPickOptionRequest.getPickOptionTitle();
-        String pickOptionContent = registerPickOptionRequest.getPickOptionContent();
-        PickOption pickOption = PickOption.create(new Title(pickOptionTitle), new PickOptionContents(pickOptionContent),
-                pickOptionType,
-                findPickOptionImages, pick);
+            pickOptionRepository.save(pickOption);
+        });
 
-        // 픽픽픽 옵션 저장
-        pickOptionRepository.save(pickOption);
+//        // 픽픽픽 이미지 조회에 필요한 픽픽픽 옵션 이미지 아이디 목록 꺼내기
+//        RegisterPickOptionRequest registerPickOptionRequest = registerPickOptionsRequest.get(pickOptionNameDescription);
+//        List<Long> pickOptionImageIds = registerPickOptionRequest.getPickOptionImageIds();
+//
+//        // 픽픽픽 이미지 조회
+//        List<PickOptionImage> findPickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
+//
+//        // 픽픽픽 옵션 생성
+//        String pickOptionTitle = registerPickOptionRequest.getPickOptionTitle();
+//        String pickOptionContent = registerPickOptionRequest.getPickOptionContent();
+//        PickOption pickOption = PickOption.create(new Title(pickOptionTitle), new PickOptionContents(pickOptionContent),
+//                pickOptionType,
+//                findPickOptionImages, pick);
+//
+//        // 픽픽픽 옵션 저장
+//        pickOptionRepository.save(pickOption);
     }
 
     // 픽 옵션 이미지 아이디가 없으면 select 할 필요가 없음

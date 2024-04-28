@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.FIRST_PICK_OPTION;
-import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.SECOND_PICK_OPTION;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -426,19 +424,19 @@ class GuestPickServiceTest {
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
-        PickOption fristPickOption = createPickOption(pick, new Title("픽픽픽 옵션1"), new PickOptionContents("픽픽픽 옵션1 내용"),
-                new Count(1), FIRST_PICK_OPTION);
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1"), new PickOptionContents("픽픽픽 옵션1 내용"),
+                new Count(1), PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2"), new PickOptionContents("픽픽픽 옵션2 내용"),
-                new Count(0), SECOND_PICK_OPTION);
-        pickOptionRepository.saveAll(List.of(fristPickOption, secondPickOption));
+                new Count(0), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 옵션 이미지 생성
-        PickOptionImage fristPickOptionImage = createPickOptionImage("이미지1", "http://iamge1.png", fristPickOption);
+        PickOptionImage firstPickOptionImage = createPickOptionImage("이미지1", "http://iamge1.png", firstPickOption);
         PickOptionImage secondPickOptionImage = createPickOptionImage("이미지2", "http://iamge2.png", secondPickOption);
-        pickOptionImageRepository.saveAll(List.of(fristPickOptionImage, secondPickOptionImage));
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 옵션 투표 여부
-        PickVote pickVote = createPickVote(member, fristPickOption, pick);
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -454,49 +452,49 @@ class GuestPickServiceTest {
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(member.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickCreatedAt()).isEqualTo(pick.getCreatedAt()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
-                () -> assertThat(pickDetail.isMemberPick()).isEqualTo(false)
+                () -> assertThat(pickDetail.getIsMemberPick()).isEqualTo(false)
         );
 
         Map<PickOptionType, PickDetailOptionResponse> pickOptions = pickDetail.getPickOptions();
-        PickDetailOptionResponse findFirstPickOptionResponse = pickOptions.get(FIRST_PICK_OPTION);
-        PickDetailOptionResponse findSecondPickOptionResponse = pickOptions.get(SECOND_PICK_OPTION);
+        PickDetailOptionResponse findFirstPickOptionResponse = pickOptions.get(PickOptionType.firstPickOption);
+        PickDetailOptionResponse findSecondPickOptionResponse = pickOptions.get(PickOptionType.secondPickOption);
 
         PickOption findFirstPickOption = pickOptionRepository.findById(findFirstPickOptionResponse.getId()).get();
         assertThat(findFirstPickOptionResponse).isNotNull();
         assertAll(
                 () -> assertThat(findFirstPickOptionResponse.getId()).isEqualTo(findFirstPickOption.getId()),
                 () -> assertThat(findFirstPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션1"),
-                () -> assertThat(findFirstPickOptionResponse.isPicked()).isEqualTo(false),
+                () -> assertThat(findFirstPickOptionResponse.getIsPicked()).isEqualTo(false),
                 () -> assertThat(findFirstPickOptionResponse.getPercent()).isEqualTo(100),
                 () -> assertThat(findFirstPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션1 내용"),
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
         );
 
         List<PickDetailOptionImage> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
-        PickOptionImage findFristPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
+        PickOptionImage findFirstPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
         assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
                 .containsExactly(
-                        tuple(findFristPickOptionImage.getId(), "http://iamge1.png")
+                        tuple(findFirstPickOptionImage.getId(), "http://iamge1.png")
                 );
 
-        PickOption findSecondPickOption = pickOptionRepository.findById(findSecondPickOptionResponse.getId()).get();
+        PickOption findfirstPickOption = pickOptionRepository.findById(findSecondPickOptionResponse.getId()).get();
         assertThat(findSecondPickOptionResponse).isNotNull();
         assertAll(
-                () -> assertThat(findSecondPickOptionResponse.getId()).isEqualTo(findSecondPickOption.getId()),
+                () -> assertThat(findSecondPickOptionResponse.getId()).isEqualTo(findfirstPickOption.getId()),
                 () -> assertThat(findSecondPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션2"),
-                () -> assertThat(findSecondPickOptionResponse.isPicked()).isEqualTo(false),
+                () -> assertThat(findSecondPickOptionResponse.getIsPicked()).isEqualTo(false),
                 () -> assertThat(findSecondPickOptionResponse.getPercent()).isEqualTo(0),
                 () -> assertThat(findSecondPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션2 내용"),
                 () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
         );
 
-        List<PickDetailOptionImage> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
-        PickOptionImage findSecondpickOptionImage = secondPickOption.getPickOptionImages().get(0);
-        assertThat(findSecondPickOptionPickOptionImagesResponse).hasSize(1)
+        List<PickDetailOptionImage> findfirstPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
+        PickOptionImage findsecondPickOptionImage = secondPickOption.getPickOptionImages().get(0);
+        assertThat(findfirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
                 .containsExactly(
-                        tuple(findSecondpickOptionImage.getId(), "http://iamge2.png")
+                        tuple(findsecondPickOptionImage.getId(), "http://iamge2.png")
                 );
     }
 

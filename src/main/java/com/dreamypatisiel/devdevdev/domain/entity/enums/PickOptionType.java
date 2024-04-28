@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum PickOptionType {
-    FIRST_PICK_OPTION("firstPickOption"),
-    SECOND_PICK_OPTION("secondPickOption");
+    firstPickOption("FIRST_PICK_OPTION"),
+    secondPickOption("SECOND_PICK_OPTION");
 
     private final String label;
 }

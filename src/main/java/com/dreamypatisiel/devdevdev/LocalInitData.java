@@ -248,7 +248,7 @@ public class LocalInitData {
         for (int number = 1; number <= DATA_MAX_COUNT * 2; number++) {
             List<PickOptionImage> pickOptionImages = createPickOptionImage();
             PickOption pickOption = createPickOption(new Title("픽옵션" + number), new PickOptionContents("픽콘텐츠" + number),
-                    number % 2 == 1 ? PickOptionType.FIRST_PICK_OPTION : PickOptionType.SECOND_PICK_OPTION,
+                    number % 2 == 1 ? PickOptionType.firstPickOption : PickOptionType.firstPickOption,
                     pickOptionImages);
 
             pickOption.changePickVoteCount(new Count(creatRandomNumber()));

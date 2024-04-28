@@ -19,7 +19,7 @@ public class PickDetailResponse {
     private final LocalDateTime pickCreatedAt;
 
     private final String pickTitle;
-    private final boolean isMemberPick;
+    private final Boolean isMemberPick;
     private final Map<PickOptionType, PickDetailOptionResponse> pickOptions;
 
     @Builder
