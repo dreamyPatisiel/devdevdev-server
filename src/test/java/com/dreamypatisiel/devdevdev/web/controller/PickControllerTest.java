@@ -786,6 +786,7 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.userId").isString())
                 .andExpect(jsonPath("$.data.nickname").isString())
                 .andExpect(jsonPath("$.data.pickCreatedAt").isString())
                 .andExpect(jsonPath("$.data.pickTitle").isString())

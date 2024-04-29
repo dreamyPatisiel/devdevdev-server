@@ -834,7 +834,7 @@ class MemberPickServiceTest {
         // then
         assertThat(pickDetail).isNotNull();
         assertAll(
-                () -> assertThat(pickDetail.getUsername()).isEqualTo(member.getName()),
+                () -> assertThat(pickDetail.getUserId()).isEqualTo(member.getName()),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(member.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickCreatedAt()).isEqualTo(pick.getCreatedAt()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
@@ -935,7 +935,7 @@ class MemberPickServiceTest {
         // then
         assertThat(pickDetail).isNotNull();
         assertAll(
-                () -> assertThat(pickDetail.getUsername()).isEqualTo(otherMember.getName()),
+                () -> assertThat(pickDetail.getUserId()).isEqualTo(otherMember.getName()),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(otherMember.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickCreatedAt()).isEqualTo(pick.getCreatedAt()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),

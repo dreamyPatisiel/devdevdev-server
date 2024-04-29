@@ -37,4 +37,8 @@ public interface ApiDocsFormatGenerator {
 
         return key(FORMAT).value(techArticleSortType);
     }
+
+    static Attributes.Attribute yearMonthDateTimeType() {
+        return key(FORMAT).value("yyyy-MM-dd HH:mm:ss");
+    }
 }

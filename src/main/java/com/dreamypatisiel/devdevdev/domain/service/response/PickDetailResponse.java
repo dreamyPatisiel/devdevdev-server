@@ -12,7 +12,7 @@ import lombok.Data;
 
 @Data
 public class PickDetailResponse {
-    private final String username;
+    private final String userId;
     private final String nickname;
 
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
@@ -23,9 +23,9 @@ public class PickDetailResponse {
     private final Map<PickOptionType, PickDetailOptionResponse> pickOptions;
 
     @Builder
-    public PickDetailResponse(String username, String nickname, LocalDateTime pickCreatedAt, String pickTitle,
+    public PickDetailResponse(String userId, String nickname, LocalDateTime pickCreatedAt, String pickTitle,
                               boolean isMemberPick, Map<PickOptionType, PickDetailOptionResponse> pickOptions) {
-        this.username = username;
+        this.userId = userId;
         this.nickname = nickname;
         this.pickCreatedAt = pickCreatedAt;
         this.pickTitle = pickTitle;
@@ -39,7 +39,7 @@ public class PickDetailResponse {
                 .isMemberPick(findPick.isEqualMember(member))
                 .pickCreatedAt(findPick.getCreatedAt())
                 .nickname(pickMember.getNickname().getNickname())
-                .username(pickMember.getName())
+                .userId(pickMember.getName())
                 .pickTitle(findPick.getTitle().getTitle())
                 .pickOptions(pickDetailOptions)
                 .build();
@@ -51,7 +51,7 @@ public class PickDetailResponse {
                 .isMemberPick(false)
                 .pickCreatedAt(findPick.getCreatedAt())
                 .nickname(pickMember.getNickname().getNickname())
-                .username(pickMember.getName())
+                .userId(pickMember.getName())
                 .pickTitle(findPick.getTitle().getTitle())
                 .pickOptions(pickDetailOptions)
                 .build();
