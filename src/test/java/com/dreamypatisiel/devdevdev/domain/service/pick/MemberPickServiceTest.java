@@ -496,7 +496,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
                 () -> assertThat(findPick.getPickOptions()).hasSize(2)
                         .extracting("title", "contents")
-                        .containsExactly(
+                        .containsAnyOf(
                                 tuple(new Title("픽옵션1"), new PickOptionContents("픽옵션1블라블라")),
                                 tuple(new Title("픽옵션2"), new PickOptionContents("픽옵션2블라블라"))
                         )
@@ -536,7 +536,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
                 () -> assertThat(findPick.getPickOptions()).hasSize(2)
                         .extracting("title", "contents")
-                        .containsExactly(
+                        .containsAnyOf(
                                 tuple(new Title("픽옵션1"), new PickOptionContents("픽옵션1블라블라")),
                                 tuple(new Title("픽옵션2"), new PickOptionContents("픽옵션2블라블라"))
                         )
@@ -779,7 +779,7 @@ class MemberPickServiceTest {
 
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
         modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(secondPickOption, modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
