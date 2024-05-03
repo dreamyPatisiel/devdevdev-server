@@ -76,9 +76,9 @@ class TechArticleRepositoryTest {
         TechArticle techArticle3 = createTechArticle(new Count(1L));
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
 
-        Bookmark bookmark1 = Bookmark.create(member, techArticle1, true);
-        Bookmark bookmark2 = Bookmark.create(member, techArticle2, false);
-        Bookmark bookmark3 = Bookmark.create(member, techArticle3, true);
+        Bookmark bookmark1 = createBookmark(member, techArticle1, true);
+        Bookmark bookmark2 = createBookmark(member, techArticle2, false);
+        Bookmark bookmark3 = createBookmark(member, techArticle3, true);
         bookmarkRepository.saveAll(List.of(bookmark1, bookmark2, bookmark3));
 
         Pageable pageable = PageRequest.of(0, 3);
@@ -105,9 +105,9 @@ class TechArticleRepositoryTest {
         TechArticle techArticle3 = createTechArticle(new Count(1L));
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
 
-        Bookmark bookmark1 = Bookmark.create(member, techArticle1, true);
-        Bookmark bookmark2 = Bookmark.create(member, techArticle2, false);
-        Bookmark bookmark3 = Bookmark.create(member, techArticle3, true);
+        Bookmark bookmark1 = createBookmark(member, techArticle1, true);
+        Bookmark bookmark2 = createBookmark(member, techArticle2, false);
+        Bookmark bookmark3 = createBookmark(member, techArticle3, true);
         bookmarkRepository.saveAll(List.of(bookmark1, bookmark2, bookmark3));
 
         Pageable pageable = PageRequest.of(0, 3);
@@ -134,9 +134,9 @@ class TechArticleRepositoryTest {
         TechArticle techArticle3 = createTechArticle(new Count(1L));
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
 
-        Bookmark bookmark1 = Bookmark.create(member, techArticle1, true);
-        Bookmark bookmark2 = Bookmark.create(member, techArticle2, false);
-        Bookmark bookmark3 = Bookmark.create(member, techArticle3, true);
+        Bookmark bookmark1 = createBookmark(member, techArticle1, true);
+        Bookmark bookmark2 = createBookmark(member, techArticle2, false);
+        Bookmark bookmark3 = createBookmark(member, techArticle3, true);
         bookmarkRepository.saveAll(List.of(bookmark1, bookmark2, bookmark3));
 
         Pageable pageable = PageRequest.of(0, 3);
@@ -170,6 +170,14 @@ class TechArticleRepositoryTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
                 .build();
     }
 }

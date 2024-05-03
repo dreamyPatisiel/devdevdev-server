@@ -24,7 +24,7 @@ public enum BookmarkSort {
         @Override
         public BooleanExpression getCursorCondition(Bookmark findBookmark, TechArticle findTechArticle) {
             return bookmark.lastModifiedAt.before(findBookmark.getLastModifiedAt())
-                    .or(bookmark.lastModifiedAt.before(findBookmark.getLastModifiedAt())
+                    .or(bookmark.lastModifiedAt.eq(findBookmark.getLastModifiedAt())
                             .and(techArticle.id.lt(findTechArticle.getId())));
         }
     },
@@ -38,7 +38,7 @@ public enum BookmarkSort {
         @Override
         public BooleanExpression getCursorCondition(Bookmark findBookmark, TechArticle findTechArticle) {
             return techArticle.createdAt.before(findTechArticle.getCreatedAt())
-                    .or(techArticle.createdAt.before(findTechArticle.getCreatedAt())
+                    .or(techArticle.createdAt.eq(findTechArticle.getCreatedAt())
                             .and(techArticle.id.lt(findTechArticle.getId())));
         }
     },

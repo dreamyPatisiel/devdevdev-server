@@ -111,7 +111,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
             if(creatRandomBoolean()){
-                Bookmark bookmark = Bookmark.create(member, techArticle, true);
+                Bookmark bookmark = createBookmark(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
@@ -485,6 +485,14 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+    
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
                 .build();
     }
 

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 
@@ -104,7 +105,10 @@ class TechArticleCommonService {
     protected List<ElasticTechArticle> findElasticTechArticlesByElasticIdsIn(List<TechArticle> techArticles) {
         List<String> elasticIds = getElasticIdsFromTechArticles(techArticles);
         Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAllById(elasticIds);
-        return Lists.newArrayList(elasticTechArticles);
+
+        List<ElasticTechArticle> unmodifiableList = StreamSupport.stream(elasticTechArticles.spliterator(), false)
+                .toList();
+        return unmodifiableList;
     }
 
     protected static List<String> getElasticIdsFromTechArticles(List<TechArticle> techArticles) {

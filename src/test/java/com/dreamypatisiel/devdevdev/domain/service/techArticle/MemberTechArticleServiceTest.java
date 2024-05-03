@@ -263,7 +263,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         TechArticle techArticle = firstTechArticle;
-        Bookmark bookmark = Bookmark.create(member, techArticle, true);
+        Bookmark bookmark = createBookmark(member, techArticle, true);
         bookmarkRepository.save(bookmark);
 
         Long id = FIRST_TECH_ARTICLE_ID;
@@ -295,7 +295,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Bookmark bookmark = Bookmark.create(member, firstTechArticle, true);
+        Bookmark bookmark = createBookmark(member, firstTechArticle, true);
         bookmarkRepository.save(bookmark);
 
         // when
@@ -335,6 +335,14 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
                 .build();
     }
 }

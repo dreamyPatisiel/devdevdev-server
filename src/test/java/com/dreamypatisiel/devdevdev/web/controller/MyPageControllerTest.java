@@ -111,7 +111,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
-            Bookmark bookmark = Bookmark.create(member, techArticle, true);
+            Bookmark bookmark = createBookmark(member, techArticle, true);
             bookmarks.add(bookmark);
         }
         bookmarkRepository.saveAll(bookmarks);
@@ -194,6 +194,52 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
+    @Test
+    @DisplayName("회원이 기술블로그 북마크 목록을 조회할 때 회원이 북마크한 내역이 없다면 빈 배열이 응답된다.")
+    void getBookmarkedTechArticlesEmptyList() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        Pageable pageable = PageRequest.of(0, 2);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
+                        .queryParam("techArticleId", "")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content").isEmpty())
+                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
+                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
+                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
+                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
+                .andExpect(jsonPath("$.data.first").isBoolean())
+                .andExpect(jsonPath("$.data.last").isBoolean())
+                .andExpect(jsonPath("$.data.size").isNumber())
+                .andExpect(jsonPath("$.data.number").isNumber())
+                .andExpect(jsonPath("$.data.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
+                .andExpect(jsonPath("$.data.empty").isBoolean());
+    }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
@@ -206,6 +252,15 @@ class MyPageControllerTest extends SupportControllerTest {
                 .role(Role.valueOf(role))
                 .build();
     }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
+                .build();
+    }
+    
     private boolean createRandomBoolean() {
         return new Random().nextBoolean();
     }

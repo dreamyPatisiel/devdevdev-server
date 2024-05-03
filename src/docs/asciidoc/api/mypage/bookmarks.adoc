@@ -1,5 +1,5 @@
 [[MypageBookmarks]]
-== 기술블로그 북마크 목록 API(POST: /devdevdev/api/v1/mypage/bookmarks)
+== 기술블로그 북마크 목록 API(GET: /devdevdev/api/v1/mypage/bookmarks)
 * 회원은 기술블로그 북마크 목록을 조회할 수 있다.
 * 비회원은 기술블로그 북마크 목록을 조회할 수 없다.
 * 다음 페이지 요청 시 정렬 조건과 커서(마지막 데이터의 id)를 요청에 담아야 한다.

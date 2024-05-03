@@ -107,7 +107,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
 
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
-            Bookmark bookmark = Bookmark.create(member, techArticle, true);
+            Bookmark bookmark = createBookmark(member, techArticle, true);
             bookmarks.add(bookmark);
         }
         bookmarkRepository.saveAll(bookmarks);
@@ -234,6 +234,14 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                 .build();
     }
 
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
+                .build();
+    }
+    
     private static LocalDate createRandomDate() {
         LocalDate startDate = LocalDate.of(2024, 1, 1);
         LocalDate endDate = LocalDate.of(2024, 3, 10);
