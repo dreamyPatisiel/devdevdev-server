@@ -10,26 +10,25 @@ import lombok.RequiredArgsConstructor;
 import java.util.Objects;
 
 @Data
-@RequiredArgsConstructor
 public class TechArticleResponse {
 
     public static final int CONTENTS_MAX_LENGTH = 1000;
 
-    public Long id;
-    public String elasticId;
-    public String thumbnailUrl;
-    public String techArticleUrl;
-    public String title;
-    public String contents;
-    public CompanyResponse company;
-    public LocalDate regDate;
-    public String author;
-    public Long viewTotalCount;
-    public Long recommendTotalCount;
-    public Long commentTotalCount;
-    public Long popularScore;
-    public Boolean isBookmarked;
-    public Float score;
+    public final Long id;
+    public final String elasticId;
+    public final String thumbnailUrl;
+    public final String techArticleUrl;
+    public final String title;
+    public final String contents;
+    public final CompanyResponse company;
+    public final LocalDate regDate;
+    public final String author;
+    public final Long viewTotalCount;
+    public final Long recommendTotalCount;
+    public final Long commentTotalCount;
+    public final Long popularScore;
+    public final Boolean isBookmarked;
+    public final Float score;
 
     @Builder
     private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String techArticleUrl, String title, String contents,
