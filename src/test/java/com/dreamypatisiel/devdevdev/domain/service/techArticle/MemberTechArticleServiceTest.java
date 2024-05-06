@@ -26,6 +26,11 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
+import java.awt.print.Book;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -258,7 +263,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         TechArticle techArticle = firstTechArticle;
-        Bookmark bookmark = Bookmark.create(member, techArticle, true);
+        Bookmark bookmark = createBookmark(member, techArticle, true);
         bookmarkRepository.save(bookmark);
 
         Long id = FIRST_TECH_ARTICLE_ID;
@@ -274,6 +279,53 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .containsExactly(id, status);
     }
 
+    @Test
+    @DisplayName("회원이 커서 방식으로 기술블로그 북마크 목록을 조회하여 응답을 생성한다.")
+    void getBookmarkedTechArticles() {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Bookmark bookmark = createBookmark(member, firstTechArticle, true);
+        bookmarkRepository.save(bookmark);
+
+        // when
+        Slice<TechArticleResponse> findTechArticles = memberTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication);
+
+        // then
+        assertThat(findTechArticles)
+                .hasSize(pageable.getPageSize())
+                .extracting(TechArticleResponse::getIsBookmarked)
+                .contains(true);
+    }
+
+    @Test
+    @DisplayName("커서 방식으로 기술블로그 북마크 목록을 조회할 때 회원이 없으면 예외가 발생한다.")
+    void getBookmarkedTechArticlesNotFoundMemberException() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
@@ -283,6 +335,14 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
                 .build();
     }
 }

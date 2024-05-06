@@ -154,7 +154,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
             if(createRandomBoolean()){
-                Bookmark bookmark = Bookmark.create(member, techArticle, true);
+                Bookmark bookmark = createBookmark(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
@@ -499,6 +499,15 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .role(Role.valueOf(role))
                 .build();
     }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
+                .build();
+    }
+    
     private boolean createRandomBoolean() {
         return new Random().nextBoolean();
     }

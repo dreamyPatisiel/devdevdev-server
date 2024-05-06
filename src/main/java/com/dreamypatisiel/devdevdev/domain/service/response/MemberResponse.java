@@ -8,9 +8,9 @@ import lombok.Data;
 
 @Data
 public class MemberResponse {
-    private String name;
-    private Email email;
-    private SocialType socialType;
+    private final String name;
+    private final Email email;
+    private final SocialType socialType;
 
     @Builder
     private MemberResponse(String name, Email email, SocialType socialType) {

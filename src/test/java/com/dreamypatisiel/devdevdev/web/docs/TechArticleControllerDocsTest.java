@@ -111,7 +111,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
             if(creatRandomBoolean()){
-                Bookmark bookmark = Bookmark.create(member, techArticle, true);
+                Bookmark bookmark = createBookmark(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
@@ -148,7 +148,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("techArticleSort").optional().description("정렬 조건").attributes(techArticleSortType()),
                         parameterWithName("keyword").optional().description("검색어"),
                         parameterWithName("elasticId").optional().description("마지막 데이터의 엘라스틱서치 아이디"),
-                        parameterWithName("score").optional().description("마지막 데이터의 엘라스틱서치 아이디(정확도순 검색일 때에만 필수)")
+                        parameterWithName("score").optional().description("마지막 데이터의 정확도 점수(정확도순 검색일 때에만 필수)")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
@@ -485,6 +485,14 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+    
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
                 .build();
     }
 
