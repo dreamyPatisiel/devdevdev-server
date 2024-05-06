@@ -106,9 +106,8 @@ class TechArticleCommonService {
         List<String> elasticIds = getElasticIdsFromTechArticles(techArticles);
         Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAllById(elasticIds);
 
-        List<ElasticTechArticle> unmodifiableList = StreamSupport.stream(elasticTechArticles.spliterator(), false)
+        return StreamSupport.stream(elasticTechArticles.spliterator(), false)
                 .toList();
-        return unmodifiableList;
     }
 
     protected static List<String> getElasticIdsFromTechArticles(List<TechArticle> techArticles) {
