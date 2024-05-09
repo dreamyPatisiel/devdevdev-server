@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.global.utils;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.exception.UserPrincipalException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import org.junit.jupiter.api.DisplayName;

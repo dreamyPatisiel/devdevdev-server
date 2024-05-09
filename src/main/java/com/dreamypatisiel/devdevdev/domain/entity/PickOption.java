@@ -3,13 +3,15 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.global.utils.BigDecimalUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,8 +26,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
-import org.springframework.security.core.parameters.P;
 
 @Entity
 @Getter
@@ -56,6 +56,9 @@ public class PickOption {
     )
     private Count voteTotalCount;
 
+    @Enumerated(EnumType.STRING)
+    private PickOptionType pickOptionType;
+
     @OneToMany(mappedBy = "pickOption")
     private List<PickVote> pickVotes = new ArrayList<>();
 
@@ -63,17 +66,19 @@ public class PickOption {
     private List<PickOptionImage> pickOptionImages = new ArrayList<>();
 
     @Builder
-    private PickOption(Title title, PickOptionContents contents, Count voteTotalCount) {
+    private PickOption(Title title, PickOptionContents contents, Count voteTotalCount, PickOptionType pickOptionType) {
         this.title = title;
         this.contents = contents;
         this.voteTotalCount = voteTotalCount;
+        this.pickOptionType = pickOptionType;
     }
 
-    public static PickOption create(Title title, PickOptionContents pickOptionContents, List<PickOptionImage> pickOptionImages, Pick pick) {
+    public static PickOption create(Title title, PickOptionContents pickOptionContents, PickOptionType pickOptionType, List<PickOptionImage> pickOptionImages, Pick pick) {
         PickOption pickOption = new PickOption();
         pickOption.title = title;
         pickOption.contents = pickOptionContents;
         pickOption.voteTotalCount = new Count(0);
+        pickOption.pickOptionType = pickOptionType;
         pickOption.changePickOptionImages(pickOptionImages);
         pickOption.changePick(pick);
 

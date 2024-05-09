@@ -2,10 +2,8 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
 import static com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl.INVALID_SOCIAL_LOGIN_SUPPORT_MESSAGE;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.exception.OAuth2UserProviderException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.core.Authentication;

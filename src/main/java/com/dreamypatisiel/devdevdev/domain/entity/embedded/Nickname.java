@@ -4,12 +4,14 @@ import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
+@Getter
 public class Nickname {
     public static final int MIN_NICKNAME_LENGTH = 1;
     public static final int MAX_NICKNAME_LENGTH = 20;
@@ -23,7 +25,7 @@ public class Nickname {
     }
 
     private void validationNickname(String nickname) {
-        if(!isValidLength(nickname)) {
+        if (!isValidLength(nickname)) {
             throw new NicknameException(getInvalidLengthExceptionMessage());
         }
     }
@@ -32,7 +34,7 @@ public class Nickname {
         return StringUtils.hasText(nickname) && nickname.length() <= MAX_NICKNAME_LENGTH;
     }
 
-    public static String getInvalidLengthExceptionMessage()  {
+    public static String getInvalidLengthExceptionMessage() {
         return String.format(INVALID_NICKNAME_LENGTH_MESSAGE, MIN_NICKNAME_LENGTH, MAX_NICKNAME_LENGTH);
     }
 }

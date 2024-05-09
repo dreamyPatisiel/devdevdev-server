@@ -1,18 +1,28 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickMainOptionResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PicksResponse;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -33,7 +43,8 @@ public class GuestPickService implements PickService {
     private final PickRepository pickRepository;
 
     @Override
-    public Slice<PicksResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, Authentication authentication) {
+    public Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
+                                                 Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
@@ -41,11 +52,11 @@ public class GuestPickService implements PickService {
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
 
         // 데이터 가공
-        List<PicksResponse> picksResponse = picks.stream()
+        List<PickMainResponse> pickMainResponse = picks.stream()
                 .map(this::mapToPickResponse)
                 .toList();
 
-        return new SliceImpl<>(picksResponse, pageable, picks.hasNext());
+        return new SliceImpl<>(pickMainResponse, pageable, picks.hasNext());
     }
 
     @Override
@@ -59,8 +70,54 @@ public class GuestPickService implements PickService {
     }
 
     @Override
-    public PickModifyResponse modifyPick(Long pickId, ModifyPickRequest modifyPickRequest, Authentication authentication) {
+    public PickModifyResponse modifyPick(Long pickId, ModifyPickRequest modifyPickRequest,
+                                         Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Override
+    public PickDetailResponse findPickDetail(Long pickId, Authentication authentication) {
+
+        // 익명 사용자 호출인지 확인
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 픽픽픽 상세 조회(pickOption 페치조인)
+        Pick findPick = pickRepository.findPickDetailByPickId(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 픽픽픽 옵션 가공
+        Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
+                .collect(Collectors.toMap(PickOption::getPickOptionType,
+                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick)));
+
+        // 픽픽픽 상세
+        return PickDetailResponse.of(findPick, findPick.getMember(), pickDetailOptions);
+
+    }
+
+    private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick) {
+        return PickDetailOptionResponse.builder()
+                .id(pickOption.getId())
+                .title(pickOption.getTitle().getTitle())
+                .isPicked(false)
+                .percent(PickOption.calculatePercentBy(findPick, pickOption))
+                .voteTotalCount(pickOption.getVoteTotalCount().getCount())
+                .content(pickOption.getContents().getPickOptionContents())
+                .pickDetailOptionImages(mapToPickDetailOptionImagesResponse(pickOption))
+                .build();
+    }
+
+    private List<PickDetailOptionImage> mapToPickDetailOptionImagesResponse(PickOption pickOption) {
+        return pickOption.getPickOptionImages().stream()
+                .map(this::mapToPickOptionImageResponse)
+                .toList();
+    }
+
+    private PickDetailOptionImage mapToPickOptionImageResponse(PickOptionImage pickOptionImage) {
+        return PickDetailOptionImage.builder()
+                .id(pickOptionImage.getId())
+                .imageUrl(pickOptionImage.getImageUrl())
+                .build();
     }
 
     @Override
@@ -68,8 +125,8 @@ public class GuestPickService implements PickService {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
-    private PicksResponse mapToPickResponse(Pick pick) {
-        return PicksResponse.builder()
+    private PickMainResponse mapToPickResponse(Pick pick) {
+        return PickMainResponse.builder()
                 .id(pick.getId())
                 .title(pick.getTitle())
                 .voteTotalCount(pick.getVoteTotalCount())
@@ -81,14 +138,14 @@ public class GuestPickService implements PickService {
                 .build();
     }
 
-    private List<PickOptionResponse> mapToPickOptionsResponse(Pick pick) {
+    private List<PickMainOptionResponse> mapToPickOptionsResponse(Pick pick) {
         return pick.getPickOptions().stream()
                 .map(pickOption -> mapToPickOptionResponse(pick, pickOption))
                 .toList();
     }
 
-    private PickOptionResponse mapToPickOptionResponse(Pick pick, PickOption pickOption) {
-        return PickOptionResponse.builder()
+    private PickMainOptionResponse mapToPickOptionResponse(Pick pick, PickOption pickOption) {
+        return PickMainOptionResponse.builder()
                 .id(pickOption.getId())
                 .title(pickOption.getTitle())
                 .percent(PickOption.calculatePercentBy(pick, pickOption))

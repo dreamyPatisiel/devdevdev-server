@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.entity;
+package com.dreamypatisiel.devdevdev.domain.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

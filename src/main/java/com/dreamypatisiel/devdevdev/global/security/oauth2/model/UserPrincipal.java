@@ -1,7 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.model;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Password;
 import com.dreamypatisiel.devdevdev.exception.UserPrincipalException;
 import java.util.Collection;

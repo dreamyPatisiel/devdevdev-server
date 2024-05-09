@@ -3,14 +3,23 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import jakarta.persistence.*;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -21,6 +30,7 @@ public class Pick extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Embedded
     @Column(length = 150)
     private Title title;
 
@@ -44,7 +54,7 @@ public class Pick extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "count",
-        column = @Column(name = "popluar_score")
+            column = @Column(name = "popluar_score")
     )
     private Count popularScore;
 
@@ -68,8 +78,9 @@ public class Pick extends BasicTime {
     private List<PickVote> pickVotes = new ArrayList<>();
 
     @Builder
-    private Pick(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, Count popularScore, String thumbnailUrl,
-                String author, Member member) {
+    private Pick(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, Count popularScore,
+                 String thumbnailUrl,
+                 String author, Member member) {
         this.title = title;
         this.voteTotalCount = voteTotalCount;
         this.viewTotalCount = viewTotalCount;
@@ -95,14 +106,14 @@ public class Pick extends BasicTime {
 
     // 연관관계 편의 메소드
     public void changePickOptions(List<PickOption> pickOptions) {
-        for(PickOption pickOption : pickOptions) {
+        for (PickOption pickOption : pickOptions) {
             pickOption.changePick(this);
             this.getPickOptions().add(pickOption);
         }
     }
 
     public void changePickVote(List<PickVote> pickVotes) {
-        for(PickVote pickVote : pickVotes) {
+        for (PickVote pickVote : pickVotes) {
             pickVote.changePick(this);
             this.getPickVotes().add(pickVote);
         }

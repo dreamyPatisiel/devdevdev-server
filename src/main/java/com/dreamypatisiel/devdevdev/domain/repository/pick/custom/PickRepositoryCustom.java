@@ -9,4 +9,5 @@ import org.springframework.data.domain.Slice;
 public interface PickRepositoryCustom {
     Slice<Pick> findPicksByCursor(Pageable pageable, Long pickId, PickSort pickSort);
     Optional<Pick> findPickAndPickOptionByPickId(Long pickId);
+    Optional<Pick> findPickDetailByPickId(Long pickId);
 }

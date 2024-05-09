@@ -12,7 +12,7 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
-import com.google.api.client.util.Lists;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 
@@ -94,7 +93,7 @@ class TechArticleCommonService {
                 .orElse(null);
     }
 
-    private boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {
+    protected boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {
         return searchHits.getSearchHits().size() >= pageable.getPageSize();
     }
 

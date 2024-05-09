@@ -1,14 +1,18 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,16 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Comparator;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
@@ -84,7 +79,8 @@ class TechArticleRepositoryTest {
         Pageable pageable = PageRequest.of(0, 3);
 
         // when
-        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null, BookmarkSort.BOOKMARKED, member);
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null,
+                BookmarkSort.BOOKMARKED, member);
 
         // then
         assertThat(techArticles).hasSize(2)
@@ -113,7 +109,8 @@ class TechArticleRepositoryTest {
         Pageable pageable = PageRequest.of(0, 3);
 
         // when
-        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null, BookmarkSort.LATEST, member);
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null,
+                BookmarkSort.LATEST, member);
 
         // then
         assertThat(techArticles).hasSize(2)
@@ -142,7 +139,8 @@ class TechArticleRepositoryTest {
         Pageable pageable = PageRequest.of(0, 3);
 
         // when
-        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null, BookmarkSort.MOST_COMMENTED, member);
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null,
+                BookmarkSort.MOST_COMMENTED, member);
 
         // then
         assertThat(techArticles).hasSize(2)
@@ -161,7 +159,8 @@ class TechArticleRepositoryTest {
                 .build();
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

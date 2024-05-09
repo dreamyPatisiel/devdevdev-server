@@ -1,8 +1,8 @@
 package com.dreamypatisiel.devdevdev.web.controller.request;
 
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Data;
@@ -17,10 +17,10 @@ public class ModifyPickRequest {
     private final String pickTitle;
 
     @Valid
-    private final Map<String, ModifyPickOptionRequest> pickOptions;
+    private final Map<PickOptionType, ModifyPickOptionRequest> pickOptions;
 
     @Builder
-    public ModifyPickRequest(String pickTitle, Map<String, ModifyPickOptionRequest> pickOptions) {
+    public ModifyPickRequest(String pickTitle, Map<PickOptionType, ModifyPickOptionRequest> pickOptions) {
         this.pickTitle = pickTitle;
         this.pickOptions = pickOptions;
     }

@@ -1,9 +1,26 @@
 package com.dreamypatisiel.devdevdev;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.*;
+import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
@@ -17,7 +34,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -33,11 +49,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional
 public class LocalInitData {
+    public final static String username = "장세웅";
     public final static String userNickname = "댑댑이_User";
     public final static String userEmail = "test_user@devdevdev.com";
     public final static Role userRole = Role.ROLE_USER;
     public final static SocialType userSocialType = SocialType.KAKAO;
 
+    public final static String adminName = "유소영";
     public final static String adminNickname = "댑댑이_Admin";
     public final static String adminEmail = "test_admin@devdevdev.com";
     public final static Role adminRole = Role.ROLE_ADMIN;
@@ -49,6 +67,7 @@ public class LocalInitData {
     private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
     private final PickVoteRepository pickVoteRepository;
+    private final PickOptionImageRepository pickOptionImageRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
     private final TechArticleRepository techArticleRepository;
     private final BookmarkRepository bookmarkRepository;
@@ -59,11 +78,13 @@ public class LocalInitData {
     public void dataInsert() {
         log.info("LocalInitData.init()");
 
-        SocialMemberDto userSocialMemberDto = SocialMemberDto.of(userEmail, userSocialType.name(), userRole.name(), userNickname);
+        SocialMemberDto userSocialMemberDto = createSocialMemberDto(username, userEmail, userNickname, userSocialType,
+                userRole);
         Member member = Member.createMemberBy(userSocialMemberDto);
         memberRepository.save(member);
 
-        SocialMemberDto adminSocialMemberDto = SocialMemberDto.of(adminEmail, adminSocialType.name(), adminRole.name(), adminNickname);
+        SocialMemberDto adminSocialMemberDto = createSocialMemberDto(adminName, adminEmail, adminNickname,
+                adminSocialType, adminRole);
         memberRepository.save(Member.createMemberBy(adminSocialMemberDto));
 
         List<PickOption> pickOptions = createPickOptions();
@@ -84,12 +105,30 @@ public class LocalInitData {
         bookmarkRepository.saveAll(bookmarks);
     }
 
+    private static SocialMemberDto createSocialMemberDto(String username, String userEmail, String userNickname,
+                                                         SocialType socialType, Role role) {
+        int index = userEmail.indexOf('@');
+
+        return SocialMemberDto.builder()
+                .userId(userEmail.substring(0, index))
+                .name(username)
+                .email(userEmail)
+                .nickname(userNickname)
+                .socialType(socialType)
+                .role(role)
+                .build();
+    }
+
     private List<Company> createCompanies() {
         List<Company> companies = new ArrayList<>();
-        companies.add(Company.of(new CompanyName("Toss"), new Url("https://toss.tech"), new Url("https://toss.im/career/jobs")));
-        companies.add(Company.of(new CompanyName("우아한 형제들"), new Url("https://techblog.woowahan.com"), new Url("https://career.woowahan.com")));
-        companies.add(Company.of(new CompanyName("AWS"), new Url("https://aws.amazon.com/ko/blogs/tech"), new Url("https://aws.amazon.com/ko/careers")));
-        companies.add(Company.of(new CompanyName("채널톡"), new Url("https://channel.io/ko/blog"), new Url("https://channel.io/ko/jobs")));
+        companies.add(Company.of(new CompanyName("Toss"), new Url("https://toss.tech"),
+                new Url("https://toss.im/career/jobs")));
+        companies.add(Company.of(new CompanyName("우아한 형제들"), new Url("https://techblog.woowahan.com"),
+                new Url("https://career.woowahan.com")));
+        companies.add(Company.of(new CompanyName("AWS"), new Url("https://aws.amazon.com/ko/blogs/tech"),
+                new Url("https://aws.amazon.com/ko/careers")));
+        companies.add(Company.of(new CompanyName("채널톡"), new Url("https://channel.io/ko/blog"),
+                new Url("https://channel.io/ko/jobs")));
         return companies;
     }
 
@@ -104,7 +143,7 @@ public class LocalInitData {
     private List<Bookmark> createBookmarks(Member member, List<TechArticle> techArticles) {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
-            if(creatRandomBoolean()){
+            if (creatRandomBoolean()) {
                 Bookmark bookmark = Bookmark.create(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
@@ -125,9 +164,10 @@ public class LocalInitData {
 
     private List<Member> createMembers() {
         List<Member> members = new ArrayList<>();
-        for(int number = 0; number < DATA_MAX_COUNT / 2; number++) {
-            SocialMemberDto socialMemberDto = SocialMemberDto.of(userEmail+number, userSocialType.name(), userRole.name(),
-                    userNickname+number);
+        for (int number = 0; number < DATA_MAX_COUNT / 2; number++) {
+            SocialMemberDto socialMemberDto = SocialMemberDto.of(userEmail + number, userSocialType.name(),
+                    userRole.name(),
+                    userNickname + number);
             Member member = Member.createMemberBy(socialMemberDto);
             members.add(member);
         }
@@ -136,8 +176,8 @@ public class LocalInitData {
 
     private List<PickVote> createPickVotes(Member member, List<PickOption> pickOptions) {
         List<PickVote> pickVotes = new ArrayList<>();
-        for(int number = 0; number < DATA_MAX_COUNT / 2; number++) {
-            PickVote pickVote = PickVote.create(member, pickOptions.get(number*2));
+        for (int number = 0; number < DATA_MAX_COUNT / 2; number++) {
+            PickVote pickVote = PickVote.create(member, pickOptions.get(number * 2));
             pickVotes.add(pickVote);
         }
 
@@ -149,26 +189,31 @@ public class LocalInitData {
         String author = "운영자";
 
         List<Pick> picks = new ArrayList<>();
-        for(int number = 0; number < DATA_MAX_COUNT / 2; number++) {
+        for (int number = 0; number < DATA_MAX_COUNT / 2; number++) {
             Count pickViewTotalCount = new Count(creatRandomNumber());
             Count pickCommentTotalCount = new Count(creatRandomNumber());
-            Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
+            Count pickVoteTotalCount = new Count(
+                    pickOptions.get(number * 2).getVoteTotalCount().getCount() + pickOptions.get(number * 2 + 1)
+                            .getVoteTotalCount().getCount());
 
-            Pick pick = createPick(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
-                    pickCommentTotalCount, thumbnailUrl+number, author,
-                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(pickVotes.get(number)), member);
+            Pick pick = createPick(new Title("픽타이틀" + number), pickVoteTotalCount, pickViewTotalCount,
+                    pickCommentTotalCount, thumbnailUrl + number, author,
+                    List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)),
+                    List.of(pickVotes.get(number)), member);
             pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
 
-        for(int number = DATA_MAX_COUNT / 2; number < DATA_MAX_COUNT; number++) {
+        for (int number = DATA_MAX_COUNT / 2; number < DATA_MAX_COUNT; number++) {
             Count pickViewTotalCount = new Count(creatRandomNumber());
             Count pickCommentTotalCount = new Count(creatRandomNumber());
-            Count pickVoteTotalCount = new Count(pickOptions.get(number*2).getVoteTotalCount().getCount() + pickOptions.get(number*2+1).getVoteTotalCount().getCount());
+            Count pickVoteTotalCount = new Count(
+                    pickOptions.get(number * 2).getVoteTotalCount().getCount() + pickOptions.get(number * 2 + 1)
+                            .getVoteTotalCount().getCount());
 
-            Pick pick = createPick(new Title("픽타이틀"+number), pickVoteTotalCount, pickViewTotalCount,
-                    pickCommentTotalCount, thumbnailUrl+number, author,
-                    List.of(pickOptions.get(number*2), pickOptions.get(number*2+1)), List.of(), member);
+            Pick pick = createPick(new Title("픽타이틀" + number), pickVoteTotalCount, pickViewTotalCount,
+                    pickCommentTotalCount, thumbnailUrl + number, author,
+                    List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)), List.of(), member);
             pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
@@ -199,11 +244,17 @@ public class LocalInitData {
 
     private List<PickOption> createPickOptions() {
         List<PickOption> pickOptions = new ArrayList<>();
-        List<PickOptionImage> pickOptionImages = createPickOptionImage();
-        for(int number = 1; number <= DATA_MAX_COUNT*2; number++) {
-            PickOption pickOption = createPickOption(new Title("픽옵션"+number), new PickOptionContents("픽콘텐츠"+number));
+
+        for (int number = 1; number <= DATA_MAX_COUNT * 2; number++) {
+            List<PickOptionImage> pickOptionImages = createPickOptionImage();
+            PickOption pickOption = createPickOption(new Title("픽옵션" + number), new PickOptionContents("픽콘텐츠" + number),
+                    number % 2 == 1 ? PickOptionType.firstPickOption : PickOptionType.firstPickOption,
+                    pickOptionImages);
+
             pickOption.changePickVoteCount(new Count(creatRandomNumber()));
             pickOptions.add(pickOption);
+
+            pickOptionImageRepository.saveAll(pickOptionImages);
         }
 
         return pickOptions;
@@ -214,9 +265,9 @@ public class LocalInitData {
         String sampleImageUrl2 = "https://devdevdev-storage.s3.ap-northeast-2.amazonaws.com/test/pickpickpick/layered-architecture.png";
 
         PickOptionImage pickOptionImage1 = PickOptionImage.create(
-                sampleImageUrl1, "/test/pickpickpick/hexagonal-architecture.png", "firstPickOptionImage");
+                sampleImageUrl1, "/test/pickpickpick/hexagonal-architecture.png", "hexagonal-architecture");
         PickOptionImage pickOptionImage2 = PickOptionImage.create(
-                sampleImageUrl2, "/test/pickpickpick/layered-architecture.png", "firstPickOptionImage");
+                sampleImageUrl2, "/test/pickpickpick/layered-architecture.png", "layered-architecture");
 
         return List.of(pickOptionImage1, pickOptionImage2);
     }
@@ -229,10 +280,16 @@ public class LocalInitData {
         return new Random().nextBoolean();
     }
 
-    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents) {
-        return PickOption.builder()
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents,
+                                        PickOptionType pickOptionType, List<PickOptionImage> pickOptionImages) {
+        PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
+                .pickOptionType(pickOptionType)
                 .build();
+
+        pickOption.changePickOptionImages(pickOptionImages);
+
+        return pickOption;
     }
 }

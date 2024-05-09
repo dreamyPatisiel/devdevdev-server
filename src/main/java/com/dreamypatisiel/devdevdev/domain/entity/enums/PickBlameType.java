@@ -1,11 +1,11 @@
-package com.dreamypatisiel.devdevdev.domain.entity;
+package com.dreamypatisiel.devdevdev.domain.entity.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum TechBlameType {
+public enum PickBlameType {
 
     /**
      * PROFANITY AND HATE SPEECH:

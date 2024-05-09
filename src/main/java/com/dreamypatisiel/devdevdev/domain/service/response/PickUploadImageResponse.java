@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 public class PickUploadImageResponse {
-    private List<PickOptionImagesResponse> pickOptionImages;
+    private final List<PickOptionImagesResponse> pickOptionImages;
 
     @Builder
     public PickUploadImageResponse(List<PickOptionImagesResponse> pickOptionImages) {
