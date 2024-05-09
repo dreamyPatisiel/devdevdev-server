@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.docs.format;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import java.util.Arrays;
@@ -40,5 +41,13 @@ public interface ApiDocsFormatGenerator {
 
     static Attributes.Attribute yearMonthDateTimeType() {
         return key(FORMAT).value("yyyy-MM-dd HH:mm:ss");
+    }
+
+    static Attributes.Attribute bookmarkSortType() {
+        String bookmarkSortType = Arrays.stream(BookmarkSort.values())
+                .map(bookmarkSort -> bookmarkSort.name()+"("+bookmarkSort.getDescription()+")")
+                .collect(Collectors.joining(", "));
+
+        return key(FORMAT).value(bookmarkSortType);
     }
 }

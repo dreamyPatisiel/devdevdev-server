@@ -107,6 +107,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].id").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].elasticId").isString())
                 .andExpect(jsonPath("$.data.content.[0].thumbnailUrl").isString())
+                .andExpect(jsonPath("$.data.content.[0].techArticleUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
                 .andExpect(jsonPath("$.data.content.[0].contents").isString())
                 .andExpect(jsonPath("$.data.content.[0].company").isMap())
@@ -155,7 +156,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
             if(createRandomBoolean()){
-                Bookmark bookmark = Bookmark.create(member, techArticle, true);
+                Bookmark bookmark = createBookmark(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
@@ -178,6 +179,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].id").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].elasticId").isString())
                 .andExpect(jsonPath("$.data.content.[0].thumbnailUrl").isString())
+                .andExpect(jsonPath("$.data.content.[0].techArticleUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
                 .andExpect(jsonPath("$.data.content.[0].contents").isString())
                 .andExpect(jsonPath("$.data.content.[0].company").isMap())
@@ -278,6 +280,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.id").isNumber())
                 .andExpect(jsonPath("$.data.elasticId").isString())
                 .andExpect(jsonPath("$.data.thumbnailUrl").isString())
+                .andExpect(jsonPath("$.data.techArticleUrl").isString())
                 .andExpect(jsonPath("$.data.title").isString())
                 .andExpect(jsonPath("$.data.contents").isString())
                 .andExpect(jsonPath("$.data.company").isMap())
@@ -317,6 +320,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.id").isNumber())
                 .andExpect(jsonPath("$.data.elasticId").isString())
                 .andExpect(jsonPath("$.data.thumbnailUrl").isString())
+                .andExpect(jsonPath("$.data.techArticleUrl").isString())
                 .andExpect(jsonPath("$.data.title").isString())
                 .andExpect(jsonPath("$.data.contents").isString())
                 .andExpect(jsonPath("$.data.company").isMap())
@@ -497,6 +501,15 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .role(Role.valueOf(role))
                 .build();
     }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
+                .build();
+    }
+    
     private boolean createRandomBoolean() {
         return new Random().nextBoolean();
     }

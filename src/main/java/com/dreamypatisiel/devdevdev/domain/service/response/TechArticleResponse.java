@@ -7,34 +7,37 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Objects;
+
 @Data
-@RequiredArgsConstructor
 public class TechArticleResponse {
 
     public static final int CONTENTS_MAX_LENGTH = 1000;
 
-    public Long id;
-    public String elasticId;
-    public String thumbnailUrl;
-    public String title;
-    public String contents;
-    public CompanyResponse company;
-    public LocalDate regDate;
-    public String author;
-    public Long viewTotalCount;
-    public Long recommendTotalCount;
-    public Long commentTotalCount;
-    public Long popularScore;
-    public Boolean isBookmarked;
-    public Float score;
+    public final Long id;
+    public final String elasticId;
+    public final String thumbnailUrl;
+    public final String techArticleUrl;
+    public final String title;
+    public final String contents;
+    public final CompanyResponse company;
+    public final LocalDate regDate;
+    public final String author;
+    public final Long viewTotalCount;
+    public final Long recommendTotalCount;
+    public final Long commentTotalCount;
+    public final Long popularScore;
+    public final Boolean isBookmarked;
+    public final Float score;
 
     @Builder
-    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String title, String contents,
+    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String techArticleUrl, String title, String contents,
                                 CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
                                 Long recommendTotalCount, Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
+        this.techArticleUrl = techArticleUrl;
         this.title = title;
         this.contents = contents;
         this.company = company;
@@ -57,6 +60,7 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
@@ -75,6 +79,7 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
                 .regDate(elasticTechArticle.getRegDate())
@@ -93,6 +98,7 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .company(companyResponse)
@@ -112,6 +118,7 @@ public class TechArticleResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .company(companyResponse)
@@ -123,7 +130,7 @@ public class TechArticleResponse {
     }
 
     private static Float getValidScore(Float score) {
-        return Float.isNaN(score) ? null : score;
+        return Objects.isNull(score) || Float.isNaN(score) ? null : score;
     }
 
     private static String truncateString(String elasticTechArticleContents, int maxLength) {
