@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class BookmarkResponse {
 
-    public Long techArticleId;
-    public Boolean status;
+    public final Long techArticleId;
+    public final Boolean status;
 
     public BookmarkResponse(Long techArticleId, Boolean status) {
         this.techArticleId = techArticleId;

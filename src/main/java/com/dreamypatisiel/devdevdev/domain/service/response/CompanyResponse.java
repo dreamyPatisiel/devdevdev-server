@@ -6,12 +6,11 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
 public class CompanyResponse {
 
-    public Long id;
-    public String name;
-    public String careerUrl;
+    public final Long id;
+    public final String name;
+    public final String careerUrl;
 
     @Builder
     private CompanyResponse(Long id, String name, String careerUrl) {

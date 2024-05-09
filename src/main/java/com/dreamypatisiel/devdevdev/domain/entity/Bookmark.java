@@ -1,11 +1,9 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Bookmark extends BasicTime {
     @Id
