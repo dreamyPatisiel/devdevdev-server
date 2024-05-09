@@ -1,20 +1,36 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -25,36 +41,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
-import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
-import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techArticleSortType;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class MyPageControllerTest extends SupportControllerTest {
 
@@ -76,11 +63,15 @@ class MyPageControllerTest extends SupportControllerTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "DP", (long)i, (long)i, (long)i, (long)i*10);
+            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀" + i, createRandomDate(), "내용",
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", (long) i, (long) i, (long) i,
+                    (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
-        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
-        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
+        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
+                elasticTechArticles);
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"),
+                new Url("https://example.com"));
         Company savedCompany = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
@@ -119,13 +110,14 @@ class MyPageControllerTest extends SupportControllerTest {
         Pageable pageable = PageRequest.of(0, 2);
 
         // when // then
-        ResultActions actions = mockMvc.perform(RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
-                        .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
-                        .queryParam("techArticleId", "")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                                .queryParam("size", String.valueOf(pageable.getPageSize()))
+                                .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
+                                .queryParam("techArticleId", "")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
@@ -183,10 +175,11 @@ class MyPageControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
@@ -207,13 +200,14 @@ class MyPageControllerTest extends SupportControllerTest {
         Pageable pageable = PageRequest.of(0, 2);
 
         // when // then
-        ResultActions actions = mockMvc.perform(RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
-                        .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
-                        .queryParam("techArticleId", "")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                                .queryParam("size", String.valueOf(pageable.getPageSize()))
+                                .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
+                                .queryParam("techArticleId", "")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
@@ -241,7 +235,8 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.empty").isBoolean());
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
@@ -260,7 +255,7 @@ class MyPageControllerTest extends SupportControllerTest {
                 .status(status)
                 .build();
     }
-    
+
     private boolean createRandomBoolean() {
         return new Random().nextBoolean();
     }
