@@ -590,7 +590,7 @@ class MemberPickServiceTest {
         RegisterPickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
                 List.of(firstPickOptionImage.getId() + 1_000L));
         RegisterPickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
-                List.of(firstPickOptionImage.getId() + 1_000L));
+                List.of(secondPickOptionImage.getId() + 1_000L));
 
         Map<PickOptionType, RegisterPickOptionRequest> pickOptions = new HashMap<>();
         pickOptions.put(firstPickOption, firstPickOptionRequest);

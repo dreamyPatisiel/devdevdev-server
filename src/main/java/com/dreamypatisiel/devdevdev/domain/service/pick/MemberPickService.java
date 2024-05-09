@@ -176,7 +176,6 @@ public class MemberPickService implements PickService {
         // 픽픽픽 옵션 생성 및 저장
         Map<PickOptionType, RegisterPickOptionRequest> pickOptions = registerPickRequest.getPickOptions();
         savePickOptionWithPickOptionImages(pick, pickOptions);
-        //savePickOptionWithPickOptionImages(pick, pickOptions);
 
         return new PickRegisterResponse(pick.getId());
     }
@@ -209,7 +208,6 @@ public class MemberPickService implements PickService {
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions = modifyPickRequest.getPickOptions();
 
         changePickOptionAndPickOptionImages(modifyPickRequestPickOptions, pickOptions);
-        //changePickOptionAndPickOptionImages(modifyPickRequestPickOptions, pickOptions);
 
         return new PickModifyResponse(findPick.getId());
     }
@@ -274,24 +272,6 @@ public class MemberPickService implements PickService {
                         pickOption.changePickOptionImages(pickOptionImages);
                     });
         });
-
-//        // firstPickOption 또는 firstPickOption key 값이 아니면
-//        if (!modifyPickRequestPickOptions.containsKey(pickOptionName)) {
-//            throw new PickOptionNameException(INVALID_PICK_OPTION_NAME_MESSAGE);
-//        }
-//
-//        List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(pickOptionName)
-//                .getPickOptionImageIds();
-//        List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
-//
-//        // 픽픽픽 옵션 수정, 픽픽픽 옵션과 픽픽픽 옵션 이미지 연관관계 설정
-//        ModifyPickOptionRequest pickOptionsRequest = modifyPickRequestPickOptions.get(pickOptionName);
-//        pickOptions.stream()
-//                .filter(pickOption -> pickOption.getId().equals(pickOptionsRequest.getPickOptionId()))
-//                .forEach(pickOption -> {
-//                    pickOption.changePickOption(pickOptionsRequest);
-//                    pickOption.changePickOptionImages(pickOptionImages);
-//                });
     }
 
     // 픽옵션 이미지가 없을 수도 있다.
@@ -312,23 +292,6 @@ public class MemberPickService implements PickService {
 
             pickOptionRepository.save(pickOption);
         });
-
-//        // 픽픽픽 이미지 조회에 필요한 픽픽픽 옵션 이미지 아이디 목록 꺼내기
-//        RegisterPickOptionRequest registerPickOptionRequest = registerPickOptionsRequest.get(pickOptionNameDescription);
-//        List<Long> pickOptionImageIds = registerPickOptionRequest.getPickOptionImageIds();
-//
-//        // 픽픽픽 이미지 조회
-//        List<PickOptionImage> findPickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
-//
-//        // 픽픽픽 옵션 생성
-//        String pickOptionTitle = registerPickOptionRequest.getPickOptionTitle();
-//        String pickOptionContent = registerPickOptionRequest.getPickOptionContent();
-//        PickOption pickOption = PickOption.create(new Title(pickOptionTitle), new PickOptionContents(pickOptionContent),
-//                pickOptionType,
-//                findPickOptionImages, pick);
-//
-//        // 픽픽픽 옵션 저장
-//        pickOptionRepository.save(pickOption);
     }
 
     // 픽 옵션 이미지 아이디가 없으면 select 할 필요가 없음

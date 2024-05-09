@@ -406,7 +406,7 @@ class GuestPickServiceTest {
     }
 
     @Test
-    @DisplayName("익명 사용자가 픽픽픽 메인을 조회한다.")
+    @DisplayName("익명 사용자가 픽픽픽 상세를 조회한다.")
     void findPickDetail() {
         // given
 

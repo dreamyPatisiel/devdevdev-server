@@ -1,5 +1,9 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
@@ -10,19 +14,16 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ class TechArticleCommonService {
     protected ElasticTechArticle findElasticTechArticle(TechArticle techArticle) {
         String elasticId = techArticle.getElasticId();
 
-        if(elasticId == null) {
+        if (elasticId == null) {
             throw new TechArticleException(NOT_FOUND_ELASTIC_ID_MESSAGE);
         }
 
@@ -48,7 +49,8 @@ class TechArticleCommonService {
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_TECH_ARTICLE_MESSAGE));
     }
 
-    protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits) {
+    protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticTechArticlesResponse(
+            SearchHits<ElasticTechArticle> searchHits) {
         return searchHits.stream()
                 .map(searchHit -> new ElasticResponse<>(searchHit.getContent(), searchHit.getScore()))
                 .toList();
@@ -60,18 +62,21 @@ class TechArticleCommonService {
                 .toList();
     }
 
-    protected List<TechArticle> getTechArticlesByElasticIdsIn(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+    protected List<TechArticle> getTechArticlesByElasticIdsIn(
+            List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         List<String> elasticIds = getElasticIds(elasticTechArticlesResponse);
         return techArticleRepository.findAllByElasticIdIn(elasticIds);
     }
 
-    protected static Map<String, ElasticResponse<ElasticTechArticle>> getElasticResponseMap(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+    protected static Map<String, ElasticResponse<ElasticTechArticle>> getElasticResponseMap(
+            List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         return elasticTechArticlesResponse.stream()
                 .collect(Collectors.toMap(el -> el.content().getId(), Function.identity()));
     }
 
-    protected ElasticSlice<TechArticleResponse> createElasticSlice(Pageable pageable, SearchHits<ElasticTechArticle> searchHits,
-                                                                 List<TechArticleResponse> techArticlesResponse) {
+    protected ElasticSlice<TechArticleResponse> createElasticSlice(Pageable pageable,
+                                                                   SearchHits<ElasticTechArticle> searchHits,
+                                                                   List<TechArticleResponse> techArticlesResponse) {
         long totalHits = searchHits.getTotalHits();
         boolean hasNext = hasNextPage(pageable, searchHits);
         return new ElasticSlice<>(techArticlesResponse, pageable, totalHits, hasNext);
@@ -80,7 +85,7 @@ class TechArticleCommonService {
     protected static CompanyResponse createCompanyResponse(TechArticle findTechArticle) {
         return Optional.ofNullable(findTechArticle.getCompany())
                 .map(CompanyResponse::from)
-                .orElse(null);
+                .orElseGet(() -> null);
     }
 
     protected boolean hasNextPage(Pageable pageable, SearchHits<ElasticTechArticle> searchHits) {
