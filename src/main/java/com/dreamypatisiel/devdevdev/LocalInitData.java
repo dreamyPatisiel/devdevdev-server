@@ -88,8 +88,8 @@ public class LocalInitData {
         memberRepository.save(Member.createMemberBy(adminSocialMemberDto));
 
         List<PickOption> pickOptions = createPickOptions();
-        List<PickVote> pickVotes = createPickVotes(member, pickOptions);
-        List<Pick> picks = creatPicks(pickOptions, pickVotes, member);
+        List<Pick> picks = creatPicks(pickOptions, member);
+        List<PickVote> pickVotes = createPickVotes(member, picks.get(0), pickOptions);
         pickRepository.saveAll(picks);
         pickVoteRepository.saveAll(pickVotes);
         pickOptionRepository.saveAll(pickOptions);
@@ -174,17 +174,17 @@ public class LocalInitData {
         return members;
     }
 
-    private List<PickVote> createPickVotes(Member member, List<PickOption> pickOptions) {
+    private List<PickVote> createPickVotes(Member member, Pick pick, List<PickOption> pickOptions) {
         List<PickVote> pickVotes = new ArrayList<>();
         for (int number = 0; number < DATA_MAX_COUNT / 2; number++) {
-            PickVote pickVote = PickVote.create(member, pickOptions.get(number * 2));
+            PickVote pickVote = PickVote.createByMember(member, pick, pickOptions.get(number * 2));
             pickVotes.add(pickVote);
         }
 
         return pickVotes;
     }
 
-    private List<Pick> creatPicks(List<PickOption> pickOptions, List<PickVote> pickVotes, Member member) {
+    private List<Pick> creatPicks(List<PickOption> pickOptions, Member member) {
         String thumbnailUrl = "픽 섬네일 이미지 url";
         String author = "운영자";
 
@@ -198,8 +198,7 @@ public class LocalInitData {
 
             Pick pick = createPick(new Title("픽타이틀" + number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl + number, author,
-                    List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)),
-                    List.of(pickVotes.get(number)), member);
+                    List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)), member);
             pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
@@ -213,7 +212,7 @@ public class LocalInitData {
 
             Pick pick = createPick(new Title("픽타이틀" + number), pickVoteTotalCount, pickViewTotalCount,
                     pickCommentTotalCount, thumbnailUrl + number, author,
-                    List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)), List.of(), member);
+                    List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)), member);
             pick.changePopularScore(pickPopularScorePolicy);
             picks.add(pick);
         }
@@ -223,7 +222,7 @@ public class LocalInitData {
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
-                            List<PickOption> pickOptions, List<PickVote> pickVotes, Member member
+                            List<PickOption> pickOptions, Member member
     ) {
 
         Pick pick = Pick.builder()
@@ -237,7 +236,6 @@ public class LocalInitData {
                 .build();
 
         pick.changePickOptions(pickOptions);
-        pick.changePickVote(pickVotes);
 
         return pick;
     }

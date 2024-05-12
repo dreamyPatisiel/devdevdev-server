@@ -73,7 +73,8 @@ public class PickOption {
         this.pickOptionType = pickOptionType;
     }
 
-    public static PickOption create(Title title, PickOptionContents pickOptionContents, PickOptionType pickOptionType, List<PickOptionImage> pickOptionImages, Pick pick) {
+    public static PickOption create(Title title, PickOptionContents pickOptionContents, PickOptionType pickOptionType,
+                                    List<PickOptionImage> pickOptionImages, Pick pick) {
         PickOption pickOption = new PickOption();
         pickOption.title = title;
         pickOption.contents = pickOptionContents;
@@ -101,7 +102,7 @@ public class PickOption {
 
     // 연관관계 편의 메소드
     public void changePickOptionImages(List<PickOptionImage> pickOptionImages) {
-        for(PickOptionImage pickOptionImage : pickOptionImages) {
+        for (PickOptionImage pickOptionImage : pickOptionImages) {
             pickOptionImage.changePickOption(this);
             this.getPickOptionImages().add(pickOptionImage);
         }
@@ -114,5 +115,17 @@ public class PickOption {
     public void changePickOption(ModifyPickOptionRequest modifyPickOptionRequest) {
         this.title = new Title(modifyPickOptionRequest.getPickOptionTitle());
         this.contents = new PickOptionContents(modifyPickOptionRequest.getPickOptionContent());
+    }
+
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
+    }
+
+    public void pulseVoteTotalCount() {
+        this.voteTotalCount = Count.plusOne(this.voteTotalCount);
+    }
+
+    public void minusVoteTotalCount() {
+        this.voteTotalCount = Count.minusOne(this.voteTotalCount);
     }
 }

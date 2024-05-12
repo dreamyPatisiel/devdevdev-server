@@ -1,6 +1,12 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,19 +40,30 @@ public class PickVote extends BasicTime {
         this.pick = pick;
     }
 
-    public static PickVote create(Member member, PickOption pickOption) {
+    public static PickVote createByMember(Member member, Pick pick, PickOption pickOption) {
         PickVote pickVote = new PickVote();
         pickVote.member = member;
-        pickVote.pickOption = pickOption;
+        pickVote.changePick(pick);
+        pickVote.changePickOption(pickOption);
 
         return pickVote;
     }
 
+    public static PickVote createByAnonymous(Pick pick, PickOption pickOption) {
+        PickVote pickVote = new PickVote();
+        pickVote.changePick(pick);
+        pickVote.changePickOption(pickOption);
+
+        return pickVote;
+    }
+
+    // 연관관계 편의 메소드
     public void changePick(Pick pick) {
         this.pick = pick;
         pick.getPickVotes().add(this);
     }
 
+    // 연관관계 편의 메소드
     public void changePickOption(PickOption pickOption) {
         this.pickOption = pickOption;
         pickOption.getPickVotes().add(this);

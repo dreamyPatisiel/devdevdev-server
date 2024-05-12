@@ -1,11 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.aws.s3.AwsS3Uploader;
@@ -16,13 +16,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -31,17 +35,22 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
+import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -70,6 +79,8 @@ public class MemberPickService implements PickService {
     private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
     private final PickOptionImageRepository pickOptionImageRepository;
+    private final PickVoteRepository pickVoteRepository;
+    private final PickPopularScorePolicy pickPopularScorePolicy;
 
     /**
      * 픽픽픽 메인 조회
@@ -192,7 +203,7 @@ public class MemberPickService implements PickService {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 조회
-        Pick findPick = pickRepository.findPickAndPickOptionByPickId(pickId)
+        Pick findPick = pickRepository.findPickWithPickOptionWithPickVoteWithMemberByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE));
 
         // 회원이 작성한 픽픽픽이 아닌 경우
@@ -218,19 +229,101 @@ public class MemberPickService implements PickService {
     @Override
     public PickDetailResponse findPickDetail(Long pickId, Authentication authentication) {
         // 회원 조회
-        Member member = memberProvider.getMemberByAuthentication(authentication);
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 상세 조회(pickOption 페치조인)
-        Pick findPick = pickRepository.findPickDetailByPickId(pickId)
+        Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        findPick.pulseViewTotalCount(); // 조회수 증가
+        findPick.changePopularScore(pickPopularScorePolicy); // 인기점수 계산
 
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
                 .collect(Collectors.toMap(PickOption::getPickOptionType,
-                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick, member)));
+                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick, findMember))
+                );
 
         // 픽픽픽 상세
-        return PickDetailResponse.of(findPick, findPick.getMember(), member, pickDetailOptions);
+        return PickDetailResponse.of(findPick, findPick.getMember(), findMember, pickDetailOptions);
+    }
+
+    /**
+     * @Note: member 1:N pick 1:N pickOption 1:N pickVote <br/> pick 1:N pickVote N:1 member <br/> 연관관계가 다소 복잡하니, 직접
+     * ERD를 확인하는 것을 권장합니다.
+     * @Author: ralph
+     * @Since: 2024.05.12
+     */
+    @Transactional
+    @Override
+    public VotePickResponse votePickOption(VotePickOptionRequest votePickOptionRequest,
+                                           Authentication authentication) {
+
+        Long pickId = votePickOptionRequest.getPickId();
+        Long pickOptionId = votePickOptionRequest.getPickOptionId();
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 픽픽픽 투표 조회
+        Optional<PickVote> findOptionalPickVote = pickVoteRepository.findByPickIdAndMember(pickId, findMember);
+
+        // 픽옵션에 투표를 한 이력이 있는 경우
+        if (findOptionalPickVote.isPresent()) {
+            PickVote pickVote = findOptionalPickVote.get();
+            PickOption findPickOptionByPickVote = pickVote.getPickOption();
+
+            // 투표하려는 픽옵션과 일치하는 경우(이미 투표한 픽옵션을 또 누를 경우)
+            if (findPickOptionByPickVote.isEqualsId(pickOptionId)) {
+                throw new VotePickOptionException(INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE);
+            }
+        }
+
+        // 픽 옵션에 투표한 이력이 없는 경우
+        // 픽픽픽 조회
+        Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 픽 옵션 투표 데이터 가공
+        List<VotePickOptionResponse> votePickOptionsResponse = findPick.getPickOptions().stream()
+                .map(pickOption -> getVotePickOptionResponse(pickOption, findPick, findMember, pickOptionId))
+                .toList();
+
+        // 인기점수 계산
+        findPick.changePopularScore(pickPopularScorePolicy);
+
+        return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
+    }
+
+    private VotePickOptionResponse getVotePickOptionResponse(PickOption pickOption, Pick findPick, Member findMember,
+                                                             Long pickOptionId) {
+
+        // 해당 픽 옵션에 투표한 경우
+        if (pickOption.isEqualsId(pickOptionId)) {
+            return getPickedTrueVotePickOptionResponse(pickOption, findPick, findMember);
+        }
+
+        // 해당 픽 옵션에 투표하지 않은 경우
+        return getPickedFalseVotePickOptionResponse(pickOption, findPick);
+    }
+
+    private VotePickOptionResponse getPickedFalseVotePickOptionResponse(PickOption pickOption, Pick findPick) {
+        pickOption.minusVoteTotalCount(); // 득표 수 감소
+        int percent = PickOption.calculatePercentBy(findPick, pickOption).intValueExact(); // 득표율 계산
+
+        return VotePickOptionResponse.of(pickOption, null, percent, false);
+    }
+
+    private VotePickOptionResponse getPickedTrueVotePickOptionResponse(PickOption pickOption, Pick findPick,
+                                                                       Member findMember) {
+        pickOption.pulseVoteTotalCount(); // 득표 수 증가
+        findPick.pulseVoteTotalCount(); // 득표 수 증가
+        int percent = PickOption.calculatePercentBy(findPick, pickOption).intValueExact(); // 득표율 계산
+
+        PickVote pickVote = PickVote.createByMember(findMember, findPick, pickOption);
+        pickVoteRepository.save(pickVote);
+
+        return VotePickOptionResponse.of(pickOption, pickVote.getId(), percent, true);
     }
 
     private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick,
@@ -305,7 +398,7 @@ public class MemberPickService implements PickService {
 
     private List<PickOptionImage> getPickOptionImages(List<PickOptionImage> findPickOptionImages) {
         if (ObjectUtils.isEmpty(findPickOptionImages)) {
-            throw new NotFoundException(INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE);
+            throw new NotFoundException(PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE);
         }
         return findPickOptionImages;
     }

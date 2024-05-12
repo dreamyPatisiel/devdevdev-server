@@ -24,7 +24,7 @@ public class Count {
     }
 
     private void validationCount(long count) {
-        if(!isValidCount(count)) {
+        if (!isValidCount(count)) {
             throw new CountException(getInvalidCountExceptionMessage());
         }
     }
@@ -35,5 +35,18 @@ public class Count {
 
     private static boolean isValidCount(long count) {
         return count >= MIN_COUNT;
+    }
+
+    public static Count plusOne(Count count) {
+        return new Count(count.getCount() + 1L);
+    }
+
+    public static Count minusOne(Count count) {
+        long result = count.getCount() - 1L;
+        // 음수이면
+        if (result < MIN_COUNT) {
+            return new Count(MIN_COUNT);
+        }
+        return new Count(count.getCount() - 1L);
     }
 }

@@ -2,11 +2,12 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.firstPickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.secondPickOption;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_IMAGE_NAME_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,15 +45,19 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
+import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
@@ -601,7 +606,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.registerPick(pickRegisterRequest, authentication))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_PICK_OPTION_IMAGE_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE);
     }
 
     @Test
@@ -1003,6 +1008,165 @@ class MemberPickServiceTest {
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
 
+    @Test
+    @DisplayName("픽픽픽 옵션에 투표한 이력이 없는 회원이 픽픽픽 옵션 중 하나에 투표한다.")
+    void votePickOptionNewCreate() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
+                PickOptionType.firstPickOption, pick);
+        PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
+                PickOptionType.secondPickOption, pick);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(pick.getId())
+                .pickOptionId(firstPickOption.getId())
+                .build();
+
+        // when
+        VotePickResponse votePickResponse = memberPickService.votePickOption(request, authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(votePickResponse.getPickId()).isEqualTo(pick.getId()),
+                () -> assertThat(votePickResponse.getVotePickOptions()).hasSize(2)
+        );
+
+        VotePickOptionResponse votePickOptionResponseIndex1 = votePickResponse.getVotePickOptions().get(0);
+        assertAll(
+                () -> assertThat(votePickOptionResponseIndex1.getPickOptionId()).isEqualTo(firstPickOption.getId()),
+                () -> assertThat(votePickOptionResponseIndex1.getPickVoteId()).isNotNull(),
+                () -> assertThat(votePickOptionResponseIndex1.getPercent()).isEqualTo(100),
+                () -> assertThat(votePickOptionResponseIndex1.getVoteTotalCount()).isEqualTo(1),
+                () -> assertThat(votePickOptionResponseIndex1.getIsPicked()).isEqualTo(true)
+        );
+
+        VotePickOptionResponse votePickOptionResponseIndex2 = votePickResponse.getVotePickOptions().get(1);
+        assertAll(
+                () -> assertThat(votePickOptionResponseIndex2.getPickOptionId()).isEqualTo(secondPickOption.getId()),
+                () -> assertThat(votePickOptionResponseIndex2.getPickVoteId()).isNull(),
+                () -> assertThat(votePickOptionResponseIndex2.getPercent()).isEqualTo(0),
+                () -> assertThat(votePickOptionResponseIndex2.getVoteTotalCount()).isEqualTo(0),
+                () -> assertThat(votePickOptionResponseIndex2.getIsPicked()).isEqualTo(false)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 옵션을 투표할 때 이미 투표한 픽픽픽 옵션에 투표를 하면 예외가 발생한다.")
+    void votePickOption_INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
+                PickOptionType.firstPickOption, pick);
+        PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
+                PickOptionType.secondPickOption, pick);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(pick.getId())
+                .pickOptionId(firstPickOption.getId())
+                .build();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.votePickOption(request, authentication))
+                .isInstanceOf(VotePickOptionException.class)
+                .hasMessage(INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 옵션을 투표할 때 픽픽픽이 없으면 예외가 발생한다.")
+    void votePickOption_INVALID_NOT_FOUND_PICK_MESSAGE() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(0L)
+                .pickOptionId(0L)
+                .build();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.votePickOption(request, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("")
+    void test() {
+        // given
+
+        // when
+
+        // then
+    }
+
+    private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,
+                            Count poplarScore, Member member) {
+        return Pick.builder()
+                .title(title)
+                .viewTotalCount(viewTotalCount)
+                .voteTotalCount(voteTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(poplarScore)
+                .member(member)
+                .build();
+    }
 
     private ModifyPickRequest createModifyPickRequest(String pickTitle,
                                                       Map<PickOptionType, ModifyPickOptionRequest> modifyPickOptionRequests) {
@@ -1185,10 +1349,9 @@ class MemberPickServiceTest {
     private PickVote createPickVote(Member member, PickOption pickOption, Pick pick) {
         PickVote pickVote = PickVote.builder()
                 .member(member)
-                .pickOption(pickOption)
-                .pick(pick)
                 .build();
 
+        pickVote.changePickOption(pickOption);
         pickVote.changePick(pick);
 
         return pickVote;

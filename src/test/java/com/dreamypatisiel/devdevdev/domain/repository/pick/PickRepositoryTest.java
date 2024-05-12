@@ -49,8 +49,10 @@ class PickRepositoryTest {
         PickOption pickOption3 = createPickOption(new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"), new Count(3));
         PickOption pickOption4 = createPickOption(new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"), new Count(4));
 
-        Count pick1VoteTotalCount = new Count(pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
-        Count pick2VoteTotalCount = new Count(pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
+        Count pick1VoteTotalCount = new Count(
+                pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
+        Count pick2VoteTotalCount = new Count(
+                pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
         Count pick1ViewTotalCount = new Count(1);
         Count pick2ViewTotalCount = new Count(1);
         Count pick1CommentTotalCount = new Count(0);
@@ -103,7 +105,7 @@ class PickRepositoryTest {
         assertThat(picks).hasSize(3)
                 .extracting(Pick::getTitle)
                 .containsExactly(
-                        new Title("픽3타이틀"), new Title("픽2타이틀"),new Title("픽1타이틀")
+                        new Title("픽3타이틀"), new Title("픽2타이틀"), new Title("픽1타이틀")
                 );
     }
 
@@ -129,7 +131,7 @@ class PickRepositoryTest {
         assertThat(picks).hasSize(3)
                 .extracting(Pick::getTitle)
                 .containsExactly(
-                        new Title("픽3타이틀"), new Title("픽2타이틀"),new Title("픽1타이틀")
+                        new Title("픽3타이틀"), new Title("픽2타이틀"), new Title("픽1타이틀")
                 );
     }
 
@@ -155,13 +157,14 @@ class PickRepositoryTest {
         assertThat(picks).hasSize(3)
                 .extracting(Pick::getTitle)
                 .containsExactly(
-                        new Title("픽3타이틀"), new Title("픽2타이틀"),new Title("픽1타이틀")
+                        new Title("픽3타이틀"), new Title("픽2타이틀"), new Title("픽1타이틀")
                 );
     }
 
     @Test
     @DisplayName("인기순으로 Pick을 조회한다."
-            + "(현재 가중치 = 댓글수:"+ PickPopularScorePolicy.COMMENT_WEIGHT+", 투표수:"+PickPopularScorePolicy.VOTE_WEIGHT+", 조회수:"+PickPopularScorePolicy.VIEW_WEIGHT+")")
+            + "(현재 가중치 = 댓글수:" + PickPopularScorePolicy.COMMENT_WEIGHT + ", 투표수:" + PickPopularScorePolicy.VOTE_WEIGHT
+            + ", 조회수:" + PickPopularScorePolicy.VIEW_WEIGHT + ")")
     void findPicksByCursorOrderByPopular() {
         // given
         Pick pick1 = createPickByPopularScore(new Title("픽1타이틀"), new Count(1));
@@ -183,19 +186,21 @@ class PickRepositoryTest {
         assertThat(picks).hasSize(3)
                 .extracting(Pick::getTitle)
                 .containsExactly(
-                        new Title("픽3타이틀"), new Title("픽2타이틀"),new Title("픽1타이틀")
+                        new Title("픽3타이틀"), new Title("픽2타이틀"), new Title("픽1타이틀")
                 );
     }
 
     @Test
-    @DisplayName("findPickAndPickOptionByPickId 쿼리 확인")
+    @DisplayName("findPickWithPickOptionWithPickVoteWithMemberByPickId 쿼리 확인")
     void findPickAndPickOptionAndPickOptionImageById() {
         // given
         Pick pick = createPick(new Title("픽1타이틀"));
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽옵션콘텐츠1"), new Count(1), pick);
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽옵션콘텐츠2"), new Count(2), pick);
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽옵션콘텐츠1"), new Count(1),
+                pick);
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽옵션콘텐츠2"), new Count(2),
+                pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = cratePickOptionImage("픽옵션1이미지1", pickOption1);
@@ -204,7 +209,7 @@ class PickRepositoryTest {
         pickOptionImageRepository.saveAll(List.of(pickOption1Image1, pickOption1Image2, pickOption2Image1));
 
         // when
-        Pick findPick = pickRepository.findPickAndPickOptionByPickId(pick.getId()).get();
+        Pick findPick = pickRepository.findPickWithPickOptionWithPickVoteWithMemberByPickId(pick.getId()).get();
 
         // then
         assertThat(findPick.getTitle()).isEqualTo(new Title("픽1타이틀"));
@@ -300,7 +305,8 @@ class PickRepositoryTest {
         return pick;
     }
 
-    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount, Pick pick) {
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount,
+                                        Pick pick) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)

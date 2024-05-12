@@ -533,6 +533,16 @@ class GuestPickServiceTest {
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
 
+    @Test
+    @DisplayName("익명 사용자가 픽픽픽 옵션에 투표한다.")
+    void test() {
+        // given
+
+        // when
+
+        // then
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
                                             String socialType, String role) {
         return SocialMemberDto.builder()
