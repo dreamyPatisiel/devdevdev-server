@@ -6,7 +6,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
@@ -19,6 +20,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -39,9 +41,9 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     }
 
     @Override
-    public Slice<TechArticleResponse> getTechArticles(Pageable pageable, String elasticId,
-                                                         TechArticleSort techArticleSort, String keyword,
-                                                         Float score, Authentication authentication) {
+    public Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId,
+                                                          TechArticleSort techArticleSort, String keyword,
+                                                          Float score, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
@@ -49,13 +51,14 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score);
 
         // 데이터 가공
-        List<TechArticleResponse> techArticlesResponse = getTechArticlesResponse(searchHits);
+        List<TechArticleMainResponse> techArticlesResponse = getTechArticlesResponse(searchHits);
 
         return createElasticSlice(pageable, searchHits, techArticlesResponse);
     }
 
     @Override
-    public TechArticleResponse getTechArticle(Long id, Authentication authentication) {
+    @Transactional
+    public TechArticleDetailResponse getTechArticle(Long id, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
@@ -64,8 +67,11 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle);
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
 
+        // 조회수 증가
+        techArticle.incrementViewCount();
+
         // 데이터 가공
-        return getTechArticleResponse(techArticle, elasticTechArticle, companyResponse);
+        return TechArticleDetailResponse.of(elasticTechArticle, techArticle, companyResponse);
     }
 
     @Override
@@ -74,16 +80,16 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     }
 
     @Override
-    public Slice<TechArticleResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
+    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
-    private List<TechArticleResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits) {
+    private List<TechArticleMainResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits) {
         List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(searchHits);
         return mapToTechArticlesResponse(elasticTechArticlesResponse);
     }
 
-    private List<TechArticleResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticTechArticlesResponse);
         Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
 
@@ -91,12 +97,8 @@ public class GuestTechArticleService extends TechArticleCommonService implements
                 .map(findTechArticle -> {
                     ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(findTechArticle.getElasticId());
                     CompanyResponse companyResponse = createCompanyResponse(findTechArticle);
-                    return TechArticleResponse.of(elasticResponse.content(), findTechArticle, companyResponse, elasticResponse.score());
+                    return TechArticleMainResponse.of(elasticResponse.content(), findTechArticle, companyResponse, elasticResponse.score());
                 })
                 .toList();
-    }
-
-    private TechArticleResponse getTechArticleResponse(TechArticle techArticle, ElasticTechArticle elasticTechArticle, CompanyResponse companyResponse) {
-        return TechArticleResponse.of(elasticTechArticle, techArticle, companyResponse);
     }
 }

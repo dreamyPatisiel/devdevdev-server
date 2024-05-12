@@ -9,7 +9,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
@@ -50,9 +51,9 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     }
 
     @Override
-    public Slice<TechArticleResponse> getTechArticles(Pageable pageable, String elasticId,
-                                                         TechArticleSort techArticleSort, String keyword,
-                                                         Float score, Authentication authentication) {
+    public Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId,
+                                                          TechArticleSort techArticleSort, String keyword,
+                                                          Float score, Authentication authentication) {
         // 기술블로그 조회
         SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score);
 
@@ -60,25 +61,27 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 데이터 가공
-        List<TechArticleResponse> techArticlesResponse = getTechArticlesResponse(searchHits, member);
+        List<TechArticleMainResponse> techArticlesResponse = getTechArticlesResponse(searchHits, member);
 
         return createElasticSlice(pageable, searchHits, techArticlesResponse);
     }
 
     @Override
-    public TechArticleResponse getTechArticle(Long id, Authentication authentication) {
+    @Transactional
+    public TechArticleDetailResponse getTechArticle(Long id, Authentication authentication) {
         // 기술블로그 조회
         TechArticle techArticle = findTechArticle(id);
         ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle);
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
 
+        // 조회수 증가
+        techArticle.incrementViewCount();
+
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 데이터 가공
-        TechArticleResponse techArticleResponse = getTechArticleResponse(techArticle, elasticTechArticle, companyResponse, member);
-
-        return techArticleResponse;
+        return TechArticleDetailResponse.of(elasticTechArticle, techArticle, companyResponse, isBookmarkedByMember(techArticle, member));
     }
 
     @Override
@@ -104,7 +107,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     }
 
     @Override
-    public Slice<TechArticleResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
+    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
@@ -113,21 +116,17 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         List<TechArticle> techArticles = techArticleSlices.getContent();
 
         // 데이터 가공
-        List<TechArticleResponse> techArticleResponses = mapToTechArticlesResponse(techArticles);
+        List<TechArticleMainResponse> techArticleMainRespons = mapToTechArticlesResponse(techArticles);
 
-        return new SliceImpl<>(techArticleResponses, pageable, techArticleSlices.hasNext());
+        return new SliceImpl<>(techArticleMainRespons, pageable, techArticleSlices.hasNext());
     }
 
-    private List<TechArticleResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits, Member member) {
+    private List<TechArticleMainResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits, Member member) {
         List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(searchHits);
         return mapToTechArticlesResponse(elasticTechArticlesResponse, member);
     }
 
-    private TechArticleResponse getTechArticleResponse(TechArticle techArticle, ElasticTechArticle elasticTechArticle, CompanyResponse companyResponse, Member member) {
-        return TechArticleResponse.of(elasticTechArticle, techArticle, companyResponse, isBookmarkedByMember(techArticle, member));
-    }
-
-    private List<TechArticleResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse, Member member) {
+    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse, Member member) {
         List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticTechArticlesResponse);
         Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
 
@@ -135,12 +134,12 @@ public class MemberTechArticleService extends TechArticleCommonService implement
                 .map(techArticle -> {
                     ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(techArticle.getElasticId());
                     CompanyResponse companyResponse = createCompanyResponse(techArticle);
-                    return TechArticleResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), isBookmarkedByMember(techArticle, member));
+                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), isBookmarkedByMember(techArticle, member));
                 })
                 .toList();
     }
 
-    private List<TechArticleResponse> mapToTechArticlesResponse(List<TechArticle> techArticles) {
+    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<TechArticle> techArticles) {
         List<ElasticTechArticle> elasticTechArticles = findElasticTechArticlesByElasticIdsIn(techArticles);
         List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(elasticTechArticles);
         Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
@@ -149,7 +148,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
                 .map(techArticle -> {
                     ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(techArticle.getElasticId());
                     CompanyResponse companyResponse = createCompanyResponse(techArticle);
-                    return TechArticleResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), true);
+                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), true);
                 })
                 .toList();
     }

@@ -5,7 +5,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -80,8 +80,8 @@ class TechArticleCommonService {
                 .collect(Collectors.toMap(el -> el.content().getId(), Function.identity()));
     }
 
-    protected ElasticSlice<TechArticleResponse> createElasticSlice(Pageable pageable, SearchHits<ElasticTechArticle> searchHits,
-                                                                 List<TechArticleResponse> techArticlesResponse) {
+    protected ElasticSlice<TechArticleMainResponse> createElasticSlice(Pageable pageable, SearchHits<ElasticTechArticle> searchHits,
+                                                                       List<TechArticleMainResponse> techArticlesResponse) {
         long totalHits = searchHits.getTotalHits();
         boolean hasNext = hasNextPage(pageable, searchHits);
         return new ElasticSlice<>(techArticlesResponse, pageable, totalHits, hasNext);

@@ -2,7 +2,8 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -27,7 +28,7 @@ public class TechArticleController {
 
     @Operation(summary = "기술블로그 메인 조회 및 검색")
     @GetMapping("/articles")
-    public ResponseEntity<BasicResponse<Slice<TechArticleResponse>>> getTechArticles (
+    public ResponseEntity<BasicResponse<Slice<TechArticleMainResponse>>> getTechArticles (
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) TechArticleSort techArticleSort,
             @RequestParam(required = false) String elasticId,
@@ -36,18 +37,18 @@ public class TechArticleController {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<TechArticleResponse> response = techArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score, authentication);
+        Slice<TechArticleMainResponse> response = techArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
     @Operation(summary = "기술블로그 상세")
     @GetMapping("/articles/{techArticleId}")
-    public ResponseEntity<BasicResponse<TechArticleResponse>> getTechArticle (@PathVariable Long techArticleId) {
+    public ResponseEntity<BasicResponse<TechArticleDetailResponse>> getTechArticle (@PathVariable Long techArticleId) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        TechArticleResponse response = techArticleService.getTechArticle(techArticleId, authentication);
+        TechArticleDetailResponse response = techArticleService.getTechArticle(techArticleId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

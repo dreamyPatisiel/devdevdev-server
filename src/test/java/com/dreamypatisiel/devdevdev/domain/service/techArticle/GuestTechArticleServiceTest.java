@@ -6,7 +6,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
@@ -60,7 +61,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        Slice<TechArticleResponse> techArticles = guestTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
+        Slice<TechArticleMainResponse> techArticles = guestTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
 
         // then
         assertThat(techArticles)
@@ -96,15 +97,35 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        TechArticleResponse techArticleResponse = guestTechArticleService.getTechArticle(id, authentication);
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id, authentication);
 
         // then
-        assertThat(techArticleResponse)
+        assertThat(techArticleDetailResponse)
                 .isNotNull()
-                .isInstanceOf(TechArticleResponse.class)
+                .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
-                    assertThat(article.getId()).isNotNull();
                     assertThat(article.getIsBookmarked()).isFalse();
+                });
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 기술블로그 상세를 조회하면 조회수가 1 증가한다.")
+    void getTechArticleIncrementViewCount() {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
+
+        when(authentication.getPrincipal()).thenReturn("anonymousUser");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id, authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .satisfies(article -> {
+                    assertThat(article.getViewTotalCount()==prevViewTotalCount+1);
                 });
     }
 
