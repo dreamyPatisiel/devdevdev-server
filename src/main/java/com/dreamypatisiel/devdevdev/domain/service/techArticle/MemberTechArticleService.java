@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
@@ -35,6 +36,7 @@ import java.util.Optional;
 public class MemberTechArticleService extends TechArticleCommonService implements TechArticleService {
 
     private final ElasticTechArticleService elasticTechArticleService;
+    private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
     private final BookmarkRepository bookmarkRepository;
     private final MemberProvider memberProvider;
 
@@ -42,10 +44,12 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     public MemberTechArticleService(TechArticleRepository techArticleRepository,
                                     ElasticTechArticleRepository elasticTechArticleRepository,
                                     ElasticTechArticleService elasticTechArticleService,
+                                    TechArticlePopularScorePolicy techArticlePopularScorePolicy,
                                     BookmarkRepository bookmarkRepository,
                                     MemberProvider memberProvider) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
+        this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
         this.bookmarkRepository = bookmarkRepository;
         this.memberProvider = memberProvider;
     }
@@ -76,6 +80,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
         // 조회수 증가
         techArticle.incrementViewCount();
+        techArticle.changePopularScore(techArticlePopularScorePolicy);
 
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);

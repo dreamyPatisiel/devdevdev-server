@@ -131,6 +131,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         // given
         Long id = FIRST_TECH_ARTICLE_ID;
         long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
+        long prevPopularScore = firstTechArticle.getPopularScore().getCount();
 
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -151,6 +152,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
                     assertThat(article.getViewTotalCount() == prevViewTotalCount+1);
+                    assertThat(article.getPopularScore()==prevPopularScore+2);
                 });
     }
 

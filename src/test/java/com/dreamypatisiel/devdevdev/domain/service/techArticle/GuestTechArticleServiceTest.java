@@ -114,6 +114,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         // given
         Long id = FIRST_TECH_ARTICLE_ID;
         long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
+        long prevPopularScore = firstTechArticle.getPopularScore().getCount();
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -126,6 +127,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThat(techArticleDetailResponse)
                 .satisfies(article -> {
                     assertThat(article.getViewTotalCount()==prevViewTotalCount+1);
+                    assertThat(article.getPopularScore()==prevPopularScore+2);
                 });
     }
 

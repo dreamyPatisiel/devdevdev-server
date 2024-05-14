@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
@@ -32,12 +33,15 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
 
     private final ElasticTechArticleService elasticTechArticleService;
+    private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
 
     public GuestTechArticleService(TechArticleRepository techArticleRepository,
                                    ElasticTechArticleRepository elasticTechArticleRepository,
-                                   ElasticTechArticleService elasticTechArticleService) {
+                                   ElasticTechArticleService elasticTechArticleService,
+                                   TechArticlePopularScorePolicy techArticlePopularScorePolicy) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
+        this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
     }
 
     @Override
@@ -69,6 +73,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
         // 조회수 증가
         techArticle.incrementViewCount();
+        techArticle.changePopularScore(techArticlePopularScorePolicy);
 
         // 데이터 가공
         return TechArticleDetailResponse.of(elasticTechArticle, techArticle, companyResponse);
