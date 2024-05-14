@@ -226,6 +226,7 @@ public class MemberPickService implements PickService {
     /**
      * 픽픽픽 상세 조회
      */
+    @Transactional
     @Override
     public PickDetailResponse findPickDetail(Long pickId, Authentication authentication) {
         // 회원 조회

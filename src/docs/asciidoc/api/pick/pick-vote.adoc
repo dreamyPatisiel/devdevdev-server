@@ -1,0 +1,41 @@
+[[Vote-Pick]]
+== 픽픽픽 옵션(선택지) 투표 API(POST: /devdevdev/api/v1/picks/vote)
+
+* 회원이 픽픽픽 옵션(선택지)에 투표한다.
+** 현재 회원만 투표할 수 있다.
+** 비회원 투표 기능도 지원 예정
+* 투표를 하지 않은 `pickVoteId` 는 `null` 로 응답한다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/vote-pick/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/vote-pick/request-headers.adoc[]
+
+==== HTTP Request Fields
+
+include::{snippets}/vote-pick/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/vote-pick/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/vote-pick/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/vote-pick-not-found-exception/response-body.adoc[]
+include::{snippets}/vote-pick-bind-exception/response-body.adoc[]
+include::{snippets}/vote-pick-option-exception/response-body.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/vote-pick-not-found-exception/response-fields.adoc[]

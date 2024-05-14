@@ -798,7 +798,6 @@ class MemberPickServiceTest {
     @DisplayName("회원이 자신이 작성한 픽픽픽 상세를 조회한다.")
     void findPickDetail() {
         // given
-
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -811,7 +810,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), member);
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(1), new Count(0), member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -911,7 +910,8 @@ class MemberPickServiceTest {
         memberRepository.save(otherMember);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), otherMember);
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(1), new Count(0),
+                otherMember);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -1132,16 +1132,6 @@ class MemberPickServiceTest {
         assertThatThrownBy(() -> memberPickService.votePickOption(request, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("")
-    void test() {
-        // given
-
-        // when
-
-        // then
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {
