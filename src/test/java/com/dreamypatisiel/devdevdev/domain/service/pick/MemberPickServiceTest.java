@@ -1155,6 +1155,71 @@ class MemberPickServiceTest {
     }
 
     @Test
+    @DisplayName("픽픽픽 옵션에 투표한 이력이 있는 회원이 다른 픽옵션에 투표 할 경우 기존 투표 이력은 삭제되고, 새로운 투표 이력이 생성된다.")
+    void votePickOptionDeleteAndCreateNew() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member,
+                ContentStatus.APPROVAL);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
+                PickOptionType.firstPickOption, pick);
+        PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
+                PickOptionType.secondPickOption, pick);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 첫 번째 픽픽픽 옵션에 투표이력 생성
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        // 두 번째 픽픽픽 옵션에 투표
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(pick.getId())
+                .pickOptionId(secondPickOption.getId())
+                .build();
+
+        // when
+        VotePickResponse votePickResponse = memberPickService.votePickOption(request, authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(votePickResponse.getPickId()).isEqualTo(pick.getId()),
+                () -> assertThat(votePickResponse.getVotePickOptions()).hasSize(2)
+        );
+
+        VotePickOptionResponse votePickOptionResponseIndex1 = votePickResponse.getVotePickOptions().get(0);
+        assertAll(
+                () -> assertThat(votePickOptionResponseIndex1.getPickOptionId()).isEqualTo(firstPickOption.getId()),
+                () -> assertThat(votePickOptionResponseIndex1.getPickVoteId()).isNull(),
+                () -> assertThat(votePickOptionResponseIndex1.getPercent()).isEqualTo(0),
+                () -> assertThat(votePickOptionResponseIndex1.getVoteTotalCount()).isEqualTo(0),
+                () -> assertThat(votePickOptionResponseIndex1.getIsPicked()).isEqualTo(false)
+        );
+
+        VotePickOptionResponse votePickOptionResponseIndex2 = votePickResponse.getVotePickOptions().get(1);
+        assertAll(
+                () -> assertThat(votePickOptionResponseIndex2.getPickOptionId()).isEqualTo(secondPickOption.getId()),
+                () -> assertThat(votePickOptionResponseIndex2.getPickVoteId()).isNotNull(),
+                () -> assertThat(votePickOptionResponseIndex2.getPercent()).isEqualTo(100),
+                () -> assertThat(votePickOptionResponseIndex2.getVoteTotalCount()).isEqualTo(1),
+                () -> assertThat(votePickOptionResponseIndex2.getIsPicked()).isEqualTo(true)
+        );
+    }
+
+    @Test
     @DisplayName("회원이 픽픽픽 옵션을 투표할 때 이미 투표한 픽픽픽 옵션에 투표를 하면 예외가 발생한다.")
     void votePickOption_INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE() {
         // given

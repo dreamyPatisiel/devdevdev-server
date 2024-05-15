@@ -121,7 +121,7 @@ public class PickOption {
         return this.id.equals(id);
     }
 
-    public void pulseVoteTotalCount() {
+    public void plusOneVoteTotalCount() {
         this.voteTotalCount = Count.plusOne(this.voteTotalCount);
     }
 

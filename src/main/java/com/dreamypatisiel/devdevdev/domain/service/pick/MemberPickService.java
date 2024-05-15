@@ -244,7 +244,7 @@ public class MemberPickService implements PickService {
             throw new IllegalArgumentException(INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE);
         }
 
-        findPick.pulseViewTotalCount(); // 조회수 증가
+        findPick.plusOneViewTotalCount(); // 조회수 증가
         findPick.changePopularScore(pickPopularScorePolicy); // 인기점수 계산
 
         // 픽픽픽 옵션 가공
@@ -282,13 +282,16 @@ public class MemberPickService implements PickService {
             PickVote pickVote = findOptionalPickVote.get();
             PickOption findPickOptionByPickVote = pickVote.getPickOption();
 
-            // 투표하려는 픽옵션과 일치하는 경우(이미 투표한 픽옵션을 또 누를 경우)
+            // 투표하려는 픽옵션과 일치하는 경우(이미 투표한 픽옵션에 또 투표할 경우)
             if (findPickOptionByPickVote.isEqualsId(pickOptionId)) {
                 throw new VotePickOptionException(INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE);
             }
+
+            // 투표하려는 픽옵션과 일치하지 않는 경우(투표하지 않은 픽옵션에 투표할 경우)
+            pickVoteRepository.delete(pickVote); // 기존 투표 삭제
         }
 
-        // 픽 옵션에 투표한 이력이 없는 경우
+        // 픽 옵션에 투표한 이력이 없는 경우(투표 생성)
         // 픽픽픽 조회
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
@@ -325,10 +328,11 @@ public class MemberPickService implements PickService {
 
     private VotePickOptionResponse getPickedTrueVotePickOptionResponse(PickOption pickOption, Pick findPick,
                                                                        Member findMember) {
-        pickOption.pulseVoteTotalCount(); // 득표 수 증가
-        findPick.pulseVoteTotalCount(); // 득표 수 증가
+        pickOption.plusOneVoteTotalCount(); // 득표 수 증가
+        findPick.plusOneVoteTotalCount(); // 득표 수 증가
         int percent = PickOption.calculatePercentBy(findPick, pickOption).intValueExact(); // 득표율 계산
 
+        // 투표 생성
         PickVote pickVote = PickVote.createByMember(findMember, findPick, pickOption);
         pickVoteRepository.save(pickVote);
 

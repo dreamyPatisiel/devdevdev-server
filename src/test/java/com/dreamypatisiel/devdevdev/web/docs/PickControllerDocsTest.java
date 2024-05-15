@@ -1076,7 +1076,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
         modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(secondPickOption, modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -1108,14 +1108,14 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 첫 번째 옵션 선택지 내용"),
                         fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
                                 .description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
-                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER)
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NUMBER)
                                 .description("픽픽픽 두 번째 옵션 선택지 아이디"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING)
                                 .description("픽픽픽 두 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING)
                                 .description("픽픽픽 두 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY)
                                 .description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
                 ),
                 exceptionResponseFields()
@@ -1162,7 +1162,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
         modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(secondPickOption, modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -1194,14 +1194,14 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 첫 번째 옵션 선택지 내용"),
                         fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
                                 .description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
-                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NULL)
+                        fieldWithPath("pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionId").type(NULL)
                                 .description("픽픽픽 두 번째 옵션 선택지 아이디"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING)
                                 .description("픽픽픽 두 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING)
                                 .description("픽픽픽 두 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY)
                                 .description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
                 ),
                 exceptionResponseFields()
@@ -1392,7 +1392,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         // 픽픽픽 생성
         Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), new Count(0), new Count(0), new Count(0),
-                ContentStatus.REJECT, member);
+                ContentStatus.READY, member);
         pickRepository.save(pick);
 
         // when // then

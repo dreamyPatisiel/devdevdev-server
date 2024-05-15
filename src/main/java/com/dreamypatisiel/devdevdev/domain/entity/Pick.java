@@ -146,11 +146,11 @@ public class Pick extends BasicTime {
         this.title = new Title(title);
     }
 
-    public void pulseViewTotalCount() {
+    public void plusOneViewTotalCount() {
         this.viewTotalCount = Count.plusOne(this.viewTotalCount);
     }
 
-    public void pulseVoteTotalCount() {
+    public void plusOneVoteTotalCount() {
         this.voteTotalCount = Count.plusOne(this.voteTotalCount);
     }
 
