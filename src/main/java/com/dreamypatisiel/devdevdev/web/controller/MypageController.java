@@ -1,8 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -30,14 +29,14 @@ public class MypageController {
 
     @Operation(summary = "북마크 목록 조회")
     @GetMapping("/mypage/bookmarks")
-    public ResponseEntity<BasicResponse<Slice<TechArticleResponse>>> getBookmarkedTechArticles(
+    public ResponseEntity<BasicResponse<Slice<TechArticleMainResponse>>> getBookmarkedTechArticles(
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) BookmarkSort bookmarkSort, // 등록순, 최신순, 조회순
             @RequestParam(required = false) Long techArticleId) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<TechArticleResponse> response = techArticleService.getBookmarkedTechArticles(pageable, techArticleId, bookmarkSort, authentication);
+        Slice<TechArticleMainResponse> response = techArticleService.getBookmarkedTechArticles(pageable, techArticleId, bookmarkSort, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

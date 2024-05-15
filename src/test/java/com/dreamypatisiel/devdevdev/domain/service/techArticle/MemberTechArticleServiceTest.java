@@ -9,7 +9,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -27,11 +28,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-
-import java.awt.print.Book;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -75,7 +71,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        Slice<TechArticleResponse> techArticles = memberTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
+        Slice<TechArticleMainResponse> techArticles = memberTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
 
         // then
         assertThat(techArticles)
@@ -118,15 +114,45 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        TechArticleResponse techArticleResponse = memberTechArticleService.getTechArticle(id, authentication);
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, authentication);
 
         // then
-        assertThat(techArticleResponse)
+        assertThat(techArticleDetailResponse)
                 .isNotNull()
-                .isInstanceOf(TechArticleResponse.class)
+                .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
-                    assertThat(article.getId()).isNotNull();
                     assertThat(article.getIsBookmarked()).isNotNull();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 조회수가 1 증가한다.")
+    void getTechArticleIncrementViewCount() {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
+        long prevPopularScore = firstTechArticle.getPopularScore().getCount();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleDetailResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getViewTotalCount() == prevViewTotalCount+1);
+                    assertThat(article.getPopularScore()==prevPopularScore+2);
                 });
     }
 
@@ -301,12 +327,12 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         bookmarkRepository.save(bookmark);
 
         // when
-        Slice<TechArticleResponse> findTechArticles = memberTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication);
+        Slice<TechArticleMainResponse> findTechArticles = memberTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication);
 
         // then
         assertThat(findTechArticles)
                 .hasSize(pageable.getPageSize())
-                .extracting(TechArticleResponse::getIsBookmarked)
+                .extracting(TechArticleMainResponse::getIsBookmarked)
                 .contains(true);
     }
 

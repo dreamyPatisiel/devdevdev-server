@@ -299,7 +299,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
 
-                        fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
                         fieldWithPath("data.techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
                         fieldWithPath("data.thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
@@ -316,8 +315,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 추천수"),
                         fieldWithPath("data.commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
-                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
-                        fieldWithPath("data.score").attributes(authenticationType()).type(JsonFieldType.NULL).description("기술블로그 검색 점수(정확도)")
+                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
                 )
         ));
     }

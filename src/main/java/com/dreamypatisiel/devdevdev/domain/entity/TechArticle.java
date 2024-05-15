@@ -112,6 +112,10 @@ public class TechArticle extends BasicTime {
         this.company = company;
     }
 
+    public void incrementViewCount() {
+        this.viewTotalCount.incrementCount();
+    }
+
     private Count calculatePopularScore(TechArticlePopularScorePolicy policy) {
         return policy.calculatePopularScore(this);
     }
