@@ -11,4 +11,5 @@ public class PickExceptionMessage {
     public static final String INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE = "회원 본인이 작성한 게시글만 수정할 수 있습니다.";
     public static final String INVALID_NOT_FOUND_PICK_OPTION_MESSAGE = "픽픽픽 선택지가 존재하지 않습니다.";
     public static final String INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE = "동일한 픽픽픽 선택지에 투표할 수 없습니다.";
+    public static final String INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE = "픽픽픽 게시글 상태가 승인 상태가 아닙니다. 관리자에게 문의하세요.";
 }

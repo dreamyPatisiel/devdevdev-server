@@ -2,11 +2,14 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -61,6 +64,9 @@ public class Pick extends BasicTime {
     private String thumbnailUrl;
     private String author;
 
+    @Enumerated(EnumType.STRING)
+    private ContentStatus contentStatus;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -79,8 +85,7 @@ public class Pick extends BasicTime {
 
     @Builder
     private Pick(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, Count popularScore,
-                 String thumbnailUrl,
-                 String author, Member member) {
+                 String thumbnailUrl, String author, ContentStatus contentStatus, Member member) {
         this.title = title;
         this.voteTotalCount = voteTotalCount;
         this.viewTotalCount = viewTotalCount;
@@ -88,6 +93,7 @@ public class Pick extends BasicTime {
         this.popularScore = popularScore;
         this.thumbnailUrl = thumbnailUrl;
         this.author = author;
+        this.contentStatus = contentStatus;
         this.member = member;
     }
 
@@ -98,8 +104,9 @@ public class Pick extends BasicTime {
         pick.viewTotalCount = new Count(0);
         pick.commentTotalCount = new Count(0);
         pick.popularScore = new Count(0);
-        pick.member = member;
         pick.author = author;
+        pick.contentStatus = ContentStatus.READY;
+        pick.member = member;
 
         return pick;
     }
@@ -149,5 +156,13 @@ public class Pick extends BasicTime {
 
     public void minusVoteTotalCount() {
         this.voteTotalCount = Count.minusOne(this.voteTotalCount);
+    }
+
+    public void changeContentStatus(ContentStatus contentStatus) {
+        this.contentStatus = contentStatus;
+    }
+
+    public boolean isTrueContentStatus(ContentStatus contentStatus) {
+        return this.contentStatus.equals(contentStatus);
     }
 }

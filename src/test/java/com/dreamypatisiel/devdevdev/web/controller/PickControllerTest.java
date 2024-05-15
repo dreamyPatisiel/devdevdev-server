@@ -31,6 +31,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -100,7 +101,7 @@ class PickControllerTest extends SupportControllerTest {
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
         Pick pick = createPick(title, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+                thumbnailUrl, author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
         pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
@@ -176,7 +177,7 @@ class PickControllerTest extends SupportControllerTest {
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
         Pick pick = createPick(title, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+                thumbnailUrl, author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
         pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
@@ -759,7 +760,8 @@ class PickControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), new Count(0), new Count(0), new Count(0), member);
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), new Count(0), new Count(0), new Count(0),
+                ContentStatus.APPROVAL, member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -829,7 +831,8 @@ class PickControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member);
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0),
+                ContentStatus.APPROVAL, member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -903,13 +906,14 @@ class PickControllerTest extends SupportControllerTest {
     }
 
     private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,
-                            Count poplarScore, Member member) {
+                            Count poplarScore, ContentStatus contentStatus, Member member) {
         return Pick.builder()
                 .title(title)
                 .viewTotalCount(viewTotalCount)
                 .voteTotalCount(voteTotalCount)
                 .commentTotalCount(commentTotalCount)
                 .popularScore(poplarScore)
+                .contentStatus(contentStatus)
                 .member(member)
                 .build();
     }
@@ -1073,6 +1077,7 @@ class PickControllerTest extends SupportControllerTest {
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
+                            ContentStatus contentStatus,
                             List<PickOption> pickOptions, List<PickVote> pickVotes
     ) {
 
@@ -1083,6 +1088,7 @@ class PickControllerTest extends SupportControllerTest {
                 .commentTotalCount(pickcommentTotalCount)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(contentStatus)
                 .build();
 
         pick.changePickOptions(pickOptions);
