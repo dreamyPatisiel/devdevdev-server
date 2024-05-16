@@ -17,6 +17,10 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -25,10 +29,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -57,9 +57,10 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     @Override
     public Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId,
                                                           TechArticleSort techArticleSort, String keyword,
-                                                          Float score, Authentication authentication) {
+                                                          Long companyId, Float score, Authentication authentication) {
         // 기술블로그 조회
-        SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score);
+        SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId,
+                techArticleSort, keyword, companyId, score);
 
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
@@ -86,7 +87,8 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 데이터 가공
-        return TechArticleDetailResponse.of(elasticTechArticle, techArticle, companyResponse, isBookmarkedByMember(techArticle, member));
+        return TechArticleDetailResponse.of(elasticTechArticle, techArticle, companyResponse,
+                isBookmarkedByMember(techArticle, member));
     }
 
     @Override
@@ -112,12 +114,15 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     }
 
     @Override
-    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
+    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId,
+                                                                    BookmarkSort bookmarkSort,
+                                                                    Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 북마크 기술블로그 조회(rds, elasticsearch)
-        Slice<TechArticle> techArticleSlices = findBookmarkedTechArticles(pageable, techArticleId, bookmarkSort, member);
+        Slice<TechArticle> techArticleSlices = findBookmarkedTechArticles(pageable, techArticleId, bookmarkSort,
+                member);
         List<TechArticle> techArticles = techArticleSlices.getContent();
 
         // 데이터 가공
@@ -126,40 +131,57 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         return new SliceImpl<>(techArticleMainRespons, pageable, techArticleSlices.hasNext());
     }
 
-    private List<TechArticleMainResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits, Member member) {
-        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(searchHits);
+    private List<TechArticleMainResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits,
+                                                                  Member member) {
+        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(
+                searchHits);
         return mapToTechArticlesResponse(elasticTechArticlesResponse, member);
     }
 
-    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse, Member member) {
+    private List<TechArticleMainResponse> mapToTechArticlesResponse(
+            List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse, Member member) {
+
+        // 조회 결과가 없을 경우 빈 리스트 응답
+        if (elasticTechArticlesResponse.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticTechArticlesResponse);
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
+        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(
+                elasticTechArticlesResponse);
 
         return findTechArticles.stream()
                 .map(techArticle -> {
-                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(techArticle.getElasticId());
+                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(
+                            techArticle.getElasticId());
                     CompanyResponse companyResponse = createCompanyResponse(techArticle);
-                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), isBookmarkedByMember(techArticle, member));
+                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse,
+                            elasticResponse.score(), isBookmarkedByMember(techArticle, member));
                 })
                 .toList();
     }
 
     private List<TechArticleMainResponse> mapToTechArticlesResponse(List<TechArticle> techArticles) {
         List<ElasticTechArticle> elasticTechArticles = findElasticTechArticlesByElasticIdsIn(techArticles);
-        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(elasticTechArticles);
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
-        
+        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(
+                elasticTechArticles);
+        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(
+                elasticTechArticlesResponse);
+
         return techArticles.stream()
                 .map(techArticle -> {
-                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(techArticle.getElasticId());
+                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(
+                            techArticle.getElasticId());
                     CompanyResponse companyResponse = createCompanyResponse(techArticle);
-                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse, elasticResponse.score(), true);
+                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse,
+                            elasticResponse.score(), true);
                 })
                 .toList();
     }
 
     private boolean isBookmarkedByMember(TechArticle techArticle, Member member) {
-        boolean isBookmarked = bookmarkRepository.findByTechArticleAndMember(techArticle, member).map(Bookmark::isBookmarked).orElse(false);
+        boolean isBookmarked = bookmarkRepository.findByTechArticleAndMember(techArticle, member)
+                .map(Bookmark::isBookmarked).orElse(false);
         return isBookmarked;
     }
 }
