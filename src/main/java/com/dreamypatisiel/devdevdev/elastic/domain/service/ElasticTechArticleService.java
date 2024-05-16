@@ -41,7 +41,7 @@ public class ElasticTechArticleService {
     public SearchHits<ElasticTechArticle> getTechArticles(Pageable pageable, String elasticId,
                                                           TechArticleSort techArticleSort, String keyword,
                                                           Long companyId, Float score) {
-        if (StringUtils.hasText(keyword)) {
+        if (!StringUtils.hasText(keyword)) {
             return findTechArticles(pageable, elasticId, techArticleSort, companyId);
         }
 
@@ -77,7 +77,7 @@ public class ElasticTechArticleService {
                                                               Long companyId, Float score) {
 
         // 검색어 유무 확인
-        if (StringUtils.hasText(keyword)) {
+        if (!StringUtils.hasText(keyword)) {
             throw new ElasticTechArticleException(INVALID_ELASTIC_METHODS_CALL_MESSAGE);
         }
 
@@ -132,7 +132,7 @@ public class ElasticTechArticleService {
 
     private void setSearchAfterCondition(String elasticId, TechArticleSort techArticleSort,
                                          NativeSearchQuery searchQuery) {
-        if (StringUtils.hasText(elasticId)) {
+        if (!StringUtils.hasText(elasticId)) {
             return;
         }
 
@@ -144,7 +144,7 @@ public class ElasticTechArticleService {
 
     private void setSearchAfterConditionWhenSearch(String elasticId, Float score, TechArticleSort techArticleSort,
                                                    NativeSearchQuery searchQuery) {
-        if (StringUtils.hasText(elasticId)) {
+        if (!StringUtils.hasText(elasticId)) {
             return;
         }
 

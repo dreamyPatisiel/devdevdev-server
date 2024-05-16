@@ -42,7 +42,7 @@ class TechArticleCommonService {
     protected ElasticTechArticle findElasticTechArticle(TechArticle techArticle) {
         String elasticId = techArticle.getElasticId();
 
-        if (StringUtils.hasText(elasticId)) {
+        if (!StringUtils.hasText(elasticId)) {
             throw new TechArticleException(NOT_FOUND_ELASTIC_ID_MESSAGE);
         }
 
