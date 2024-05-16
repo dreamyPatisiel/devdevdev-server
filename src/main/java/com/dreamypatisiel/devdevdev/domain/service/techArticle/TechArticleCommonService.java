@@ -78,10 +78,11 @@ class TechArticleCommonService {
             List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         List<String> elasticIds = getElasticIds(elasticTechArticlesResponse);
 
+        // 추출한 elasticId가 없다면 빈 리스트 응답
         if (elasticIds.isEmpty()) {
             return Collections.emptyList();
         }
-        
+
         return techArticleRepository.findAllByElasticIdIn(elasticIds);
     }
 

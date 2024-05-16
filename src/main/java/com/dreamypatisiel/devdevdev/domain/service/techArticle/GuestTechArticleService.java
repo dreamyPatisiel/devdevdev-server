@@ -14,6 +14,7 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +100,12 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
     private List<TechArticleMainResponse> mapToTechArticlesResponse(
             List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+
+        // 조회 결과가 없을 경우 빈 리스트 응답
+        if (elasticTechArticlesResponse.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticTechArticlesResponse);
         Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(
                 elasticTechArticlesResponse);

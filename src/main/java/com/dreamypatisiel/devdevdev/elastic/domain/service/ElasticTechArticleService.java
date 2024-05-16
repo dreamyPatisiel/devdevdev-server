@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.elastic.domain.service;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_ELASTIC_METHODS_CALL_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_CURSOR_SCORE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._COMPANY_ID;
 import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._ID;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
@@ -107,7 +108,7 @@ public class ElasticTechArticleService {
         if (ObjectUtils.isEmpty(companyId)) {
             return;
         }
-        queryBuilder.withFilter(QueryBuilders.termQuery("companyId", companyId));
+        queryBuilder.withFilter(QueryBuilders.termQuery(_COMPANY_ID, companyId));
     }
 
     private FieldSortBuilder getPrimarySortCondition(String fieldName) {
