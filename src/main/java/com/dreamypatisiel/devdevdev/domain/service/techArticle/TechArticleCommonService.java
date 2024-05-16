@@ -24,12 +24,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Component
 @RequiredArgsConstructor
@@ -42,7 +42,7 @@ class TechArticleCommonService {
     protected ElasticTechArticle findElasticTechArticle(TechArticle techArticle) {
         String elasticId = techArticle.getElasticId();
 
-        if (ObjectUtils.isEmpty(elasticId)) {
+        if (StringUtils.hasText(elasticId)) {
             throw new TechArticleException(NOT_FOUND_ELASTIC_ID_MESSAGE);
         }
 
