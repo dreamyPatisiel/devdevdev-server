@@ -70,7 +70,8 @@ class TechArticleControllerTest extends SupportControllerTest {
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
-                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", (long) i, (long) i, (long) i,
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", 1L, (long) i, (long) i,
+                    (long) i,
                     (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
@@ -100,12 +101,22 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("익명 사용자가 기술블로그 메인을 조회한다.")
     void getTechArticlesByAnonymous() throws Exception {
         // given
+        Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
+        String companyId = "1";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("keyword", keyword)
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("companyId", companyId)
+                        .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
@@ -171,12 +182,22 @@ class TechArticleControllerTest extends SupportControllerTest {
         }
         bookmarkRepository.saveAll(bookmarks);
 
+        Pageable prevPageable = PageRequest.of(0, 10);
         Pageable pageable = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
+        String companyId = "1";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("keyword", keyword)
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("companyId", companyId)
+                        .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -541,7 +562,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
                                                                String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
-                                                               String company,
+                                                               String company, Long companyId,
                                                                Long viewTotalCount, Long recommendTotalCount,
                                                                Long commentTotalCount,
                                                                Long popularScore) {
@@ -554,6 +575,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
                 .company(company)
+                .companyId(companyId)
                 .viewTotalCount(viewTotalCount)
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)

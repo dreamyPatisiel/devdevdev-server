@@ -84,7 +84,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 1; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
-                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "회사", (long) i, (long) i, (long) i,
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "회사", 1L, (long) i, (long) i,
+                    (long) i,
                     (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
@@ -135,6 +136,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles.getLast();
         String keyword = "타이틀";
+        String companyId = "1";
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
@@ -142,6 +144,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
                         .queryParam("keyword", keyword)
                         .queryParam("elasticId", cursor.getId())
+                        .queryParam("companyId", companyId)
                         .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -161,6 +164,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("techArticleSort").optional().description("정렬 조건")
                                 .attributes(techArticleSortType()),
                         parameterWithName("keyword").optional().description("검색어"),
+                        parameterWithName("companyId").optional().description("회사 아이디"),
                         parameterWithName("elasticId").optional().description("마지막 데이터의 엘라스틱서치 아이디"),
                         parameterWithName("score").optional().description("마지막 데이터의 정확도 점수(정확도순 검색일 때에만 필수)")
                 ),
@@ -546,7 +550,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
                                                                String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
-                                                               String company,
+                                                               String company, Long companyId,
                                                                Long viewTotalCount, Long recommendTotalCount,
                                                                Long commentTotalCount,
                                                                Long popularScore) {
@@ -559,6 +563,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
                 .company(company)
+                .companyId(companyId)
                 .viewTotalCount(viewTotalCount)
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)
