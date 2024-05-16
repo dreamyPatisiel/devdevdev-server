@@ -1,26 +1,41 @@
 [[Pick-Register]]
 == 픽픽픽 작성 API(POST: /devdevdev/api/v1/picks)
+
 * 픽픽픽을 작성한다.
 * 회원만 픽픽픽 작성을 할 수 있다.
+** 작성시 픽픽픽 게시글 상태는(`READY`) 이다.
 * 픽픽픽 작성시 이미지는 있을 수도 없을 수도 있다.
 ** 픽픽픽 이미지가 없을 경우 `pickOptionImageIds` 를 빈 배열로 요청해야 한다.
 
 === 정상 요청/응답
+
 ==== HTTP Request
+
 include::{snippets}/pick-register/http-request.adoc[]
+
 ==== HTTP Request Header Fields
+
 include::{snippets}/pick-register/request-headers.adoc[]
+
 ==== HTTP Request Fields
+
 include::{snippets}/pick-register/request-fields.adoc[]
 
 ==== HTTP Response
+
 include::{snippets}/pick-register/http-response.adoc[]
+
 ==== HTTP Response Fields
+
 include::{snippets}/pick-register/response-fields.adoc[]
 
 === 예외
+
 ==== HTTP Response
+
 include::{snippets}/pick-register-anonymous-exception/response-body.adoc[]
 include::{snippets}/pick-register-pick-option-name-exception/response-body.adoc[]
+
 ==== HTTP Response Fields
+
 include::{snippets}/pick-register-anonymous-exception/response-fields.adoc[]

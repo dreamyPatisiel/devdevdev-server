@@ -50,7 +50,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     }
 
     @Override
-    public Optional<Pick> findPickAndPickOptionByPickId(Long pickId) {
+    public Optional<Pick> findPickWithPickOptionWithPickVoteWithMemberByPickId(Long pickId) {
         Pick findPick = query.selectFrom(pick)
                 .innerJoin(pick.pickOptions, pickOption).fetchJoin()
                 .leftJoin(pick.pickVotes, pickVote)
@@ -62,7 +62,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     }
 
     @Override
-    public Optional<Pick> findPickDetailByPickId(Long pickId) {
+    public Optional<Pick> findPickWithPickOptionByPickId(Long pickId) {
         Pick findPick = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption).fetchJoin()
                 .where(pick.id.eq(pickId))

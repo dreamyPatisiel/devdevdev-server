@@ -8,9 +8,11 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -115,6 +117,18 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
         PickDetailResponse response = pickService.findPickDetail(pickId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "픽픽픽 선택지 투표", description = "픽픽픽 상세 페이지에서 픽픽픽 선택지에 투표합니다.")
+    @PostMapping("/picks/vote")
+    public ResponseEntity<BasicResponse<VotePickResponse>> votePickOption(
+            @RequestBody @Validated VotePickOptionRequest votePickOptionRequest) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        VotePickResponse response = pickService.votePickOption(votePickOptionRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

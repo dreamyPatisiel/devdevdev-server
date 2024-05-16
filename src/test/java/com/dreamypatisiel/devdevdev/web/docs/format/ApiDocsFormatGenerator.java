@@ -50,4 +50,8 @@ public interface ApiDocsFormatGenerator {
 
         return key(FORMAT).value(bookmarkSortType);
     }
+
+    static Attributes.Attribute numberOrNull() {
+        return key(FORMAT).value("Number | null");
+    }
 }

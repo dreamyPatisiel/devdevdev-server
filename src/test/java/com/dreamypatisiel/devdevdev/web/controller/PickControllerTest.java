@@ -31,6 +31,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -47,6 +48,7 @@ import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionReque
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -99,7 +101,7 @@ class PickControllerTest extends SupportControllerTest {
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
         Pick pick = createPick(title, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+                thumbnailUrl, author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
         pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
@@ -175,7 +177,7 @@ class PickControllerTest extends SupportControllerTest {
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
         Pick pick = createPick(title, count, count, count,
-                thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
+                thumbnailUrl, author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
         pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
@@ -758,7 +760,8 @@ class PickControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), member);
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), new Count(0), new Count(0), new Count(0),
+                ContentStatus.APPROVAL, member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -814,8 +817,105 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pickOptions.secondPickOption.pickDetailOptionImages").isArray())
                 .andExpect(jsonPath("$.data.pickOptions.secondPickOption.pickDetailOptionImages[0].id").isNumber())
                 .andExpect(
-                        jsonPath("$.data.pickOptions.secondPickOption.pickDetailOptionImages[0].imageUrl").isString())
-        ;
+                        jsonPath("$.data.pickOptions.secondPickOption.pickDetailOptionImages[0].imageUrl").isString());
+    }
+
+    @Test
+    @DisplayName("픽픽픽 옵션에 투표한 이력이 없는 회원이 픽픽픽 옵션 중 하나에 투표한다.")
+    void votePickOption() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0),
+                ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
+                PickOptionType.firstPickOption, pick);
+        PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
+                PickOptionType.secondPickOption, pick);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(pick.getId())
+                .pickOptionId(firstPickOption.getId())
+                .build();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/picks/vote")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.pickId").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions").isArray())
+                .andExpect(jsonPath("$.data.votePickOptions.[0].pickOptionId").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[0].pickVoteId").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[0].voteTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[0].percent").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[0].isPicked").isBoolean())
+                .andExpect(jsonPath("$.data.votePickOptions.[1].pickOptionId").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[1].pickVoteId").isEmpty())
+                .andExpect(jsonPath("$.data.votePickOptions.[1].voteTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[1].percent").isNumber())
+                .andExpect(jsonPath("$.data.votePickOptions.[1].isPicked").isBoolean());
+    }
+
+    @Test
+    @DisplayName("픽픽픽 선택지에 투표할 때 pickId와 pcikOptionId가 null 이면 예외가 발생한다.")
+    void votePickOptionBindException() throws Exception {
+        // given // when
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(null)
+                .pickOptionId(null)
+                .build();
+
+        // then
+        mockMvc.perform(post("/devdevdev/api/v1/picks/vote")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,
+                            Count poplarScore, ContentStatus contentStatus, Member member) {
+        return Pick.builder()
+                .title(title)
+                .viewTotalCount(viewTotalCount)
+                .voteTotalCount(voteTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(poplarScore)
+                .contentStatus(contentStatus)
+                .member(member)
+                .build();
     }
 
     private PickOptionImage createPickOptionImage(String name, String imageUrl, PickOption pickOption) {
@@ -977,6 +1077,7 @@ class PickControllerTest extends SupportControllerTest {
 
     private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
+                            ContentStatus contentStatus,
                             List<PickOption> pickOptions, List<PickVote> pickVotes
     ) {
 
@@ -987,6 +1088,7 @@ class PickControllerTest extends SupportControllerTest {
                 .commentTotalCount(pickcommentTotalCount)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(contentStatus)
                 .build();
 
         pick.changePickOptions(pickOptions);
