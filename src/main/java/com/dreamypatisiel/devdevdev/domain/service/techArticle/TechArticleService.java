@@ -13,7 +13,8 @@ import org.springframework.stereotype.Service;
 @Service
 public interface TechArticleService {
     Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort,
-                                                   String keyword, Float score, Authentication authentication);
+                                                   String keyword, Long companyId, Float score,
+                                                   Authentication authentication);
 
     TechArticleDetailResponse getTechArticle(Long id, Authentication authentication);
 

@@ -1,6 +1,30 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techArticleSortType;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
@@ -16,6 +40,13 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -27,31 +58,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techArticleSortType;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
@@ -77,11 +83,15 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 1; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "회사", (long)i, (long)i, (long)i, (long)i*10);
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "회사", (long) i, (long) i, (long) i,
+                    (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
-        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
-        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
+        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
+                elasticTechArticles);
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"),
+                new Url("https://example.com"));
         Company savedCompany = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
@@ -112,7 +122,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
-            if(creatRandomBoolean()){
+            if (creatRandomBoolean()) {
                 Bookmark bookmark = createBookmark(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
@@ -121,7 +131,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         Pageable prevPageable = PageRequest.of(0, 10);
         Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream().toList();
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
         ElasticTechArticle cursor = elasticTechArticles.getLast();
         String keyword = "타이틀";
 
@@ -137,7 +148,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk());
-        
+
         // docs
         actions.andDo(document("tech-article-main",
                 preprocessRequest(prettyPrint()),
@@ -147,7 +158,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 queryParameters(
                         parameterWithName("size").optional().description("조회되는 데이터 수"),
-                        parameterWithName("techArticleSort").optional().description("정렬 조건").attributes(techArticleSortType()),
+                        parameterWithName("techArticleSort").optional().description("정렬 조건")
+                                .attributes(techArticleSortType()),
                         parameterWithName("keyword").optional().description("검색어"),
                         parameterWithName("elasticId").optional().description("마지막 데이터의 엘라스틱서치 아이디"),
                         parameterWithName("score").optional().description("마지막 데이터의 정확도 점수(정확도순 검색일 때에만 필수)")
@@ -158,22 +170,33 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("기술블로그 메인 배열"),
                         fieldWithPath("data.content.[].id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
-                        fieldWithPath("data.content.[].elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
-                        fieldWithPath("data.content.[].techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
-                        fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
+                        fieldWithPath("data.content.[].elasticId").type(JsonFieldType.STRING)
+                                .description("기술블로그 엘라스틱서치 아이디"),
+                        fieldWithPath("data.content.[].techArticleUrl").type(JsonFieldType.STRING)
+                                .description("기술블로그 Url"),
+                        fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING)
+                                .description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.content.[].title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.content.[].contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
                         fieldWithPath("data.content.[].company").type(JsonFieldType.OBJECT).description("기술블로그 회사"),
-                        fieldWithPath("data.content.[].company.id").type(JsonFieldType.NUMBER).description("기술블로그 회사 id"),
-                        fieldWithPath("data.content.[].company.name").type(JsonFieldType.STRING).description("기술블로그 회사 이름"),
-                        fieldWithPath("data.content.[].company.careerUrl").type(JsonFieldType.STRING).description("기술블로그 회사 채용페이지"),
+                        fieldWithPath("data.content.[].company.id").type(JsonFieldType.NUMBER)
+                                .description("기술블로그 회사 id"),
+                        fieldWithPath("data.content.[].company.name").type(JsonFieldType.STRING)
+                                .description("기술블로그 회사 이름"),
+                        fieldWithPath("data.content.[].company.careerUrl").type(JsonFieldType.STRING)
+                                .description("기술블로그 회사 채용페이지"),
                         fieldWithPath("data.content.[].regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.content.[].author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
-                        fieldWithPath("data.content.[].viewTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 조회수"),
-                        fieldWithPath("data.content.[].recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 추천수"),
-                        fieldWithPath("data.content.[].commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
-                        fieldWithPath("data.content.[].popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
-                        fieldWithPath("data.content.[].isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                        fieldWithPath("data.content.[].viewTotalCount").type(JsonFieldType.NUMBER)
+                                .description("기술블로그 조회수"),
+                        fieldWithPath("data.content.[].recommendTotalCount").type(JsonFieldType.NUMBER)
+                                .description("기술블로그 추천수"),
+                        fieldWithPath("data.content.[].commentTotalCount").type(JsonFieldType.NUMBER)
+                                .description("기술블로그 댓글수"),
+                        fieldWithPath("data.content.[].popularScore").type(JsonFieldType.NUMBER)
+                                .description("기술블로그 인기점수"),
+                        fieldWithPath("data.content.[].isBookmarked").attributes(authenticationType())
+                                .type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
                         fieldWithPath("data.content.[].score").type(JsonFieldType.NUMBER).description("정확도 점수"),
 
                         fieldWithPath("data.pageable").type(JsonFieldType.OBJECT).description("페이지네이션 정보"),
@@ -181,11 +204,13 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.pageable.pageSize").type(JsonFieldType.NUMBER).description("페이지 사이즈"),
 
                         fieldWithPath("data.pageable.sort").type(JsonFieldType.OBJECT).description("정렬 정보"),
-                        fieldWithPath("data.pageable.sort.empty").type(JsonFieldType.BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.pageable.sort.empty").type(JsonFieldType.BOOLEAN)
+                                .description("정렬 정보가 비어있는지 여부"),
                         fieldWithPath("data.pageable.sort.sorted").type(JsonFieldType.BOOLEAN).description("정렬 여부"),
                         fieldWithPath("data.pageable.sort.unsorted").type(JsonFieldType.BOOLEAN).description("비정렬 여부"),
 
-                        fieldWithPath("data.pageable.offset").type(JsonFieldType.NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
+                        fieldWithPath("data.pageable.offset").type(JsonFieldType.NUMBER)
+                                .description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
                         fieldWithPath("data.pageable.paged").type(JsonFieldType.BOOLEAN).description("페이지 정보 포함 여부"),
                         fieldWithPath("data.pageable.unpaged").type(JsonFieldType.BOOLEAN).description("페이지 정보 비포함 여부"),
 
@@ -239,7 +264,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         // given
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream().toList();
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
         ElasticTechArticle cursor = elasticTechArticles.getLast();
         String keyword = "타이틀";
 
@@ -307,7 +333,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.company").type(JsonFieldType.OBJECT).description("기술블로그 회사"),
                         fieldWithPath("data.company.id").type(JsonFieldType.NUMBER).description("기술블로그 회사 id"),
                         fieldWithPath("data.company.name").type(JsonFieldType.STRING).description("기술블로그 회사 이름"),
-                        fieldWithPath("data.company.careerUrl").type(JsonFieldType.STRING).description("기술블로그 회사 채용페이지"),
+                        fieldWithPath("data.company.careerUrl").type(JsonFieldType.STRING)
+                                .description("기술블로그 회사 채용페이지"),
                         fieldWithPath("data.regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
                         fieldWithPath("data.contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
@@ -315,7 +342,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 추천수"),
                         fieldWithPath("data.commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
-                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
+                        fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN)
+                                .description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
                 )
         ));
     }
@@ -357,10 +385,11 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId()+1;
+        Long id = savedTechArticle.getId() + 1;
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
@@ -384,7 +413,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -411,7 +441,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), "elasticId", null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -476,7 +507,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         ));
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
@@ -487,7 +519,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .role(Role.valueOf(role))
                 .build();
     }
-    
+
     private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
         return Bookmark.builder()
                 .member(member)
@@ -509,5 +541,28 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         long randomDays = ThreadLocalRandom.current().nextLong(daysBetween + 1);
 
         return startDate.plusDays(randomDays);
+    }
+
+    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+                                                               String techArticleUrl,
+                                                               String description, String thumbnailUrl, String author,
+                                                               String company,
+                                                               Long viewTotalCount, Long recommendTotalCount,
+                                                               Long commentTotalCount,
+                                                               Long popularScore) {
+        return ElasticTechArticle.builder()
+                .title(title)
+                .regDate(regDate)
+                .contents(contents)
+                .techArticleUrl(techArticleUrl)
+                .description(description)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .company(company)
+                .viewTotalCount(viewTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .build();
     }
 }

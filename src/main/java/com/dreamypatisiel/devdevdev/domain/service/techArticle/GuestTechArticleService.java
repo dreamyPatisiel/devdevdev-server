@@ -14,6 +14,8 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -22,9 +24,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -47,12 +46,13 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     @Override
     public Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId,
                                                           TechArticleSort techArticleSort, String keyword,
-                                                          Float score, Authentication authentication) {
+                                                          Long companyId, Float score, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 기술블로그 조회
-        SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId, techArticleSort, keyword, score);
+        SearchHits<ElasticTechArticle> searchHits = elasticTechArticleService.getTechArticles(pageable, elasticId,
+                techArticleSort, keyword, companyId, score);
 
         // 데이터 가공
         List<TechArticleMainResponse> techArticlesResponse = getTechArticlesResponse(searchHits);
@@ -85,24 +85,31 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     }
 
     @Override
-    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Authentication authentication) {
+    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId,
+                                                                    BookmarkSort bookmarkSort,
+                                                                    Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     private List<TechArticleMainResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits) {
-        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(searchHits);
+        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(
+                searchHits);
         return mapToTechArticlesResponse(elasticTechArticlesResponse);
     }
 
-    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+    private List<TechArticleMainResponse> mapToTechArticlesResponse(
+            List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         List<TechArticle> findTechArticles = getTechArticlesByElasticIdsIn(elasticTechArticlesResponse);
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(elasticTechArticlesResponse);
+        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(
+                elasticTechArticlesResponse);
 
         return findTechArticles.stream()
                 .map(findTechArticle -> {
-                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(findTechArticle.getElasticId());
+                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(
+                            findTechArticle.getElasticId());
                     CompanyResponse companyResponse = createCompanyResponse(findTechArticle);
-                    return TechArticleMainResponse.of(elasticResponse.content(), findTechArticle, companyResponse, elasticResponse.score());
+                    return TechArticleMainResponse.of(elasticResponse.content(), findTechArticle, companyResponse,
+                            elasticResponse.score());
                 })
                 .toList();
     }

@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.elastic.domain.document;
 
+import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
@@ -7,10 +8,8 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.time.LocalDate;
-
 @Getter
-@Document(indexName = "articles"+"#{@elasticsearchIndexConfigService.getIndexName()}")
+@Document(indexName = "articles" + "#{@elasticsearchIndexConfigService.getIndexName()}")
 public class ElasticTechArticle {
     @Id
     private String id;
@@ -56,8 +55,9 @@ public class ElasticTechArticle {
 
     @Builder
     public ElasticTechArticle(String id, String title, LocalDate regDate, String contents, String techArticleUrl,
-                              String description, String thumbnailUrl, String author, String company,
-                              Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore) {
+                              String description, String thumbnailUrl, String author, Long companyId, String company,
+                              Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount,
+                              Long popularScore) {
         this.id = id;
         this.title = title;
         this.regDate = regDate;
@@ -66,29 +66,11 @@ public class ElasticTechArticle {
         this.description = description;
         this.thumbnailUrl = thumbnailUrl;
         this.author = author;
+        this.companyId = companyId;
         this.company = company;
         this.viewTotalCount = viewTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.commentTotalCount = commentTotalCount;
         this.popularScore = popularScore;
-    }
-
-    public static ElasticTechArticle of(String title, LocalDate regDate, String contents, String techArticleUrl,
-                                        String description, String thumbnailUrl, String author, String company,
-                                        Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore) {
-        return ElasticTechArticle.builder()
-                .title(title)
-                .regDate(regDate)
-                .contents(contents)
-                .techArticleUrl(techArticleUrl)
-                .description(description)
-                .thumbnailUrl(thumbnailUrl)
-                .author(author)
-                .company(company)
-                .viewTotalCount(viewTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .commentTotalCount(commentTotalCount)
-                .popularScore(popularScore)
-                .build();
     }
 }
