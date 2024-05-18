@@ -17,6 +17,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -615,6 +616,7 @@ class GuestPickServiceTest {
                 .popularScore(pickPopularScore)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
 
         pick.changePickVote(pickVotes);
@@ -634,6 +636,7 @@ class GuestPickServiceTest {
                 .commentTotalCount(pickcommentTotalCount)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
 
         pick.changePickVote(pickVotes);

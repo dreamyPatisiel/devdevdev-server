@@ -10,6 +10,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -254,6 +255,7 @@ class PickRepositoryTest {
     private Pick createPick(Title title) {
         return Pick.builder()
                 .title(title)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
@@ -261,6 +263,7 @@ class PickRepositoryTest {
         return Pick.builder()
                 .title(title)
                 .popularScore(popularScore)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
@@ -268,6 +271,7 @@ class PickRepositoryTest {
         return Pick.builder()
                 .title(title)
                 .viewTotalCount(viewTotalCount)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
@@ -275,6 +279,7 @@ class PickRepositoryTest {
         return Pick.builder()
                 .title(title)
                 .commentTotalCount(commentTotalCount)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
@@ -297,6 +302,7 @@ class PickRepositoryTest {
                 .commentTotalCount(pickcommentTotalCount)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
 
         pick.changePickOptions(pickOptions);
