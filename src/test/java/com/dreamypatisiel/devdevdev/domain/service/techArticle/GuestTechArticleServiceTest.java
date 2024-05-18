@@ -1,12 +1,21 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.when;
+
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
@@ -25,12 +34,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
-import static com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
 class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
 
@@ -60,7 +63,8 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        Slice<TechArticleResponse> techArticles = guestTechArticleService.getTechArticles(pageable, null, null, null, null, authentication);
+        Slice<TechArticleMainResponse> techArticles = guestTechArticleService.getTechArticles(pageable, null, null,
+                null, null, null, authentication);
 
         // then
         assertThat(techArticles)
@@ -80,7 +84,8 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticles(pageable, null, null, null, null, authentication))
+        assertThatThrownBy(
+                () -> guestTechArticleService.getTechArticles(pageable, null, null, null, null, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE);
     }
@@ -96,15 +101,39 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        TechArticleResponse techArticleResponse = guestTechArticleService.getTechArticle(id, authentication);
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id,
+                authentication);
 
         // then
-        assertThat(techArticleResponse)
+        assertThat(techArticleDetailResponse)
                 .isNotNull()
-                .isInstanceOf(TechArticleResponse.class)
+                .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
-                    assertThat(article.getId()).isNotNull();
                     assertThat(article.getIsBookmarked()).isFalse();
+                });
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 기술블로그 상세를 조회하면 조회수가 1 증가한다.")
+    void getTechArticleIncrementViewCount() {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
+        long prevPopularScore = firstTechArticle.getPopularScore().getCount();
+
+        when(authentication.getPrincipal()).thenReturn("anonymousUser");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id,
+                authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .satisfies(article -> {
+                    assertThat(article.getViewTotalCount() == prevViewTotalCount + 1);
+                    assertThat(article.getPopularScore() == prevPopularScore + 2);
                 });
     }
 
@@ -130,10 +159,11 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId()+1;
+        Long id = savedTechArticle.getId() + 1;
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -149,7 +179,8 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -168,7 +199,8 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), "elasticId", null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -213,7 +245,8 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication))
+        assertThatThrownBy(
+                () -> guestTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

@@ -1,6 +1,20 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_CURSOR_SCORE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
@@ -16,6 +30,13 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -25,22 +46,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
-import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class TechArticleControllerTest extends SupportControllerTest {
 
@@ -64,11 +69,16 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "DP", (long)i, (long)i, (long)i, (long)i*10);
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", 1L, (long) i, (long) i,
+                    (long) i,
+                    (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
-        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
-        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
+        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
+                elasticTechArticles);
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"),
+                new Url("https://example.com"));
         Company savedCompany = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
@@ -91,12 +101,22 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("익명 사용자가 기술블로그 메인을 조회한다.")
     void getTechArticlesByAnonymous() throws Exception {
         // given
+        Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
+        String companyId = "1";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("keyword", keyword)
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("companyId", companyId)
+                        .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
@@ -155,22 +175,32 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         List<Bookmark> bookmarks = new ArrayList<>();
         for (TechArticle techArticle : techArticles) {
-            if(createRandomBoolean()){
+            if (createRandomBoolean()) {
                 Bookmark bookmark = createBookmark(member, techArticle, true);
                 bookmarks.add(bookmark);
             }
         }
         bookmarkRepository.saveAll(bookmarks);
 
+        Pageable prevPageable = PageRequest.of(0, 10);
         Pageable pageable = PageRequest.of(0, 10);
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
+        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String keyword = "타이틀";
+        String companyId = "1";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
-                .queryParam("size", String.valueOf(pageable.getPageSize()))
-                .queryParam("techArticleSort", TechArticleSort.LATEST.name())
-                .contentType(MediaType.APPLICATION_JSON)
-                .characterEncoding(StandardCharsets.UTF_8)
-                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("keyword", keyword)
+                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("companyId", companyId)
+                        .queryParam("score", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
@@ -243,7 +273,8 @@ class TechArticleControllerTest extends SupportControllerTest {
         // given
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream().toList();
+        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
+                .toList();
         ElasticTechArticle cursor = elasticTechArticles.getLast();
         String keyword = "타이틀";
 
@@ -277,7 +308,6 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data").isMap())
-                .andExpect(jsonPath("$.data.id").isNumber())
                 .andExpect(jsonPath("$.data.elasticId").isString())
                 .andExpect(jsonPath("$.data.thumbnailUrl").isString())
                 .andExpect(jsonPath("$.data.techArticleUrl").isString())
@@ -317,7 +347,6 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data").isMap())
-                .andExpect(jsonPath("$.data.id").isNumber())
                 .andExpect(jsonPath("$.data.elasticId").isString())
                 .andExpect(jsonPath("$.data.thumbnailUrl").isString())
                 .andExpect(jsonPath("$.data.techArticleUrl").isString())
@@ -358,10 +387,11 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId()+1;
+        Long id = savedTechArticle.getId() + 1;
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
@@ -374,12 +404,13 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.message").value(NOT_FOUND_TECH_ARTICLE_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
-    
+
     @Test
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -400,7 +431,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), "elasticId", null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -447,10 +479,11 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("회원이 기술블로그 북마크를 요청할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
     void updateBookmarkNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+                new Count(1L),
                 new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId()+1;
+        Long id = savedTechArticle.getId() + 1;
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -490,7 +523,8 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)
@@ -509,7 +543,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .status(status)
                 .build();
     }
-    
+
     private boolean createRandomBoolean() {
         return new Random().nextBoolean();
     }
@@ -523,5 +557,29 @@ class TechArticleControllerTest extends SupportControllerTest {
         long randomDays = ThreadLocalRandom.current().nextLong(daysBetween + 1);
 
         return startDate.plusDays(randomDays);
+    }
+
+    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+                                                               String techArticleUrl,
+                                                               String description, String thumbnailUrl, String author,
+                                                               String company, Long companyId,
+                                                               Long viewTotalCount, Long recommendTotalCount,
+                                                               Long commentTotalCount,
+                                                               Long popularScore) {
+        return ElasticTechArticle.builder()
+                .title(title)
+                .regDate(regDate)
+                .contents(contents)
+                .techArticleUrl(techArticleUrl)
+                .description(description)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .company(company)
+                .companyId(companyId)
+                .viewTotalCount(viewTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .build();
     }
 }

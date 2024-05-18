@@ -5,12 +5,11 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import java.util.Objects;
 
 @Data
-public class TechArticleResponse {
+public class TechArticleMainResponse {
 
     public static final int CONTENTS_MAX_LENGTH = 1000;
 
@@ -31,9 +30,9 @@ public class TechArticleResponse {
     public final Float score;
 
     @Builder
-    private TechArticleResponse(Long id, String elasticId, String thumbnailUrl, String techArticleUrl, String title, String contents,
-                                CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
-                                Long recommendTotalCount, Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
+    private TechArticleMainResponse(Long id, String elasticId, String thumbnailUrl, String techArticleUrl, String title, String contents,
+                                    CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
+                                    Long recommendTotalCount, Long commentTotalCount, Long popularScore, Boolean isBookmarked, Float score) {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
@@ -51,8 +50,8 @@ public class TechArticleResponse {
         this.score = score;
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse) {
-        return TechArticleResponse.builder()
+    public static TechArticleMainResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse) {
+        return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
@@ -70,8 +69,8 @@ public class TechArticleResponse {
                 .build();
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, boolean isBookmarked) {
-        return TechArticleResponse.builder()
+    public static TechArticleMainResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, boolean isBookmarked) {
+        return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
@@ -89,8 +88,8 @@ public class TechArticleResponse {
                 .build();
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, Float score) {
-        return TechArticleResponse.builder()
+    public static TechArticleMainResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, Float score) {
+        return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
@@ -109,8 +108,8 @@ public class TechArticleResponse {
                 .build();
     }
 
-    public static TechArticleResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, Float score, boolean isBookmarked) {
-        return TechArticleResponse.builder()
+    public static TechArticleMainResponse of(ElasticTechArticle elasticTechArticle, TechArticle techArticle, CompanyResponse companyResponse, Float score, boolean isBookmarked) {
+        return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())

@@ -8,17 +8,16 @@ import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 //@ExtendWith(ContainerExtension.class)
 //@SpringBootTest(classes = {ElasticsearchTestConfig.class})
@@ -29,20 +28,26 @@ public class ElasticsearchSupportTest {
     public static final int TEST_ARTICLES_COUNT = 20;
     public static Long FIRST_TECH_ARTICLE_ID;
     public static TechArticle firstTechArticle;
+    public static Long COMPANY_ID;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
+        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"),
+                new Url("https://example.com"));
+        Company savedCompany = companyRepository.save(company);
+
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀"+i, createRandomDate(), "내용", "http://example.com/"+i, "설명", "http://example.com/", "작성자", "회사", (long)i, (long)i, (long)i, (long)i*10);
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", company.getId(),
+                    company.getName().getCompanyName(), (long) i, (long) i, (long) i, (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
-        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(elasticTechArticles);
-        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"), new Url("https://example.com"));
-        Company savedCompany = companyRepository.save(company);
+        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
+                elasticTechArticles);
 
         List<TechArticle> techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
@@ -52,6 +57,7 @@ public class ElasticsearchSupportTest {
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
         firstTechArticle = savedTechArticles.getFirst();
         FIRST_TECH_ARTICLE_ID = firstTechArticle.getId();
+        COMPANY_ID = savedCompany.getId();
     }
 
     @AfterAll
@@ -70,5 +76,29 @@ public class ElasticsearchSupportTest {
         long randomDays = ThreadLocalRandom.current().nextLong(daysBetween + 1);
 
         return startDate.plusDays(randomDays);
+    }
+
+    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+                                                               String techArticleUrl,
+                                                               String description, String thumbnailUrl, String author,
+                                                               Long companyId, String company,
+                                                               Long viewTotalCount, Long recommendTotalCount,
+                                                               Long commentTotalCount,
+                                                               Long popularScore) {
+        return ElasticTechArticle.builder()
+                .title(title)
+                .regDate(regDate)
+                .contents(contents)
+                .techArticleUrl(techArticleUrl)
+                .description(description)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .companyId(companyId)
+                .company(company)
+                .viewTotalCount(viewTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .build();
     }
 }

@@ -1,24 +1,25 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static com.dreamypatisiel.devdevdev.domain.entity.QBookmark.bookmark;
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPQLQueryFactory;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.ObjectUtils;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.dreamypatisiel.devdevdev.domain.entity.QBookmark.bookmark;
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.util.ObjectUtils;
 
 @RequiredArgsConstructor
 public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
@@ -42,7 +43,8 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     @Override
-    public Slice<TechArticle> findBookmarkedByCursor(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort, Member member) {
+    public Slice<TechArticle> findBookmarkedByCursor(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort,
+                                                     Member member) {
 
         List<TechArticle> contents = query.selectFrom(techArticle)
                 .innerJoin(bookmark)
@@ -67,13 +69,13 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                 .fetchOne();
 
         // 일치하는 북마크 없다면
-        if(ObjectUtils.isEmpty(findBookmark)) {
+        if (ObjectUtils.isEmpty(findBookmark)) {
             return techArticle.id.loe(techArticleId);
         }
 
         TechArticle findTechArticle = findBookmark.getTechArticle();
 
-        if(ObjectUtils.isEmpty(findTechArticle)) {
+        if (ObjectUtils.isEmpty(findTechArticle)) {
             return techArticle.id.loe(techArticleId);
         }
 

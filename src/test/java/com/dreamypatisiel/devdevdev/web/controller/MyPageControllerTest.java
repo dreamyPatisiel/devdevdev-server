@@ -63,7 +63,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = ElasticTechArticle.of("타이틀" + i, createRandomDate(), "내용",
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
                     "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", (long) i, (long) i, (long) i,
                     (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
@@ -269,5 +269,28 @@ class MyPageControllerTest extends SupportControllerTest {
         long randomDays = ThreadLocalRandom.current().nextLong(daysBetween + 1);
 
         return startDate.plusDays(randomDays);
+    }
+
+    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+                                                               String techArticleUrl,
+                                                               String description, String thumbnailUrl, String author,
+                                                               String company,
+                                                               Long viewTotalCount, Long recommendTotalCount,
+                                                               Long commentTotalCount,
+                                                               Long popularScore) {
+        return ElasticTechArticle.builder()
+                .title(title)
+                .regDate(regDate)
+                .contents(contents)
+                .techArticleUrl(techArticleUrl)
+                .description(description)
+                .thumbnailUrl(thumbnailUrl)
+                .author(author)
+                .company(company)
+                .viewTotalCount(viewTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .build();
     }
 }

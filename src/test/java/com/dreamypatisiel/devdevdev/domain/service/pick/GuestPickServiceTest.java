@@ -894,6 +894,7 @@ class GuestPickServiceTest {
                 .popularScore(pickPopularScore)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
 
         pick.changePickVote(pickVotes);
@@ -913,6 +914,7 @@ class GuestPickServiceTest {
                 .commentTotalCount(pickcommentTotalCount)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
+                .contentStatus(ContentStatus.APPROVAL)
                 .build();
 
         pick.changePickVote(pickVotes);

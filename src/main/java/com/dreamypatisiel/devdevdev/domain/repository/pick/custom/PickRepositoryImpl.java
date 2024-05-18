@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -39,7 +40,8 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .leftJoin(pick.pickOptions, pickOption)
                 .leftJoin(pick.pickVotes, pickVote)
                 .leftJoin(pick.member, member).fetchJoin()
-                .where(getCursorCondition(pickSort, pickId))
+                .where(pick.contentStatus.eq(ContentStatus.APPROVAL)
+                        .and(getCursorCondition(pickSort, pickId)))
                 .orderBy(pickSort(pickSort), pick.id.desc())
                 .limit(limit)
                 .fetch();
