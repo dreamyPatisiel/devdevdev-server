@@ -98,7 +98,6 @@ public class MemberPickService implements PickService {
 
         // 데이터 가공
         List<PickMainResponse> pickMainRespons = picks.stream()
-                .filter(pick -> pick.isTrueContentStatus(ContentStatus.APPROVAL))
                 .map(pick -> mapToPickResponse(pick, member))
                 .toList();
 
