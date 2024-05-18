@@ -487,8 +487,8 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("회원이 픽픽픽을 작성한다.")
-    void registerPick() {
+    @DisplayName("일반 회원이 픽픽픽을 작성한다.")
+    void registerPickRoleUser() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -528,6 +528,60 @@ class MemberPickServiceTest {
         assertAll(
                 () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
                 () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
+                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.READY),
+                () -> assertThat(findPick.getPickOptions()).hasSize(2)
+                        .extracting("title", "contents")
+                        .containsAnyOf(
+                                tuple(new Title("픽옵션1"), new PickOptionContents("픽옵션1블라블라")),
+                                tuple(new Title("픽옵션2"), new PickOptionContents("픽옵션2블라블라"))
+                        )
+        );
+    }
+
+    @Test
+    @DisplayName("어드민 회원이 픽픽픽을 작성한다.")
+    void registerPickRoleAdmin() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
+                Role.ROLE_ADMIN.name());
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
+        String secondImageUrl = "http://devdevdev.co.kr/pickpickpick/second.jpg";
+        String imageKey = "/pickpickpick/xxx.jpg";
+
+        PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl,
+                imageKey);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        RegisterPickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+                List.of(firstPickOptionImage.getId()));
+        RegisterPickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+                List.of(secondPickOptionImage.getId()));
+
+        Map<PickOptionType, RegisterPickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(firstPickOption, firstPickOptionRequest);
+        pickOptions.put(secondPickOption, secondPickOptionRequest);
+
+        RegisterPickRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+
+        // when
+        PickRegisterResponse pickRegisterResponse = memberPickService.registerPick(pickRegisterRequest, authentication);
+
+        // then
+        Pick findPick = pickRepository.findById(pickRegisterResponse.getPickId()).get();
+        assertAll(
+                () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
+                () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
+                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.APPROVAL),
                 () -> assertThat(findPick.getPickOptions()).hasSize(2)
                         .extracting("title", "contents")
                         .containsAnyOf(
