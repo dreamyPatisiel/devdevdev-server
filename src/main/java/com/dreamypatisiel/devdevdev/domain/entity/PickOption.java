@@ -30,7 +30,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PickOption {
+public class PickOption extends BasicTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

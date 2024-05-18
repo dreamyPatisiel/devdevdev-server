@@ -893,6 +893,16 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
+    @Test
+    @DisplayName("")
+    void test() {
+        // given
+
+        // when
+
+        // then
+    }
+
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {
         PickOption pickOption = PickOption.builder()
                 .title(title)

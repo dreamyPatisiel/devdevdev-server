@@ -1462,7 +1462,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 requestFields(
                         fieldWithPath("pickId").type(NUMBER).description("픽픽픽 아이디"),
-                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 옵션 아이디")
+                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 옵션 아이디"),
+                        fieldWithPath("anonymousMemberId").type(NUMBER).optional().description("익명 회원 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
@@ -1598,6 +1599,31 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
                 ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 옵션을 투표할 때 픽픽픽이 없으면 예외가 발생한다.")
+    void votePickOption_INVALID_ANONYMOUS_MEMBER_ID_MESSAGE() throws Exception {
+        // given
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(0L)
+                .pickOptionId(0L)
+                .build();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/vote")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("vote-pick-invalid-anonymous-member-id",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
                 exceptionResponseFields()
         ));
     }

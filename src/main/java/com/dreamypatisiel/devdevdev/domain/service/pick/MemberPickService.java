@@ -296,13 +296,13 @@ public class MemberPickService implements PickService {
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
+        // 인기점수 계산
+        findPick.changePopularScore(pickPopularScorePolicy);
+
         // 픽 옵션 투표 데이터 가공
         List<VotePickOptionResponse> votePickOptionsResponse = findPick.getPickOptions().stream()
                 .map(pickOption -> getVotePickOptionResponse(pickOption, findPick, findMember, pickOptionId))
                 .toList();
-
-        // 인기점수 계산
-        findPick.changePopularScore(pickPopularScorePolicy);
 
         return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
     }
