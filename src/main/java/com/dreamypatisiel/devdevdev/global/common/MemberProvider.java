@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.global.common;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -23,7 +23,7 @@ public class MemberProvider {
 
     public Member getMemberByAuthentication(Authentication authentication) {
 
-        if(AuthenticationMemberUtils.isAnonymous(authentication)) {
+        if (AuthenticationMemberUtils.isAnonymous(authentication)) {
             throw new IllegalStateException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
         }
 

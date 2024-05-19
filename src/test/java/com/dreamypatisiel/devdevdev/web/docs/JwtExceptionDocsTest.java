@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +40,8 @@ public class JwtExceptionDocsTest extends SupportControllerDocsTest {
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + invalidSignatureAccessToken))
+                        .header(SecurityConstant.AUTHORIZATION_HEADER,
+                                SecurityConstant.BEARER_PREFIX + invalidSignatureAccessToken))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
 
@@ -68,7 +69,8 @@ public class JwtExceptionDocsTest extends SupportControllerDocsTest {
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/user")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + invalidExpiredAccessToken))
+                        .header(SecurityConstant.AUTHORIZATION_HEADER,
+                                SecurityConstant.BEARER_PREFIX + invalidExpiredAccessToken))
                 .andDo(print())
                 .andExpect(status().isUnauthorized());
 
@@ -111,7 +113,8 @@ public class JwtExceptionDocsTest extends SupportControllerDocsTest {
         );
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.KakaoMember;
@@ -121,7 +121,7 @@ class OAuth2SuccessHandlerTest {
     }
 
     private static SocialMemberDto createSocialMemberDto(String userId, String email, String password,
-                                                      SocialType socialType, Role role) {
+                                                         SocialType socialType, Role role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(userId)
