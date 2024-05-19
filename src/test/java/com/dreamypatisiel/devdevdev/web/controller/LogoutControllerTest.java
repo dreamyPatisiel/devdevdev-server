@@ -13,7 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
@@ -68,7 +68,8 @@ class LogoutControllerTest extends SupportControllerTest {
         assertThat(findMember.getRefreshToken()).isEqualTo(Token.DISABLED);
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

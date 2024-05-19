@@ -3,7 +3,6 @@ package com.dreamypatisiel.devdevdev.web.docs;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static org.mockito.Mockito.when;
-
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
@@ -19,10 +18,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.servlet.http.Cookie;
@@ -138,7 +137,8 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // when // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(userEmail), SocialType.valueOf(socialType)).get();
+        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(userEmail),
+                SocialType.valueOf(socialType)).get();
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/user")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -180,6 +180,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
                 ))
         );
     }
+
     @Test
     @DisplayName("ADMIN 테스트 계정의 토큰을 생성하고 해당 토큰을 응답한다.")
     void createAdminToken() throws Exception {
@@ -191,7 +192,8 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // when // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(adminEmail), SocialType.valueOf(socialType)).get();
+        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(adminEmail),
+                SocialType.valueOf(socialType)).get();
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -234,7 +236,8 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         );
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

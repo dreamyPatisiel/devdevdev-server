@@ -6,17 +6,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.MemberNicknameDictionary;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Nickname;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Word;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.WordType;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.memberNicknameDictionary.MemberNicknameDictionaryRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.KakaoMember;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-
+import java.util.ArrayList;
 import java.util.HashMap;
-
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +36,8 @@ class AppOAuth2MemberServiceTest {
     MemberRepository memberRepository;
     @Autowired
     OAuth2MemberService oAuth2MemberService;
+    @Autowired
+    MemberNicknameDictionaryRepository memberNicknameDictionaryRepository;
 
     @Test
     @DisplayName("가입한 이력이 없으면 데이터베이스에 회원을 저장한다.")
@@ -56,6 +60,14 @@ class AppOAuth2MemberServiceTest {
         kakaoAttributes.put(KakaoMember.EMAIL, email);
         attributes.put(KakaoMember.KAKAO_ACCOUNT, kakaoAttributes);
         when(mockOAuth2User.getAttributes()).thenReturn(attributes);
+
+        List<MemberNicknameDictionary> nicknameDictionaryWords = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            for (WordType wordType : WordType.values()) {
+                nicknameDictionaryWords.add(createMemberNicknameDictionary(wordType.getType() + i, wordType));
+            }
+        }
+        memberNicknameDictionaryRepository.saveAll(nicknameDictionaryWords);
 
         // when
         oAuth2MemberService.register(mockOAuth2UserProvider, mockOAuth2User);
@@ -81,7 +93,6 @@ class AppOAuth2MemberServiceTest {
         when(mockOAuth2UserProvider.getSocialType()).thenReturn(socialType);
         when(mockOAuth2UserProvider.getEmail()).thenReturn(email);
 
-
         OAuth2User mockOAuth2User = mock(OAuth2User.class);
         Map<String, Object> attributes = new HashMap<>();
         Map<String, Object> kakaoAttributes = new HashMap<>();
@@ -102,5 +113,12 @@ class AppOAuth2MemberServiceTest {
                 .contains(
                         tuple(userId, userName, new Email(email), new Nickname(userName))
                 );
+    }
+
+    private static MemberNicknameDictionary createMemberNicknameDictionary(String word, WordType wordType) {
+        return MemberNicknameDictionary.builder()
+                .word(new Word(word))
+                .wordType(wordType)
+                .build();
     }
 }

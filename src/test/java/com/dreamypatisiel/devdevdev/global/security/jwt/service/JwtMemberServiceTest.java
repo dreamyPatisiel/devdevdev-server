@@ -6,10 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -65,7 +65,8 @@ class JwtMemberServiceTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        when(timeProvider.getDateNow()).thenReturn(new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
+        when(timeProvider.getDateNow()).thenReturn(
+                new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
 
         // when
         Token token = jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(refreshToken);
@@ -97,7 +98,8 @@ class JwtMemberServiceTest {
         String otherRefreshToken = token.getRefreshToken();
 
         // when // then
-        assertThatThrownBy(() -> jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(otherRefreshToken))
+        assertThatThrownBy(() -> jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(
+                otherRefreshToken))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -112,12 +114,14 @@ class JwtMemberServiceTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        when(timeProvider.getDateNow()).thenReturn(new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
+        when(timeProvider.getDateNow()).thenReturn(
+                new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
         Token token = tokenService.generateTokenBy(email, socialType, role);
         String otherRefreshToken = token.getRefreshToken();
 
         // when // then
-        assertThatThrownBy(() -> jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(otherRefreshToken))
+        assertThatThrownBy(() -> jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(
+                otherRefreshToken))
                 .isInstanceOf(TokenInvalidException.class)
                 .hasMessage(TokenInvalidException.REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE);
     }
@@ -132,7 +136,8 @@ class JwtMemberServiceTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        when(timeProvider.getDateNow()).thenReturn(new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
+        when(timeProvider.getDateNow()).thenReturn(
+                new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
         Token token = tokenService.generateTokenBy(email, socialType, role);
         String otherRefreshToken = token.getRefreshToken();
 
@@ -157,7 +162,8 @@ class JwtMemberServiceTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        when(timeProvider.getDateNow()).thenReturn(new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
+        when(timeProvider.getDateNow()).thenReturn(
+                new Date(date.getTime() + TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME));
         String otherEmail = "ralph@kakao.com";
         Token token = tokenService.generateTokenBy(otherEmail, socialType, role);
         String otherRefreshToken = token.getRefreshToken();
@@ -202,7 +208,8 @@ class JwtMemberServiceTest {
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

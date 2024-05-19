@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev;
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.MemberNicknameDictionary;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
@@ -13,14 +14,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Word;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.WordType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.memberNicknameDictionary.MemberNicknameDictionaryRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -74,6 +78,7 @@ public class LocalInitData {
     private final BookmarkRepository bookmarkRepository;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
     private final CompanyRepository companyRepository;
+    private final MemberNicknameDictionaryRepository memberNicknameDictionaryRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {
@@ -104,6 +109,26 @@ public class LocalInitData {
 
         List<Bookmark> bookmarks = createBookmarks(member, techArticles);
         bookmarkRepository.saveAll(bookmarks);
+
+        List<MemberNicknameDictionary> nicknameDictionaryWords = createNicknameDictionaryWords();
+        memberNicknameDictionaryRepository.saveAll(nicknameDictionaryWords);
+    }
+
+    private List<MemberNicknameDictionary> createNicknameDictionaryWords() {
+        List<MemberNicknameDictionary> nicknameDictionaryWords = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            for (WordType wordType : WordType.values()) {
+                nicknameDictionaryWords.add(createMemberNicknameDictionary(wordType.getType() + i, wordType));
+            }
+        }
+        return nicknameDictionaryWords;
+    }
+
+    private static MemberNicknameDictionary createMemberNicknameDictionary(String word, WordType wordType) {
+        return MemberNicknameDictionary.builder()
+                .word(new Word(word))
+                .wordType(wordType)
+                .build();
     }
 
     private static SocialMemberDto createSocialMemberDto(String username, String userEmail, String userNickname,
