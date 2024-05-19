@@ -235,6 +235,49 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.empty").isBoolean());
     }
 
+    @Test
+    @DisplayName("회원이 회원탈퇴를 한다.")
+    void deleteMember() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
+    }
+
+    @Test
+    @DisplayName("회원이 회원탈퇴를 할 때 회원이 없으면 예외가 발생한다.")
+    void deleteMemberNotFound() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
                                             String socialType, String role) {
         return SocialMemberDto.builder()

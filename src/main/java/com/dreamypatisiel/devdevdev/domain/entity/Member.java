@@ -25,10 +25,14 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE member SET is_deleted = true, deletedAt = NOW() WHERE id = ?")
+@SQLRestriction("is_deleted = false")
 @Table(indexes = {
         @Index(name = "idx__name__user_id", columnList = "name, userId"),
         @Index(name = "idx__email__socialType", columnList = "email, socialType")
@@ -85,6 +89,9 @@ public class Member extends BasicTime {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private Boolean isDeleted;
+    private LocalDateTime deletedAt;
+
     @OneToMany(mappedBy = "member")
     private List<InterestedCompany> interestedCompanies = new ArrayList<>();
 
@@ -109,7 +116,7 @@ public class Member extends BasicTime {
         member.password = socialMemberDto.getPassword();
         member.socialType = socialMemberDto.getSocialType();
         member.role = socialMemberDto.getRole();
-
+        member.isDeleted = false;
         return member;
     }
 
@@ -131,5 +138,10 @@ public class Member extends BasicTime {
 
     public boolean isAdmin() {
         return this.role.equals(Role.ROLE_ADMIN);
+    }
+
+    public void deleteMember() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 }
