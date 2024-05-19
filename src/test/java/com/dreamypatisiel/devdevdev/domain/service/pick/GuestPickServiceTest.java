@@ -32,6 +32,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -44,7 +45,6 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
@@ -129,9 +129,11 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when
         Slice<PickMainResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, null,
-                authentication);
+                anonymousMemberId, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
@@ -190,10 +192,11 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when
         Slice<PickMainResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE,
-                PickSort.MOST_VIEWED,
-                authentication);
+                PickSort.MOST_VIEWED, anonymousMemberId, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -239,9 +242,11 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when
         Slice<PickMainResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.LATEST,
-                authentication);
+                anonymousMemberId, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -291,10 +296,11 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when
         Slice<PickMainResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE,
-                PickSort.MOST_COMMENTED,
-                authentication);
+                PickSort.MOST_COMMENTED, anonymousMemberId, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -362,9 +368,11 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when
         Slice<PickMainResponse> picksMain = guestPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.POPULAR,
-                authentication);
+                anonymousMemberId, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -388,8 +396,11 @@ class GuestPickServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when // then
-        assertThatThrownBy(() -> guestPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication))
+        assertThatThrownBy(
+                () -> guestPickService.findPicksMain(pageable, Long.MAX_VALUE, null, anonymousMemberId, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE);
     }
@@ -427,6 +438,12 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+        AnonymousMember anonymousMember = AnonymousMember.builder()
+                .anonymousMemberId(anonymousMemberId)
+                .build();
+        anonymousMemberRepository.save(anonymousMember);
+
         // 픽픽픽 작성 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -450,14 +467,15 @@ class GuestPickServiceTest {
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 옵션 투표 여부
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
+        PickVote pickVote = createPickVote(anonymousMember, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
         em.clear();
 
         // when
-        PickDetailResponse pickDetail = guestPickService.findPickDetail(pick.getId(), authentication);
+        PickDetailResponse pickDetail = guestPickService.findPickDetail(pick.getId(), anonymousMemberId,
+                authentication);
 
         // then
         assertThat(pickDetail).isNotNull();
@@ -477,7 +495,7 @@ class GuestPickServiceTest {
         assertAll(
                 () -> assertThat(findFirstPickOptionResponse.getId()).isEqualTo(findFirstPickOption.getId()),
                 () -> assertThat(findFirstPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션1"),
-                () -> assertThat(findFirstPickOptionResponse.getIsPicked()).isEqualTo(false),
+                () -> assertThat(findFirstPickOptionResponse.getIsPicked()).isEqualTo(true),
                 () -> assertThat(findFirstPickOptionResponse.getPercent()).isEqualTo(100),
                 () -> assertThat(findFirstPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션1 내용"),
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
@@ -528,8 +546,10 @@ class GuestPickServiceTest {
         Pick pick = createPick(new Title("픽픽픽 제목"), new Count(1), member, ContentStatus.APPROVAL);
         pickRepository.save(pick);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when // then
-        assertThatThrownBy(() -> guestPickService.findPickDetail(pick.getId(), authentication))
+        assertThatThrownBy(() -> guestPickService.findPickDetail(pick.getId(), anonymousMemberId, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE);
     }
@@ -541,14 +561,17 @@ class GuestPickServiceTest {
         // 익명 회원 생성
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when // then
-        assertThatThrownBy(() -> guestPickService.findPickDetail(0L, authentication))
+        assertThatThrownBy(() -> guestPickService.findPickDetail(0L, anonymousMemberId, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
 
     @Test
-    @DisplayName("픽픽픽 옵션에 투표한 이력이 없는 익명 회원가 픽픽픽 옵션 중 하나에 투표한다.")
+    @DisplayName("픽픽픽 옵션에 투표한 이력이 없는 익명 회원이 픽픽픽 옵션 중 하나에 투표한다.")
     void votePickOptionNewCreate() {
         // given
         // 익명 회원 생성
@@ -573,14 +596,14 @@ class GuestPickServiceTest {
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         String anonymousMemberId = "GA1.1.276672604.1715872960";
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(firstPickOption.getId())
                 .anonymousMemberId(anonymousMemberId)
                 .build();
 
         // when
-        VotePickResponse votePickResponse = guestPickService.votePickOption(request, authentication);
+        VotePickResponse votePickResponse = guestPickService.votePickOption(dto, authentication);
 
         // then
         assertAll(
@@ -638,14 +661,14 @@ class GuestPickServiceTest {
 
         // 두 번째 픽픽픽 옵션에 투표
         String anonymousMemberId = "GA1.1.276672604.1715872960";
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(secondPickOption.getId())
                 .anonymousMemberId(anonymousMemberId)
                 .build();
 
         // when
-        VotePickResponse votePickResponse = guestPickService.votePickOption(request, authentication);
+        VotePickResponse votePickResponse = guestPickService.votePickOption(dto, authentication);
 
         // then
         assertAll(
@@ -707,14 +730,14 @@ class GuestPickServiceTest {
         PickVote pickVote = createPickVote(anonymousMember, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(firstPickOption.getId())
                 .anonymousMemberId(anonymousMemberId)
                 .build();
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.votePickOption(request, authentication))
+        assertThatThrownBy(() -> guestPickService.votePickOption(dto, authentication))
                 .isInstanceOf(VotePickOptionException.class)
                 .hasMessage(INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE);
     }
@@ -733,14 +756,14 @@ class GuestPickServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         String anonymousMemberId = "GA1.1.276672604.1715872960";
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(0L)
                 .pickOptionId(0L)
                 .anonymousMemberId(anonymousMemberId)
                 .build();
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.votePickOption(request, authentication))
+        assertThatThrownBy(() -> guestPickService.votePickOption(dto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
@@ -772,14 +795,14 @@ class GuestPickServiceTest {
                 PickOptionType.secondPickOption, pick);
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(firstPickOption.getId())
                 .anonymousMemberId(anonymousMemberId)
                 .build();
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.votePickOption(request, authentication))
+        assertThatThrownBy(() -> guestPickService.votePickOption(dto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_ANONYMOUS_MEMBER_ID_MESSAGE);
     }

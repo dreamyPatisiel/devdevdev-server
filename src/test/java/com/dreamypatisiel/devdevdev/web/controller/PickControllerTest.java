@@ -185,12 +185,15 @@ class PickControllerTest extends SupportControllerTest {
 
         Pageable pageable = PageRequest.of(0, 10);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/picks")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
                         .queryParam("pickSort", PickSort.LATEST.name())
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("Anonymous-Member-Id", anonymousMemberId)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -874,13 +877,13 @@ class PickControllerTest extends SupportControllerTest {
     @Test
     @DisplayName("픽픽픽 선택지에 투표할 때 pickId와 pcikOptionId가 null 이면 예외가 발생한다.")
     void votePickOptionBindException() throws Exception {
-        // given // when
+        // given
         VotePickOptionRequest request = VotePickOptionRequest.builder()
                 .pickId(null)
                 .pickOptionId(null)
                 .build();
 
-        // then
+        // when // then
         mockMvc.perform(post("/devdevdev/api/v1/picks/vote")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -894,13 +897,25 @@ class PickControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("")
-    void test() {
+    @DisplayName("회원이 픽픽픽 옵션을 투표할 때 픽픽픽이 없으면 예외가 발생한다.")
+    void votePickOption_INVALID_ANONYMOUS_MEMBER_ID_MESSAGE() throws Exception {
         // given
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(0L)
+                .pickOptionId(0L)
+                .build();
 
-        // when
-
-        // then
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/picks/vote")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {

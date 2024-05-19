@@ -105,13 +105,13 @@ public class Pick extends BasicTime {
         pick.commentTotalCount = new Count(0);
         pick.popularScore = new Count(0);
         pick.author = author;
-        pick.contentStatus = getContentStatusByMemberRole(member);
+        pick.contentStatus = getDefaultContentStatusByMemberRole(member);
         pick.member = member;
 
         return pick;
     }
 
-    private static ContentStatus getContentStatusByMemberRole(Member member) {
+    private static ContentStatus getDefaultContentStatusByMemberRole(Member member) {
         if (member.isAdmin()) {
             return ContentStatus.APPROVAL;
         }

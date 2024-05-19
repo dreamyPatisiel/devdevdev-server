@@ -38,4 +38,8 @@ public class AnonymousMember extends BasicTime {
 
         return anonymousMember;
     }
+
+    public boolean isEqualAnonymousMember(AnonymousMember anonymousMember) {
+        return this.equals(anonymousMember);
+    }
 }

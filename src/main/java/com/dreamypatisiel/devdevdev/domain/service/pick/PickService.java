@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
@@ -9,7 +10,6 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageRespo
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -17,7 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface PickService {
-    Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
+    Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort, String anonymousMemberId,
                                           Authentication authentication);
 
     PickUploadImageResponse uploadImages(String name, List<MultipartFile> images);
@@ -28,7 +28,7 @@ public interface PickService {
 
     PickModifyResponse modifyPick(Long pickId, ModifyPickRequest modifyPickRequest, Authentication authentication);
 
-    PickDetailResponse findPickDetail(Long pickId, Authentication authentication);
+    PickDetailResponse findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication);
 
-    VotePickResponse votePickOption(VotePickOptionRequest votePickOptionRequest, Authentication authentication);
+    VotePickResponse votePickOption(VotePickOptionDto votePickOptionDto, Authentication authentication);
 }

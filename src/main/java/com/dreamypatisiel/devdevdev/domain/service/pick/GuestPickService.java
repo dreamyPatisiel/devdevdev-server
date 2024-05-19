@@ -18,6 +18,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -33,7 +34,6 @@ import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,16 +64,19 @@ public class GuestPickService implements PickService {
 
     @Override
     public Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
-                                                 Authentication authentication) {
+                                                 String anonymousMemberId, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // anonymousMemberId 검증
+        AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 조회
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
 
         // 데이터 가공
         List<PickMainResponse> pickMainResponse = picks.stream()
-                .map(this::mapToPickResponse)
+                .map(pick -> mapToPickResponse(pick, anonymousMember))
                 .toList();
 
         return new SliceImpl<>(pickMainResponse, pageable, picks.hasNext());
@@ -97,10 +100,13 @@ public class GuestPickService implements PickService {
 
     @Transactional
     @Override
-    public PickDetailResponse findPickDetail(Long pickId, Authentication authentication) {
+    public PickDetailResponse findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication) {
 
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 익명 회원 조회 또는 생성
+        AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 상세 조회(pickOption 페치조인)
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
@@ -117,10 +123,19 @@ public class GuestPickService implements PickService {
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
                 .collect(Collectors.toMap(PickOption::getPickOptionType,
-                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick)));
+                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick, anonymousMember)));
 
         // 픽픽픽 상세
         return PickDetailResponse.of(findPick, findPick.getMember(), pickDetailOptions);
+    }
+
+    private AnonymousMember findOrCreateAnonymousMember(String anonymousMemberId) {
+        // 익명 사용자 검증
+        validateAnonymousMemberId(anonymousMemberId);
+
+        // 익명회원 조회 또는 생성
+        return anonymousMemberRepository.findByAnonymousMemberId(anonymousMemberId)
+                .orElseGet(() -> anonymousMemberRepository.save(AnonymousMember.create(anonymousMemberId)));
     }
 
     /**
@@ -128,23 +143,17 @@ public class GuestPickService implements PickService {
      */
     @Transactional
     @Override
-    public VotePickResponse votePickOption(VotePickOptionRequest votePickOptionRequest,
+    public VotePickResponse votePickOption(VotePickOptionDto votePickOptionDto,
                                            Authentication authentication) {
 
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        Long pickId = votePickOptionRequest.getPickId();
-        Long pickOptionId = votePickOptionRequest.getPickOptionId();
-        String anonymousMemberId = votePickOptionRequest.getAnonymousMemberId();
+        Long pickId = votePickOptionDto.getPickId();
+        Long pickOptionId = votePickOptionDto.getPickOptionId();
+        String anonymousMemberId = votePickOptionDto.getAnonymousMemberId();
 
-        if (!StringUtils.hasText(anonymousMemberId)) {
-            throw new IllegalArgumentException(INVALID_ANONYMOUS_MEMBER_ID_MESSAGE);
-        }
-
-        // 익명회원 조회 또는 생성
-        AnonymousMember anonymousMember = anonymousMemberRepository.findByAnonymousMemberId(anonymousMemberId)
-                .orElseGet(() -> anonymousMemberRepository.save(AnonymousMember.create(anonymousMemberId)));
+        AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 투표 조회
         Optional<PickVote> findOptionalPickVote = pickVoteRepository.findByPickIdAndAnonymousMember(pickId,
@@ -169,15 +178,21 @@ public class GuestPickService implements PickService {
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
-        // 인기점수 계산
-        findPick.changePopularScore(pickPopularScorePolicy);
-
         // 픽 옵션 투표 데이터 가공
         List<VotePickOptionResponse> votePickOptionsResponse = findPick.getPickOptions().stream()
                 .map(pickOption -> getVotePickOptionResponse(pickOption, findPick, anonymousMember, pickOptionId))
                 .toList();
 
+        // 인기점수 계산
+        findPick.changePopularScore(pickPopularScorePolicy);
+
         return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
+    }
+
+    private void validateAnonymousMemberId(String anonymousMemberId) {
+        if (!StringUtils.hasText(anonymousMemberId)) {
+            throw new IllegalArgumentException(INVALID_ANONYMOUS_MEMBER_ID_MESSAGE);
+        }
     }
 
     private VotePickOptionResponse getVotePickOptionResponse(PickOption pickOption, Pick findPick,
@@ -213,11 +228,12 @@ public class GuestPickService implements PickService {
         return VotePickOptionResponse.of(pickOption, pickVote.getId(), percent, true);
     }
 
-    private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick) {
+    private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick,
+                                                                    AnonymousMember anonymousMember) {
         return PickDetailOptionResponse.builder()
                 .id(pickOption.getId())
                 .title(pickOption.getTitle().getTitle())
-                .isPicked(false)
+                .isPicked(isPickedPickOptionByMember(findPick, pickOption, anonymousMember))
                 .percent(PickOption.calculatePercentBy(findPick, pickOption))
                 .voteTotalCount(pickOption.getVoteTotalCount().getCount())
                 .content(pickOption.getContents().getPickOptionContents())
@@ -243,7 +259,7 @@ public class GuestPickService implements PickService {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
-    private PickMainResponse mapToPickResponse(Pick pick) {
+    private PickMainResponse mapToPickResponse(Pick pick, AnonymousMember anonymousMember) {
         return PickMainResponse.builder()
                 .id(pick.getId())
                 .title(pick.getTitle())
@@ -252,7 +268,7 @@ public class GuestPickService implements PickService {
                 .viewTotalCount(pick.getViewTotalCount())
                 .popularScore(pick.getPopularScore())
                 .pickOptions(mapToPickOptionsResponse(pick))
-                .isVoted(false)
+                .isVoted(isVotedByPickAndMember(pick, anonymousMember))
                 .build();
     }
 
@@ -269,5 +285,17 @@ public class GuestPickService implements PickService {
                 .percent(PickOption.calculatePercentBy(pick, pickOption))
                 .isPicked(false)
                 .build();
+    }
+
+    private boolean isVotedByPickAndMember(Pick pick, AnonymousMember anonymousMember) {
+        return pick.getPickVotes().stream()
+                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
+                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
+    }
+
+    private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, AnonymousMember anonymousMember) {
+        return pick.getPickVotes().stream()
+                .filter(pickVote -> pickVote.getPickOption().equals(pickOption))
+                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
     }
 }

@@ -29,6 +29,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -48,7 +49,6 @@ import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionReque
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +89,7 @@ public class MemberPickService implements PickService {
      */
     @Override
     public Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
-                                                 Authentication authentication) {
+                                                 String anonymousMemberId, Authentication authentication) {
         // 픽픽픽 조회
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
 
@@ -230,7 +230,7 @@ public class MemberPickService implements PickService {
      */
     @Transactional
     @Override
-    public PickDetailResponse findPickDetail(Long pickId, Authentication authentication) {
+    public PickDetailResponse findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
@@ -264,11 +264,11 @@ public class MemberPickService implements PickService {
      */
     @Transactional
     @Override
-    public VotePickResponse votePickOption(VotePickOptionRequest votePickOptionRequest,
+    public VotePickResponse votePickOption(VotePickOptionDto votePickOptionDto,
                                            Authentication authentication) {
 
-        Long pickId = votePickOptionRequest.getPickId();
-        Long pickOptionId = votePickOptionRequest.getPickOptionId();
+        Long pickId = votePickOptionDto.getPickId();
+        Long pickOptionId = votePickOptionDto.getPickOptionId();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -295,13 +295,13 @@ public class MemberPickService implements PickService {
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
-        // 인기점수 계산
-        findPick.changePopularScore(pickPopularScorePolicy);
-
         // 픽 옵션 투표 데이터 가공
         List<VotePickOptionResponse> votePickOptionsResponse = findPick.getPickOptions().stream()
                 .map(pickOption -> getVotePickOptionResponse(pickOption, findPick, findMember, pickOptionId))
                 .toList();
+
+        // 인기점수 계산
+        findPick.changePopularScore(pickPopularScorePolicy);
 
         return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
     }
@@ -452,6 +452,6 @@ public class MemberPickService implements PickService {
     private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, Member member) {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().equals(pickOption))
-                .anyMatch(pickVote -> pickVote.getMember().equals(member));
+                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 }
