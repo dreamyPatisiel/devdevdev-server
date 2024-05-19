@@ -150,7 +150,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 queryParameters(
                         parameterWithName("pickId").optional().description("픽픽픽 아이디"),
@@ -1251,7 +1252,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
@@ -1458,7 +1460,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 requestFields(
                         fieldWithPath("pickId").type(NUMBER).description("픽픽픽 아이디"),
@@ -1489,7 +1492,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("픽픽픽 선택지에 투표할 때 pickId와 pcikOptionId가 null 이면 예외가 발생한다.")
+    @DisplayName("픽픽픽 옵션에 투표할 때 pickId와 pcikOptionId가 null 이면 예외가 발생한다.")
     void votePickOptionBindException() throws Exception {
         // given
         VotePickOptionRequest request = VotePickOptionRequest.builder()
@@ -1598,6 +1601,31 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
                 ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("익명 회원이 픽픽픽 옵션을 투표할 때 픽픽픽이 없으면 예외가 발생한다.")
+    void votePickOption_INVALID_ANONYMOUS_MEMBER_ID_MESSAGE() throws Exception {
+        // given
+        VotePickOptionRequest request = VotePickOptionRequest.builder()
+                .pickId(0L)
+                .pickOptionId(0L)
+                .build();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/vote")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("vote-pick-invalid-anonymous-member-id",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
                 exceptionResponseFields()
         ));
     }

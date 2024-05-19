@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
@@ -15,4 +16,7 @@ public interface PickVoteRepository extends JpaRepository<PickVote, Long> {
 
     @EntityGraph(attributePaths = {"pick", "pickOption"})
     Optional<PickVote> findByPickIdAndMember(Long pickId, Member member);
+
+    @EntityGraph(attributePaths = {"pick", "pickOption"})
+    Optional<PickVote> findByPickIdAndAnonymousMember(Long pickId, AnonymousMember anonymousMember);
 }

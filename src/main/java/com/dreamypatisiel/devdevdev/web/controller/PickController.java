@@ -1,8 +1,11 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
+
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -51,11 +55,13 @@ public class PickController {
     public ResponseEntity<BasicResponse<Slice<PickMainResponse>>> getPicksMain(
             @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable,
             @RequestParam(required = false) Long pickId,
-            @RequestParam(required = false) PickSort pickSort) {
+            @RequestParam(required = false) PickSort pickSort,
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         PickService pickService = pickServiceStrategy.getPickService();
-        Slice<PickMainResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, authentication);
+        Slice<PickMainResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, anonymousMemberId,
+                authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -112,11 +118,12 @@ public class PickController {
 
     @Operation(summary = "픽픽픽 상세 조회", description = "픽픽픽 상세 페이지를 조회합니다.")
     @GetMapping("/picks/{pickId}")
-    public ResponseEntity<BasicResponse<PickDetailResponse>> getPickDetail(@PathVariable Long pickId) {
+    public ResponseEntity<BasicResponse<PickDetailResponse>> getPickDetail(@PathVariable Long pickId,
+                                                                           @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickService pickService = pickServiceStrategy.getPickService();
-        PickDetailResponse response = pickService.findPickDetail(pickId, authentication);
+        PickDetailResponse response = pickService.findPickDetail(pickId, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -124,11 +131,14 @@ public class PickController {
     @Operation(summary = "픽픽픽 선택지 투표", description = "픽픽픽 상세 페이지에서 픽픽픽 선택지에 투표합니다.")
     @PostMapping("/picks/vote")
     public ResponseEntity<BasicResponse<VotePickResponse>> votePickOption(
-            @RequestBody @Validated VotePickOptionRequest votePickOptionRequest) {
+            @RequestBody @Validated VotePickOptionRequest votePickOptionRequest,
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickService pickService = pickServiceStrategy.getPickService();
-        VotePickResponse response = pickService.votePickOption(votePickOptionRequest, authentication);
+
+        VotePickOptionDto votePickOptionDto = VotePickOptionDto.of(votePickOptionRequest, anonymousMemberId);
+        VotePickResponse response = pickService.votePickOption(votePickOptionDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

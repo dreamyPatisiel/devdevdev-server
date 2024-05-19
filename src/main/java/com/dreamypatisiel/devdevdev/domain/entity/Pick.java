@@ -105,10 +105,17 @@ public class Pick extends BasicTime {
         pick.commentTotalCount = new Count(0);
         pick.popularScore = new Count(0);
         pick.author = author;
-        pick.contentStatus = ContentStatus.READY;
+        pick.contentStatus = getDefaultContentStatusByMemberRole(member);
         pick.member = member;
 
         return pick;
+    }
+
+    private static ContentStatus getDefaultContentStatusByMemberRole(Member member) {
+        if (member.isAdmin()) {
+            return ContentStatus.APPROVAL;
+        }
+        return ContentStatus.READY;
     }
 
     // 연관관계 편의 메소드

@@ -40,6 +40,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -59,7 +60,6 @@ import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionReque
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
@@ -164,7 +164,8 @@ class MemberPickServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<PickMainResponse> picks = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication);
+        Slice<PickMainResponse> picks = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null,
+                null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
@@ -233,7 +234,7 @@ class MemberPickServiceTest {
 
         // when
         Slice<PickMainResponse> picksMain = memberPickService.findPicksMain(pageable, null, PickSort.MOST_VIEWED,
-                authentication);
+                null, authentication);
 
         // then
         assertThat(picksMain).hasSize(2)
@@ -281,7 +282,7 @@ class MemberPickServiceTest {
 
         // when
         Slice<PickMainResponse> picksMain = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.LATEST,
-                authentication);
+                null, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -340,7 +341,7 @@ class MemberPickServiceTest {
         // when
         Slice<PickMainResponse> picksMain = memberPickService.findPicksMain(pageable, Long.MAX_VALUE,
                 PickSort.MOST_COMMENTED,
-                authentication);
+                null, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -416,7 +417,7 @@ class MemberPickServiceTest {
 
         // when
         Slice<PickMainResponse> picksMain = memberPickService.findPicksMain(pageable, Long.MAX_VALUE, PickSort.POPULAR,
-                authentication);
+                null, authentication);
 
         // then
         assertThat(picksMain).hasSize(3)
@@ -441,7 +442,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, authentication))
+        assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -487,8 +488,8 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("회원이 픽픽픽을 작성한다.")
-    void registerPick() {
+    @DisplayName("일반 회원이 픽픽픽을 작성한다.")
+    void registerPickRoleUser() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -528,6 +529,60 @@ class MemberPickServiceTest {
         assertAll(
                 () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
                 () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
+                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.READY),
+                () -> assertThat(findPick.getPickOptions()).hasSize(2)
+                        .extracting("title", "contents")
+                        .containsAnyOf(
+                                tuple(new Title("픽옵션1"), new PickOptionContents("픽옵션1블라블라")),
+                                tuple(new Title("픽옵션2"), new PickOptionContents("픽옵션2블라블라"))
+                        )
+        );
+    }
+
+    @Test
+    @DisplayName("어드민 회원이 픽픽픽을 작성한다.")
+    void registerPickRoleAdmin() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
+                Role.ROLE_ADMIN.name());
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
+        String secondImageUrl = "http://devdevdev.co.kr/pickpickpick/second.jpg";
+        String imageKey = "/pickpickpick/xxx.jpg";
+
+        PickOptionImage firstPickOptionImage = createPickOptionImage(FIRST_PICK_OPTION_IMAGE, firstImageUrl, imageKey);
+        PickOptionImage secondPickOptionImage = createPickOptionImage(SECOND_PICK_OPTION_IMAGE, secondImageUrl,
+                imageKey);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        RegisterPickOptionRequest firstPickOptionRequest = createPickOptionRequest("픽옵션1", "픽옵션1블라블라",
+                List.of(firstPickOptionImage.getId()));
+        RegisterPickOptionRequest secondPickOptionRequest = createPickOptionRequest("픽옵션2", "픽옵션2블라블라",
+                List.of(secondPickOptionImage.getId()));
+
+        Map<PickOptionType, RegisterPickOptionRequest> pickOptions = new HashMap<>();
+        pickOptions.put(firstPickOption, firstPickOptionRequest);
+        pickOptions.put(secondPickOption, secondPickOptionRequest);
+
+        RegisterPickRequest pickRegisterRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
+
+        // when
+        PickRegisterResponse pickRegisterResponse = memberPickService.registerPick(pickRegisterRequest, authentication);
+
+        // then
+        Pick findPick = pickRepository.findById(pickRegisterResponse.getPickId()).get();
+        assertAll(
+                () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
+                () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
+                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.APPROVAL),
                 () -> assertThat(findPick.getPickOptions()).hasSize(2)
                         .extracting("title", "contents")
                         .containsAnyOf(
@@ -863,7 +918,7 @@ class MemberPickServiceTest {
         em.clear();
 
         // when
-        PickDetailResponse pickDetail = memberPickService.findPickDetail(pick.getId(), authentication);
+        PickDetailResponse pickDetail = memberPickService.findPickDetail(pick.getId(), null, authentication);
 
         // then
         assertThat(pickDetail).isNotNull();
@@ -964,7 +1019,7 @@ class MemberPickServiceTest {
         em.clear();
 
         // when
-        PickDetailResponse pickDetail = memberPickService.findPickDetail(pick.getId(), authentication);
+        PickDetailResponse pickDetail = memberPickService.findPickDetail(pick.getId(), null, authentication);
 
         // then
         assertThat(pickDetail).isNotNull();
@@ -1033,7 +1088,7 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.findPickDetail(0L, authentication))
+        assertThatThrownBy(() -> memberPickService.findPickDetail(0L, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
@@ -1089,7 +1144,7 @@ class MemberPickServiceTest {
         em.clear();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.findPickDetail(pick.getId(), authentication))
+        assertThatThrownBy(() -> memberPickService.findPickDetail(pick.getId(), null, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE);
     }
@@ -1121,13 +1176,13 @@ class MemberPickServiceTest {
                 PickOptionType.secondPickOption, pick);
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(firstPickOption.getId())
                 .build();
 
         // when
-        VotePickResponse votePickResponse = memberPickService.votePickOption(request, authentication);
+        VotePickResponse votePickResponse = memberPickService.votePickOption(dto, authentication);
 
         // then
         assertAll(
@@ -1186,13 +1241,13 @@ class MemberPickServiceTest {
         pickVoteRepository.save(pickVote);
 
         // 두 번째 픽픽픽 옵션에 투표
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(secondPickOption.getId())
                 .build();
 
         // when
-        VotePickResponse votePickResponse = memberPickService.votePickOption(request, authentication);
+        VotePickResponse votePickResponse = memberPickService.votePickOption(dto, authentication);
 
         // then
         assertAll(
@@ -1250,13 +1305,13 @@ class MemberPickServiceTest {
         PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(firstPickOption.getId())
                 .build();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.votePickOption(request, authentication))
+        assertThatThrownBy(() -> memberPickService.votePickOption(dto, authentication))
                 .isInstanceOf(VotePickOptionException.class)
                 .hasMessage(INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE);
     }
@@ -1276,13 +1331,13 @@ class MemberPickServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        VotePickOptionRequest request = VotePickOptionRequest.builder()
+        VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(0L)
                 .pickOptionId(0L)
                 .build();
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.votePickOption(request, authentication))
+        assertThatThrownBy(() -> memberPickService.votePickOption(dto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }

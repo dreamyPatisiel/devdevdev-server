@@ -22,6 +22,10 @@ public class PickVote extends BasicTime {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "anonymous_member_id")
+    private AnonymousMember anonymousMember;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -34,8 +38,9 @@ public class PickVote extends BasicTime {
     private Pick pick;
 
     @Builder
-    private PickVote(Member member, PickOption pickOption, Pick pick) {
+    private PickVote(Member member, AnonymousMember anonymousMember, PickOption pickOption, Pick pick) {
         this.member = member;
+        this.anonymousMember = anonymousMember;
         this.pickOption = pickOption;
         this.pick = pick;
     }
@@ -49,8 +54,9 @@ public class PickVote extends BasicTime {
         return pickVote;
     }
 
-    public static PickVote createByAnonymous(Pick pick, PickOption pickOption) {
+    public static PickVote createByAnonymous(AnonymousMember anonymousMember, Pick pick, PickOption pickOption) {
         PickVote pickVote = new PickVote();
+        pickVote.anonymousMember = anonymousMember;
         pickVote.changePick(pick);
         pickVote.changePickOption(pickOption);
 

@@ -128,4 +128,8 @@ public class Member extends BasicTime {
     public boolean isEqualMember(Member member) {
         return this.equals(member);
     }
+
+    public boolean isAdmin() {
+        return this.role.equals(Role.ROLE_ADMIN);
+    }
 }

@@ -1,6 +1,11 @@
 package com.dreamypatisiel.devdevdev.web;
 
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PREFLIGHT_MAX_AGE;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
 import com.dreamypatisiel.devdevdev.global.properties.CorsProperties;
+import java.util.List;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,12 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.util.List;
-import java.util.stream.Stream;
-
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PREFLIGHT_MAX_AGE;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -60,5 +59,4 @@ public class CorsTest {
     static Stream<Arguments> corsOriginProvider() {
         return origins.stream().map(Arguments::of);
     }
-
 }

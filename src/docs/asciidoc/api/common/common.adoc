@@ -1,29 +1,51 @@
 [[common]]
 == 예외 응답
+
 === HTTP 공통 응답
+
 ==== HTTP Response Fields
+
 * 정상 응답 필드
 include::response.adoc[]
 
 ==== HTTP Exception Response Fields
+
 * 예외 응답 필드
 include::excetion-response.adoc[]
 
 ==== HTTP Pagination Response Fields
+
 * 페이지네이션에 사용되는 공통 응답 필드
 include::pagination-response.adoc[]
 
 === Cookie 예외
+
 * 쿠키의 name에 해당하는 value가 빈값인 경우
 ** name: DEVDEVDEV_REFRESH_TOKEN, DEVDEVDEV_ACCESS_TOKEN
 
 ==== HTTP Response
+
 include::{snippets}/token-refresh-cookie-exception/response-body.adoc[]
 
 === JWT 예외
+
 * 엑세스 토큰 **인증**에 문제가 있는 경우
 
 ==== HTTP Response
+
 include::{snippets}/token-invalid-signature-accessToken-exception/response-body.adoc[]
 include::{snippets}/token-invalid-expired-accessToken-exception/response-body.adoc[]
 include::{snippets}/token-invalid-blanked-accessToken-exception/response-body.adoc[]
+
+=== 익명 회원 예외
+
+==== HTTP Response
+
+[source,json,options="nowrap"]
+----
+{
+  "resultType" : "FAIL",
+  "message" : "익명 회원 아이디를 확인해주세요.",
+  "errorCode" : 400
+}
+----
