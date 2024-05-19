@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,10 +17,12 @@ public class AnonymousMember extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+
+    @Column(length = 30, nullable = false)
+    private String anonymousMemberId;
 
     @Builder
-    private AnonymousMember(String name) {
-        this.name = name;
+    private AnonymousMember(String anonymousMemberId) {
+        this.anonymousMemberId = anonymousMemberId;
     }
 }
