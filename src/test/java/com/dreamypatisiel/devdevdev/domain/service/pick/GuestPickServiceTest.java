@@ -26,7 +26,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.AnonymousMemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;

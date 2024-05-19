@@ -16,7 +16,8 @@ public class SocialMemberDto {
     private Role role;
 
     @Builder
-    private SocialMemberDto(String userId, String name, String email, String nickname, String password, SocialType socialType, Role role) {
+    private SocialMemberDto(String userId, String name, String email, String nickname, String password,
+                            SocialType socialType, Role role) {
         this.userId = userId;
         this.name = name;
         this.email = email;
@@ -53,5 +54,9 @@ public class SocialMemberDto {
                 .role(Role.valueOf(role))
                 .nickname(nickname)
                 .build();
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

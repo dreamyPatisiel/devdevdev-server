@@ -29,7 +29,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;

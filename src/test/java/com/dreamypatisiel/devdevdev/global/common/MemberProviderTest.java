@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -88,7 +88,8 @@ class MemberProviderTest {
                 .hasMessage(MemberProvider.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

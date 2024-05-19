@@ -13,17 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
-import com.dreamypatisiel.devdevdev.domain.repository.MemberRepository;
-
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.servlet.http.Cookie;
 import java.util.Date;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +102,8 @@ class TokenControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         // when // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(userEmail), SocialType.valueOf(socialType)).get();
+        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(userEmail),
+                SocialType.valueOf(socialType)).get();
         mockMvc.perform(get("/devdevdev/api/v1/token/test/user")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -115,6 +114,7 @@ class TokenControllerTest extends SupportControllerTest {
                 // 해당 테스트 계정의 리프레시 토큰이 갱신 되었는지 확인
                 .andExpect(jsonPath("$.data.refreshToken").value(findMember.getRefreshToken()));
     }
+
     @Test
     @DisplayName("ADMIN 테스트 계정의 토큰을 생성하고 해당 계정의 refresh 토큰을 갱신한다.")
     void createAdminToken() throws Exception {
@@ -126,7 +126,8 @@ class TokenControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         // when // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(adminEmail), SocialType.valueOf(socialType)).get();
+        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(adminEmail),
+                SocialType.valueOf(socialType)).get();
         mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
@@ -138,7 +139,8 @@ class TokenControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.refreshToken").value(findMember.getRefreshToken()));
     }
 
-    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email, String socialType, String role) {
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
+                                            String socialType, String role) {
         return SocialMemberDto.builder()
                 .userId(userId)
                 .name(name)

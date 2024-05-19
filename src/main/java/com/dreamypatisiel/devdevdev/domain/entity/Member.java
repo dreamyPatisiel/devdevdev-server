@@ -58,6 +58,7 @@ public class Member extends BasicTime {
     private String userId;
 
     private String profileImage;
+
     private String job;
 
     @Embedded
@@ -65,14 +66,17 @@ public class Member extends BasicTime {
 
     @Embedded
     private Experience experience;
+
     private Boolean subscriptionLetterGranted;
 
     private String refreshToken;
+
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "subscription_letter_email")
     )
     private Email subscriptionLetterEmail;
+
     private LocalDateTime loginDate;
 
     @Enumerated(EnumType.STRING)
