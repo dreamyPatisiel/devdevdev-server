@@ -1,17 +1,30 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.AnnualIncome;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Experience;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Nickname;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -45,19 +58,25 @@ public class Member extends BasicTime {
     private String userId;
 
     private String profileImage;
+
     private String job;
+
     @Embedded
     private AnnualIncome annualIncome;
+
     @Embedded
     private Experience experience;
+
     private Boolean subscriptionLetterGranted;
 
     private String refreshToken;
+
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "subscription_letter_email")
     )
     private Email subscriptionLetterEmail;
+
     private LocalDateTime loginDate;
 
     @Enumerated(EnumType.STRING)

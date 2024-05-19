@@ -15,7 +15,7 @@ public class MemberNicknameDictionaryRepositoryImpl implements MemberNicknameDic
     private final JPQLQueryFactory query;
 
     @Override
-    public Optional<MemberNicknameDictionary> findRandomByWordType(WordType wordType) {
+    public Optional<MemberNicknameDictionary> findRandomWordByWordType(WordType wordType) {
 
         MemberNicknameDictionary findWord = query.selectFrom(memberNicknameDictionary)
                 .where(memberNicknameDictionary.wordType.eq(wordType))

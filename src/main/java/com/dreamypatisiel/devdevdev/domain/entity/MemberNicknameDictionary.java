@@ -29,7 +29,7 @@ public class MemberNicknameDictionary extends BasicTime {
     private WordType wordType;
 
     @Builder
-    public MemberNicknameDictionary(Word word, WordType wordType) {
+    private MemberNicknameDictionary(Word word, WordType wordType) {
         this.word = word;
         this.wordType = wordType;
     }

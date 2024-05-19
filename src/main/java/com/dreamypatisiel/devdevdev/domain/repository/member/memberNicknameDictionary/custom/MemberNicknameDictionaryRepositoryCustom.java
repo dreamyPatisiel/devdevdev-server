@@ -5,5 +5,5 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.WordType;
 import java.util.Optional;
 
 public interface MemberNicknameDictionaryRepositoryCustom {
-    Optional<MemberNicknameDictionary> findRandomByWordType(WordType wordType);
+    Optional<MemberNicknameDictionary> findRandomWordByWordType(WordType wordType);
 }
