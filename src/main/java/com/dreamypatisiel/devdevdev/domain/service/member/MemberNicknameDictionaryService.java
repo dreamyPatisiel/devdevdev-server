@@ -41,15 +41,8 @@ public class MemberNicknameDictionaryService {
     }
 
     private String concatNickname(List<MemberNicknameDictionary> words) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < words.size(); i++) {
-            MemberNicknameDictionary word = words.get(i);
-            sb.append(word.getWord().getWord());
-
-            if (i < words.size() - 1) {
-                sb.append(" ");
-            }
-        }
-        return sb.toString();
+        return words.stream()
+                .map(word -> word.getWord().getWord())
+                .collect(Collectors.joining(" "));
     }
 }
