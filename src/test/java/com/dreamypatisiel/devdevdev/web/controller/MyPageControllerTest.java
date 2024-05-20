@@ -2,6 +2,10 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -23,12 +27,16 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import jakarta.persistence.EntityManager;
+import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
@@ -40,6 +48,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -53,6 +62,8 @@ class MyPageControllerTest extends SupportControllerTest {
     MemberRepository memberRepository;
     @Autowired
     BookmarkRepository bookmarkRepository;
+    @Autowired
+    EntityManager em;
 
     private static List<TechArticle> techArticles;
 
@@ -111,7 +122,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
                                 .queryParam("size", String.valueOf(pageable.getPageSize()))
                                 .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
                                 .queryParam("techArticleId", "")
@@ -176,7 +187,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -201,7 +212,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.get("/devdevdev/api/v1/mypage/bookmarks")
+                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
                                 .queryParam("size", String.valueOf(pageable.getPageSize()))
                                 .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
                                 .queryParam("techArticleId", "")
@@ -236,7 +247,9 @@ class MyPageControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("회원이 회원탈퇴를 한다.")
+    @DisplayName("회원탈퇴를 하면 회원 정보가 비활성화되고"
+            + " 리프레시 토큰 쿠키를 초기화 하고"
+            + " 로그인 활성화 유무 쿠키를 비활성화 한다.")
     void deleteMember() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -245,15 +258,38 @@ class MyPageControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        // when // then
+        Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
+
+        // when
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
+                        RestDocumentationRequestBuilders.delete(DEFAULT_PATH_V1 + "/mypage/delete")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
+                                .cookie(cookie)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
+
+        // then
+        MockHttpServletResponse response = actions.andReturn().getResponse();
+        Cookie responseLoginStatusCookie = response.getCookie(DEVDEVDEV_LOGIN_STATUS);
+        Cookie responseRefreshCookie = response.getCookie(DEVDEVDEV_REFRESH_TOKEN);
+        assertThat(responseLoginStatusCookie).isNotNull();
+        assertAll(
+                () -> assertThat(responseRefreshCookie.getValue()).isEqualTo(CookieUtils.BLANK),
+                () -> assertThat(responseLoginStatusCookie.getValue()).isEqualTo(CookieUtils.INACTIVE),
+                () -> assertThat(responseLoginStatusCookie.getPath()).isEqualTo(CookieUtils.DEFAULT_PATH),
+                () -> assertThat(responseLoginStatusCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(responseLoginStatusCookie.getDomain()).isEqualTo(CookieUtils.DEVDEVDEV_DOMAIN)
+        );
+
+        em.flush();
+        em.clear();
+
+        // 회원 정보가 비활성화됨에 따라 조회 불가
+        Optional<Member> findMember = memberRepository.findById(member.getId());
+        assertThat(findMember.isEmpty()).isEqualTo(true);
     }
 
     @Test
