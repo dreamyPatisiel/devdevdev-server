@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.repository;
+package com.dreamypatisiel.devdevdev.domain.repository.member;
 
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import java.util.Optional;
