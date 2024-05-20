@@ -5,10 +5,14 @@ import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -47,10 +51,15 @@ public class MypageController {
 
     @Operation(summary = "회원 탈퇴")
     @DeleteMapping("/mypage/delete")
-    public ResponseEntity<BasicResponse<Void>> deleteMember() {
+    public ResponseEntity<BasicResponse<Void>> deleteMember(HttpServletRequest request, HttpServletResponse response) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         memberService.deleteMember(authentication);
+
+        // 쿠키 설정
+        CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
+                CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, true);
 
         return ResponseEntity.ok(BasicResponse.success());
     }

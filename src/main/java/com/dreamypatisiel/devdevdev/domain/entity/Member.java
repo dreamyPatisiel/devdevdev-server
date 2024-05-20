@@ -140,8 +140,8 @@ public class Member extends BasicTime {
         return this.role.equals(Role.ROLE_ADMIN);
     }
 
-    public void deleteMember() {
+    public void deleteMember(LocalDateTime now) {
         this.isDeleted = true;
-        this.deletedAt = LocalDateTime.now();
+        this.deletedAt = now;
     }
 }
