@@ -1,5 +1,5 @@
 [[DeleteMember]]
-== 회원탈퇴 API(GET: /devdevdev/api/v1/mypage/delete)
+== 회원탈퇴 API(DELETE: /devdevdev/api/v1/mypage/delete)
 
 * 회원은 회원탈퇴를 진행할 수 있다.
 * 회원탈퇴 완료시 더이상 회원을 조회할 수 없다.
