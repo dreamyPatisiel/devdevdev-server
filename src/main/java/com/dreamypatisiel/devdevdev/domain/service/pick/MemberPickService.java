@@ -71,7 +71,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberPickService implements PickService {
 
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
-    public static final String SECOND_PICK_OPTION_IMAGE = "firstPickOptionImage";
+    public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";
     public static final int MAX_IMAGE_SIZE = 3;
     public static final int START_INCLUSIVE = 0;
 
