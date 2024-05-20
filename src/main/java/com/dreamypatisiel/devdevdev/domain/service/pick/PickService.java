@@ -31,4 +31,6 @@ public interface PickService {
     PickDetailResponse findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication);
 
     VotePickResponse votePickOption(VotePickOptionDto votePickOptionDto, Authentication authentication);
+
+    void deletePick(Long pickId, Authentication authentication);
 }
