@@ -50,6 +50,7 @@ import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionReq
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import jakarta.persistence.EntityManager;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -87,8 +88,11 @@ class PickControllerTest extends SupportControllerTest {
     PickOptionImageRepository pickOptionImageRepository;
     @Autowired
     PickVoteRepository pickVoteRepository;
+    @Autowired
+    EntityManager em;
     @MockBean
     AmazonS3 amazonS3Client;
+
 
     @Test
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
@@ -916,6 +920,101 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 자신이 작성한 픽픽픽을 삭제한다.")
+    void deletePick() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+
+        // 픽픽픽 이미지 생성
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(member, fistPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
+    }
+
+    @Test
+    @DisplayName("회원 자신이 작성한 픽픽픽이 아니면 삭제할 수 없다.")
+    void deletePickNotAuthor() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                "흑빛파티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+
+        // 픽픽픽 이미지 생성
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(author, fistPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}", pick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {

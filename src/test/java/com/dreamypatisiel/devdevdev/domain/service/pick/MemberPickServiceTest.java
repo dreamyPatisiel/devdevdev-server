@@ -1408,6 +1408,56 @@ class MemberPickServiceTest {
         assertThat(findPickVote).isNull();
     }
 
+    @Test
+    @DisplayName("픽픽픽을 삭제할 때 자신이 작성한 픽픽픽이 존재하지 않으면 예외가 발생한다.")
+    void deletePickNotAuthor() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+
+        // 픽픽픽 이미지 생성
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(author, fistPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickService.deletePick(pick.getId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
+    }
+
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {
         PickOption pickOption = PickOption.builder()
                 .title(title)

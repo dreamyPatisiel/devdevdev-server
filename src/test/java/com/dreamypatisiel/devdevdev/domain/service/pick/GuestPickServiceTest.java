@@ -424,7 +424,7 @@ class GuestPickServiceTest {
         RegisterPickRequest registerPickRequest = mock(RegisterPickRequest.class);
         Authentication authentication = mock(Authentication.class);
 
-        // when // then
+        // then
         assertThatThrownBy(() -> guestPickService.registerPick(registerPickRequest, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
@@ -805,6 +805,30 @@ class GuestPickServiceTest {
         assertThatThrownBy(() -> guestPickService.votePickOption(dto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_ANONYMOUS_MEMBER_ID_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명 회원이 픽픽픽 삭제를 할 경우 예외가 발생한다.")
+    void deletePickAccessDeniedException() {
+        // given
+        // 익명 회원 생성
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member,
+                ContentStatus.APPROVAL);
+        pickRepository.save(pick);
+
+        // when // then
+        assertThatThrownBy(() -> guestPickService.deletePick(pick.getId(), authentication))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,
