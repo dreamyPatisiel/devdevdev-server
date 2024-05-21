@@ -57,7 +57,8 @@ public class MypageController {
         memberService.deleteMember(authentication);
 
         // 쿠키 설정
-        CookieUtils.deleteCookieFromResponse(request, response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+        CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN,
+                CookieUtils.BLANK, CookieUtils.DEFAULT_MAX_AGE, false, true);
         CookieUtils.addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
                 CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, true);
 

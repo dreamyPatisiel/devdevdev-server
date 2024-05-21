@@ -265,7 +265,6 @@ class MyPageControllerTest extends SupportControllerTest {
                         RestDocumentationRequestBuilders.delete(DEFAULT_PATH_V1 + "/mypage/delete")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
-                                .cookie(cookie)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
