@@ -1,0 +1,37 @@
+[[DeleteMember]]
+== 회원탈퇴 API(DELETE: /devdevdev/api/v1/mypage/delete)
+
+* 회원은 회원탈퇴를 진행할 수 있다.
+* 회원탈퇴 완료시 더이상 회원을 조회할 수 없다.
+* 회원탈퇴 완료시 리프레시 쿠키가 초기화되고, 로그인 활성화 여부 쿠키가 비활성화로 변경된다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/mypage-member-delete/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/mypage-member-delete/request-headers.adoc[]
+
+==== HTTP Request Cookie Fields
+
+include::{snippets}/logout/request-cookies.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/mypage-member-delete/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/mypage-member-delete/response-fields.adoc[]
+
+==== HTTP Response Cookie Fields
+include::{snippets}/mypage-member-delete/response-cookies.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/not-found-member-exception/response-body.adoc[]
