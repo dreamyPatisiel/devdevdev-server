@@ -121,6 +121,10 @@ public class PickOption extends BasicTime {
         return this.id.equals(id);
     }
 
+    public boolean isEqualsPickOption(PickOption pickOption) {
+        return this.equals(pickOption);
+    }
+
     public void plusOneVoteTotalCount() {
         this.voteTotalCount = Count.plusOne(this.voteTotalCount);
     }

@@ -32,8 +32,4 @@ public class PickMainResponse {
         this.isVoted = isVoted;
         this.pickOptions = pickOptions;
     }
-
-    public static PickMainResponse createEmpty() {
-        return new PickMainResponse();
-    }
 }

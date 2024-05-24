@@ -97,11 +97,11 @@ public class MemberPickService implements PickService {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 데이터 가공
-        List<PickMainResponse> pickMainRespons = picks.stream()
+        List<PickMainResponse> pickMainResponse = picks.stream()
                 .map(pick -> mapToPickResponse(pick, member))
                 .toList();
 
-        return new SliceImpl<>(pickMainRespons, pageable, picks.hasNext());
+        return new SliceImpl<>(pickMainResponse, pageable, picks.hasNext());
     }
 
     /**
@@ -477,7 +477,7 @@ public class MemberPickService implements PickService {
 
     private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, Member member) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().equals(pickOption))
+                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption))
                 .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 }

@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick.custom;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import java.util.Optional;
@@ -12,4 +13,6 @@ public interface PickRepositoryCustom {
     Optional<Pick> findPickWithPickOptionWithPickVoteWithMemberByPickId(Long pickId);
 
     Optional<Pick> findPickWithPickOptionByPickId(Long pickId);
+
+    Slice<Pick> findPicksByMemberAndCursor(Pageable pageable, Member member, Long pickId);
 }
