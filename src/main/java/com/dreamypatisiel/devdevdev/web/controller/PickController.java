@@ -142,4 +142,15 @@ public class PickController {
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
+
+    @Operation(summary = "픽픽픽 삭제", description = "픽픽픽과 관련 있는 모든 데이터를 삭제합니다.")
+    @DeleteMapping("/picks/{pickId}")
+    public ResponseEntity<BasicResponse<Void>> deletePick(@PathVariable Long pickId) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        pickService.deletePick(pickId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success());
+    }
 }

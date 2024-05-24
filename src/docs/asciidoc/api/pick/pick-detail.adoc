@@ -14,7 +14,7 @@ include::{snippets}/pick-detail/http-request.adoc[]
 
 include::{snippets}/pick-detail/request-headers.adoc[]
 
-==== HTTP Request Query Parameters Fields
+==== HTTP Request Path Parameters Fields
 
 include::{snippets}/pick-detail/path-parameters.adoc[]
 

@@ -46,7 +46,7 @@ public class PickOption extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "pickContents",
-            column = @Column(name = "contents")
+            column = @Column(name = "contents", columnDefinition = "mediumtext")
     )
     private PickOptionContents contents;
 

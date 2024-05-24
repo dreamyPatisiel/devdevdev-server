@@ -306,6 +306,32 @@ public class MemberPickService implements PickService {
         return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
     }
 
+    /**
+     * 픽픽픽 삭제 픽픽픽 외래키가 있는 모든 엔티티도 함께 삭제해야 한다.
+     */
+    @Transactional
+    @Override
+    public void deletePick(Long pickId, Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원이 작성한 픽픽픽 조회(PickOption 페치 조인)
+        Pick findPick = pickRepository.findPickWithPickOptionByIdAndMember(pickId, findMember)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        List<Long> findPickPickOptionIds = findPick.getPickOptions().stream()
+                .map(PickOption::getId).toList();
+
+        // 존재하면 픽픽픽과 연관되어 있는 엔티티 삭제
+        pickVoteRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
+        pickOptionImageRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
+        pickOptionRepository.deleteAllByPickOptionIdIn(findPickPickOptionIds);
+
+        // 픽픽픽 삭제
+        pickRepository.deleteById(findPick.getId());
+    }
+
     private VotePickOptionResponse getVotePickOptionResponse(PickOption pickOption, Pick findPick, Member findMember,
                                                              Long pickOptionId) {
 
@@ -371,7 +397,7 @@ public class MemberPickService implements PickService {
             List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(key).getPickOptionImageIds();
             List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
             pickOptions.stream()
-                    .filter(pickOption -> pickOption.getId().equals(value.getPickOptionId()))
+                    .filter(pickOption -> pickOption.isEqualsId(value.getPickOptionId()))
                     .forEach(pickOption -> {
                         pickOption.changePickOption(value);
                         pickOption.changePickOptionImages(pickOptionImages);

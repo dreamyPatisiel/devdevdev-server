@@ -7,7 +7,6 @@ import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieCo
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.bookmarkSortType;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
-import static org.springframework.restdocs.cookies.CookieDocumentation.requestCookies;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -272,7 +271,6 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                         RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
-                                .cookie(cookie)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -284,9 +282,6 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
-                ),
-                requestCookies(
-                        cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰")
                 ),
                 responseCookies(
                         cookieWithName(DEVDEVDEV_REFRESH_TOKEN).description("리프레시 토큰"),

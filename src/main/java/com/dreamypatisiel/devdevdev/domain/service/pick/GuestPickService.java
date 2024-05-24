@@ -189,6 +189,11 @@ public class GuestPickService implements PickService {
         return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
     }
 
+    @Override
+    public void deletePick(Long pickId, Authentication authentication) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
     private void validateAnonymousMemberId(String anonymousMemberId) {
         if (!StringUtils.hasText(anonymousMemberId)) {
             throw new IllegalArgumentException(INVALID_ANONYMOUS_MEMBER_ID_MESSAGE);
