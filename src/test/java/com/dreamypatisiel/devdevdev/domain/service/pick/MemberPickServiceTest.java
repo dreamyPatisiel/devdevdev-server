@@ -65,6 +65,9 @@ import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1364,8 +1367,8 @@ class MemberPickServiceTest {
         // 픽픽픽 옵션 생성
         PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
                 new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
+                new PickOptionContents("픽픽픽 옵션2 컨텐츠"));
         pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
 
         // 픽픽픽 이미지 생성
@@ -1387,25 +1390,15 @@ class MemberPickServiceTest {
         em.clear();
 
         // then
-        Pick findPick = pickRepository.findById(pick.getId()).orElse(null);
-        assertThat(findPick).isNull();
-
-        PickOption findFristPickOption = pickOptionRepository.findById(fistPickOption.getId()).orElse(null);
-        assertThat(findFristPickOption).isNull();
-
-        PickOption findSecondPickOption = pickOptionRepository.findById(secondPickOption.getId()).orElse(null);
-        assertThat(findSecondPickOption).isNull();
-
-        PickOptionImage findFirstPickOptionImage = pickOptionImageRepository.findById(firstPickOptionImage.getId())
-                .orElse(null);
-        assertThat(findFirstPickOptionImage).isNull();
-
-        PickOptionImage findSecondPickOptionImage = pickOptionImageRepository.findById(secondPickOptionImage.getId())
-                .orElse(null);
-        assertThat(findSecondPickOptionImage).isNull();
-
-        PickVote findPickVote = pickVoteRepository.findById(pickVote.getId()).orElse(null);
-        assertThat(findPickVote).isNull();
+        Stream.of(pickRepository.findById(pick.getId()),
+                        pickOptionRepository.findById(fistPickOption.getId()),
+                        pickOptionRepository.findById(secondPickOption.getId()),
+                        pickOptionImageRepository.findById(firstPickOptionImage.getId()),
+                        pickOptionImageRepository.findById(secondPickOptionImage.getId()),
+                        pickVoteRepository.findById(pickVote.getId())
+                )
+                .map(Optional::isEmpty)
+                .forEach(Assertions::assertTrue);
     }
 
     @Test

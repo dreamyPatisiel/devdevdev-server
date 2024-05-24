@@ -327,6 +327,8 @@ public class MemberPickService implements PickService {
         pickVoteRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
         pickOptionImageRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
         pickOptionRepository.deleteAllByPickOptionIdIn(findPickPickOptionIds);
+
+        // 픽픽픽 삭제
         pickRepository.deleteById(findPick.getId());
     }
 
@@ -395,7 +397,7 @@ public class MemberPickService implements PickService {
             List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(key).getPickOptionImageIds();
             List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
             pickOptions.stream()
-                    .filter(pickOption -> pickOption.getId().equals(value.getPickOptionId()))
+                    .filter(pickOption -> pickOption.isEqualsId(value.getPickOptionId()))
                     .forEach(pickOption -> {
                         pickOption.changePickOption(value);
                         pickOption.changePickOptionImages(pickOptionImages);
