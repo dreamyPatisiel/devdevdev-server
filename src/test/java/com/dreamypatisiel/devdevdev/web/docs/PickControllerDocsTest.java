@@ -116,24 +116,24 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
     void getPicksMainByMember() throws Exception {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(1));
-        Title title = new Title("픽1타이틀");
-        Count count = new Count(2);
-        String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/picks/image/tumbnail/1";
-        String author = "운영자";
-        Pick pick = createPick(title, count, count, count, thumbnailUrl,
-                author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
-        pick.changePopularScore(pickPopularScorePolicy);
-
-        pickRepository.save(pick);
-        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
-
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
+
+        Title title = new Title("픽1타이틀");
+        Count count = new Count(2);
+
+        Pick pick = createPick(title, count, count, count, count, ContentStatus.APPROVAL, member);
+        pick.changePopularScore(pickPopularScorePolicy);
+        pickRepository.save(pick);
+
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"),
+                new Count(1), firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"),
+                new Count(1), secondPickOption);
+        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
 

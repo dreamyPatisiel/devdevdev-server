@@ -50,7 +50,7 @@ public class PickController {
 
     private final PickServiceStrategy pickServiceStrategy;
 
-    @Operation(summary = "픽픽픽 메인 조회", description = "픽픽픽 메인 페이지에 필요한 데이터를 조회합니다.")
+    @Operation(summary = "픽픽픽 메인 조회", description = "픽픽픽 메인 페이지에 필요한 데이터를 커서 방식으로 조회합니다.")
     @GetMapping("/picks")
     public ResponseEntity<BasicResponse<Slice<PickMainResponse>>> getPicksMain(
             @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable,

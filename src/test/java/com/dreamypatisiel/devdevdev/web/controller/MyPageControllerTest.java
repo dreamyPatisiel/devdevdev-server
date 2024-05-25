@@ -4,8 +4,11 @@ import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEM
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
+import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,14 +16,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -49,7 +63,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.test.web.servlet.ResultActions;
 
 class MyPageControllerTest extends SupportControllerTest {
@@ -62,6 +75,12 @@ class MyPageControllerTest extends SupportControllerTest {
     MemberRepository memberRepository;
     @Autowired
     BookmarkRepository bookmarkRepository;
+    @Autowired
+    PickRepository pickRepository;
+    @Autowired
+    PickOptionRepository pickOptionRepository;
+    @Autowired
+    PickVoteRepository pickVoteRepository;
     @Autowired
     EntityManager em;
 
@@ -122,7 +141,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
+                        get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
                                 .queryParam("size", String.valueOf(pageable.getPageSize()))
                                 .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
                                 .queryParam("techArticleId", "")
@@ -187,7 +206,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
+                        get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -212,7 +231,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
+                        get(DEFAULT_PATH_V1 + "/mypage/bookmarks")
                                 .queryParam("size", String.valueOf(pageable.getPageSize()))
                                 .queryParam("bookmarkSort", BookmarkSort.BOOKMARKED.name())
                                 .queryParam("techArticleId", "")
@@ -262,7 +281,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.delete(DEFAULT_PATH_V1 + "/mypage/delete")
+                        delete(DEFAULT_PATH_V1 + "/mypage/delete")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -301,16 +320,136 @@ class MyPageControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .characterEncoding(StandardCharsets.UTF_8)
-                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+        ResultActions actions = mockMvc.perform(delete("/devdevdev/api/v1/mypage/delete")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("내가 작성한 픽픽픽 목록을 조회한다.")
+    void getMyPicksMain() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        pickSetup(member, ContentStatus.APPROVAL, new Title("쏘영이의 주류 픽픽픽!"),
+                new Title("쏘주가 최고다!"), new PickOptionContents("참이슬을 못참지!"),
+                new Title("와인이 최고다!"), new PickOptionContents("레드와인은 못참지!"));
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/mypage/picks")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.[0].id").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].title").isString())
+                .andExpect(jsonPath("$.data.content.[0].voteTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].commentTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].viewTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].contentStatus").isString())
+                .andExpect(jsonPath("$.data.content.[0].isVoted").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions").isArray())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[0].id").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[0].title").isString())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[0].percent").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[0].isPicked").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[1].id").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[1].title").isString())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[1].percent").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].pickOptions.[1].isPicked").isBoolean())
+                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
+                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
+                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
+                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
+                .andExpect(jsonPath("$.data.first").isBoolean())
+                .andExpect(jsonPath("$.data.last").isBoolean())
+                .andExpect(jsonPath("$.data.size").isNumber())
+                .andExpect(jsonPath("$.data.number").isNumber())
+                .andExpect(jsonPath("$.data.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
+                .andExpect(jsonPath("$.data.empty").isBoolean());
+    }
+
+    private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,
+                           PickOptionContents firstPickOptionContents, Title secondPickOptinTitle,
+                           PickOptionContents secondPickOptionContents) {
+        // 픽픽픽 생성
+        Count voteTotalCount = new Count(1);
+        Pick pick = createPick(member, pickTitle, voteTotalCount, new Count(2), new Count(3), contentStatus);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(pick, PickOptionType.firstPickOption, firstPickOptionTitle,
+                firstPickOptionContents, voteTotalCount);
+        PickOption secondPickOption = createPickOption(pick, PickOptionType.secondPickOption, secondPickOptinTitle,
+                secondPickOptionContents, new Count(0));
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(pick, firstPickOption, member);
+        pickVoteRepository.save(pickVote);
+
+        return pick.getId();
+    }
+
+    private PickVote createPickVote(Pick pick, PickOption firstPickOption, Member member) {
+        return PickVote.builder()
+                .pick(pick)
+                .pickOption(firstPickOption)
+                .member(member)
+                .build();
+    }
+
+    private PickOption createPickOption(Pick pick, PickOptionType pickOptionType, Title title,
+                                        PickOptionContents contents, Count voteTotalCount) {
+        PickOption pickOption = PickOption.builder()
+                .pickOptionType(pickOptionType)
+                .title(title)
+                .contents(contents)
+                .voteTotalCount(voteTotalCount)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private Pick createPick(Member member, Title title, Count voteTotalCount, Count viewTotalCount,
+                            Count commentTotalCount, ContentStatus contentStatus) {
+        return Pick.builder()
+                .member(member)
+                .title(title)
+                .voteTotalCount(voteTotalCount)
+                .viewTotalCount(viewTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .contentStatus(contentStatus)
+                .build();
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
