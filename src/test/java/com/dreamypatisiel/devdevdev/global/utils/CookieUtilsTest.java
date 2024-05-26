@@ -1,18 +1,24 @@
 package com.dreamypatisiel.devdevdev.global.utils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.exception.CookieException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import jakarta.servlet.http.Cookie;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import static org.assertj.core.api.Assertions.*;
 
 class CookieUtilsTest {
 
@@ -193,7 +199,7 @@ class CookieUtilsTest {
 
     @Test
     @DisplayName("응답 정보에 JWT 관련 쿠키를 설정할 때 토큰 정보를 저장한다."
-            + " (엑세스 토큰은 secure은 false, httpOnly은 false로 저장하고"
+            + " (엑세스 토큰은 secure은 true, httpOnly은 false로 저장하고"
             + " 리프레시 토큰은 secure은 true, httpOnly은 true 저장한다.)")
     void configJwtCookie() {
         // given
@@ -241,4 +247,58 @@ class CookieUtilsTest {
         );
     }
 
+    @Test
+    @DisplayName("응답 정보에 멤버 관련 쿠키를 설정한다."
+            + " (유저 닉네임은 UTF-8로 인코딩되고 이메일은 인코딩되지 않는다."
+            + " secure은 true, httpOnly은 false로 저장한다.)")
+    void configMemberCookie() {
+        // given
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", "email@gmail.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
+        Member member = Member.createMemberBy(socialMemberDto);
+        String encodedNickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
+        String email = member.getEmailAsString();
+
+        // when
+        CookieUtils.configMemberCookie(response, member);
+
+        // then
+        Cookie nicknameCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME);
+        Cookie emailCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL);
+
+        assertAll(
+                () -> assertThat(nicknameCookie).isNotNull(),
+                () -> assertThat(emailCookie).isNotNull()
+        );
+
+        assertAll(
+                () -> assertThat(nicknameCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME),
+                () -> assertThat(nicknameCookie.getValue()).isEqualTo(encodedNickname),
+                () -> assertThat(nicknameCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(nicknameCookie.getSecure()).isTrue(),
+                () -> assertThat(nicknameCookie.isHttpOnly()).isFalse()
+        );
+
+        assertAll(
+                () -> assertThat(emailCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL),
+                () -> assertThat(emailCookie.getValue()).isEqualTo(email),
+                () -> assertThat(emailCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(emailCookie.getSecure()).isTrue(),
+                () -> assertThat(emailCookie.isHttpOnly()).isFalse()
+        );
+    }
+
+    private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
+                                            String socialType, String role) {
+        return SocialMemberDto.builder()
+                .userId(userId)
+                .name(name)
+                .nickname(nickname)
+                .password(password)
+                .email(email)
+                .socialType(SocialType.valueOf(socialType))
+                .role(Role.valueOf(role))
+                .build();
+    }
 }
