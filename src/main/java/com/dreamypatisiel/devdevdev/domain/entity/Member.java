@@ -132,6 +132,10 @@ public class Member extends BasicTime {
         return email.getEmail();
     }
 
+    public String getNicknameAsString() {
+        return nickname.getNickname();
+    }
+
     public boolean isEqualMember(Member member) {
         return this.equals(member);
     }

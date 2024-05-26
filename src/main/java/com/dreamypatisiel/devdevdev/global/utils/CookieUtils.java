@@ -1,11 +1,14 @@
 package com.dreamypatisiel.devdevdev.global.utils;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.exception.CookieException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import org.springframework.util.ObjectUtils;
@@ -89,6 +92,17 @@ public class CookieUtils {
                 token.getRefreshToken(), REFRESH_MAX_AGE, true, true);
         addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS,
                 ACTIVE, DEFAULT_MAX_AGE, false, true);
+    }
+
+    public static void configMemberCookie(HttpServletResponse response, Member member) {
+        // UTF-8 인코딩 필요
+        String nickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
+        String email = URLEncoder.encode(member.getEmailAsString(), StandardCharsets.UTF_8);
+
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME,
+                nickname, DEFAULT_MAX_AGE, false, true);
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL,
+                email, DEFAULT_MAX_AGE, false, true);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {
