@@ -1,7 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
@@ -31,5 +35,45 @@ public class PickMainResponse {
         this.popularScore = popularScore.getCount();
         this.isVoted = isVoted;
         this.pickOptions = pickOptions;
+    }
+
+    // 회원 전용
+    public static PickMainResponse of(Pick pick, Member member) {
+        return PickMainResponse.builder()
+                .id(pick.getId())
+                .title(pick.getTitle())
+                .voteTotalCount(pick.getVoteTotalCount())
+                .commentTotalCount(pick.getCommentTotalCount())
+                .viewTotalCount(pick.getViewTotalCount())
+                .popularScore(pick.getPopularScore())
+                .pickOptions(mapToPickOptionsResponse(pick, member))
+                .isVoted(PickResponseUtils.isVotedMember(pick, member))
+                .build();
+    }
+
+    // 익명 회원 전용
+    public static PickMainResponse of(Pick pick, AnonymousMember anonymousMember) {
+        return PickMainResponse.builder()
+                .id(pick.getId())
+                .title(pick.getTitle())
+                .voteTotalCount(pick.getVoteTotalCount())
+                .commentTotalCount(pick.getCommentTotalCount())
+                .viewTotalCount(pick.getViewTotalCount())
+                .popularScore(pick.getPopularScore())
+                .pickOptions(mapToPickOptionsResponse(pick, anonymousMember))
+                .isVoted(PickResponseUtils.isVotedAnonymousMember(pick, anonymousMember))
+                .build();
+    }
+
+    private static List<PickMainOptionResponse> mapToPickOptionsResponse(Pick pick, Member member) {
+        return pick.getPickOptions().stream()
+                .map(pickOption -> PickMainOptionResponse.of(pick, pickOption, member))
+                .toList();
+    }
+
+    private static List<PickMainOptionResponse> mapToPickOptionsResponse(Pick pick, AnonymousMember anonymousMember) {
+        return pick.getPickOptions().stream()
+                .map(pickOption -> PickMainOptionResponse.of(pick, pickOption, anonymousMember))
+                .toList();
     }
 }

@@ -69,7 +69,8 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
+                    createRandomDate(), "내용",
                     "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", 1L, (long) i, (long) i,
                     (long) i,
                     (long) i * 10);
@@ -182,7 +183,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         }
         bookmarkRepository.saveAll(bookmarks);
 
-        Pageable prevPageable = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
         List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
                 .toList();
@@ -559,7 +560,8 @@ class TechArticleControllerTest extends SupportControllerTest {
         return startDate.plusDays(randomDays);
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
+                                                               String contents,
                                                                String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
                                                                String company, Long companyId,
@@ -567,6 +569,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                                                                Long commentTotalCount,
                                                                Long popularScore) {
         return ElasticTechArticle.builder()
+                .id(id)
                 .title(title)
                 .regDate(regDate)
                 .contents(contents)

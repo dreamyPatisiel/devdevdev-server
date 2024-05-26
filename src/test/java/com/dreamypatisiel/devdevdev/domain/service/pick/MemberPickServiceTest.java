@@ -41,7 +41,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
@@ -50,6 +50,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
@@ -926,10 +927,12 @@ class MemberPickServiceTest {
         // then
         assertThat(pickDetail).isNotNull();
         assertAll(
-                () -> assertThat(pickDetail.getUserId()).isEqualTo(member.getName()),
+                () -> assertThat(pickDetail.getUserId()).isEqualTo(
+                        PickResponseUtils.sliceAndMaskEmail(member.getEmail().getEmail())),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(member.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
-                () -> assertThat(pickDetail.getIsMemberPick()).isEqualTo(true)
+                () -> assertThat(pickDetail.getIsAuthor()).isEqualTo(true),
+                () -> assertThat(pickDetail.getIsVoted()).isEqualTo(true)
         );
 
         Map<PickOptionType, PickDetailOptionResponse> pickOptions = pickDetail.getPickOptions();
@@ -947,7 +950,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
         );
 
-        List<PickDetailOptionImage> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
+        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findfirstPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
         assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -966,7 +969,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
         );
 
-        List<PickDetailOptionImage> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
+        List<PickDetailOptionImageResponse> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findSecondPickOptionImage = secondPickOption.getPickOptionImages().get(0);
         assertThat(findSecondPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -1027,10 +1030,12 @@ class MemberPickServiceTest {
         // then
         assertThat(pickDetail).isNotNull();
         assertAll(
-                () -> assertThat(pickDetail.getUserId()).isEqualTo(otherMember.getName()),
+                () -> assertThat(pickDetail.getUserId()).isEqualTo(
+                        PickResponseUtils.sliceAndMaskEmail(otherMember.getEmail().getEmail())),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(otherMember.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
-                () -> assertThat(pickDetail.getIsMemberPick()).isEqualTo(false)
+                () -> assertThat(pickDetail.getIsAuthor()).isEqualTo(false),
+                () -> assertThat(pickDetail.getIsVoted()).isEqualTo(true)
         );
 
         Map<PickOptionType, PickDetailOptionResponse> pickOptions = pickDetail.getPickOptions();
@@ -1048,7 +1053,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
         );
 
-        List<PickDetailOptionImage> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
+        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findfirstPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
         assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -1067,7 +1072,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
         );
 
-        List<PickDetailOptionImage> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
+        List<PickDetailOptionImageResponse> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findSecondPickOptionImage = secondPickOption.getPickOptionImages().get(0);
         assertThat(findSecondPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
