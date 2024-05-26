@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
@@ -106,6 +107,37 @@ public class Member extends BasicTime {
 
     @OneToMany(mappedBy = "member")
     private List<Recommend> recommends = new ArrayList<>();
+
+    @Builder
+    private Member(String name, Nickname nickname, Email email, String password, String userId, String profileImage,
+                   String job, AnnualIncome annualIncome, Experience experience, Boolean subscriptionLetterGranted,
+                   String refreshToken, Email subscriptionLetterEmail, LocalDateTime loginDate, SocialType socialType,
+                   Role role, Boolean isDeleted, LocalDateTime deletedAt, List<InterestedCompany> interestedCompanies,
+                   List<Notification> notifications, List<Subscription> subscriptions, List<Bookmark> bookmarks,
+                   List<Recommend> recommends) {
+        this.name = name;
+        this.nickname = nickname;
+        this.email = email;
+        this.password = password;
+        this.userId = userId;
+        this.profileImage = profileImage;
+        this.job = job;
+        this.annualIncome = annualIncome;
+        this.experience = experience;
+        this.subscriptionLetterGranted = subscriptionLetterGranted;
+        this.refreshToken = refreshToken;
+        this.subscriptionLetterEmail = subscriptionLetterEmail;
+        this.loginDate = loginDate;
+        this.socialType = socialType;
+        this.role = role;
+        this.isDeleted = isDeleted;
+        this.deletedAt = deletedAt;
+        this.interestedCompanies = interestedCompanies;
+        this.notifications = notifications;
+        this.subscriptions = subscriptions;
+        this.bookmarks = bookmarks;
+        this.recommends = recommends;
+    }
 
     public static Member createMemberBy(SocialMemberDto socialMemberDto) {
         Member member = new Member();

@@ -5,7 +5,9 @@ import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.QMember;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.querydsl.core.types.OrderSpecifier;
@@ -43,6 +45,26 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .where(pick.contentStatus.eq(ContentStatus.APPROVAL)
                         .and(getCursorCondition(pickSort, pickId)))
                 .orderBy(pickSort(pickSort), pick.id.desc())
+                .limit(limit)
+                .fetch();
+
+        int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
+
+        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
+    }
+
+    @Override
+    public Slice<Pick> findPicksByMemberAndCursor(Pageable pageable, Member member, Long pickId) {
+        // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
+        long limit = pageable.getPageSize() * TWO + ONE;
+
+        List<Pick> contents = query.selectFrom(pick)
+                .leftJoin(pick.pickOptions, pickOption)
+                .leftJoin(pick.pickVotes, pickVote)
+                .leftJoin(pick.member, new QMember("member")).fetchJoin()
+                .where(pick.member.eq(member)
+                        .and(getCursorCondition(PickSort.LATEST, pickId)))
+                .orderBy(pickSort(PickSort.LATEST), pick.id.desc())
                 .limit(limit)
                 .fetch();
 

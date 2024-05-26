@@ -29,10 +29,11 @@ public class PickOptionImage extends BasicTime {
     private PickOption pickOption;
 
     @Builder
-    private PickOptionImage(String imageUrl, String imageKey, String name) {
+    private PickOptionImage(String imageUrl, String imageKey, String name, PickOption pickOption) {
         this.imageUrl = imageUrl;
         this.imageKey = imageKey;
         this.name = name;
+        this.pickOption = pickOption;
     }
 
     public static PickOptionImage create(String imageUrl, String key, String name) {

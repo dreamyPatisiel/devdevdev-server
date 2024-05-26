@@ -12,6 +12,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -35,6 +36,8 @@ class PickRepositoryTest {
     PickPopularScorePolicy pickPopularScorePolicy;
     @Autowired
     PickOptionImageRepository pickOptionImageRepository;
+    @Autowired
+    MemberRepository memberRepository;
     @Autowired
     EntityManager em;
 
@@ -238,8 +241,6 @@ class PickRepositoryTest {
                 .containsExactly(
                         "픽옵션2이미지1"
                 );
-
-
     }
 
     private PickOptionImage cratePickOptionImage(String name, PickOption pickOption) {

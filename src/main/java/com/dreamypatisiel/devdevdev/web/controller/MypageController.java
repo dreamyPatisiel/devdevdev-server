@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
+import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
@@ -11,11 +12,11 @@ import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -51,7 +52,7 @@ public class MypageController {
 
     @Operation(summary = "회원 탈퇴")
     @DeleteMapping("/mypage/delete")
-    public ResponseEntity<BasicResponse<Void>> deleteMember(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<BasicResponse<Void>> deleteMember(HttpServletResponse response) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         memberService.deleteMember(authentication);
@@ -63,5 +64,17 @@ public class MypageController {
                 CookieUtils.INACTIVE, CookieUtils.DEFAULT_MAX_AGE, false, true);
 
         return ResponseEntity.ok(BasicResponse.success());
+    }
+
+    @Operation(summary = "내가 작성한 픽픽픽 조회", description = "본인이 작성한 픽픽픽을 커서 방식으로 조회합니다.")
+    @GetMapping("/mypage/picks")
+    public ResponseEntity<BasicResponse<Slice<MyPickMainResponse>>> getMyPicksMain(
+            @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) Long pickId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        Slice<MyPickMainResponse> response = memberService.findMyPickMain(pageable, pickId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
     }
 }

@@ -6,25 +6,12 @@ endif::[]
 :icons: font
 :source-highlighter: highlightjs
 :toc: left
-:toclevels: 2
+:toclevels: 1
 :sectlinks:
 
-[[refresh-token]]
 include::api/common/common.adoc[]
-include::api/token-test/token-test-user.adoc[]
-include::api/token-test/token-test-admin.adoc[]
-include::api/token-refresh/token-refresh.adoc[]
-include::api/logout/logout.adoc[]
-include::api/pick/pick-main.adoc[]
-include::api/pick/pick-detail.adoc[]
-include::api/pick/pick-register.adoc[]
-include::api/pick/pick-modify.adoc[]
-include::api/pick/pick-delete.adoc[]
-include::api/pick/pick-vote.adoc[]
-include::api/pick/pick-option-register-image.adoc[]
-include::api/pick/pick-option-delete-image.adoc[]
-include::api/tech-article/main.adoc[]
-include::api/tech-article/detail.adoc[]
-include::api/tech-article/bookmark.adoc[]
-include::api/mypage/bookmarks.adoc[]
-include::api/mypage/delete-member.adoc[]
+include::api/token/token.adoc[]
+include::api/member/member.adoc[]
+include::api/mypage/mypage.adoc[]
+include::api/pick/pick.adoc[]
+include::api/tech-article/tech-article.adoc[]

@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.docs.format;
 
 import static org.springframework.restdocs.snippet.Attributes.key;
 
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
@@ -13,6 +14,7 @@ import org.springframework.restdocs.snippet.Attributes;
 public interface ApiDocsFormatGenerator {
 
     String FORMAT = "format";
+    String COMMA = ", ";
 
     static Attributes.Attribute authenticationType() {
         return key("authentication").value("O");
@@ -26,7 +28,7 @@ public interface ApiDocsFormatGenerator {
     static Attributes.Attribute pickSortType() {
         String pickSortType = Arrays.stream(PickSort.values())
                 .map(pickSort -> pickSort.name() + "(" + pickSort.getDescription() + ")")
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(COMMA));
 
         return key(FORMAT).value(pickSortType);
     }
@@ -34,7 +36,7 @@ public interface ApiDocsFormatGenerator {
     static Attributes.Attribute techArticleSortType() {
         String techArticleSortType = Arrays.stream(TechArticleSort.values())
                 .map(techArticleSort -> techArticleSort.name() + "(" + techArticleSort.getDescription() + ")")
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(COMMA));
 
         return key(FORMAT).value(techArticleSortType);
     }
@@ -45,13 +47,21 @@ public interface ApiDocsFormatGenerator {
 
     static Attributes.Attribute bookmarkSortType() {
         String bookmarkSortType = Arrays.stream(BookmarkSort.values())
-                .map(bookmarkSort -> bookmarkSort.name()+"("+bookmarkSort.getDescription()+")")
-                .collect(Collectors.joining(", "));
+                .map(bookmarkSort -> bookmarkSort.name() + "(" + bookmarkSort.getDescription() + ")")
+                .collect(Collectors.joining(COMMA));
 
         return key(FORMAT).value(bookmarkSortType);
     }
 
     static Attributes.Attribute numberOrNull() {
         return key(FORMAT).value("Number | null");
+    }
+
+    static Attributes.Attribute contentStatusType() {
+        String contentStatusType = Arrays.stream(ContentStatus.values())
+                .map(contentStatus -> contentStatus.name() + "(" + contentStatus.getDescription() + ")")
+                .collect(Collectors.joining(COMMA));
+
+        return key(FORMAT).value(contentStatusType);
     }
 }

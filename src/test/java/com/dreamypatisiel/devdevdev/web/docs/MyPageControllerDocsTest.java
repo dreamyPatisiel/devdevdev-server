@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieCo
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.bookmarkSortType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.contentStatusType;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -15,6 +16,11 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
+import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
+import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
+import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
+import static org.springframework.restdocs.payload.JsonFieldType.STRING;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -26,14 +32,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -41,6 +58,7 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -75,6 +93,14 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     MemberRepository memberRepository;
     @Autowired
     BookmarkRepository bookmarkRepository;
+    @Autowired
+    PickRepository pickRepository;
+    @Autowired
+    PickOptionRepository pickOptionRepository;
+    @Autowired
+    PickVoteRepository pickVoteRepository;
+    @Autowired
+    EntityManager em;
 
     private static List<TechArticle> techArticles;
 
@@ -323,6 +349,155 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
                 )
         ));
+    }
+
+    @Test
+    @DisplayName("내가 작성한 픽픽픽 목록을 조회한다.")
+    void getMyPicksMain() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        pickSetup(member, ContentStatus.APPROVAL, new Title("쏘영이의 주류 픽픽픽!"),
+                new Title("쏘주가 최고다!"), new PickOptionContents("참이슬을 못참지!"),
+                new Title("와인이 최고다!"), new PickOptionContents("레드와인은 못참지!"));
+
+        em.flush();
+        em.clear();
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/mypage/picks")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("pickId", String.valueOf(Long.MAX_VALUE))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("mypage-mypick-main",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("pickId").optional().description("픽픽픽 아이디"),
+                        parameterWithName("size").optional().description("조회되는 데이터 수")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.content").type(ARRAY).description("픽픽픽 메인 배열"),
+                        fieldWithPath("data.content[].id").type(NUMBER).description("픽픽픽 아이디"),
+                        fieldWithPath("data.content[].title").type(STRING).description("픽픽픽 제목"),
+                        fieldWithPath("data.content[].voteTotalCount").type(NUMBER).description("픽픽픽 전체 투표 수"),
+                        fieldWithPath("data.content[].commentTotalCount").type(NUMBER).description("픽픽픽 전체 댓글 수"),
+                        fieldWithPath("data.content[].viewTotalCount").type(NUMBER).description("픽픽픽 조회 수"),
+                        fieldWithPath("data.content[].contentStatus").type(STRING).description("픽픽픽 게시글 상태")
+                                .attributes(contentStatusType()),
+                        fieldWithPath("data.content[].isVoted").type(BOOLEAN).description("픽픽픽 투표 여부"),
+
+                        fieldWithPath("data.content[].pickOptions").type(ARRAY).description("픽픽픽 옵션 배열"),
+                        fieldWithPath("data.content[].pickOptions[].id").type(NUMBER).description("픽픽픽 옵션 아이디"),
+                        fieldWithPath("data.content[].pickOptions[].title").type(STRING).description("픽픽픽 옵션 제목"),
+                        fieldWithPath("data.content[].pickOptions[].percent").type(NUMBER).description("픽픽픽 옵션 투표율(%)"),
+                        fieldWithPath("data.content[].pickOptions[].isPicked").type(BOOLEAN)
+                                .description("픽픽픽 옵션 투표 여부"),
+                        fieldWithPath("data.content[].pickOptions[].id").type(NUMBER).description("픽픽픽 옵션 아이디"),
+                        fieldWithPath("data.content[].pickOptions[].title").type(STRING).description("픽픽픽 옵션 제목"),
+                        fieldWithPath("data.content[].pickOptions[].percent").type(NUMBER).description("픽픽픽 옵션 투표율(%)"),
+                        fieldWithPath("data.content[].pickOptions[].isPicked").type(BOOLEAN)
+                                .description("픽픽픽 옵션 투표 여부"),
+
+                        fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
+                        fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
+                        fieldWithPath("data.pageable.pageSize").type(NUMBER).description("페이지 사이즈"),
+
+                        fieldWithPath("data.pageable.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.pageable.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.pageable.sort.sorted").type(BOOLEAN).description("정렬 여부"),
+                        fieldWithPath("data.pageable.sort.unsorted").type(BOOLEAN).description("비정렬 여부"),
+
+                        fieldWithPath("data.pageable.offset").type(NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
+                        fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
+                        fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
+
+                        fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
+                        fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
+                        fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),
+                        fieldWithPath("data.number").type(NUMBER).description("현재 페이지"),
+
+                        fieldWithPath("data.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.sort.sorted").type(BOOLEAN).description("정렬 상태 여부"),
+                        fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
+                        fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
+                        fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
+                )
+        ));
+    }
+
+    private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,
+                           PickOptionContents firstPickOptionContents, Title secondPickOptinTitle,
+                           PickOptionContents secondPickOptionContents) {
+        // 픽픽픽 생성
+        Count voteTotalCount = new Count(1);
+        Pick pick = createPick(member, pickTitle, voteTotalCount, new Count(2), new Count(3), contentStatus);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(pick, PickOptionType.firstPickOption, firstPickOptionTitle,
+                firstPickOptionContents, voteTotalCount);
+        PickOption secondPickOption = createPickOption(pick, PickOptionType.secondPickOption, secondPickOptinTitle,
+                secondPickOptionContents, new Count(0));
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(pick, firstPickOption, member);
+        pickVoteRepository.save(pickVote);
+
+        return pick.getId();
+    }
+
+    private PickVote createPickVote(Pick pick, PickOption firstPickOption, Member member) {
+        return PickVote.builder()
+                .pick(pick)
+                .pickOption(firstPickOption)
+                .member(member)
+                .build();
+    }
+
+    private PickOption createPickOption(Pick pick, PickOptionType pickOptionType, Title title,
+                                        PickOptionContents contents, Count voteTotalCount) {
+        PickOption pickOption = PickOption.builder()
+                .pickOptionType(pickOptionType)
+                .title(title)
+                .contents(contents)
+                .voteTotalCount(voteTotalCount)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private Pick createPick(Member member, Title title, Count voteTotalCount, Count viewTotalCount,
+                            Count commentTotalCount, ContentStatus contentStatus) {
+        return Pick.builder()
+                .member(member)
+                .title(title)
+                .voteTotalCount(voteTotalCount)
+                .viewTotalCount(viewTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .contentStatus(contentStatus)
+                .build();
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,

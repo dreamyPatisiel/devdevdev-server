@@ -25,7 +25,7 @@ class MemberNicknameDictionaryServiceTest {
 
     @Test
     @DisplayName("WordType 우선순위에 따라 랜덤 닉네임이 생성된다.")
-    void test() {
+    void createRandomNickname() {
         // given
         List<MemberNicknameDictionary> nicknameDictionaryWords = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
