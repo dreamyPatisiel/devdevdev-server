@@ -5,18 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class PickDetailOptionImage {
+public class PickDetailOptionImageResponse {
     private final Long id;
     private final String imageUrl;
 
     @Builder
-    public PickDetailOptionImage(Long id, String imageUrl) {
+    public PickDetailOptionImageResponse(Long id, String imageUrl) {
         this.id = id;
         this.imageUrl = imageUrl;
     }
 
-    public static PickDetailOptionImage from(PickOptionImage pickOptionImage) {
-        return PickDetailOptionImage.builder()
+    public static PickDetailOptionImageResponse from(PickOptionImage pickOptionImage) {
+        return PickDetailOptionImageResponse.builder()
                 .id(pickOptionImage.getId())
                 .imageUrl(pickOptionImage.getImageUrl())
                 .build();

@@ -18,18 +18,19 @@ public class PickDetailOptionResponse {
     private final int percent;
     private final String content;
     private final long voteTotalCount;
-    private final List<PickDetailOptionImage> pickDetailOptionImages;
+    private final List<PickDetailOptionImageResponse> pickDetailOptionImagesResponse;
 
     @Builder
     public PickDetailOptionResponse(Long id, String title, boolean isPicked, BigDecimal percent, String content,
-                                    long voteTotalCount, List<PickDetailOptionImage> pickDetailOptionImages) {
+                                    long voteTotalCount,
+                                    List<PickDetailOptionImageResponse> pickDetailOptionImagesResponse) {
         this.id = id;
         this.title = title;
         this.isPicked = isPicked;
         this.percent = percent.intValueExact();
         this.content = content;
         this.voteTotalCount = voteTotalCount;
-        this.pickDetailOptionImages = pickDetailOptionImages;
+        this.pickDetailOptionImagesResponse = pickDetailOptionImagesResponse;
     }
 
     // 회원 전용
@@ -41,7 +42,7 @@ public class PickDetailOptionResponse {
                 .percent(PickOption.calculatePercentBy(findPick, pickOption))
                 .voteTotalCount(pickOption.getVoteTotalCount().getCount())
                 .content(pickOption.getContents().getPickOptionContents())
-                .pickDetailOptionImages(mapToPickDetailOptionImagesResponse(pickOption))
+                .pickDetailOptionImagesResponse(mapToPickDetailOptionImagesResponse(pickOption))
                 .build();
     }
 
@@ -54,13 +55,13 @@ public class PickDetailOptionResponse {
                 .percent(PickOption.calculatePercentBy(findPick, pickOption))
                 .voteTotalCount(pickOption.getVoteTotalCount().getCount())
                 .content(pickOption.getContents().getPickOptionContents())
-                .pickDetailOptionImages(mapToPickDetailOptionImagesResponse(pickOption))
+                .pickDetailOptionImagesResponse(mapToPickDetailOptionImagesResponse(pickOption))
                 .build();
     }
 
-    private static List<PickDetailOptionImage> mapToPickDetailOptionImagesResponse(PickOption pickOption) {
+    private static List<PickDetailOptionImageResponse> mapToPickDetailOptionImagesResponse(PickOption pickOption) {
         return pickOption.getPickOptionImages().stream()
-                .map(PickDetailOptionImage::from)
+                .map(PickDetailOptionImageResponse::from)
                 .toList();
     }
 }

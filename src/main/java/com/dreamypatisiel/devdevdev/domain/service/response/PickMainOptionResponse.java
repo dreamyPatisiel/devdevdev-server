@@ -25,6 +25,7 @@ public class PickMainOptionResponse {
         this.isPicked = isPicked;
     }
 
+    // 회원 전용
     public static PickMainOptionResponse of(Pick pick, PickOption pickOption,
                                             Member member) {
         return PickMainOptionResponse.builder()
@@ -35,6 +36,7 @@ public class PickMainOptionResponse {
                 .build();
     }
 
+    // 익명 회원 전용
     public static PickMainOptionResponse of(Pick pick, PickOption pickOption,
                                             AnonymousMember anonymousMember) {
         return PickMainOptionResponse.builder()

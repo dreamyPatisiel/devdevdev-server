@@ -37,6 +37,7 @@ public class PickMainResponse {
         this.pickOptions = pickOptions;
     }
 
+    // 회원 전용
     public static PickMainResponse of(Pick pick, Member member) {
         return PickMainResponse.builder()
                 .id(pick.getId())
@@ -50,6 +51,7 @@ public class PickMainResponse {
                 .build();
     }
 
+    // 익명 회원 전용
     public static PickMainResponse of(Pick pick, AnonymousMember anonymousMember) {
         return PickMainResponse.builder()
                 .id(pick.getId())
