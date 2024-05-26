@@ -49,7 +49,7 @@ public class MypageController {
     }
 
     @Operation(summary = "회원 탈퇴")
-    @DeleteMapping("/mypage/delete")
+    @DeleteMapping("/mypage/profile")
     public ResponseEntity<BasicResponse<Void>> deleteMember(HttpServletResponse response) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
