@@ -95,14 +95,13 @@ public class CookieUtils {
     }
 
     public static void configMemberCookie(HttpServletResponse response, Member member) {
-        // UTF-8 인코딩 필요
+        // 닉네임 UTF-8 인코딩 필요
         String nickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
-        String email = URLEncoder.encode(member.getEmailAsString(), StandardCharsets.UTF_8);
 
         addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME,
                 nickname, DEFAULT_MAX_AGE, false, true);
         addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL,
-                email, DEFAULT_MAX_AGE, false, true);
+                member.getEmailAsString(), DEFAULT_MAX_AGE, false, true);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {

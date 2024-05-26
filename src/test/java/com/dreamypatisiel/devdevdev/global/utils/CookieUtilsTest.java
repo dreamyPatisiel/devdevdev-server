@@ -249,7 +249,8 @@ class CookieUtilsTest {
 
     @Test
     @DisplayName("응답 정보에 멤버 관련 쿠키를 설정한다."
-            + " (유저 닉네임과 이메일은 UTF-8로 인코딩되고, secure은 true, httpOnly은 false로 저장한다.)")
+            + " (유저 닉네임은 UTF-8로 인코딩되고 이메일은 인코딩되지 않는다."
+            + " secure은 true, httpOnly은 false로 저장한다.)")
     void configMemberCookie() {
         // given
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -257,7 +258,7 @@ class CookieUtilsTest {
                 "꿈빛파티시엘", "1234", "email@gmail.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
         Member member = Member.createMemberBy(socialMemberDto);
         String encodedNickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
-        String encodedEmail = URLEncoder.encode(member.getEmailAsString(), StandardCharsets.UTF_8);
+        String email = member.getEmailAsString();
 
         // when
         CookieUtils.configMemberCookie(response, member);
@@ -281,7 +282,7 @@ class CookieUtilsTest {
 
         assertAll(
                 () -> assertThat(emailCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL),
-                () -> assertThat(emailCookie.getValue()).isEqualTo(encodedEmail),
+                () -> assertThat(emailCookie.getValue()).isEqualTo(email),
                 () -> assertThat(emailCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
                 () -> assertThat(emailCookie.getSecure()).isTrue(),
                 () -> assertThat(emailCookie.isHttpOnly()).isFalse()
