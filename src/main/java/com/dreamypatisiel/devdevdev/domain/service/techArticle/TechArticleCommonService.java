@@ -4,9 +4,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +31,7 @@ import org.springframework.util.StringUtils;
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-class TechArticleCommonService {
+public class TechArticleCommonService {
 
     private final TechArticleRepository techArticleRepository;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
@@ -62,14 +59,14 @@ class TechArticleCommonService {
                 .toList();
     }
 
-    protected static List<ElasticResponse<ElasticTechArticle>> mapToElasticTechArticlesResponse(
+    public List<ElasticResponse<ElasticTechArticle>> mapToElasticTechArticlesResponse(
             List<ElasticTechArticle> elasticTechArticles) {
         return elasticTechArticles.stream()
                 .map(elasticTechArticle -> new ElasticResponse<>(elasticTechArticle, null))
                 .toList();
     }
 
-    protected static List<String> getElasticIds(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
+    public static List<String> getElasticIds(List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         return elasticTechArticlesResponse.stream()
                 .map(elasticResponse -> elasticResponse.content().getId())
                 .toList();
@@ -87,7 +84,7 @@ class TechArticleCommonService {
         return techArticleRepository.findAllByElasticIdIn(elasticIds);
     }
 
-    protected static Map<String, ElasticResponse<ElasticTechArticle>> getElasticResponseMap(
+    public static Map<String, ElasticResponse<ElasticTechArticle>> getElasticResponseMap(
             List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse) {
         return elasticTechArticlesResponse.stream()
                 .collect(Collectors.toMap(el -> el.content().getId(), Function.identity()));
@@ -101,7 +98,7 @@ class TechArticleCommonService {
         return new ElasticSlice<>(techArticlesResponse, pageable, totalHits, hasNext);
     }
 
-    protected static CompanyResponse createCompanyResponse(TechArticle findTechArticle) {
+    public static CompanyResponse createCompanyResponse(TechArticle findTechArticle) {
         return Optional.ofNullable(findTechArticle.getCompany())
                 .map(CompanyResponse::from)
                 .orElse(null);
@@ -111,12 +108,7 @@ class TechArticleCommonService {
         return searchHits.getSearchHits().size() >= pageable.getPageSize();
     }
 
-    protected Slice<TechArticle> findBookmarkedTechArticles(Pageable pageable, Long techArticleId,
-                                                            BookmarkSort bookmarkSort, Member member) {
-        return techArticleRepository.findBookmarkedByCursor(pageable, techArticleId, bookmarkSort, member);
-    }
-
-    protected List<ElasticTechArticle> findElasticTechArticlesByElasticIdsIn(List<TechArticle> techArticles) {
+    public List<ElasticTechArticle> findElasticTechArticlesByElasticIdsIn(List<TechArticle> techArticles) {
         List<String> elasticIds = getElasticIdsFromTechArticles(techArticles);
         Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAllById(elasticIds);
 

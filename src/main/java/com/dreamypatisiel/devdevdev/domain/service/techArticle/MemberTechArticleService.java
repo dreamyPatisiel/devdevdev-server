@@ -5,7 +5,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
@@ -24,7 +23,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -113,24 +111,6 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         return new BookmarkResponse(techArticle.getId(), status);
     }
 
-    @Override
-    public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId,
-                                                                    BookmarkSort bookmarkSort,
-                                                                    Authentication authentication) {
-        // 회원 조회
-        Member member = memberProvider.getMemberByAuthentication(authentication);
-
-        // 북마크 기술블로그 조회(rds, elasticsearch)
-        Slice<TechArticle> techArticleSlices = findBookmarkedTechArticles(pageable, techArticleId, bookmarkSort,
-                member);
-        List<TechArticle> techArticles = techArticleSlices.getContent();
-
-        // 데이터 가공
-        List<TechArticleMainResponse> techArticleMainRespons = mapToTechArticlesResponse(techArticles);
-
-        return new SliceImpl<>(techArticleMainRespons, pageable, techArticleSlices.hasNext());
-    }
-
     private List<TechArticleMainResponse> getTechArticlesResponse(SearchHits<ElasticTechArticle> searchHits,
                                                                   Member member) {
         List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(
@@ -157,24 +137,6 @@ public class MemberTechArticleService extends TechArticleCommonService implement
                     CompanyResponse companyResponse = createCompanyResponse(techArticle);
                     return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse,
                             elasticResponse.score(), isBookmarkedByMember(techArticle, member));
-                })
-                .toList();
-    }
-
-    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<TechArticle> techArticles) {
-        List<ElasticTechArticle> elasticTechArticles = findElasticTechArticlesByElasticIdsIn(techArticles);
-        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = mapToElasticTechArticlesResponse(
-                elasticTechArticles);
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(
-                elasticTechArticlesResponse);
-
-        return techArticles.stream()
-                .map(techArticle -> {
-                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(
-                            techArticle.getElasticId());
-                    CompanyResponse companyResponse = createCompanyResponse(techArticle);
-                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse,
-                            elasticResponse.score(), true);
                 })
                 .toList();
     }

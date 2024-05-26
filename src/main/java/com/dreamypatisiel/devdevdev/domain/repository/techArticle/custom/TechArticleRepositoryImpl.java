@@ -43,8 +43,9 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     @Override
-    public Slice<TechArticle> findBookmarkedByCursor(Pageable pageable, Long techArticleId, BookmarkSort bookmarkSort,
-                                                     Member member) {
+    public Slice<TechArticle> findBookmarkedByMemberAndCursor(Pageable pageable, Long techArticleId,
+                                                              BookmarkSort bookmarkSort,
+                                                              Member member) {
 
         List<TechArticle> contents = query.selectFrom(techArticle)
                 .innerJoin(bookmark)

@@ -1,6 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
@@ -19,7 +18,4 @@ public interface TechArticleService {
     TechArticleDetailResponse getTechArticle(Long id, Authentication authentication);
 
     BookmarkResponse updateBookmark(Long id, boolean status, Authentication authentication);
-
-    Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId,
-                                                             BookmarkSort bookmarkSort, Authentication authentication);
 }

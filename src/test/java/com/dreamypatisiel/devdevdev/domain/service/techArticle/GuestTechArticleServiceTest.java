@@ -231,23 +231,4 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
-
-    @Test
-    @DisplayName("익명 사용자가 기술블로그 북마크 목록을 요청하면 예외가 발생한다.")
-    void findBookmarkedTechArticlesAccessDeniedException() {
-        // given
-        when(authentication.getPrincipal()).thenReturn("anonymousUser");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        Long id = FIRST_TECH_ARTICLE_ID;
-        Boolean status = true;
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // when // then
-        assertThatThrownBy(
-                () -> guestTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
 }
