@@ -18,7 +18,7 @@ public class PickDetailOptionResponse {
     private final int percent;
     private final String content;
     private final long voteTotalCount;
-    private final List<PickDetailOptionImageResponse> pickDetailOptionImagesResponse;
+    private final List<PickDetailOptionImageResponse> pickDetailOptionImages;
 
     @Builder
     public PickDetailOptionResponse(Long id, String title, boolean isPicked, BigDecimal percent, String content,
@@ -30,7 +30,7 @@ public class PickDetailOptionResponse {
         this.percent = percent.intValueExact();
         this.content = content;
         this.voteTotalCount = voteTotalCount;
-        this.pickDetailOptionImagesResponse = pickDetailOptionImagesResponse;
+        this.pickDetailOptionImages = pickDetailOptionImagesResponse;
     }
 
     // 회원 전용

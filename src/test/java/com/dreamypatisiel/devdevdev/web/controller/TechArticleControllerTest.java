@@ -183,7 +183,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         }
         bookmarkRepository.saveAll(bookmarks);
 
-        Pageable prevPageable = PageRequest.of(0, 10);
+        Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
         List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
                 .toList();

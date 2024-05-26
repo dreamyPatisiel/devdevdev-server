@@ -503,7 +503,7 @@ class GuestPickServiceTest {
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
         );
 
-        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImageResponses();
+        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findFirstPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
         assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -522,7 +522,7 @@ class GuestPickServiceTest {
                 () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
         );
 
-        List<PickDetailOptionImageResponse> findfirstPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImageResponses();
+        List<PickDetailOptionImageResponse> findfirstPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findsecondPickOptionImage = secondPickOption.getPickOptionImages().get(0);
         assertThat(findfirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")

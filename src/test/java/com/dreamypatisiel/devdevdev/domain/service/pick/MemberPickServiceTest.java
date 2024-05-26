@@ -950,7 +950,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
         );
 
-        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImageResponses();
+        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findfirstPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
         assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -969,7 +969,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
         );
 
-        List<PickDetailOptionImageResponse> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImageResponses();
+        List<PickDetailOptionImageResponse> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findSecondPickOptionImage = secondPickOption.getPickOptionImages().get(0);
         assertThat(findSecondPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -1053,7 +1053,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1)
         );
 
-        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImageResponses();
+        List<PickDetailOptionImageResponse> findFirstPickOptionPickOptionImagesResponse = findFirstPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findfirstPickOptionImage = findFirstPickOption.getPickOptionImages().get(0);
         assertThat(findFirstPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
@@ -1072,7 +1072,7 @@ class MemberPickServiceTest {
                 () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0)
         );
 
-        List<PickDetailOptionImageResponse> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImageResponses();
+        List<PickDetailOptionImageResponse> findSecondPickOptionPickOptionImagesResponse = findSecondPickOptionResponse.getPickDetailOptionImages();
         PickOptionImage findSecondPickOptionImage = secondPickOption.getPickOptionImages().get(0);
         assertThat(findSecondPickOptionPickOptionImagesResponse).hasSize(1)
                 .extracting("id", "imageUrl")
