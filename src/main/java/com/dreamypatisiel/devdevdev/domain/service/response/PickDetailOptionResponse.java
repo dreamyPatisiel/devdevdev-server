@@ -41,7 +41,7 @@ public class PickDetailOptionResponse {
                 .isPicked(PickResponseUtils.isPickedPickOptionByMember(findPick, pickOption, member))
                 .percent(PickOption.calculatePercentBy(findPick, pickOption))
                 .voteTotalCount(pickOption.getVoteTotalCount().getCount())
-                .content(pickOption.getContents().getPickOptionContents())
+                .content(pickOption.getContentsAsString())
                 .pickDetailOptionImagesResponse(mapToPickDetailOptionImagesResponse(pickOption))
                 .build();
     }
@@ -54,7 +54,7 @@ public class PickDetailOptionResponse {
                 .isPicked(PickResponseUtils.isPickedPickOptionByAnonymousMember(findPick, pickOption, anonymousMember))
                 .percent(PickOption.calculatePercentBy(findPick, pickOption))
                 .voteTotalCount(pickOption.getVoteTotalCount().getCount())
-                .content(pickOption.getContents().getPickOptionContents())
+                .content(pickOption.getContentsAsString())
                 .pickDetailOptionImagesResponse(mapToPickDetailOptionImagesResponse(pickOption))
                 .build();
     }
