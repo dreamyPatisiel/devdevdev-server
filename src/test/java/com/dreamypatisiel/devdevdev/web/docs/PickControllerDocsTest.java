@@ -1263,11 +1263,12 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.pickCreatedAt").type(STRING).description("픽픽픽 생성 일시")
                                 .attributes(yearMonthDateTimeType()),
                         fieldWithPath("data.pickTitle").type(STRING).description("픽픽픽 제목"),
-                        fieldWithPath("data.isMemberPick").type(BOOLEAN).description("현재 로그인한 회원이 픽픽픽 작성자 여부"),
+                        fieldWithPath("data.isAuthor").type(BOOLEAN).description("현재 로그인한 회원이 픽픽픽 작성자 여부"),
+                        fieldWithPath("data.isVoted").type(BOOLEAN).description("픽픽픽 투표 여부"),
 
                         fieldWithPath("data.pickOptions").type(OBJECT).description("픽픽픽 옵션 객체"),
 
-                        fieldWithPath("data.pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 옵션 객체"),
+                        fieldWithPath("data.pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫번째 옵션 객체"),
                         fieldWithPath("data.pickOptions.firstPickOption.id").type(NUMBER)
                                 .description("첫 번째 픽픽픽 옵션 아이디"),
                         fieldWithPath("data.pickOptions.firstPickOption.title").type(STRING)
@@ -1281,30 +1282,31 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.pickOptions.firstPickOption.voteTotalCount").type(NUMBER)
                                 .description("첫 번째 픽픽픽 옵션 득표수"),
                         fieldWithPath("data.pickOptions.firstPickOption.pickDetailOptionImages").type(ARRAY)
-                                .description("첫 번째 픽픽픽 옵션 객체"),
+                                .description("첫 번째 픽픽픽 옵션 이미지 배열"),
                         fieldWithPath("data.pickOptions.firstPickOption.pickDetailOptionImages.[].id").type(NUMBER)
-                                .description("첫 번째 픽픽픽 옵션 객체"),
+                                .description("첫 번째 픽픽픽 옵션 이미지 아이디"),
                         fieldWithPath("data.pickOptions.firstPickOption.pickDetailOptionImages.[].imageUrl").type(
-                                STRING).description("첫 번째 픽픽픽 옵션 객체"),
+                                STRING).description("첫 번째 픽픽픽 옵션 이미지 url"),
 
+                        fieldWithPath("data.pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 첫번째 옵션 객체"),
                         fieldWithPath("data.pickOptions.secondPickOption.id").type(NUMBER)
-                                .description("두 번재 픽픽픽 옵션 아이디"),
+                                .description("두 번째 픽픽픽 옵션 아이디"),
                         fieldWithPath("data.pickOptions.secondPickOption.title").type(STRING)
-                                .description("두 번재 픽픽픽 옵션 제목"),
+                                .description("두 번째 픽픽픽 옵션 제목"),
                         fieldWithPath("data.pickOptions.secondPickOption.isPicked").type(BOOLEAN)
-                                .description("두 번재 픽픽픽 옵션 투표 여부"),
+                                .description("두 번째 픽픽픽 옵션 투표 여부"),
                         fieldWithPath("data.pickOptions.secondPickOption.percent").type(NUMBER)
-                                .description("두 번재 픽픽픽 옵션 득표율(%)"),
+                                .description("두 번째 픽픽픽 옵션 득표율(%)"),
                         fieldWithPath("data.pickOptions.secondPickOption.content").type(STRING)
-                                .description("두 번재 픽픽픽 옵션 내용"),
+                                .description("두 번째 픽픽픽 옵션 내용"),
                         fieldWithPath("data.pickOptions.secondPickOption.voteTotalCount").type(NUMBER)
-                                .description("두 번재 픽픽픽 옵션 득표수"),
+                                .description("두 번째 픽픽픽 옵션 득표수"),
                         fieldWithPath("data.pickOptions.secondPickOption.pickDetailOptionImages").type(ARRAY)
-                                .description("두 번재 픽픽픽 옵션 객체"),
+                                .description("두 번째 픽픽픽 옵션 이미지 배열"),
                         fieldWithPath("data.pickOptions.secondPickOption.pickDetailOptionImages.[].id").type(NUMBER)
-                                .description("두 번재 픽픽픽 옵션 객체"),
+                                .description("두 번째 픽픽픽 옵션 이미지 아이디"),
                         fieldWithPath("data.pickOptions.secondPickOption.pickDetailOptionImages.[].imageUrl").type(
-                                STRING).description("두 번재 픽픽픽 옵션 객체")
+                                STRING).description("두 번째 픽픽픽 옵션 이미지 url")
                 )
         ));
     }
