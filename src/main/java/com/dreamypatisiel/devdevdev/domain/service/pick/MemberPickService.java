@@ -30,10 +30,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickMainOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
@@ -98,7 +96,7 @@ public class MemberPickService implements PickService {
 
         // 데이터 가공
         List<PickMainResponse> pickMainResponse = picks.stream()
-                .map(pick -> mapToPickResponse(pick, member))
+                .map(pick -> PickMainResponse.of(pick, member))
                 .toList();
 
         return new SliceImpl<>(pickMainResponse, pageable, picks.hasNext());
@@ -249,7 +247,7 @@ public class MemberPickService implements PickService {
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
                 .collect(Collectors.toMap(PickOption::getPickOptionType,
-                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick, findMember))
+                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, findMember))
                 );
 
         // 픽픽픽 상세
@@ -364,32 +362,6 @@ public class MemberPickService implements PickService {
         return VotePickOptionResponse.of(pickOption, pickVote.getId(), percent, true);
     }
 
-    private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick,
-                                                                    Member member) {
-        return PickDetailOptionResponse.builder()
-                .id(pickOption.getId())
-                .title(pickOption.getTitle().getTitle())
-                .isPicked(isPickedPickOptionByMember(findPick, pickOption, member))
-                .percent(PickOption.calculatePercentBy(findPick, pickOption))
-                .voteTotalCount(pickOption.getVoteTotalCount().getCount())
-                .content(pickOption.getContents().getPickOptionContents())
-                .pickDetailOptionImages(mapToPickDetailOptionImagesResponse(pickOption))
-                .build();
-    }
-
-    private List<PickDetailOptionImage> mapToPickDetailOptionImagesResponse(PickOption pickOption) {
-        return pickOption.getPickOptionImages().stream()
-                .map(this::mapToPickOptionImageResponse)
-                .toList();
-    }
-
-    private PickDetailOptionImage mapToPickOptionImageResponse(PickOptionImage pickOptionImage) {
-        return PickDetailOptionImage.builder()
-                .id(pickOptionImage.getId())
-                .imageUrl(pickOptionImage.getImageUrl())
-                .build();
-    }
-
     private void changePickOptionAndPickOptionImages(
             Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions, List<PickOption> pickOptions) {
 
@@ -439,45 +411,5 @@ public class MemberPickService implements PickService {
             throw new NotFoundException(PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE);
         }
         return findPickOptionImages;
-    }
-
-    private PickMainResponse mapToPickResponse(Pick pick, Member member) {
-        return PickMainResponse.builder()
-                .id(pick.getId())
-                .title(pick.getTitle())
-                .isVoted(isVotedByPickAndMember(pick, member))
-                .voteTotalCount(pick.getVoteTotalCount())
-                .commentTotalCount(pick.getCommentTotalCount())
-                .viewTotalCount(pick.getViewTotalCount())
-                .popularScore(pick.getPopularScore())
-                .pickOptions(mapToPickOptionsResponse(pick, member))
-                .build();
-    }
-
-    private boolean isVotedByPickAndMember(Pick pick, Member member) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
-    }
-
-    private List<PickMainOptionResponse> mapToPickOptionsResponse(Pick pick, Member member) {
-        return pick.getPickOptions().stream()
-                .map(pickOption -> mapToPickOptionResponse(pick, pickOption, member))
-                .toList();
-    }
-
-    private PickMainOptionResponse mapToPickOptionResponse(Pick pick, PickOption pickOption, Member member) {
-        return PickMainOptionResponse.builder()
-                .id(pickOption.getId())
-                .title(pickOption.getTitle())
-                .percent(PickOption.calculatePercentBy(pick, pickOption))
-                .isPicked(isPickedPickOptionByMember(pick, pickOption, member))
-                .build();
-    }
-
-    private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, Member member) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption))
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 }

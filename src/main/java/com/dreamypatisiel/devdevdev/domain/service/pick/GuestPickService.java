@@ -8,7 +8,6 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
@@ -19,10 +18,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImage;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickMainOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
@@ -76,7 +73,7 @@ public class GuestPickService implements PickService {
 
         // 데이터 가공
         List<PickMainResponse> pickMainResponse = picks.stream()
-                .map(pick -> mapToPickResponse(pick, anonymousMember))
+                .map(pick -> PickMainResponse.of(pick, anonymousMember))
                 .toList();
 
         return new SliceImpl<>(pickMainResponse, pageable, picks.hasNext());
@@ -123,10 +120,10 @@ public class GuestPickService implements PickService {
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
                 .collect(Collectors.toMap(PickOption::getPickOptionType,
-                        pickOption -> mapToPickDetailOptionsResponse(pickOption, findPick, anonymousMember)));
+                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, anonymousMember)));
 
         // 픽픽픽 상세
-        return PickDetailResponse.of(findPick, findPick.getMember(), pickDetailOptions);
+        return PickDetailResponse.of(findPick, findPick.getMember(), anonymousMember, pickDetailOptions);
     }
 
     private AnonymousMember findOrCreateAnonymousMember(String anonymousMemberId) {
@@ -233,74 +230,8 @@ public class GuestPickService implements PickService {
         return VotePickOptionResponse.of(pickOption, pickVote.getId(), percent, true);
     }
 
-    private PickDetailOptionResponse mapToPickDetailOptionsResponse(PickOption pickOption, Pick findPick,
-                                                                    AnonymousMember anonymousMember) {
-        return PickDetailOptionResponse.builder()
-                .id(pickOption.getId())
-                .title(pickOption.getTitle().getTitle())
-                .isPicked(isPickedPickOptionByMember(findPick, pickOption, anonymousMember))
-                .percent(PickOption.calculatePercentBy(findPick, pickOption))
-                .voteTotalCount(pickOption.getVoteTotalCount().getCount())
-                .content(pickOption.getContents().getPickOptionContents())
-                .pickDetailOptionImages(mapToPickDetailOptionImagesResponse(pickOption))
-                .build();
-    }
-
-    private List<PickDetailOptionImage> mapToPickDetailOptionImagesResponse(PickOption pickOption) {
-        return pickOption.getPickOptionImages().stream()
-                .map(this::mapToPickOptionImageResponse)
-                .toList();
-    }
-
-    private PickDetailOptionImage mapToPickOptionImageResponse(PickOptionImage pickOptionImage) {
-        return PickDetailOptionImage.builder()
-                .id(pickOptionImage.getId())
-                .imageUrl(pickOptionImage.getImageUrl())
-                .build();
-    }
-
     @Override
     public void deleteImage(Long pickOptionImageId) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
-
-    private PickMainResponse mapToPickResponse(Pick pick, AnonymousMember anonymousMember) {
-        return PickMainResponse.builder()
-                .id(pick.getId())
-                .title(pick.getTitle())
-                .voteTotalCount(pick.getVoteTotalCount())
-                .commentTotalCount(pick.getCommentTotalCount())
-                .viewTotalCount(pick.getViewTotalCount())
-                .popularScore(pick.getPopularScore())
-                .pickOptions(mapToPickOptionsResponse(pick))
-                .isVoted(isVotedByPickAndMember(pick, anonymousMember))
-                .build();
-    }
-
-    private List<PickMainOptionResponse> mapToPickOptionsResponse(Pick pick) {
-        return pick.getPickOptions().stream()
-                .map(pickOption -> mapToPickOptionResponse(pick, pickOption))
-                .toList();
-    }
-
-    private PickMainOptionResponse mapToPickOptionResponse(Pick pick, PickOption pickOption) {
-        return PickMainOptionResponse.builder()
-                .id(pickOption.getId())
-                .title(pickOption.getTitle())
-                .percent(PickOption.calculatePercentBy(pick, pickOption))
-                .isPicked(false)
-                .build();
-    }
-
-    private boolean isVotedByPickAndMember(Pick pick, AnonymousMember anonymousMember) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
-                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
-    }
-
-    private Boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption, AnonymousMember anonymousMember) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().equals(pickOption))
-                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
     }
 }

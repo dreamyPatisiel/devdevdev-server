@@ -80,6 +80,7 @@ class OAuth2SuccessHandlerTest {
     @Test
     @DisplayName("OAuth2.0 로그인 성공 시"
             + " 토큰을 생성하고 토큰을 쿠키에 저장하고"
+            + " 로그인된 회원의 이메일과 닉네임을 쿠키에 저장하고"
             + " 리다이렉트를 설정하고"
             + " 회원에 리프레시 토큰을 저장한다.")
     void onAuthenticationSuccess() throws IOException {
@@ -98,10 +99,16 @@ class OAuth2SuccessHandlerTest {
         Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType).get();
         Cookie accessCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
         Cookie refreshCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
+        Cookie loginStatusCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS);
+        Cookie nicknameCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME);
+        Cookie emailCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL);
 
         assertAll(
                 () -> assertThat(accessCookie).isNotNull(),
-                () -> assertThat(refreshCookie).isNotNull()
+                () -> assertThat(refreshCookie).isNotNull(),
+                () -> assertThat(loginStatusCookie).isNotNull(),
+                () -> assertThat(nicknameCookie).isNotNull(),
+                () -> assertThat(emailCookie).isNotNull()
         );
         assertAll(
                 () -> assertThat(accessCookie.isHttpOnly()).isFalse(),

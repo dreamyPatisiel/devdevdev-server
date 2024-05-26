@@ -83,7 +83,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 1; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
+                    createRandomDate(), "내용",
                     "http://example.com/" + i, "설명", "http://example.com/", "작성자", "회사", 1L, (long) i, (long) i,
                     (long) i,
                     (long) i * 10);
@@ -547,7 +548,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         return startDate.plusDays(randomDays);
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
+                                                               String contents,
                                                                String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
                                                                String company, Long companyId,
@@ -555,6 +557,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                                                Long commentTotalCount,
                                                                Long popularScore) {
         return ElasticTechArticle.builder()
+                .id(id)
                 .title(title)
                 .regDate(regDate)
                 .contents(contents)

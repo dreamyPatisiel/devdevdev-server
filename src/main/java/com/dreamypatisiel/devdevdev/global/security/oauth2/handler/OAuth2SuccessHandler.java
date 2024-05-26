@@ -1,6 +1,8 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.handler;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
@@ -33,6 +35,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final TokenService tokenService;
     private final JwtMemberService jwtMemberService;
+    private final MemberProvider memberProvider;
 
     // OAuth2.0 로그인 성공시 수행하는 로직
     @Override
@@ -49,6 +52,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 토큰을 쿠키에 저장
         CookieUtils.configJwtCookie(response, token);
 
+        // 유저 정보 쿠키에 저장
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+        CookieUtils.configMemberCookie(response, member);
+
         // 리다이렉트 설정
         String redirectUri = UriUtils.createUriByDomainAndEndpoint(domain, endpoint);
         getRedirectStrategy().sendRedirect(request, response, redirectUri);
@@ -56,5 +63,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 리프레시 토큰 저장
         jwtMemberService.updateMemberRefreshToken(token.getRefreshToken());
         log.info("OAuth2SuccessHandler accessToken={}", token.getAccessToken());
+        log.info("response={}", response.toString());
     }
 }
