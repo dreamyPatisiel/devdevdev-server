@@ -1,10 +1,10 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
@@ -43,15 +43,9 @@ public class MyPickMainResponse {
                 .voteTotalCount(pick.getVoteTotalCount())
                 .commentTotalCount(pick.getCommentTotalCount())
                 .viewTotalCount(pick.getViewTotalCount())
-                .isVoted(isVotedByPickAndMember(pick, pick.getMember()))
+                .isVoted(PickResponseUtils.isVotedMember(pick, pick.getMember()))
                 .contentStatus(pick.getContentStatus())
                 .pickOptions(pickOptions)
                 .build();
-    }
-
-    private static boolean isVotedByPickAndMember(Pick pick, Member member) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 }

@@ -70,7 +70,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
-                    createRandomDate(), "내용",
+                    i > 1 ? createRandomDate() : LocalDate.of(2024, 3, 11), "내용",
                     "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", 1L, (long) i, (long) i,
                     (long) i,
                     (long) i * 10);
@@ -102,11 +102,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("익명 사용자가 기술블로그 메인을 조회한다.")
     void getTechArticlesByAnonymous() throws Exception {
         // given
-        Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
-                .toList();
-        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String elasticId = "elasticId_1";
         String keyword = "타이틀";
         String companyId = "1";
 
@@ -115,7 +112,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.LATEST.name())
                         .queryParam("keyword", keyword)
-                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("elasticId", elasticId)
                         .queryParam("companyId", companyId)
                         .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,11 +180,8 @@ class TechArticleControllerTest extends SupportControllerTest {
         }
         bookmarkRepository.saveAll(bookmarks);
 
-        Pageable prevPageable = PageRequest.of(0, 10);
         Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
-                .toList();
-        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String elasticId = "elasticId_1";
         String keyword = "타이틀";
         String companyId = "1";
 
@@ -196,7 +190,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.LATEST.name())
                         .queryParam("keyword", keyword)
-                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("elasticId", elasticId)
                         .queryParam("companyId", companyId)
                         .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -91,6 +91,6 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     private boolean hasNextPage(List<TechArticle> contents, int pageSize) {
-        return contents.size() > pageSize;
+        return contents.size() >= pageSize;
     }
 }

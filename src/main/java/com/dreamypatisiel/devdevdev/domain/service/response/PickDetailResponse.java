@@ -1,8 +1,10 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import java.time.LocalDateTime;
@@ -19,41 +21,48 @@ public class PickDetailResponse {
     private final LocalDateTime pickCreatedAt;
 
     private final String pickTitle;
-    private final Boolean isMemberPick;
+    private final Boolean isAuthor;
+    private final Boolean isVoted;
     private final Map<PickOptionType, PickDetailOptionResponse> pickOptions;
 
     @Builder
     public PickDetailResponse(String userId, String nickname, LocalDateTime pickCreatedAt, String pickTitle,
-                              boolean isMemberPick, Map<PickOptionType, PickDetailOptionResponse> pickOptions) {
+                              boolean isAuthor, boolean isVoted,
+                              Map<PickOptionType, PickDetailOptionResponse> pickOptions) {
         this.userId = userId;
         this.nickname = nickname;
         this.pickCreatedAt = pickCreatedAt;
         this.pickTitle = pickTitle;
-        this.isMemberPick = isMemberPick;
+        this.isAuthor = isAuthor;
+        this.isVoted = isVoted;
         this.pickOptions = pickOptions;
     }
 
-    public static PickDetailResponse of(Pick findPick, Member pickMember, Member member,
+    // 회원 전용
+    public static PickDetailResponse of(Pick pick, Member pickMember, Member member,
                                         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions) {
         return PickDetailResponse.builder()
-                .isMemberPick(findPick.isEqualMember(member))
-                .pickCreatedAt(findPick.getCreatedAt())
+                .userId(PickResponseUtils.sliceAndMaskEmail(pickMember.getEmail().getEmail()))
                 .nickname(pickMember.getNickname().getNickname())
-                .userId(pickMember.getName())
-                .pickTitle(findPick.getTitle().getTitle())
+                .pickCreatedAt(pick.getCreatedAt())
+                .pickTitle(pick.getTitle().getTitle())
+                .isAuthor(pick.isEqualMember(member))
+                .isVoted(PickResponseUtils.isVotedMember(pick, member))
                 .pickOptions(pickDetailOptions)
                 .build();
     }
 
-    public static PickDetailResponse of(Pick findPick, Member pickMember,
+    // 익명 회원 전용
+    public static PickDetailResponse of(Pick pick, Member pickMember, AnonymousMember anonymousMember,
                                         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions) {
         return PickDetailResponse.builder()
-                .isMemberPick(false)
-                .pickCreatedAt(findPick.getCreatedAt())
+                .isAuthor(false)
+                .pickCreatedAt(pick.getCreatedAt())
                 .nickname(pickMember.getNickname().getNickname())
-                .userId(pickMember.getName())
-                .pickTitle(findPick.getTitle().getTitle())
+                .userId(PickResponseUtils.sliceAndMaskEmail(pickMember.getEmail().getEmail()))
+                .pickTitle(pick.getTitle().getTitle())
                 .pickOptions(pickDetailOptions)
+                .isVoted(PickResponseUtils.isVotedAnonymousMember(pick, anonymousMember))
                 .build();
     }
 }

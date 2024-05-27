@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.response;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Data;
@@ -27,13 +28,7 @@ public class MyPickMainOptionResponse {
                 .id(pickOption.getId())
                 .title(pickOption.getTitle())
                 .percent(PickOption.calculatePercentBy(pick, pickOption))
-                .isPicked(isPickedPickOption(pick, pickOption))
+                .isPicked(PickResponseUtils.isPickedPickOptionByMember(pick, pickOption, pick.getMember()))
                 .build();
-    }
-
-    private static Boolean isPickedPickOption(Pick pick, PickOption pickOption) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption))
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(pick.getMember()));
     }
 }

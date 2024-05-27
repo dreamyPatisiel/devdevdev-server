@@ -800,7 +800,9 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.nickname").isString())
                 .andExpect(jsonPath("$.data.pickCreatedAt").isString())
                 .andExpect(jsonPath("$.data.pickTitle").isString())
-                .andExpect(jsonPath("$.data.isMemberPick").isBoolean())
+                .andExpect(jsonPath("$.data.isAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.isVoted").isBoolean())
+                
                 .andExpect(jsonPath("$.data.pickOptions").isNotEmpty())
 
                 .andExpect(jsonPath("$.data.pickOptions.firstPickOption").isNotEmpty())
