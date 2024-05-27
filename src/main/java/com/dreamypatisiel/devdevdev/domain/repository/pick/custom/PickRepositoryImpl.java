@@ -26,7 +26,6 @@ import org.springframework.util.ObjectUtils;
 public class PickRepositoryImpl implements PickRepositoryCustom {
 
     public static final long TWO = 2L;
-    private static final int ONE = 1;
 
     private final JPQLQueryFactory query;
 
@@ -48,9 +47,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .limit(limit)
                 .fetch();
 
-        int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
-
-        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
+        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
     @Override
@@ -68,9 +65,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .limit(limit)
                 .fetch();
 
-        int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
-
-        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
+        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
     @Override
