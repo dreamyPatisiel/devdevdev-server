@@ -26,7 +26,6 @@ import org.springframework.util.ObjectUtils;
 public class PickRepositoryImpl implements PickRepositoryCustom {
 
     public static final long TWO = 2L;
-    private static final int ONE = 1;
 
     private final JPQLQueryFactory query;
 
@@ -36,7 +35,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     @Override
     public Slice<Pick> findPicksByCursor(Pageable pageable, Long pickId, PickSort pickSort) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
-        long limit = pageable.getPageSize() * TWO + ONE;
+        long limit = pageable.getPageSize() * TWO;
 
         List<Pick> contents = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption)
@@ -48,15 +47,13 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .limit(limit)
                 .fetch();
 
-        int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
-
-        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
+        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
     @Override
     public Slice<Pick> findPicksByMemberAndCursor(Pageable pageable, Member member, Long pickId) {
         // 1개의 pick에 2개의 pickOtion이 존재하기 때문에 pageSize에 2를 곱해야 한다.
-        long limit = pageable.getPageSize() * TWO + ONE;
+        long limit = pageable.getPageSize() * TWO;
 
         List<Pick> contents = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption)
@@ -68,9 +65,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .limit(limit)
                 .fetch();
 
-        int pageSize = pageable.getPageSize() * Long.valueOf(TWO).intValue();
-
-        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageSize));
+        return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
     @Override
@@ -124,6 +119,6 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
     }
 
     private boolean hasNextPage(List<Pick> contents, int pageSize) {
-        return contents.size() > pageSize;
+        return contents.size() >= pageSize;
     }
 }
