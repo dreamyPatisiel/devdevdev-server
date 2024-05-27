@@ -134,6 +134,10 @@ public class PickOption extends BasicTime {
     }
 
     public String getContentsAsString() {
+        if (this.contents == null) {
+            return "";
+        }
+
         String pickOptionContents = contents.getPickOptionContents();
         if (pickOptionContents == null) {
             return "";
