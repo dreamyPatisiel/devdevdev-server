@@ -132,4 +132,13 @@ public class PickOption extends BasicTime {
     public void minusVoteTotalCount() {
         this.voteTotalCount = Count.minusOne(this.voteTotalCount);
     }
+
+    public String getContentsAsString() {
+        String pickOptionContents = contents.getPickOptionContents();
+        if (pickOptionContents == null) {
+            return "";
+        }
+
+        return pickOptionContents;
+    }
 }

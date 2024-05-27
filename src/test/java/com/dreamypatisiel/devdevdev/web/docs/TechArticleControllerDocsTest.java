@@ -82,9 +82,9 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 1; i <= 1; i++) {
+        for (int i = 1; i <= 10; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
-                    createRandomDate(), "내용",
+                    i > 1 ? createRandomDate() : LocalDate.of(2024, 3, 11), "내용",
                     "http://example.com/" + i, "설명", "http://example.com/", "작성자", "회사", 1L, (long) i, (long) i,
                     (long) i,
                     (long) i * 10);
@@ -131,11 +131,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         }
         bookmarkRepository.saveAll(bookmarks);
 
-        Pageable prevPageable = PageRequest.of(0, 10);
-        Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
-                .toList();
-        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        Pageable pageable = PageRequest.of(0, 1);
+        String elasticId = "elasticId_1";
         String keyword = "타이틀";
         String companyId = "1";
 
@@ -144,7 +141,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
                         .queryParam("keyword", keyword)
-                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("elasticId", elasticId)
                         .queryParam("companyId", companyId)
                         .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -239,7 +236,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 메인을 조회할 때 존재하지 않는 엘라스틱서치 ID를 조회하면 에러가 발생한다.")
     void getTechArticlesNotFoundElasticIdException() throws Exception {
         // given
-        Pageable pageable = PageRequest.of(0, 10);
+        Pageable pageable = PageRequest.of(0, 1);
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
@@ -267,18 +264,15 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
             "정확도 내림차순으로 조회하기 위한 점수가 없다면 예외가 발생한다.")
     void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCOREWithoutScoreException() throws Exception {
         // given
-        Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
-        List<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll(prevPageable).stream()
-                .toList();
-        ElasticTechArticle cursor = elasticTechArticles.getLast();
+        String elasticId = "elasticId_1";
         String keyword = "타이틀";
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
-                        .queryParam("elasticId", cursor.getId())
+                        .queryParam("elasticId", elasticId)
                         .queryParam("keyword", keyword)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
