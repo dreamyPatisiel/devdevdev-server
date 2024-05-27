@@ -1,8 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.member;
 
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService.createCompanyResponse;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService.getElasticResponseMap;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -14,12 +11,11 @@ import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainOptionResp
 import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService;
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -52,7 +48,7 @@ public class MemberService {
     }
 
     /**
-     * 회원 자신이 작성한 픽픽픽을 조회한다.
+     * 회원 자신이 작성한 픽픽픽을 조회합니다.
      */
     public Slice<MyPickMainResponse> findMyPickMain(Pageable pageable, Long pickId, Authentication authentication) {
 
@@ -82,33 +78,36 @@ public class MemberService {
         // 북마크 기술블로그 조회(rds, elasticsearch)
         Slice<TechArticle> techArticleSlices = techArticleRepository.findBookmarkedByMemberAndCursor(pageable,
                 techArticleId, bookmarkSort, findMember);
+
         List<TechArticle> techArticles = techArticleSlices.getContent();
 
+        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByTechArticles(
+                techArticles);
+
         // 데이터 가공
-        List<TechArticleMainResponse> techArticleMainResponse = mapToTechArticlesResponse(techArticles);
+        List<TechArticleMainResponse> techArticleMainResponse = techArticles.stream()
+                .flatMap(techArticle -> mapToTechArticlesResponse(techArticle, elasticTechArticles, findMember)
+                )
+                .toList();
 
         return new SliceImpl<>(techArticleMainResponse, pageable, techArticleSlices.hasNext());
     }
 
-    private List<TechArticleMainResponse> mapToTechArticlesResponse(List<TechArticle> techArticles) {
-        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByElasticIdsIn(
-                techArticles);
-        List<ElasticResponse<ElasticTechArticle>> elasticTechArticlesResponse = techArticleCommonService.mapToElasticTechArticlesResponse(
-                elasticTechArticles);
-        Map<String, ElasticResponse<ElasticTechArticle>> elasticsResponseMap = getElasticResponseMap(
-                elasticTechArticlesResponse);
-
-        return techArticles.stream()
-                .map(techArticle -> {
-                    ElasticResponse<ElasticTechArticle> elasticResponse = elasticsResponseMap.get(
-                            techArticle.getElasticId());
-                    CompanyResponse companyResponse = createCompanyResponse(techArticle);
-                    return TechArticleMainResponse.of(elasticResponse.content(), techArticle, companyResponse,
-                            elasticResponse.score(), true);
-                })
-                .toList();
+    /**
+     * 기술블로그 목록 응답 형태로 가공합니다.
+     */
+    private Stream<TechArticleMainResponse> mapToTechArticlesResponse(TechArticle techArticle,
+                                                                      List<ElasticTechArticle> elasticTechArticles,
+                                                                      Member member) {
+        return elasticTechArticles.stream()
+                .filter(elasticTechArticle -> techArticle.getElasticId().equals(elasticTechArticle.getId()))
+                .map(elasticTechArticle -> TechArticleMainResponse.of(techArticle, elasticTechArticle,
+                        CompanyResponse.from(techArticle.getCompany()), member));
     }
 
+    /**
+     * 픽픽픽을 응답 형태로 가공합니다.
+     */
     private List<MyPickMainOptionResponse> mapToMyPickMainOption(Pick pick) {
         return pick.getPickOptions().stream()
                 .map(pickOption -> MyPickMainOptionResponse.of(pick, pickOption))

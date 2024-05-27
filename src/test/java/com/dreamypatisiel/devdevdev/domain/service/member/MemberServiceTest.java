@@ -189,6 +189,9 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         Bookmark bookmark = createBookmark(member, firstTechArticle, true);
         bookmarkRepository.save(bookmark);
 
+        em.flush();
+        em.clear();
+
         // when
         Slice<TechArticleMainResponse> findTechArticles = memberService.getBookmarkedTechArticles(pageable,
                 null, null, authentication);

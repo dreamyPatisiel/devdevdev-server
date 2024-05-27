@@ -51,7 +51,7 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                 .innerJoin(bookmark)
                 .on(techArticle.eq(bookmark.techArticle))
                 .where(bookmark.member.eq(member), bookmark.status.isTrue(),
-                        getCursorCondition(bookmarkSort, techArticleId))
+                        getCursorCondition(bookmarkSort, techArticleId, member))
                 .orderBy(bookmarkSort(bookmarkSort), techArticle.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -59,14 +59,14 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
-    private Predicate getCursorCondition(BookmarkSort bookmarkSort, Long techArticleId) {
+    private Predicate getCursorCondition(BookmarkSort bookmarkSort, Long techArticleId, Member member) {
         if (ObjectUtils.isEmpty(techArticleId)) {
             return null;
         }
 
         // techArticleId로 북마크, 기술블로그 조회
         Bookmark findBookmark = query.selectFrom(bookmark)
-                .where(bookmark.techArticle.id.eq(techArticleId))
+                .where(bookmark.techArticle.id.eq(techArticleId), bookmark.member.eq(member))
                 .fetchOne();
 
         // 일치하는 북마크 없다면

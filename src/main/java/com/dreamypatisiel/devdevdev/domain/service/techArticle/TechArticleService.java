@@ -15,7 +15,7 @@ public interface TechArticleService {
                                                    String keyword, Long companyId, Float score,
                                                    Authentication authentication);
 
-    TechArticleDetailResponse getTechArticle(Long id, Authentication authentication);
+    TechArticleDetailResponse getTechArticle(Long techArticleId, Authentication authentication);
 
-    BookmarkResponse updateBookmark(Long id, boolean status, Authentication authentication);
+    BookmarkResponse updateBookmark(Long techArticleId, boolean status, Authentication authentication);
 }

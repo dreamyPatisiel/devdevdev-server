@@ -391,8 +391,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                        .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
@@ -405,16 +404,14 @@ class TechArticleControllerTest extends SupportControllerTest {
     void getTechArticleNotFoundElasticIdException() throws Exception {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
-                new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), new Count(1L), null, null);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                        .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
@@ -435,8 +432,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                        .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
