@@ -50,8 +50,7 @@ public class Member extends BasicTime {
             column = @Column(name = "nickname")
     )
     private Nickname nickname;
-
-
+    
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "email")
