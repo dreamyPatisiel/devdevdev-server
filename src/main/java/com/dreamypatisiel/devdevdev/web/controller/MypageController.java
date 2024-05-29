@@ -4,7 +4,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -42,16 +41,15 @@ public class MypageController {
             @RequestParam(required = false) BookmarkSort bookmarkSort, // 등록순, 최신순, 조회순
             @RequestParam(required = false) Long techArticleId) {
 
-        TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<TechArticleMainResponse> response = techArticleService.getBookmarkedTechArticles(pageable, techArticleId,
+        Slice<TechArticleMainResponse> response = memberService.getBookmarkedTechArticles(pageable, techArticleId,
                 bookmarkSort, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
     @Operation(summary = "회원 탈퇴")
-    @DeleteMapping("/mypage/delete")
+    @DeleteMapping("/mypage/profile")
     public ResponseEntity<BasicResponse<Void>> deleteMember(HttpServletResponse response) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
