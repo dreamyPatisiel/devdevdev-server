@@ -137,7 +137,7 @@ public class GuestPickService implements PickService {
     }
 
     /**
-     * 익명 회원이 픽픽픽을 투표한다.
+     * 익명 회원이 픽픽픽을 투표한다. 현재 픽 옵션이 2개로 되어 있는데, N개로 될 수 있음. 따라서
      */
     @Transactional
     @Override
@@ -158,15 +158,17 @@ public class GuestPickService implements PickService {
                 anonymousMember);
 
         return pickVoteOptional
+                // 픽픽픽 투표 이력이 있는 경우
                 .map(pickVote -> getVotePickResponseAndHandlePickVoteAndPickOptionExistingPickVoteOnPickOption(
                         pickVote, pickOptionId, pickId, anonymousMember)
                 )
+                // 픽픽픽 투표 이력이 없는 경우
                 .orElseGet(() -> getVoteResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(
                         pickId, pickOptionId, anonymousMember)
                 );
     }
 
-    // 픽픽픽 옵션에 투표 이력이 있는 경우
+    // 픽픽픽 투표 이력이 있는 경우
     private VotePickResponse getVotePickResponseAndHandlePickVoteAndPickOptionExistingPickVoteOnPickOption(
             PickVote pickVote, Long pickOptionId, Long pickId, AnonymousMember anonymousMember) {
 
@@ -183,8 +185,18 @@ public class GuestPickService implements PickService {
 
         // 데이터 가공 및 로직 수행
         List<VotePickOptionResponse> votePickOptionsResponse = findPick.getPickOptions().stream()
-                .map(findPickOption -> getVotePickOptionResponseAndHandlePickVoteAndPickOptionExistingPickVoteOnPickOption(
-                        findPickOption, pickOptionId, findPick, anonymousMember, pickVote))
+                .map(findPickOption -> {
+                    // 투표하고자 하는 픽 옵션이면 투표를 생성
+                    if (findPickOption.isEqualsId(pickOptionId)) {
+                        return getVotePickOptionResponseAndCreatePickVote(findPickOption, findPick, anonymousMember);
+                    }
+                    // 기존 투표의 픽 옵션의 아이디와 일치하는 경우 투표 삭제
+                    else if (findPickOption.isEqualsId(pickVote.getPickOption().getId())) {
+                        return getVotePickOptionResponseAndDeletePickVote(pickOption, findPick, pickVote);
+                    }
+                    // 그외 투표 패스(현재 픽 옵션이 2개로 고정되어 있는데 2+N 개로 늘어 날 수 있음. 그 경우에 대해서는 아래와 같은 응답을 준다.)
+                    return getDefaultVotePickOptionResponse(findPickOption, findPick);
+                })
                 .collect(Collectors.toList());
 
         // 인기 점수 계산
@@ -193,7 +205,13 @@ public class GuestPickService implements PickService {
         return VotePickResponse.of(findPick.getId(), votePickOptionsResponse);
     }
 
-    // 픽픽픽 옵션에 투표 이력이 없는 경우
+    // 투표 패스 기본 응답
+    private VotePickOptionResponse getDefaultVotePickOptionResponse(PickOption pickOption, Pick pick) {
+        BigDecimal percent = PickOption.calculatePercentBy(pick, pickOption);
+        return VotePickOptionResponse.of(pickOption, null, percent, false);
+    }
+
+    // 픽픽픽 투표 이력이 없는 경우
     private VotePickResponse getVoteResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(Long pickId,
                                                                                                           Long pickOptionId,
                                                                                                           AnonymousMember anonymousMember) {
@@ -206,8 +224,14 @@ public class GuestPickService implements PickService {
 
         // 데이터 가공 및 로직 수행
         List<VotePickOptionResponse> votePickOptionResponses = findPick.getPickOptions().stream()
-                .map(findPickOption -> getVotePickOptionResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(
-                        findPickOption, pickOptionId, findPick, anonymousMember))
+                .map(findPickOption -> {
+                    // 투표하고자 하는 픽 옵션이면 투표를 생성
+                    if (findPickOption.isEqualsId(pickOptionId)) {
+                        return getVotePickOptionResponseAndCreatePickVote(findPickOption, findPick, anonymousMember);
+                    }
+                    // 득표율 계산
+                    return getDefaultVotePickOptionResponse(findPickOption, findPick);
+                })
                 .toList();
 
         // 인기 점수 계산
@@ -216,55 +240,25 @@ public class GuestPickService implements PickService {
         return VotePickResponse.of(findPick.getId(), votePickOptionResponses);
     }
 
-    // 픽픽픽 옵션에 투표 이력이 없는 경우
-    private VotePickOptionResponse getVotePickOptionResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(
-            PickOption findPickOption, Long pickOptionId, Pick findPick, AnonymousMember anonymousMember) {
+    // 투표 생성 로직
+    private VotePickOptionResponse getVotePickOptionResponseAndCreatePickVote(PickOption pickOption, Pick pick,
+                                                                              AnonymousMember anonymousMember) {
+        // 투표 생성
+        PickVote newPickVote = PickVote.createByAnonymous(anonymousMember, pickOption.getPick(), pickOption);
+        pickVoteRepository.save(newPickVote);
 
-        // 투표를 하고 싶은 픽픽픽 옵션과 일치하면
-        if (findPickOption.isEqualsId(pickOptionId)) {
-
-            // 투표 생성
-            PickVote newPickVote = PickVote.createByAnonymous(anonymousMember, findPickOption.getPick(),
-                    findPickOption);
-            pickVoteRepository.save(newPickVote);
-
-            // 투표수 증가
-            findPickOption.plusOneVoteTotalCount();
-
-            // 득표율 계산
-            BigDecimal percent = PickOption.calculatePercentBy(findPick, findPickOption);
-
-            return VotePickOptionResponse.of(findPickOption, newPickVote.getId(), percent, true);
-        }
+        // 투표수 증가
+        pickOption.plusOneVoteTotalCount();
 
         // 득표율 계산
-        BigDecimal percent = PickOption.calculatePercentBy(findPick, findPickOption);
+        BigDecimal percent = PickOption.calculatePercentBy(pick, pickOption);
 
-        return VotePickOptionResponse.of(findPickOption, null, percent, false);
+        return VotePickOptionResponse.of(pickOption, newPickVote.getId(), percent, true);
     }
 
-
-    // 다른 픽픽픽 옵션에 투표 했을 경우
-    private VotePickOptionResponse getVotePickOptionResponseAndHandlePickVoteAndPickOptionExistingPickVoteOnPickOption(
-            PickOption findPickOption, Long pickOptionId, Pick findPick, AnonymousMember anonymousMember,
-            PickVote pickVote) {
-
-        // 투표를 하고 싶은 픽픽픽 옵션과 일치하면
-        if (findPickOption.isEqualsId(pickOptionId)) {
-            // 픽픽픽 옵션 투표수 증가
-            findPickOption.plusOneVoteTotalCount();
-
-            // 투표 생성
-            PickVote newPickVote = PickVote.createByAnonymous(anonymousMember, findPick,
-                    findPickOption);
-            pickVoteRepository.save(newPickVote);
-
-            // 득표율 계산
-            BigDecimal percent = PickOption.calculatePercentBy(findPick, findPickOption);
-
-            return VotePickOptionResponse.of(findPickOption, newPickVote.getId(), percent, true);
-        }
-
+    // 투표 삭제 로직
+    private VotePickOptionResponse getVotePickOptionResponseAndDeletePickVote(PickOption findPickOption, Pick findPick,
+                                                                              PickVote pickVote) {
         // 기존 픽픽픽 옵션 투표수 감소
         findPickOption.minusVoteTotalCount();
 

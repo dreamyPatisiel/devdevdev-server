@@ -33,5 +33,4 @@ public class VotePickOptionResponse {
                 .isPicked(isPicked)
                 .build();
     }
-
 }
