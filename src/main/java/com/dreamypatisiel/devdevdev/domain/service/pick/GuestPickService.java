@@ -137,7 +137,7 @@ public class GuestPickService implements PickService {
     }
 
     /**
-     * 익명 회원이 픽픽픽을 투표한다. 현재 픽 옵션이 2개로 되어 있는데, N개로 될 수 있음. 따라서
+     * 익명 회원이 픽픽픽을 투표한다.
      */
     @Transactional
     @Override
