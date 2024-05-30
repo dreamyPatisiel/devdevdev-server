@@ -9,6 +9,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
@@ -269,6 +273,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                         tuple(option3.getId(), option3.getTitle(), option3.getContent(), option3.getSortOrder())
                 );
     }
+
     @Test
     @DisplayName("회원이 커서 방식으로 기술블로그 북마크 목록을 조회하여 응답을 생성한다.")
     void getBookmarkedTechArticles() {
