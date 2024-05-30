@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.KEYWORD_WITH_SPECIAL_SYMBOLS_EXCEPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_CURSOR_SCORE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
@@ -285,6 +286,28 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").value(NOT_FOUND_CURSOR_SCORE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+
+    @Test
+    @DisplayName("기술블로그 메인을 조회할 때 키워드에 특수문자가 있다면 에러가 발생한다.")
+    void getTechArticlesSpecialSymbolException() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        String keyword = "!";
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("techArticleSort", TechArticleSort.LATEST.name())
+                        .queryParam("keyword", keyword)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(KEYWORD_WITH_SPECIAL_SYMBOLS_EXCEPTION_MESSAGE))
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
