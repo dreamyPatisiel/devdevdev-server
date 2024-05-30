@@ -3,7 +3,6 @@ package com.dreamypatisiel.devdevdev.domain.service.response;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 @Data
 public class CompanyResponse {

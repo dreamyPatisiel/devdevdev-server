@@ -9,20 +9,21 @@ public class PickResponseUtils {
 
     public static boolean isVotedMember(Pick pick, Member member) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
+                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick) && pickVote.isMemberNotNull())
                 .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 
     public static boolean isVotedAnonymousMember(Pick pick, AnonymousMember anonymousMember) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick) && !pickVote.isAnonymousMemberNull())
+                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick) && pickVote.isAnonymousMemberNotNull())
                 .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
     }
 
     public static boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption,
                                                      Member member) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption))
+                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption)
+                        && pickVote.isMemberNotNull())
                 .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 
@@ -30,7 +31,7 @@ public class PickResponseUtils {
                                                               AnonymousMember anonymousMember) {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption)
-                        && !pickVote.isAnonymousMemberNull())
+                        && pickVote.isAnonymousMemberNotNull())
                 .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
     }
 

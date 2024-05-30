@@ -4,14 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -33,6 +31,8 @@ import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyQues
 import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyQuestionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -54,7 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-class MemberServiceTest {
+class MemberServiceTest extends ElasticsearchSupportTest {
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -269,6 +269,58 @@ class MemberServiceTest {
                         tuple(option3.getId(), option3.getTitle(), option3.getContent(), option3.getSortOrder())
                 );
     }
+    @Test
+    @DisplayName("회원이 커서 방식으로 기술블로그 북마크 목록을 조회하여 응답을 생성한다.")
+    void getBookmarkedTechArticles() {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Bookmark bookmark = createBookmark(member, firstTechArticle, true);
+        bookmarkRepository.save(bookmark);
+
+        em.flush();
+        em.clear();
+
+        // when
+        Slice<TechArticleMainResponse> findTechArticles = memberService.getBookmarkedTechArticles(pageable,
+                null, null, authentication);
+
+        // then
+        assertThat(findTechArticles)
+                .hasSize(pageable.getPageSize())
+                .extracting(TechArticleMainResponse::getIsBookmarked)
+                .contains(true);
+    }
+
+    @Test
+    @DisplayName("커서 방식으로 기술블로그 북마크 목록을 조회할 때 회원이 없으면 예외가 발생한다.")
+    void getBookmarkedTechArticlesNotFoundMemberException() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberService.getBookmarkedTechArticles(pageable, null, null, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
 
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,
                            PickOptionContents firstPickOptionContents, Title secondPickOptinTitle,
@@ -336,6 +388,14 @@ class MemberServiceTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    private Bookmark createBookmark(Member member, TechArticle techArticle, boolean status) {
+        return Bookmark.builder()
+                .member(member)
+                .techArticle(techArticle)
+                .status(status)
                 .build();
     }
 }

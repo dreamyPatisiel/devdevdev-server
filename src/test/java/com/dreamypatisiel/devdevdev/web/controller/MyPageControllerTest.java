@@ -281,7 +281,7 @@ class MyPageControllerTest extends SupportControllerTest {
 
         // when
         ResultActions actions = mockMvc.perform(
-                        delete(DEFAULT_PATH_V1 + "/mypage/delete")
+                        delete(DEFAULT_PATH_V1 + "/mypage/profile")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -320,7 +320,7 @@ class MyPageControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
 
         // when // then
-        ResultActions actions = mockMvc.perform(delete("/devdevdev/api/v1/mypage/delete")
+        ResultActions actions = mockMvc.perform(delete("/devdevdev/api/v1/mypage/profile")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))

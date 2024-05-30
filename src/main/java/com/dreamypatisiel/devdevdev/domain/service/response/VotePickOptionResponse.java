@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,15 +23,14 @@ public class VotePickOptionResponse {
         this.isPicked = isPicked;
     }
 
-    public static VotePickOptionResponse of(PickOption pickOption, Long pickVoteId, int percent,
+    public static VotePickOptionResponse of(PickOption pickOption, Long pickVoteId, BigDecimal percent,
                                             Boolean isPicked) {
         return VotePickOptionResponse.builder()
                 .pickOptionId(pickOption.getId())
                 .pickVoteId(pickVoteId)
                 .voteTotalCount(pickOption.getVoteTotalCount().getCount())
-                .percent(percent)
+                .percent(percent.intValueExact())
                 .isPicked(isPicked)
                 .build();
     }
-
 }

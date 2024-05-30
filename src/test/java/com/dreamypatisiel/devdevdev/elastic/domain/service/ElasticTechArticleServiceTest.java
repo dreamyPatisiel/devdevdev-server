@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -17,8 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
 
 public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
 
@@ -34,10 +33,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null, null,
                 null, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -54,10 +54,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.LATEST, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -74,10 +75,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.MOST_VIEWED, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -94,10 +96,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.MOST_COMMENTED, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -114,10 +117,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.POPULAR, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -134,10 +138,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.HIGHEST_SCORE, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -168,18 +173,19 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.LATEST, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.LATEST, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -197,18 +203,19 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.MOST_VIEWED, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.MOST_VIEWED, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -226,18 +233,19 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.MOST_COMMENTED, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.MOST_COMMENTED, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -255,18 +263,19 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.POPULAR, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.POPULAR, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -284,18 +293,19 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 10);
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.HIGHEST_SCORE, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.HIGHEST_SCORE, null, null, null);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -314,15 +324,16 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         String keyword = "타이틀";
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null, null,
                 keyword, null, null);
-        List<Float> elasticTechArticlesScores = techArticles.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticlesScores = techArticles.stream()
+                .map(ElasticResponse::score)
                 .toList();
 
         // then
-        assertThat(techArticles.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticlesScores)
                 .isSortedAccordingTo(Comparator.reverseOrder());
@@ -336,15 +347,16 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         String keyword = "타이틀";
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.HIGHEST_SCORE, keyword, null, null);
-        List<Float> elasticTechArticlesScores = techArticles.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticlesScores = techArticles.stream()
+                .map(ElasticResponse::score)
                 .toList();
 
         // then
-        assertThat(techArticles.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticlesScores)
                 .isSortedAccordingTo(Comparator.reverseOrder());
@@ -358,15 +370,16 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         String keyword = "타이틀";
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.LATEST, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles)
                 .extracting(ElasticTechArticle::getRegDate)
@@ -381,15 +394,16 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         String keyword = "타이틀";
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.MOST_VIEWED, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles)
                 .extracting(ElasticTechArticle::getViewTotalCount)
@@ -404,15 +418,16 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         String keyword = "타이틀";
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.MOST_COMMENTED, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles)
                 .extracting(ElasticTechArticle::getCommentTotalCount)
@@ -427,15 +442,16 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         String keyword = "타이틀";
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.POPULAR, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles)
                 .extracting(ElasticTechArticle::getPopularScore)
@@ -450,27 +466,28 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.HIGHEST_SCORE, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
-        List<Float> elasticTechArticleScores1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticleScores1 = techArticles1.stream()
+                .map(ElasticResponse::score)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.HIGHEST_SCORE, keyword, null, cursorScore);
-        List<Float> elasticTechArticleScores2 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticleScores2 = techArticles1.stream()
+                .map(ElasticResponse::score)
                 .toList();
 
         // then
-        assertThat(techArticles2.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles2.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticleScores2)
                 .isSortedAccordingTo(Comparator.reverseOrder());
@@ -485,10 +502,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.HIGHEST_SCORE, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
 
@@ -508,27 +526,28 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.LATEST, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
-        List<Float> elasticTechArticleScores1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticleScores1 = techArticles1.stream()
+                .map(ElasticResponse::score)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.LATEST, keyword, null, cursorScore);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles2.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles2.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles2)
                 .hasSize(pageable.getPageSize())
@@ -545,27 +564,28 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.MOST_VIEWED, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
-        List<Float> elasticTechArticleScores1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticleScores1 = techArticles1.stream()
+                .map(ElasticResponse::score)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.MOST_VIEWED, keyword, null, cursorScore);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles2.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles2.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles2)
                 .hasSize(pageable.getPageSize())
@@ -581,27 +601,28 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.MOST_COMMENTED, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
-        List<Float> elasticTechArticleScores1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticleScores1 = techArticles1.stream()
+                .map(ElasticResponse::score)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.MOST_COMMENTED, keyword, null, cursorScore);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles2.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles2.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles2)
                 .hasSize(pageable.getPageSize())
@@ -617,27 +638,28 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "타이틀";
 
-        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(prevPageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles1 = elasticTechArticleService.getTechArticles(
+                prevPageable, null,
                 TechArticleSort.POPULAR, keyword, null, null);
-        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.stream()
+                .map(ElasticResponse::content)
                 .toList();
-        List<Float> elasticTechArticleScores1 = techArticles1.getSearchHits().stream()
-                .map(SearchHit::getScore)
+        List<Float> elasticTechArticleScores1 = techArticles1.stream()
+                .map(ElasticResponse::score)
                 .toList();
         ElasticTechArticle cursor = elasticTechArticles1.getLast();
         Float cursorScore = elasticTechArticleScores1.getLast();
 
         // when
-        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+        List<ElasticResponse<ElasticTechArticle>> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
                 cursor.getId(), TechArticleSort.POPULAR, keyword, null, cursorScore);
-        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
-        assertThat(techArticles2.getTotalHits())
-                .isEqualTo(TEST_ARTICLES_COUNT);
+        assertThat(techArticles2.size())
+                .isEqualTo(pageable.getPageSize());
 
         assertThat(elasticTechArticles2)
                 .hasSize(pageable.getPageSize())
@@ -652,10 +674,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.LATEST, null, COMPANY_ID, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -675,10 +698,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.MOST_VIEWED, null, COMPANY_ID, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -698,10 +722,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.MOST_COMMENTED, null, COMPANY_ID, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then
@@ -721,10 +746,11 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable, null,
+        List<ElasticResponse<ElasticTechArticle>> techArticles = elasticTechArticleService.getTechArticles(pageable,
+                null,
                 TechArticleSort.POPULAR, null, COMPANY_ID, null);
-        List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream()
-                .map(SearchHit::getContent)
+        List<ElasticTechArticle> elasticTechArticles = techArticles.stream()
+                .map(ElasticResponse::content)
                 .toList();
 
         // then

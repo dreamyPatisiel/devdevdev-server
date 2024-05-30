@@ -75,7 +75,11 @@ public class PickVote extends BasicTime {
         pickOption.getPickVotes().add(this);
     }
 
-    public boolean isAnonymousMemberNull() {
-        return anonymousMember == null;
+    public boolean isAnonymousMemberNotNull() {
+        return this.anonymousMember != null;
+    }
+
+    public boolean isMemberNotNull() {
+        return this.member != null;
     }
 }

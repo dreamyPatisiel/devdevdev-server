@@ -294,7 +294,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/profile")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -330,7 +330,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/delete")
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/profile")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))

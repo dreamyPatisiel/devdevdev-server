@@ -1233,12 +1233,12 @@ class MemberPickServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member,
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(1), new Count(0), member,
                 ContentStatus.APPROVAL);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
+        PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(1),
                 PickOptionType.firstPickOption, pick);
         PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
                 PickOptionType.secondPickOption, pick);

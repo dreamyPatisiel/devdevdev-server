@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -228,25 +228,6 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
 
         // when // then
         assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, status, authentication))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("익명 사용자가 기술블로그 북마크 목록을 요청하면 예외가 발생한다.")
-    void findBookmarkedTechArticlesAccessDeniedException() {
-        // given
-        when(authentication.getPrincipal()).thenReturn("anonymousUser");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        Long id = FIRST_TECH_ARTICLE_ID;
-        Boolean status = true;
-        Pageable pageable = PageRequest.of(0, 10);
-
-        // when // then
-        assertThatThrownBy(
-                () -> guestTechArticleService.getBookmarkedTechArticles(pageable, null, null, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

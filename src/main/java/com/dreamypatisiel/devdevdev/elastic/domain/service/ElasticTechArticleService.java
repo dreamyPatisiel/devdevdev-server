@@ -7,6 +7,7 @@ import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstan
 import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._ID;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
@@ -23,7 +24,6 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
@@ -33,23 +33,25 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ElasticTechArticleService {
+public class ElasticTechArticleService implements ElasticService<ElasticTechArticle> {
 
     private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
-    public SearchHits<ElasticTechArticle> getTechArticles(Pageable pageable, String elasticId,
-                                                          TechArticleSort techArticleSort, String keyword,
-                                                          Long companyId, Float score) {
+    public List<ElasticResponse<ElasticTechArticle>> getTechArticles(Pageable pageable, String elasticId,
+                                                                     TechArticleSort techArticleSort, String keyword,
+                                                                     Long companyId, Float score) {
         if (!StringUtils.hasText(keyword)) {
             return findTechArticles(pageable, elasticId, techArticleSort, companyId);
         }
 
         return searchTechArticles(pageable, elasticId, techArticleSort, keyword, companyId, score);
+
     }
 
-    private SearchHits<ElasticTechArticle> findTechArticles(Pageable pageable, String elasticId,
-                                                            TechArticleSort techArticleSort, Long companyId) {
+    private List<ElasticResponse<ElasticTechArticle>> findTechArticles(Pageable pageable, String elasticId,
+                                                                       TechArticleSort techArticleSort,
+                                                                       Long companyId) {
         // 정렬 기준 검증
         techArticleSort = getValidSort(techArticleSort);
 
@@ -69,12 +71,13 @@ public class ElasticTechArticleService {
         // searchAfter 설정
         setSearchAfterCondition(elasticId, techArticleSort, searchQuery);
 
-        return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
+        return mapToElasticResponse(elasticsearchOperations.search(searchQuery, ElasticTechArticle.class));
     }
 
-    private SearchHits<ElasticTechArticle> searchTechArticles(Pageable pageable, String elasticId,
-                                                              TechArticleSort techArticleSort, String keyword,
-                                                              Long companyId, Float score) {
+    private List<ElasticResponse<ElasticTechArticle>> searchTechArticles(Pageable pageable, String elasticId,
+                                                                         TechArticleSort techArticleSort,
+                                                                         String keyword,
+                                                                         Long companyId, Float score) {
 
         // 검색어 유무 확인
         if (!StringUtils.hasText(keyword)) {
@@ -102,7 +105,7 @@ public class ElasticTechArticleService {
         // searchAfter 설정
         setSearchAfterConditionWhenSearch(elasticId, score, techArticleSort, searchQuery);
 
-        return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
+        return mapToElasticResponse(elasticsearchOperations.search(searchQuery, ElasticTechArticle.class));
     }
 
     private static void setFilterWithCompanyId(Long companyId, NativeSearchQueryBuilder queryBuilder) {

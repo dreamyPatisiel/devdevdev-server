@@ -79,7 +79,7 @@ class TechArticleRepositoryTest {
         Pageable pageable = PageRequest.of(0, 3);
 
         // when
-        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null,
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByMemberAndCursor(pageable, null,
                 BookmarkSort.BOOKMARKED, member);
 
         // then
@@ -109,7 +109,7 @@ class TechArticleRepositoryTest {
         Pageable pageable = PageRequest.of(0, 3);
 
         // when
-        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null,
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByMemberAndCursor(pageable, null,
                 BookmarkSort.LATEST, member);
 
         // then
@@ -139,7 +139,7 @@ class TechArticleRepositoryTest {
         Pageable pageable = PageRequest.of(0, 3);
 
         // when
-        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByCursor(pageable, null,
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByMemberAndCursor(pageable, null,
                 BookmarkSort.MOST_COMMENTED, member);
 
         // then
