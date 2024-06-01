@@ -23,6 +23,7 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.UncategorizedElasticsearchException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
@@ -77,7 +78,8 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
     private List<ElasticResponse<ElasticTechArticle>> searchTechArticles(Pageable pageable, String elasticId,
                                                                          TechArticleSort techArticleSort,
                                                                          String keyword,
-                                                                         Long companyId, Float score) {
+                                                                         Long companyId, Float score)
+            throws UncategorizedElasticsearchException {
 
         // 검색어 유무 확인
         if (!StringUtils.hasText(keyword)) {

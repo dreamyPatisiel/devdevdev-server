@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.elastic.domain.service;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_CURSOR_SCORE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
@@ -15,9 +16,12 @@ import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.UncategorizedElasticsearchException;
 
 public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
 
@@ -761,5 +765,30 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
                 })
                 .extracting(ElasticTechArticle::getPopularScore)
                 .isSortedAccordingTo(Comparator.reverseOrder());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"!", "^", "(", ")", "-", "+", "/", "[", "]", "{", "}", ":"})
+    @DisplayName("엘라스틱서치로 키워드 검색을 할 때, 키워드에 특정 특수문자가 있다면 예외가 발생한다.")
+    void getTechArticlesWithSpecialSymbolsException(String keyword) {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when // then
+        assertThatThrownBy(
+                () -> elasticTechArticleService.getTechArticles(pageable, null, null, keyword, null, null))
+                .isInstanceOf(UncategorizedElasticsearchException.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"@", "=", "#", "$", "%", "&", "*", "_", "=", "<", ">", ",", ".", "?", ";", "", "'"})
+    @DisplayName("엘라스틱서치로 키워드 검색을 할 때, 키워드에 특정 특수문자가 아닌 문자들이 있다면 예외가 발생하지 않는다.")
+    void getTechArticlesWithSpecialSymbolsDoesNotThrowException(String keyword) {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when // then
+        assertThatCode(() -> elasticTechArticleService.getTechArticles(pageable, null, null, keyword, null, null))
+                .doesNotThrowAnyException();
     }
 }

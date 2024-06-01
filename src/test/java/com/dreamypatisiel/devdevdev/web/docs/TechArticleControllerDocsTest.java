@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.KEYWORD_WITH_SPECIAL_SYMBOLS_EXCEPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
@@ -58,6 +59,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
@@ -281,6 +283,36 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         // Docs
         actions.andDo(document("not-found-score-exception",
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("기술블로그 메인을 조회할 때 키워드에 특수문자가 있다면 에러가 발생한다.")
+    void getTechArticlesSpecialSymbolException() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        String keyword = "!";
+
+        // when // then
+        ResultActions actions = mockMvc.perform(MockMvcRequestBuilders.get("/devdevdev/api/v1/articles")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("keyword", keyword)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(KEYWORD_WITH_SPECIAL_SYMBOLS_EXCEPTION_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+
+        // Docs
+        actions.andDo(document("keyword-with-special-symbols-exception",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
