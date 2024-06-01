@@ -19,6 +19,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -35,6 +39,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -81,6 +89,14 @@ class MyPageControllerTest extends SupportControllerTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     PickVoteRepository pickVoteRepository;
+    @Autowired
+    SurveyVersionRepository surveyVersionRepository;
+    @Autowired
+    SurveyVersionQuestionMapperRepository surveyVersionQuestionMapperRepository;
+    @Autowired
+    SurveyQuestionRepository surveyQuestionRepository;
+    @Autowired
+    SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     @Autowired
     EntityManager em;
 
@@ -394,6 +410,76 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
                 .andExpect(jsonPath("$.data.numberOfElements").isNumber())
                 .andExpect(jsonPath("$.data.empty").isBoolean());
+    }
+
+    @Test
+    @DisplayName("회원이 회원 탈퇴 서베이 목록을 조회한다.")
+    void getMemberExitSurvey() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        surveyQuestionOptionRepository.save(option1);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/mypage/exit-survey")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.surveyVersionId").isNumber())
+                .andExpect(jsonPath("$.data.surveyQuestions").isArray())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].id").isNumber())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].title").isString())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].content").isString())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].sortOrder").isNumber())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions").isArray())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].id").isNumber())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].title").isString())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].content").isEmpty())
+                .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].sortOrder").isNumber());
     }
 
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,

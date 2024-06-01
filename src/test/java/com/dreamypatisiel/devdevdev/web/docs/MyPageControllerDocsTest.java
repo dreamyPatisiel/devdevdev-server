@@ -35,6 +35,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -51,6 +55,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -99,6 +107,14 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     PickVoteRepository pickVoteRepository;
+    @Autowired
+    SurveyVersionRepository surveyVersionRepository;
+    @Autowired
+    SurveyVersionQuestionMapperRepository surveyVersionQuestionMapperRepository;
+    @Autowired
+    SurveyQuestionRepository surveyQuestionRepository;
+    @Autowired
+    SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     @Autowired
     EntityManager em;
 
@@ -173,7 +189,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 queryParameters(
                         parameterWithName("size").optional().description("조회되는 데이터 수"),
@@ -213,7 +229,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content.[].popularScore").type(JsonFieldType.NUMBER)
                                 .description("기술블로그 인기점수"),
                         fieldWithPath("data.content.[].isBookmarked").attributes(authenticationType())
-                                .type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                                .type(JsonFieldType.BOOLEAN).description("회원의 북마크 여부"),
                         fieldWithPath("data.content.[].score").type(JsonFieldType.NULL)
                                 .description("정확도 점수(북마크 목록에서는 사용X)"),
 
@@ -440,6 +456,93 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
                         fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
                         fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 회원 탈퇴 서베이 목록을 조회한다.")
+    void getMemberExitSurvey() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("기타")
+                .content("직접 입력해주세요.(10자 이상)")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        surveyQuestionOptionRepository.save(option1);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/mypage/exit-survey")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("mypage-exit-survey",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.surveyVersionId").type(NUMBER).description("회원탈퇴 서베이 버전 아이디"),
+                        fieldWithPath("data.surveyQuestions").type(ARRAY).description("회원탈퇴 서베이 질문 배열"),
+                        fieldWithPath("data.surveyQuestions.[].id").type(NUMBER).description("회원탈퇴 서베이 질문 아이디"),
+                        fieldWithPath("data.surveyQuestions.[].title").type(STRING).description("회원탈퇴 서베이 제목"),
+                        fieldWithPath("data.surveyQuestions.[].content").type(STRING).description("회원탈퇴 서베이 내용"),
+                        fieldWithPath("data.surveyQuestions.[].sortOrder").type(NUMBER).description("회원탈퇴 서베이 질문 정렬순서"),
+                        fieldWithPath("data.surveyQuestions.[].surveyQuestionOptions").type(ARRAY)
+                                .description("회원탈퇴 서베이 질문 답변 배열"),
+                        fieldWithPath("data.surveyQuestions.[].surveyQuestionOptions.[].id").type(NUMBER)
+                                .description("회원탈퇴 서베이 질문 답변 아이디"),
+                        fieldWithPath("data.surveyQuestions.[].surveyQuestionOptions.[].title").type(STRING)
+                                .description("회원탈퇴 서베이 질문 답변 제목"),
+                        fieldWithPath("data.surveyQuestions.[].surveyQuestionOptions.[].content").type(STRING)
+                                .description("회원탈퇴 서베이 질문 답변 내용"),
+                        fieldWithPath("data.surveyQuestions.[].surveyQuestionOptions.[].sortOrder").type(NUMBER)
+                                .description("회원탈퇴 서베이 질문 답변 정렬순서")
                 )
         ));
     }

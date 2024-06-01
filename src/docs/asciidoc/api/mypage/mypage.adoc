@@ -3,3 +3,4 @@
 include::bookmarks.adoc[]
 include::mypick-main.adoc[]
 include::delete-member.adoc[]
+include::exit-survey.adoc[]

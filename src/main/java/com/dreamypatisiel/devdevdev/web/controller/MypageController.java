@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
+import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
@@ -72,6 +73,16 @@ public class MypageController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         Slice<MyPickMainResponse> response = memberService.findMyPickMain(pageable, pickId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "DEVDEVDEV 회원 탈퇴 서베이 조회", description = "DEVDEVDEV 회원 탈퇴 서베이를 조회합니다.")
+    @GetMapping("/mypage/exit-survey")
+    public ResponseEntity<BasicResponse<MemberExitSurveyResponse>> getMemberExitSurvey() {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        MemberExitSurveyResponse response = memberService.findMemberExitSurvey(authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

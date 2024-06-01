@@ -1,6 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -48,12 +47,6 @@ public class MyPickMainResponse {
                 .contentStatus(pick.getContentStatus())
                 .pickOptions(mapToMyPickMainOption(pick))
                 .build();
-    }
-
-    private static boolean isVotedByPickAndMember(Pick pick, Member member) {
-        return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick))
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
 
     private static List<MyPickMainOptionResponse> mapToMyPickMainOption(Pick pick) {

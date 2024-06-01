@@ -14,7 +14,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyQuestionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService;
@@ -77,7 +76,7 @@ public class MemberService {
     }
 
     /**
-     * @Note: survey_version 1:N survey_version_question_mapper N:1 survey_question 서베이 버전에 맞ㅡㄴ
+     * @Note: survey_version 1:N survey_version_question_mapper N:1 survey_question 서베이 버전에 맞는 서베이 목록을 조회합니다.
      * @Author: 장세웅
      * @Since: 2024.05.26
      */
