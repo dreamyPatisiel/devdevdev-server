@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,7 +36,8 @@ public class SurveyAnswer extends BasicTime {
     @JoinColumn(name = "survey_question_option_id")
     private SurveyQuestionOption surveyQuestionOption;
 
-    public SurveyAnswer(String customMessage, Member member, SurveyQuestion surveyQuestion,
+    @Builder
+    private SurveyAnswer(String customMessage, Member member, SurveyQuestion surveyQuestion,
                         SurveyQuestionOption surveyQuestionOption) {
         this.customMessage = customMessage;
         this.member = member;
