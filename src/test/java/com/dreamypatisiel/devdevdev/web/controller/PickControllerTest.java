@@ -351,7 +351,7 @@ class PickControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
+    @DisplayName("익명 회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
     void deleteImageAnonymousException() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -433,7 +433,7 @@ class PickControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("비회원은 픽픽픽 작성을 할 수 없다.")
+    @DisplayName("익명 회원은 픽픽픽 작성을 할 수 없다.")
     void registerPicksException() throws Exception {
         // given
         String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";
@@ -802,7 +802,7 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pickTitle").isString())
                 .andExpect(jsonPath("$.data.isAuthor").isBoolean())
                 .andExpect(jsonPath("$.data.isVoted").isBoolean())
-                
+
                 .andExpect(jsonPath("$.data.pickOptions").isNotEmpty())
 
                 .andExpect(jsonPath("$.data.pickOptions.firstPickOption").isNotEmpty())

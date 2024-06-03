@@ -9,6 +9,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
@@ -22,7 +26,14 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyQuestionOptionResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyQuestionResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
@@ -75,6 +86,14 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     PickOptionRepository pickOptionRepository;
     @Autowired
     PickVoteRepository pickVoteRepository;
+    @Autowired
+    SurveyVersionRepository surveyVersionRepository;
+    @Autowired
+    SurveyVersionQuestionMapperRepository surveyVersionQuestionMapperRepository;
+    @Autowired
+    SurveyQuestionRepository surveyQuestionRepository;
+    @Autowired
+    SurveyQuestionOptionRepository surveyQuestionOptionRepository;
 
     @Test
     @DisplayName("회원이 회원탈퇴를 요청하면 해당 회원의 isDeleted가 true로 변경된다.")
@@ -167,6 +186,91 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                         tuple(new Title("쏘영이의 가수 픽픽픽!").getTitle(), true, ContentStatus.REJECT.name()),
                         tuple(new Title("쏘영이의 치킨 픽픽픽!").getTitle(), true, ContentStatus.READY.name()),
                         tuple(new Title("쏘영이의 주류 픽픽픽!").getTitle(), true, ContentStatus.APPROVAL.name())
+                );
+    }
+
+    @Test
+    @DisplayName("활성화 상태이고 가장 최근에 작성된 서베이 버전의 서베이 질문과 질문 옵션을 조회한다.")
+    void findMemberExitSurvey() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("정보가 부족해요.")
+                .sortOrder(1)
+                .build();
+        option2.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option3 = SurveyQuestionOption.builder()
+                .title("기타.")
+                .sortOrder(2)
+                .build();
+        option3.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2, option3));
+
+        // when
+        MemberExitSurveyResponse response = memberService.findMemberExitSurvey(authentication);
+
+        // then
+        assertThat(response.getSurveyVersionId()).isEqualTo(surveyVersion1.getId());
+
+        List<MemberExitSurveyQuestionResponse> surveyQuestions = response.getSurveyQuestions();
+        assertThat(surveyQuestions).hasSize(1)
+                .extracting("id", "content", "sortOrder")
+                .containsExactly(
+                        tuple(question.getId(), question.getContent(), question.getSortOrder())
+                );
+
+        List<MemberExitSurveyQuestionOptionResponse> surveyQuestionOptions = surveyQuestions.get(0)
+                .getSurveyQuestionOptions();
+        assertThat(surveyQuestionOptions).hasSize(3)
+                .extracting("id", "title", "content", "sortOrder")
+                .containsExactly(
+                        tuple(option1.getId(), option1.getTitle(), option1.getContent(), option1.getSortOrder()),
+                        tuple(option2.getId(), option2.getTitle(), option2.getContent(), option2.getSortOrder()),
+                        tuple(option3.getId(), option3.getTitle(), option3.getContent(), option3.getSortOrder())
                 );
     }
 

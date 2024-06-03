@@ -36,7 +36,7 @@ public class MyPickMainResponse {
         this.pickOptions = pickOptions;
     }
 
-    public static MyPickMainResponse of(Pick pick, List<MyPickMainOptionResponse> pickOptions) {
+    public static MyPickMainResponse from(Pick pick) {
         return MyPickMainResponse.builder()
                 .id(pick.getId())
                 .title(pick.getTitle())
@@ -45,7 +45,13 @@ public class MyPickMainResponse {
                 .viewTotalCount(pick.getViewTotalCount())
                 .isVoted(PickResponseUtils.isVotedMember(pick, pick.getMember()))
                 .contentStatus(pick.getContentStatus())
-                .pickOptions(pickOptions)
+                .pickOptions(mapToMyPickMainOption(pick))
                 .build();
+    }
+
+    private static List<MyPickMainOptionResponse> mapToMyPickMainOption(Pick pick) {
+        return pick.getPickOptions().stream()
+                .map(pickOption -> MyPickMainOptionResponse.of(pick, pickOption))
+                .toList();
     }
 }

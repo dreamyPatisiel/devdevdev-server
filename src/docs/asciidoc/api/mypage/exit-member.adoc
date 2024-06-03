@@ -1,4 +1,4 @@
-[[DeleteMember]]
+[[ExitMember]]
 == 회원탈퇴 API(DELETE: /devdevdev/api/v1/mypage/profile)
 
 * 회원은 회원탈퇴를 진행할 수 있다.

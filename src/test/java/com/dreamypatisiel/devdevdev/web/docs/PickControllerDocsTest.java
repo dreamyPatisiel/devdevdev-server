@@ -274,7 +274,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("비회원은 픽픽픽 이미지를 업로드에 실패한다.")
+    @DisplayName("익명 회원은 픽픽픽 이미지를 업로드에 실패한다.")
     void uploadPickOptionImagesException() throws Exception {
         // given
         MockMultipartFile mockMultipartFile = createMockMultipartFile("pickOptionImages", "tesImage.png");
@@ -445,7 +445,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("비회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
+    @DisplayName("익명 회원은 픽픽픽 옵션에 대한 이미지를 삭제할 수 없다.")
     void deleteImageAnonymousException() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -618,7 +618,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("비회원은 픽픽픽 작성을 할 수 없다.")
+    @DisplayName("익명 회원은 픽픽픽 작성을 할 수 없다.")
     void registerPicksAnonymousException() throws Exception {
         // given
         String firstImageUrl = "http://devdevdev.co.kr/pickpickpick/fist.jpg";

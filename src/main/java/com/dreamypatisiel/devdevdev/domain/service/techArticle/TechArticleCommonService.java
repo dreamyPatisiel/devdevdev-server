@@ -62,6 +62,7 @@ public class TechArticleCommonService {
         }
 
         Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAllById(elasticIds);
+
         return StreamSupport.stream(elasticTechArticles.spliterator(), false)
                 .toList();
     }

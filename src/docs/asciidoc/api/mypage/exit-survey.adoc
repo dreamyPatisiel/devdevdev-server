@@ -1,0 +1,29 @@
+[[ExitSurvey]]
+== 회원탈퇴 서베이 목록 API(GET: /devdevdev/api/v1/mypage/exit-survey)
+
+* 회원은 회원탈퇴 서베이 목록을 조회할 수 있다.
+* 익명 회원은 회원탈퇴 서베이 목록을 조회할 수 없다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/mypage-exit-survey/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/mypage-exit-survey/request-headers.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/mypage-exit-survey/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/mypage-exit-survey/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/not-found-member-exception/response-body.adoc[]

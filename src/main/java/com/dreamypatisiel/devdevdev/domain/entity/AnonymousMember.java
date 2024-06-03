@@ -24,7 +24,7 @@ public class AnonymousMember extends BasicTime {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 30, nullable = false)
+    @Column(length = 30, nullable = false, unique = true)
     private String anonymousMemberId;
 
     @Builder
