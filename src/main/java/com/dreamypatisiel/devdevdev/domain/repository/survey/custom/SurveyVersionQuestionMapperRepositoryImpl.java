@@ -16,7 +16,7 @@ public class SurveyVersionQuestionMapperRepositoryImpl implements SurveyVersionQ
     private final JPQLQueryFactory query;
 
     @Override
-    public List<SurveyVersionQuestionMapper> findMapperWithVersionAndQuestionByVersionName() {
+    public List<SurveyVersionQuestionMapper> findMapperWithVersionAndQuestion() {
 
         return query.selectFrom(surveyVersionQuestionMapper)
                 .leftJoin(surveyVersionQuestionMapper.surveyVersion, surveyVersion).fetchJoin()

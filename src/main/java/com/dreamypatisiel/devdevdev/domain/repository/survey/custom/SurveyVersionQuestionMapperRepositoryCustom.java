@@ -4,5 +4,5 @@ import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import java.util.List;
 
 public interface SurveyVersionQuestionMapperRepositoryCustom {
-    List<SurveyVersionQuestionMapper> findMapperWithVersionAndQuestionByVersionName();
+    List<SurveyVersionQuestionMapper> findMapperWithVersionAndQuestion();
 }

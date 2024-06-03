@@ -85,7 +85,7 @@ public class MemberService {
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // mapper 조회(oneTo 관계인 surveyVersion, surveyQuestion 페치조인)
-        List<SurveyVersionQuestionMapper> surveyVersionQuestionMappers = surveyVersionQuestionMapperRepository.findMapperWithVersionAndQuestionByVersionName();
+        List<SurveyVersionQuestionMapper> surveyVersionQuestionMappers = surveyVersionQuestionMapperRepository.findMapperWithVersionAndQuestion();
 
         // surveyQuestions 추출
         List<SurveyQuestion> surveyQuestions = surveyVersionQuestionMappers.stream()
