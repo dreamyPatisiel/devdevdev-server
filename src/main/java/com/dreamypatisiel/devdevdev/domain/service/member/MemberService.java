@@ -2,13 +2,17 @@ package com.dreamypatisiel.devdevdev.domain.service.member;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyAnswerRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.custom.SurveyAnswerJdbcTemplateRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
@@ -20,7 +24,11 @@ import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommon
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyAnswerRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyQuestionOptionsRequest;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -36,13 +44,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberService {
 
     private final MemberProvider memberProvider;
-    private final MemberRepository memberRepository;
     private final PickRepository pickRepository;
     private final SurveyVersionQuestionMapperRepository surveyVersionQuestionMapperRepository;
-    private final SurveyQuestionRepository surveyQuestionRepository;
+    private final SurveyAnswerRepository surveyAnswerRepository;
     private final TechArticleRepository techArticleRepository;
     private final TechArticleCommonService techArticleCommonService;
     private final TimeProvider timeProvider;
+    private final SurveyQuestionOptionRepository surveyQuestionOptionRepository;
+    private final SurveyAnswerJdbcTemplateRepository surveyAnswerJdbcTemplateRepository;
 
     /**
      * 회원 탈퇴 회원의 북마크와 회원 정보를 삭제합니다.
@@ -104,6 +113,65 @@ public class MemberService {
     }
 
     /**
+     * @Note: jdbcTemplate 을 사용해서 bulk insert 를 사용했습니다. JPA 는 bulk insert 를 지원하지 않는 것으로 알고 있습니다.
+     * @Author: 장세웅
+     * @Since: 24.06.03
+     */
+    @Transactional
+    public void recordMemberExitSurveyAnswer(RecordMemberExitSurveyAnswerRequest recordMemberExitSurveyAnswerRequest,
+                                             Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        Long questionId = recordMemberExitSurveyAnswerRequest.getQuestionId();
+        List<RecordMemberExitSurveyQuestionOptionsRequest> memberExitSurveyQuestionOptions = recordMemberExitSurveyAnswerRequest.getMemberExitSurveyQuestionOptions();
+
+        // message가 있는 questionOptions 요청을 Map으로 변환
+        Map<Long, String> surveyQuestionOptions = RecordMemberExitSurveyQuestionOptionsRequest.convertToMap(
+                memberExitSurveyQuestionOptions);
+
+        // message가 없는 questionOptions 요청에서 id만 추출
+        List<Long> ids = RecordMemberExitSurveyQuestionOptionsRequest.convertToIds(memberExitSurveyQuestionOptions);
+
+        // 질문 선택지 조회(toOne question 페치 조인)
+        List<SurveyQuestionOption> findSurveyQuestionOptions = surveyQuestionOptionRepository.findWithQuestionByIdInAndSurveyQuestionId(
+                ids, questionId);
+
+        List<SurveyAnswer> surveyAnswers = findSurveyQuestionOptions.stream()
+                .map(option -> createSurveyAnswerBy(option, surveyQuestionOptions, findMember))
+                .filter(Objects::nonNull) // null 이 아닌 것만 반환
+                .toList();
+
+        // surveyAnswer 벌크 저장
+        surveyAnswerJdbcTemplateRepository.saveAll(surveyAnswers);
+    }
+
+    private SurveyAnswer createSurveyAnswerBy(SurveyQuestionOption option,
+                                              Map<Long, String> surveyQuestionOptions,
+                                              Member findMember) {
+
+        // surveyQuestionOptions 에 알맞은 키의 값이 존재하면
+        if (surveyQuestionOptions.containsKey(option.getId())) {
+            String message = surveyQuestionOptions.get(option.getId());
+            SurveyQuestion surveyQuestion = option.getSurveyQuestion();
+
+            // message 가 null 이면
+            if (message == null) {
+                // customMessage 가 없는 SurveyAnswer 생성
+                return SurveyAnswer.createWithoutCustomMessage(findMember, surveyQuestion, option);
+            }
+
+            // customMessage 가 있는 SurveyAnswer 생성
+            return SurveyAnswer.create(new CustomSurveyAnswer(message), findMember,
+                    surveyQuestion, option);
+        }
+
+        return null;
+    }
+
+
+    /**
      * 회원 자신이 북마크한 기술블로그를 조회합니다.
      */
     public Slice<TechArticleMainResponse> getBookmarkedTechArticles(Pageable pageable, Long techArticleId,
@@ -123,8 +191,7 @@ public class MemberService {
 
         // 데이터 가공
         List<TechArticleMainResponse> techArticleMainResponse = techArticles.stream()
-                .flatMap(techArticle -> mapToTechArticlesResponse(techArticle, elasticTechArticles, findMember)
-                )
+                .flatMap(techArticle -> mapToTechArticlesResponse(techArticle, elasticTechArticles, findMember))
                 .toList();
 
         return new SliceImpl<>(techArticleMainResponse, pageable, techArticleSlices.hasNext());
