@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -53,13 +54,15 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 엘라스틱서치 기술블로그 조회
-        List<ElasticResponse<ElasticTechArticle>> elasticTechArticles = elasticTechArticleService.getTechArticles(
+        SearchHits<ElasticTechArticle> elasticTechArticleSearchHits = elasticTechArticleService.getTechArticles(
                 pageable, elasticId, techArticleSort, keyword, companyId, score);
+        List<ElasticResponse<ElasticTechArticle>> elasticTechArticles = elasticTechArticleService.mapToElasticResponse(
+                elasticTechArticleSearchHits);
 
         // 데이터 가공
         List<TechArticleMainResponse> techArticlesResponse = getTechArticlesResponse(elasticTechArticles);
 
-        return new ElasticSlice<>(techArticlesResponse, pageable, techArticlesResponse.size(),
+        return new ElasticSlice<>(techArticlesResponse, pageable, elasticTechArticleSearchHits.getTotalHits(),
                 hasNextPage(techArticlesResponse, pageable));
     }
 

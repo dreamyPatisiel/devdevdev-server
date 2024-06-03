@@ -7,7 +7,6 @@ import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstan
 import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._ID;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
@@ -25,6 +24,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.UncategorizedElasticsearchException;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
@@ -39,9 +39,9 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
     private final ElasticsearchOperations elasticsearchOperations;
     private final ElasticTechArticleRepository elasticTechArticleRepository;
 
-    public List<ElasticResponse<ElasticTechArticle>> getTechArticles(Pageable pageable, String elasticId,
-                                                                     TechArticleSort techArticleSort, String keyword,
-                                                                     Long companyId, Float score) {
+    public SearchHits<ElasticTechArticle> getTechArticles(Pageable pageable, String elasticId,
+                                                          TechArticleSort techArticleSort, String keyword,
+                                                          Long companyId, Float score) {
         if (!StringUtils.hasText(keyword)) {
             return findTechArticles(pageable, elasticId, techArticleSort, companyId);
         }
@@ -50,9 +50,9 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
 
     }
 
-    private List<ElasticResponse<ElasticTechArticle>> findTechArticles(Pageable pageable, String elasticId,
-                                                                       TechArticleSort techArticleSort,
-                                                                       Long companyId) {
+    private SearchHits<ElasticTechArticle> findTechArticles(Pageable pageable, String elasticId,
+                                                            TechArticleSort techArticleSort,
+                                                            Long companyId) {
         // 정렬 기준 검증
         techArticleSort = getValidSort(techArticleSort);
 
@@ -72,13 +72,13 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
         // searchAfter 설정
         setSearchAfterCondition(elasticId, techArticleSort, searchQuery);
 
-        return mapToElasticResponse(elasticsearchOperations.search(searchQuery, ElasticTechArticle.class));
+        return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
 
-    private List<ElasticResponse<ElasticTechArticle>> searchTechArticles(Pageable pageable, String elasticId,
-                                                                         TechArticleSort techArticleSort,
-                                                                         String keyword,
-                                                                         Long companyId, Float score)
+    private SearchHits<ElasticTechArticle> searchTechArticles(Pageable pageable, String elasticId,
+                                                              TechArticleSort techArticleSort,
+                                                              String keyword,
+                                                              Long companyId, Float score)
             throws UncategorizedElasticsearchException {
 
         // 검색어 유무 확인
@@ -107,7 +107,7 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
         // searchAfter 설정
         setSearchAfterConditionWhenSearch(elasticId, score, techArticleSort, searchQuery);
 
-        return mapToElasticResponse(elasticsearchOperations.search(searchQuery, ElasticTechArticle.class));
+        return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
 
     private static void setFilterWithCompanyId(Long companyId, NativeSearchQueryBuilder queryBuilder) {
