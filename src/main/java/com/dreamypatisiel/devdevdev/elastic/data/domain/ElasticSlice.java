@@ -7,9 +7,9 @@ import org.springframework.data.domain.SliceImpl;
 
 @Getter
 public class ElasticSlice<T> extends SliceImpl<T> {
-    private final int totalElements;
+    private final long totalElements;
 
-    public ElasticSlice(List<T> content, Pageable pageable, int totalElements, boolean hasNext) {
+    public ElasticSlice(List<T> content, Pageable pageable, long totalElements, boolean hasNext) {
         super(content, pageable, hasNext);
         this.totalElements = totalElements;
     }
