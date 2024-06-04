@@ -419,13 +419,13 @@ public class MemberPickService implements PickService {
     private void changePickOptionAndPickOptionImages(
             Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions, List<PickOption> pickOptions) {
 
-        modifyPickRequestPickOptions.forEach((key, value) -> {
-            List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(key).getPickOptionImageIds();
+        modifyPickRequestPickOptions.forEach((pickOptionType, modifyPickOptionRequest) -> {
+            List<Long> pickOptionImageIds = modifyPickRequestPickOptions.get(pickOptionType).getPickOptionImageIds();
             List<PickOptionImage> pickOptionImages = getPickOptionImagesOrEmptyList(pickOptionImageIds);
             pickOptions.stream()
-                    .filter(pickOption -> pickOption.isEqualsId(value.getPickOptionId()))
+                    .filter(pickOption -> pickOption.isEqualsId(modifyPickOptionRequest.getPickOptionId()))
                     .forEach(pickOption -> {
-                        pickOption.changePickOption(value);
+                        pickOption.changePickOption(modifyPickOptionRequest);
                         pickOption.changePickOptionImages(pickOptionImages);
                     });
         });

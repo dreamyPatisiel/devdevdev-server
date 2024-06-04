@@ -81,6 +81,7 @@ import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -947,7 +948,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " "})
+    @NullSource
+    @EmptySource
     @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 제목이 빈값이거나 null이면 예외가 발생한다.")
     void modifyPickPickOptionTitleBindException(String pickOptionTitle) throws Exception {
         // given
@@ -988,7 +990,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickOptionRequests = new HashMap<>();
         modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest1);
-        modifyPickOptionRequests.put(firstPickOption, modifyPickOptionRequest2);
+        modifyPickOptionRequests.put(secondPickOption, modifyPickOptionRequest2);
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
@@ -998,7 +1000,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(om.writeValueAsString(modifyPickRequest)))
-                .andDo(print());
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
 
         // docs
         actions.andDo(document("pick-modify-pick-option-title-bind-exception",
@@ -1007,35 +1010,13 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                requestFields(
-                        fieldWithPath("pickTitle").type(STRING).description("픽픽픽 타이틀"),
-                        fieldWithPath("pickOptions").type(OBJECT).description("픽픽픽 옵션"),
-                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER)
-                                .description("픽픽픽 첫 번째 옵션 선택지 아이디"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING)
-                                .description("픽픽픽 첫 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING)
-                                .description("픽픽픽 첫 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
-                                .description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
-                        fieldWithPath("pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 두 번째 옵션 선택지"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionId").type(NUMBER)
-                                .description("픽픽픽 두 번째 옵션 선택지 아이디"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING)
-                                .description("픽픽픽 두 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING)
-                                .description("픽픽픽 두 번째 옵션 선택지 내용"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
-                                .description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
-                ),
                 exceptionResponseFields()
         ));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " "})
-    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 내용이 빈값이거나 null이면 예외가 발생한다.")
+    @NullSource
+    @DisplayName("픽픽픽을 수정할 때 픽픽픽 옵션 선택지 내용이 null 값을 허용한다.")
     void modifyPickPickOptionContentBindException(String pickOptionContent) throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -1084,7 +1065,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .content(om.writeValueAsString(modifyPickRequest)))
                 .andDo(print())
-                .andExpect(status().is4xxClientError());
+                .andExpect(status().isOk());
 
         // docs
         actions.andDo(document("pick-modify-pick-option-content-bind-exception",
@@ -1101,7 +1082,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 첫 번째 옵션 선택지 아이디"),
                         fieldWithPath("pickOptions.firstPickOption.pickOptionTitle").type(STRING)
                                 .description("픽픽픽 첫 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(STRING)
+                        fieldWithPath("pickOptions.firstPickOption.pickOptionContent").type(NULL)
                                 .description("픽픽픽 첫 번째 옵션 선택지 내용"),
                         fieldWithPath("pickOptions.firstPickOption.pickOptionImageIds").type(ARRAY)
                                 .description("픽픽픽 첫 번째 옵션 이미지 아이디 배열"),
@@ -1110,12 +1091,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 두 번째 옵션 선택지 아이디"),
                         fieldWithPath("pickOptions.secondPickOption.pickOptionTitle").type(STRING)
                                 .description("픽픽픽 두 번째 옵션 선택지 제목"),
-                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(STRING)
+                        fieldWithPath("pickOptions.secondPickOption.pickOptionContent").type(NULL)
                                 .description("픽픽픽 두 번째 옵션 선택지 내용"),
                         fieldWithPath("pickOptions.secondPickOption.pickOptionImageIds").type(ARRAY)
                                 .description("픽픽픽 두 번째 옵션 이미지 아이디 배열")
                 ),
-                exceptionResponseFields()
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.pickId").type(NUMBER).description("픽픽픽 아이디")
+                                .attributes(authenticationType())
+                )
         ));
     }
 

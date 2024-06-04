@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -25,13 +24,16 @@ public class PickOptionContents {
     }
 
     private void validationTopicContents(String pickOptionContents) {
-        if(!isValidLength(pickOptionContents)) {
+        // null을 허용한다.
+        if (pickOptionContents == null) {
+            return;
+        } else if (!isValidLength(pickOptionContents)) {
             throw new TopicContentsException(getInvalidLengthExceptionMessage());
         }
     }
 
     private static boolean isValidLength(String pickOptionContents) {
-        return ObjectUtils.isEmpty(pickOptionContents) || pickOptionContents.length() <= MAX_PICK_CONTENTS_LENGTH;
+        return !ObjectUtils.isEmpty(pickOptionContents) && pickOptionContents.length() <= MAX_PICK_CONTENTS_LENGTH;
     }
 
     public static String getInvalidLengthExceptionMessage() {
