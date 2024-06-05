@@ -14,5 +14,3 @@ include::{snippets}/token-test-user/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/token-test-user-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/token-test-user-exception/response-fields.adoc[]

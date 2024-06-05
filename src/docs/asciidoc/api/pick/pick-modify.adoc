@@ -27,5 +27,3 @@ include::{snippets}/pick-modify-pick-title-bind-exception/response-body.adoc[]
 include::{snippets}/pick-modify-pick-option-title-bind-exception/response-body.adoc[]
 include::{snippets}/pick-modify-pick-option-content-bind-exception/response-body.adoc[]
 include::{snippets}/pick-modify-pick-option-id-bind-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/pick-modify-pick-option-content-bind-exception/response-fields.adoc[]

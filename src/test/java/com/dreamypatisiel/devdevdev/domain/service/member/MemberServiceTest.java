@@ -3,7 +3,6 @@ package com.dreamypatisiel.devdevdev.domain.service.member;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -17,6 +16,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
@@ -354,34 +354,46 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         surveyQuestionRepository.save(question);
 
         // 서베이 질문 옵션 생성
-        SurveyQuestionOption option = SurveyQuestionOption.builder()
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
                 .title("채용정보가 부족해요.")
                 .sortOrder(0)
                 .build();
-        option.changeSurveyQuestion(question);
-        surveyQuestionOptionRepository.save(option);
+        option1.changeSurveyQuestion(question);
 
-        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions = RecordMemberExitSurveyQuestionOptionsRequest.builder()
-                .id(option.getId())
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("기타")
+                .content("10자 이상 입력해주세요.")
+                .sortOrder(0)
+                .build();
+        option2.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2));
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions1 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(option1.getId())
+                .build();
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions2 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(option2.getId())
                 .message("i think so.. this service is...")
                 .build();
 
         RecordMemberExitSurveyAnswerRequest request = RecordMemberExitSurveyAnswerRequest.builder()
                 .questionId(question.getId())
-                .memberExitSurveyQuestionOptions(List.of(memberExitSurveyQuestionOptions))
+                .memberExitSurveyQuestionOptions(
+                        List.of(memberExitSurveyQuestionOptions1, memberExitSurveyQuestionOptions2))
                 .build();
 
         // when
         memberService.recordMemberExitSurveyAnswer(request, authentication);
 
         // then
-        SurveyAnswer surveyAnswer = surveyAnswerRepository.findByMember(member).get();
-        assertAll(
-                () -> assertThat(surveyAnswer.getSurveyQuestion().getId()).isEqualTo(question.getId()),
-                () -> assertThat(surveyAnswer.getSurveyQuestionOption().getId()).isEqualTo(option.getId()),
-                () -> assertThat(surveyAnswer.getCustomMessage().getMessage()).isEqualTo(
-                        "i think so.. this service is...")
-        );
+        List<SurveyAnswer> surveyAnswers = surveyAnswerRepository.findByMember(member);
+        assertThat(surveyAnswers).hasSize(2)
+                .extracting("customMessage", "surveyQuestion", "surveyQuestionOption")
+                .containsExactly(
+                        tuple(null, question, option1),
+                        tuple(new CustomSurveyAnswer("i think so.. this service is..."), question, option2)
+                );
     }
 
     @Test

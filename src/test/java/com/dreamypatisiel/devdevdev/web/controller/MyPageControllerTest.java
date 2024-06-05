@@ -9,6 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -47,9 +48,12 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyAnswerRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Cookie;
@@ -97,6 +101,8 @@ class MyPageControllerTest extends SupportControllerTest {
     SurveyQuestionRepository surveyQuestionRepository;
     @Autowired
     SurveyQuestionOptionRepository surveyQuestionOptionRepository;
+    @Autowired
+    TimeProvider timeProvider;
     @Autowired
     EntityManager em;
 
@@ -480,6 +486,144 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].title").isString())
                 .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].content").isEmpty())
                 .andExpect(jsonPath("$.data.surveyQuestions.[0].surveyQuestionOptions.[0].sortOrder").isNumber());
+    }
+
+    @Test
+    @DisplayName("회원의 회원탈퇴 서베이 이력을 저장한다.")
+    void recordMemberExitSurvey() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("기타")
+                .content("10자 이상 입력해주세요.")
+                .sortOrder(0)
+                .build();
+        option2.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2));
+
+        // 요청 생성
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions1 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(option1.getId())
+                .build();
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions2 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(option2.getId())
+                .message("i think so.. this service is...")
+                .build();
+
+        RecordMemberExitSurveyAnswerRequest request = RecordMemberExitSurveyAnswerRequest.builder()
+                .questionId(question.getId())
+                .memberExitSurveyQuestionOptions(
+                        List.of(memberExitSurveyQuestionOptions1, memberExitSurveyQuestionOptions2))
+                .build();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/mypage/exit-survey")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()));
+    }
+
+    @Test
+    @DisplayName("회원의 회원탈퇴 서베이 이력을 저장할 때 qestionId가 null 이면 예외가 발생한다.")
+    void recordMemberExitSurveyQuestionIdNotNullException() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 요청 생성
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions1 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(1L)
+                .build();
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions2 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(2L)
+                .message("i think so.. this service is...")
+                .build();
+
+        RecordMemberExitSurveyAnswerRequest request = RecordMemberExitSurveyAnswerRequest.builder()
+                .questionId(null)
+                .memberExitSurveyQuestionOptions(
+                        List.of(memberExitSurveyQuestionOptions1, memberExitSurveyQuestionOptions2))
+                .build();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/mypage/exit-survey")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @Test
+    @DisplayName("회원의 회원탈퇴 서베이 이력을 저장할 때 optionId가 null 이면 예외가 발생한다.")
+    void recordMemberExitSurveyOptionIdNotNullException() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 요청 생성
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions1 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(null)
+                .build();
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions2 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(2L)
+                .message("i think so.. this service is...")
+                .build();
+
+        RecordMemberExitSurveyAnswerRequest request = RecordMemberExitSurveyAnswerRequest.builder()
+                .questionId(1L)
+                .memberExitSurveyQuestionOptions(
+                        List.of(memberExitSurveyQuestionOptions1, memberExitSurveyQuestionOptions2))
+                .build();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/mypage/exit-survey")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,

@@ -56,7 +56,6 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
 
         List<Pick> contents = query.selectFrom(pick)
                 .leftJoin(pick.pickOptions, pickOption)
-                .leftJoin(pick.pickVotes, pickVote)
                 .leftJoin(pick.member, new QMember("member")).fetchJoin()
                 .where(pick.member.eq(member)
                         .and(getCursorCondition(PickSort.LATEST, pickId)))

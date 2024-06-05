@@ -57,6 +57,10 @@ public interface ApiDocsFormatGenerator {
         return key(FORMAT).value("Number | null");
     }
 
+    static Attributes.Attribute stringOrNull() {
+        return key(FORMAT).value("String | null");
+    }
+
     static Attributes.Attribute contentStatusType() {
         String contentStatusType = Arrays.stream(ContentStatus.values())
                 .map(contentStatus -> contentStatus.name() + "(" + contentStatus.getDescription() + ")")

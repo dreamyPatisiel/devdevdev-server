@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Data;
@@ -21,14 +22,14 @@ public class RecordMemberExitSurveyQuestionOptionsRequest {
         this.message = message;
     }
 
-    public static Map<Long, String> convertToMap(
+    public static Map<Long, RecordMemberExitSurveyQuestionOptionsRequest> convertToMap(
             List<RecordMemberExitSurveyQuestionOptionsRequest> memberExitSurveyQuestionOptions) {
 
         return memberExitSurveyQuestionOptions.stream()
                 .sorted(Comparator.comparingLong(RecordMemberExitSurveyQuestionOptionsRequest::getId))
                 .collect(Collectors.toMap(
                         RecordMemberExitSurveyQuestionOptionsRequest::getId,
-                        RecordMemberExitSurveyQuestionOptionsRequest::getMessage)
+                        Function.identity())
                 );
     }
 

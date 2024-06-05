@@ -33,7 +33,3 @@ include::{snippets}/tech-article-main/response-fields.adoc[]
 include::{snippets}/not-found-elastic-tech-article-cursor-exception/response-body.adoc[]
 include::{snippets}/not-found-score-exception/response-body.adoc[]
 include::{snippets}/keyword-with-special-symbols-exception/response-body.adoc[]
-
-==== HTTP Response Fields
-
-include::{snippets}/not-found-score-exception/response-fields.adoc[]

@@ -127,8 +127,8 @@ public class MemberService {
         Long questionId = recordMemberExitSurveyAnswerRequest.getQuestionId();
         List<RecordMemberExitSurveyQuestionOptionsRequest> memberExitSurveyQuestionOptions = recordMemberExitSurveyAnswerRequest.getMemberExitSurveyQuestionOptions();
 
-        // message가 있는 questionOptions 요청을 Map으로 변환
-        Map<Long, String> surveyQuestionOptions = RecordMemberExitSurveyQuestionOptionsRequest.convertToMap(
+        // questionOptions 요청을 Map으로 변환
+        Map<Long, RecordMemberExitSurveyQuestionOptionsRequest> surveyQuestionOptions = RecordMemberExitSurveyQuestionOptionsRequest.convertToMap(
                 memberExitSurveyQuestionOptions);
 
         // message가 없는 questionOptions 요청에서 id만 추출
@@ -148,12 +148,12 @@ public class MemberService {
     }
 
     private SurveyAnswer createSurveyAnswerBy(SurveyQuestionOption option,
-                                              Map<Long, String> surveyQuestionOptions,
+                                              Map<Long, RecordMemberExitSurveyQuestionOptionsRequest> surveyQuestionOptions,
                                               Member findMember) {
 
         // surveyQuestionOptions 에 알맞은 키의 값이 존재하면
         if (surveyQuestionOptions.containsKey(option.getId())) {
-            String message = surveyQuestionOptions.get(option.getId());
+            String message = surveyQuestionOptions.get(option.getId()).getMessage();
             SurveyQuestion surveyQuestion = option.getSurveyQuestion();
 
             // message 가 null 이면

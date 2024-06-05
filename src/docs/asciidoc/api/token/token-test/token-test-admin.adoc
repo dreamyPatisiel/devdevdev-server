@@ -14,5 +14,3 @@ include::{snippets}/token-test-admin/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/token-test-admin-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/token-test-admin-exception/response-fields.adoc[]

@@ -21,5 +21,3 @@ include::{snippets}/mypage-bookmarks/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/not-found-member-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/not-found-elastic-id-exception/response-fields.adoc[]
