@@ -27,7 +27,9 @@ public class PickOptionContents {
         // null을 허용한다.
         if (pickOptionContents == null) {
             return;
-        } else if (!isValidLength(pickOptionContents)) {
+        }
+
+        if (!isValidLength(pickOptionContents)) {
             throw new TopicContentsException(getInvalidLengthExceptionMessage());
         }
     }
