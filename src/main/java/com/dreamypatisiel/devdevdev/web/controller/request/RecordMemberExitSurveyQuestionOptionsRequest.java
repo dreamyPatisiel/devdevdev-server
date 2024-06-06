@@ -40,8 +40,4 @@ public class RecordMemberExitSurveyQuestionOptionsRequest {
                 .map(RecordMemberExitSurveyQuestionOptionsRequest::getId)
                 .toList();
     }
-
-    private boolean isMessageNotNull() {
-        return this.message != null;
-    }
 }
