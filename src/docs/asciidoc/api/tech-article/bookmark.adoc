@@ -22,5 +22,3 @@ include::{snippets}/tech-article-bookmark/response-fields.adoc[]
 ==== HTTP Response
 include::{snippets}/not-found-tech-article-exception/response-body.adoc[]
 include::{snippets}/not-found-member-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/not-found-elastic-id-exception/response-fields.adoc[]

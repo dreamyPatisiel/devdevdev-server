@@ -22,5 +22,3 @@ include::{snippets}/logout/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/logout-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/logout-exception/response-fields.adoc[]

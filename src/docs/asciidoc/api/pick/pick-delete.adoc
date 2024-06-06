@@ -31,7 +31,3 @@ include::{snippets}/delete-pick/response-fields.adoc[]
 ==== HTTP Response
 
 include::{snippets}/delete-pick-not-found-exception/response-body.adoc[]
-
-==== HTTP Response Fields
-
-include::{snippets}/delete-pick-not-found-exception/response-fields.adoc[]

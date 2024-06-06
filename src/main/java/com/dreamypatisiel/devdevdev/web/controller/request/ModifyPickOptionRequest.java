@@ -14,7 +14,6 @@ public class ModifyPickOptionRequest {
     @NotBlank(message = "픽픽픽 선택지 제목을 작성해주세요.")
     private final String pickOptionTitle;
 
-    @NotBlank(message = "픽픽픽 선택지에 대한 설명을 작성해주세요.")
     private final String pickOptionContent;
     private final List<Long> pickOptionImageIds;
 

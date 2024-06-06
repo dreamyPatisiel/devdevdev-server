@@ -20,5 +20,3 @@ include::{snippets}/pick-main-option-delete-image/response-fields.adoc[]
 ==== HTTP Response
 include::{snippets}/pick-main-option-delete-image-anonymous-exception/response-body.adoc[]
 include::{snippets}/pick-main-option-delete-image-not-found-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/pick-main-option-delete-image-not-found-exception/response-fields.adoc[]

@@ -36,7 +36,3 @@ include::{snippets}/vote-pick-not-found-exception/response-body.adoc[]
 include::{snippets}/vote-pick-bind-exception/response-body.adoc[]
 include::{snippets}/vote-pick-option-exception/response-body.adoc[]
 include::{snippets}/vote-pick-invalid-anonymous-member-id/response-body.adoc[]
-
-==== HTTP Response Fields
-
-include::{snippets}/vote-pick-not-found-exception/response-fields.adoc[]

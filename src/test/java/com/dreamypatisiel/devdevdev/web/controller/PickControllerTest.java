@@ -641,6 +641,7 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
+    @Disabled
     @ParameterizedTest
     @NullSource
     @ValueSource(strings = {"", " "})

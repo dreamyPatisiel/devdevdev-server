@@ -39,7 +39,7 @@ class PickOptionContentsTest {
 
     @ParameterizedTest
     @CsvSource(value = {":", "내용입니다.:내용입니다."}, delimiter = ':')
-    @DisplayName("픽옵션 content를 String으로 반환한다. null일 경우 빈문자열을 반환한다.")
+    @DisplayName("픽옵션 content를 String으로 반환한다. null이면 null을 반환한다.")
     void getContentsAsString(String contents, String result) {
         // given
         PickOptionContents pickOptionContents = new PickOptionContents(contents);

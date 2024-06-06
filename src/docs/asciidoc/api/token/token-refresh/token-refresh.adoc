@@ -18,5 +18,3 @@ include::{snippets}/token-refresh/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/token-refresh-exception/response-body.adoc[]
-==== HTTP Response Fields
-include::{snippets}/token-refresh-exception/response-fields.adoc[]

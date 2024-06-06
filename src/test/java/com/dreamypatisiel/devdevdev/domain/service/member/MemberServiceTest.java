@@ -9,12 +9,14 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
@@ -26,6 +28,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyAnswerRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
@@ -41,6 +44,8 @@ import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyAnswerRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyQuestionOptionsRequest;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -54,10 +59,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-@Transactional
 class MemberServiceTest extends ElasticsearchSupportTest {
 
     String userId = "dreamy5patisiel";
@@ -94,6 +97,8 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     SurveyQuestionRepository surveyQuestionRepository;
     @Autowired
     SurveyQuestionOptionRepository surveyQuestionOptionRepository;
+    @Autowired
+    SurveyAnswerRepository surveyAnswerRepository;
 
     @Test
     @DisplayName("회원이 회원탈퇴를 요청하면 해당 회원의 isDeleted가 true로 변경된다.")
@@ -326,6 +331,87 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
+    @Test
+    @DisplayName("회원탈퇴 서베이 이력을 기록한다.")
+    void recordMemberExitSurveyAnswer() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("기타")
+                .content("10자 이상 입력해주세요.")
+                .sortOrder(0)
+                .build();
+        option2.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2));
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions1 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(option1.getId())
+                .build();
+
+        RecordMemberExitSurveyQuestionOptionsRequest memberExitSurveyQuestionOptions2 = RecordMemberExitSurveyQuestionOptionsRequest.builder()
+                .id(option2.getId())
+                .message("i think so.. this service is...")
+                .build();
+
+        RecordMemberExitSurveyAnswerRequest request = RecordMemberExitSurveyAnswerRequest.builder()
+                .questionId(question.getId())
+                .memberExitSurveyQuestionOptions(
+                        List.of(memberExitSurveyQuestionOptions1, memberExitSurveyQuestionOptions2))
+                .build();
+
+        // when
+        memberService.recordMemberExitSurveyAnswer(request, authentication);
+
+        // then
+        List<SurveyAnswer> surveyAnswers = surveyAnswerRepository.findAllByMember(member);
+        assertThat(surveyAnswers).hasSize(2)
+                .extracting("customMessage", "surveyQuestion", "surveyQuestionOption")
+                .containsExactly(
+                        tuple(null, question, option1),
+                        tuple(new CustomSurveyAnswer("i think so.. this service is..."), question, option2)
+                );
+    }
+
+    @Test
+    @DisplayName("회원탈퇴 서베이 이력을 저장할 때 회원이 없으면 예외가 발생한다.")
+    void recordMemberExitSurveyAnswerMemberException() {
+        // given
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberService.recordMemberExitSurveyAnswer(null, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
 
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,
                            PickOptionContents firstPickOptionContents, Title secondPickOptinTitle,

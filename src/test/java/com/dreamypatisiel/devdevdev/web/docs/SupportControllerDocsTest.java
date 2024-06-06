@@ -13,6 +13,7 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDateTime;
 import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,7 @@ public class SupportControllerDocsTest {
     @BeforeEach
     void setupRefreshToken() {
         when(timeProvider.getDateNow()).thenReturn(date);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(LocalDateTime.of(2024, 2, 16, 0, 0, 0, 0));
 
         Token token = tokenService.generateTokenBy(email, socialType, role);
         refreshToken = token.getRefreshToken();
