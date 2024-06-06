@@ -41,15 +41,6 @@ public class RecordMemberExitSurveyQuestionOptionsRequest {
                 .toList();
     }
 
-    public static List<Long> convertToIdsFilteredMessageNull(
-            List<RecordMemberExitSurveyQuestionOptionsRequest> surveyQuestionOptions) {
-
-        return surveyQuestionOptions.stream()
-                .filter(RecordMemberExitSurveyQuestionOptionsRequest::isMessageNotNull)
-                .map(RecordMemberExitSurveyQuestionOptionsRequest::getId)
-                .toList();
-    }
-
     private boolean isMessageNotNull() {
         return this.message != null;
     }
