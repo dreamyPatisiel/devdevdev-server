@@ -6,5 +6,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SurveyAnswerRepository extends JpaRepository<SurveyAnswer, Long> {
-    List<SurveyAnswer> findByMember(Member member);
+    List<SurveyAnswer> findAllByMember(Member member);
 }

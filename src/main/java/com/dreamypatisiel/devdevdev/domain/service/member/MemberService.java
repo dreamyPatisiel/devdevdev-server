@@ -131,7 +131,7 @@ public class MemberService {
         Map<Long, RecordMemberExitSurveyQuestionOptionsRequest> surveyQuestionOptions = RecordMemberExitSurveyQuestionOptionsRequest.convertToMap(
                 memberExitSurveyQuestionOptions);
 
-        // message가 없는 questionOptions 요청에서 id만 추출
+        // questionOptions 요청에서 id만 추출
         List<Long> ids = RecordMemberExitSurveyQuestionOptionsRequest.convertToIds(memberExitSurveyQuestionOptions);
 
         // 질문 선택지 조회(toOne question 페치 조인)
@@ -150,24 +150,23 @@ public class MemberService {
     private SurveyAnswer createSurveyAnswerBy(SurveyQuestionOption option,
                                               Map<Long, RecordMemberExitSurveyQuestionOptionsRequest> surveyQuestionOptions,
                                               Member findMember) {
-
+        if (!surveyQuestionOptions.containsKey(option.getId())) {
+            return null;
+        }
         // surveyQuestionOptions 에 알맞은 키의 값이 존재하면
-        if (surveyQuestionOptions.containsKey(option.getId())) {
-            String message = surveyQuestionOptions.get(option.getId()).getMessage();
-            SurveyQuestion surveyQuestion = option.getSurveyQuestion();
 
-            // message 가 null 이면
-            if (message == null) {
-                // customMessage 가 없는 SurveyAnswer 생성
-                return SurveyAnswer.createWithoutCustomMessage(findMember, surveyQuestion, option);
-            }
+        String message = surveyQuestionOptions.get(option.getId()).getMessage();
+        SurveyQuestion surveyQuestion = option.getSurveyQuestion();
 
-            // customMessage 가 있는 SurveyAnswer 생성
-            return SurveyAnswer.create(new CustomSurveyAnswer(message), findMember,
-                    surveyQuestion, option);
+        // message 가 null 이면
+        if (message == null) {
+            // customMessage 가 없는 SurveyAnswer 생성
+            return SurveyAnswer.createWithoutCustomMessage(findMember, surveyQuestion, option);
         }
 
-        return null;
+        // customMessage 가 있는 SurveyAnswer 생성
+        return SurveyAnswer.create(new CustomSurveyAnswer(message), findMember,
+                surveyQuestion, option);
     }
 
 

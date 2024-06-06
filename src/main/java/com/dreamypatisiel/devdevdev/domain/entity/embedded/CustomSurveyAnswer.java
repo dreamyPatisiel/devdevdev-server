@@ -25,6 +25,11 @@ public class CustomSurveyAnswer {
     }
 
     private void validationMessage(String message) {
+        // null을 허용한다.
+        if (message == null) {
+            return;
+        }
+
         if (!isValidMessage(message)) {
             throw new CustomSurveyAnswerException(getInvalidCustomSurveyAnswerExceptionMessage());
         }
@@ -36,9 +41,6 @@ public class CustomSurveyAnswer {
      * @Since: 2024.06.01
      */
     private static boolean isValidMessage(String message) {
-        if (message == null) {
-            return true;
-        }
         return !message.isBlank() && message.length() >= MIN_MESSAGE_LENGTH
                 && message.length() <= MAX_MESSAGE_LENGTH;
     }

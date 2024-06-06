@@ -387,7 +387,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         memberService.recordMemberExitSurveyAnswer(request, authentication);
 
         // then
-        List<SurveyAnswer> surveyAnswers = surveyAnswerRepository.findByMember(member);
+        List<SurveyAnswer> surveyAnswers = surveyAnswerRepository.findAllByMember(member);
         assertThat(surveyAnswers).hasSize(2)
                 .extracting("customMessage", "surveyQuestion", "surveyQuestionOption")
                 .containsExactly(
