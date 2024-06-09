@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.global.common;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -33,6 +35,6 @@ public class MemberProvider {
         SocialType socialType = userPrincipal.getSocialType();
 
         return memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email), socialType)
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> new MemberException(INVALID_MEMBER_NOT_FOUND_MESSAGE));
     }
 }

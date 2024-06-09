@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.service;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -101,7 +102,7 @@ class JwtMemberServiceTest {
         assertThatThrownBy(() -> jwtMemberService.validationRefreshTokenAndUpdateMemberRefreshTokenAndGetNewToken(
                 otherRefreshToken))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -171,7 +172,7 @@ class JwtMemberServiceTest {
         // when // then
         assertThatThrownBy(() -> jwtMemberService.updateMemberRefreshToken(otherRefreshToken))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -205,7 +206,7 @@ class JwtMemberServiceTest {
         // when // then
         assertThatThrownBy(() -> jwtMemberService.updateMemberRefreshTokenToDisabled(userPrincipal))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickname, String password, String email,
