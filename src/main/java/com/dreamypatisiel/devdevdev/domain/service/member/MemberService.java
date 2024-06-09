@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.member;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
@@ -22,6 +24,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyAnswerRequest;
@@ -61,7 +64,23 @@ public class MemberService {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
+        // 탈퇴 서베이 확인
+        // mapper 조회(oneTo 관계인 surveyVersion, surveyQuestion 페치조인)
+        List<SurveyVersionQuestionMapper> surveyVersionQuestionMappers = surveyVersionQuestionMapperRepository.findMapperWithVersionAndQuestion();
+
+        // surveyQuestions 추출
+        List<Long> surveyQuestionIds = surveyVersionQuestionMappers.stream()
+                .map(SurveyVersionQuestionMapper::getSurveyQuestion)
+                .map(SurveyQuestion::getId)
+                .toList();
+
+        // 모든 surveyQuestions에 대해 해당 Member의 surveyAnswer이 있는지 확인
+        boolean hasAnsweredAllQuestions = surveyAnswerRepository.hasAnsweredAllQuestions(member, surveyQuestionIds);
+
         // 회원 삭제
+        if (!hasAnsweredAllQuestions) {
+            throw new SurveyException(MEMBER_INCOMPLETE_SURVEY_MESSAGE);
+        }
         member.deleteMember(timeProvider.getLocalDateTimeNow());
     }
 
