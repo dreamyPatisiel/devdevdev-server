@@ -44,7 +44,7 @@ public class OAuth2MemberService {
     }
 
     private Optional<Member> findMemberByOAuth2UserProvider(OAuth2UserProvider oAuth2UserProvider) {
-        return memberRepository.findMemberByEmailAndSocialType(
+        return memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(
                 new Email(oAuth2UserProvider.getEmail()), oAuth2UserProvider.getSocialType()
         );
     }

@@ -328,7 +328,8 @@ class MyPageControllerTest extends SupportControllerTest {
         em.clear();
 
         // 회원 정보가 비활성화됨에 따라 조회 불가
-        Optional<Member> findMember = memberRepository.findById(member.getId());
+        Optional<Member> findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(
+                member.getEmail(), member.getSocialType());
         assertThat(findMember.isEmpty()).isEqualTo(true);
     }
 

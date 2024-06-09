@@ -190,7 +190,7 @@ class JwtMemberServiceTest {
         jwtMemberService.updateMemberRefreshTokenToDisabled(userPrincipal);
 
         // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email),
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
                 SocialType.valueOf(socialType)).get();
         assertThat(findMember.getRefreshToken()).isEqualTo(Token.DISABLED);
     }
