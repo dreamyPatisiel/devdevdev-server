@@ -38,7 +38,7 @@ public class JwtMemberService {
         String socialType = tokenService.getSocialType(refreshToken);
 
         // 회원 조회
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email),
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
                         SocialType.valueOf(socialType))
                 .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
 
@@ -67,7 +67,7 @@ public class JwtMemberService {
         String socialType = claims.get(JwtClaimConstant.socialType).toString();
 
         // 회원 조회
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email),
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
                         SocialType.valueOf(socialType))
                 .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
         // 리프레시 토큰 갱신
@@ -79,7 +79,8 @@ public class JwtMemberService {
         String email = userPrincipal.getEmail();
         SocialType socialType = userPrincipal.getSocialType();
 
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType)
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
+                        socialType)
                 .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
 
         findMember.updateRefreshToken(Token.DISABLED);

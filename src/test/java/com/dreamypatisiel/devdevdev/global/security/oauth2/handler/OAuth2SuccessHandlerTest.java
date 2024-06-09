@@ -96,7 +96,8 @@ class OAuth2SuccessHandlerTest {
         oAuth2SuccessHandler.onAuthenticationSuccess(request, response, authentication);
 
         // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType).get();
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
+                socialType).get();
         Cookie accessCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
         Cookie refreshCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
         Cookie loginStatusCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS);

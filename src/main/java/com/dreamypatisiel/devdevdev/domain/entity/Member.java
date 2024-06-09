@@ -27,13 +27,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SQLDelete(sql = "UPDATE member SET is_deleted = true, deletedAt = NOW() WHERE id = ?")
-@SQLRestriction("is_deleted = false")
+//@SQLRestriction("is_deleted = false")
 @Table(indexes = {
         @Index(name = "idx__name__user_id", columnList = "name, userId"),
         @Index(name = "idx__email__socialType", columnList = "email, socialType")
@@ -50,7 +49,7 @@ public class Member extends BasicTime {
             column = @Column(name = "nickname")
     )
     private Nickname nickname;
-    
+
     @Embedded
     @AttributeOverride(name = "email",
             column = @Column(name = "email")
