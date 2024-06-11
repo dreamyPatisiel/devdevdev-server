@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.member;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
@@ -41,6 +43,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -101,7 +104,76 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     SurveyAnswerRepository surveyAnswerRepository;
 
     @Test
-    @DisplayName("회원이 회원탈퇴를 요청하면 해당 회원의 isDeleted가 true로 변경된다.")
+    @DisplayName("회원이 회원탈퇴 설문조사를 완료하지 않으면 탈퇴가 불가능하다.")
+    void deleteMemberIncompleteSurvey() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("정보가 부족해요.")
+                .sortOrder(1)
+                .build();
+        option2.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option3 = SurveyQuestionOption.builder()
+                .title("기타.")
+                .sortOrder(2)
+                .build();
+        option3.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2, option3));
+
+        // when // then
+        assertThatThrownBy(() -> memberService.deleteMember(authentication))
+                .isInstanceOf(SurveyException.class)
+                .hasMessage(MEMBER_INCOMPLETE_SURVEY_MESSAGE);
+
+    }
+
+    @Test
+    @DisplayName("탈퇴 설문조사를 완료한 회원이 회원탈퇴를 요청하면 "
+            + "회원의 is_deleted가 true로 변경되고 "
+            + "memberProvider에서 더이상 조회되지 않는다.")
     void deleteMemberTest() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -114,6 +186,59 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("정보가 부족해요.")
+                .sortOrder(1)
+                .build();
+        option2.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option3 = SurveyQuestionOption.builder()
+                .title("기타.")
+                .sortOrder(2)
+                .build();
+        option3.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2, option3));
+
+        SurveyAnswer surveyAnswer = SurveyAnswer.builder()
+                .surveyQuestion(question)
+                .surveyQuestionOption(option1)
+                .member(savedMember)
+                .build();
+        surveyAnswerRepository.save(surveyAnswer);
+
         // when
         memberService.deleteMember(authentication);
 
@@ -122,29 +247,10 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 .isNotNull()
                 .extracting(Member::getIsDeleted)
                 .isEqualTo(true);
-    }
 
-    @Test
-    @DisplayName("회원이 회원탈퇴를 완료하면 더이상 회원이 조회되지 않는다.")
-    void deleteMemberNotFoundTest() {
-        // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // when
-        memberService.deleteMember(authentication);
-
-        // then
         assertThatThrownBy(() -> memberProvider.getMemberByAuthentication(authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -328,7 +434,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         assertThatThrownBy(
                 () -> memberService.getBookmarkedTechArticles(pageable, null, null, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -410,7 +516,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         assertThatThrownBy(
                 () -> memberService.recordMemberExitSurveyAnswer(null, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,

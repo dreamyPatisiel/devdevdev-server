@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.service;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.exception.TokenInvalidException.REFRESH_TOKEN_INVALID_EXCEPTION_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -40,7 +41,7 @@ public class JwtMemberService {
         // 회원 조회
         Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
                         SocialType.valueOf(socialType))
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> new MemberException(INVALID_MEMBER_NOT_FOUND_MESSAGE));
 
         // 회원이 가지고 있는 리프레시 토큰과 일치 하는지?
         if (!findMember.isRefreshTokenEquals(refreshToken)) {
@@ -69,7 +70,7 @@ public class JwtMemberService {
         // 회원 조회
         Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
                         SocialType.valueOf(socialType))
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> new MemberException(INVALID_MEMBER_NOT_FOUND_MESSAGE));
         // 리프레시 토큰 갱신
         findMember.updateRefreshToken(refreshToken);
     }
@@ -81,7 +82,7 @@ public class JwtMemberService {
 
         Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
                         socialType)
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
+                .orElseThrow(() -> new MemberException(INVALID_MEMBER_NOT_FOUND_MESSAGE));
 
         findMember.updateRefreshToken(Token.DISABLED);
     }
