@@ -75,7 +75,7 @@ public class MemberService {
                 .toList();
 
         // 모든 surveyQuestions에 대해 해당 Member의 surveyAnswer이 있는지 확인
-        boolean hasAnsweredAllQuestions = surveyAnswerRepository.hasAnsweredAllQuestions(member, surveyQuestionIds);
+        boolean hasAnsweredAllQuestions = surveyAnswerRepository.existsByIdIn(member, surveyQuestionIds);
 
         // 회원 삭제
         if (!hasAnsweredAllQuestions) {

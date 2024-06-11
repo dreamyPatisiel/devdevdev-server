@@ -4,5 +4,5 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import java.util.List;
 
 public interface SurveyAnswerRepositoryCustom {
-    boolean hasAnsweredAllQuestions(Member member, List<Long> ids);
+    boolean existsByIdIn(Member member, List<Long> ids);
 }
