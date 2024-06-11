@@ -13,7 +13,7 @@ public class SurveyAnswerRepositoryImpl implements SurveyAnswerRepositoryCustom 
     private final JPQLQueryFactory query;
 
     @Override
-    public boolean existsByIdIn(Member member, List<Long> ids) {
+    public boolean existsByMemberAndIdIn(Member member, List<Long> ids) {
         // 주어진 질문 ID 리스트에 대해 해당 멤버의 답변 여부를 체크
         long answeredQuestionCount = query
                 .select(surveyAnswer.surveyQuestion.id)
