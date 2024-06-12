@@ -14,19 +14,27 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = {
+        @Index(name = "idx__content_status", columnList = "contentStatus"),
+        @Index(name = "idx__member", columnList = "member")
+})
 public class Pick extends BasicTime {
 
     @Id
@@ -67,6 +75,10 @@ public class Pick extends BasicTime {
     @Enumerated(EnumType.STRING)
     private ContentStatus contentStatus;
 
+    @Column(columnDefinition = "longtext")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Double> embeddings;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -85,7 +97,8 @@ public class Pick extends BasicTime {
 
     @Builder
     private Pick(Title title, Count voteTotalCount, Count viewTotalCount, Count commentTotalCount, Count popularScore,
-                 String thumbnailUrl, String author, ContentStatus contentStatus, Member member) {
+                 String thumbnailUrl, String author, ContentStatus contentStatus, List<Double> embeddings,
+                 Member member) {
         this.title = title;
         this.voteTotalCount = voteTotalCount;
         this.viewTotalCount = viewTotalCount;
@@ -94,6 +107,7 @@ public class Pick extends BasicTime {
         this.thumbnailUrl = thumbnailUrl;
         this.author = author;
         this.contentStatus = contentStatus;
+        this.embeddings = embeddings;
         this.member = member;
     }
 
@@ -137,6 +151,10 @@ public class Pick extends BasicTime {
         return this.equals(pick);
     }
 
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
+    }
+
     public void changePopularScore(PickPopularScorePolicy policy) {
         this.popularScore = this.calculatePopularScore(policy);
     }
@@ -171,5 +189,9 @@ public class Pick extends BasicTime {
 
     public boolean isTrueContentStatus(ContentStatus contentStatus) {
         return this.contentStatus.equals(contentStatus);
+    }
+
+    public void changeEmbedding(List<Double> embeddings) {
+        this.embeddings = embeddings;
     }
 }

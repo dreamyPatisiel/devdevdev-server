@@ -12,9 +12,9 @@ import lombok.ToString;
 public class Embedding {
     private String object;
     private int index;
-    private List<Float> embedding;
+    private List<Double> embedding;
 
-    public Embedding(String object, int index, List<Float> embedding, String model, Usage usage) {
+    public Embedding(String object, int index, List<Double> embedding) {
         this.object = object;
         this.index = index;
         this.embedding = embedding;

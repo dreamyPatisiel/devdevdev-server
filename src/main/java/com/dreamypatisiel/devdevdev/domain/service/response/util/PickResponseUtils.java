@@ -22,7 +22,7 @@ public class PickResponseUtils {
     public static boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption,
                                                      Member member) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption)
+                .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOption.getId())
                         && pickVote.isMemberNotNull())
                 .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
     }
@@ -30,7 +30,7 @@ public class PickResponseUtils {
     public static boolean isPickedPickOptionByAnonymousMember(Pick pick, PickOption pickOption,
                                                               AnonymousMember anonymousMember) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPickOption().isEqualsPickOption(pickOption)
+                .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOption.getId())
                         && pickVote.isAnonymousMemberNotNull())
                 .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
     }

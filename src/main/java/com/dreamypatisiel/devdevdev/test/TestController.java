@@ -1,5 +1,8 @@
 package com.dreamypatisiel.devdevdev.test;
 
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class TestController {
 
     public static final String OK = "ok";
+    private final EmbeddingRequestHandler embeddingRequestHandler;
+    private final EmbeddingsService embeddingsService;
+    private final PickRepository pickRepository;
 
     @GetMapping("/members")
     public BasicResponse<Member> getMembers() {

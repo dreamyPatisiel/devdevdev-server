@@ -10,6 +10,8 @@ public class EmbeddingRequest {
     public static EmbeddingRequest createTextEmbedding3Small(String input) {
         EmbeddingRequest request = new EmbeddingRequest(input);
         request.model = "text-embedding-3-small";
+        //request.model = "text-embedding-3-large";
+        //request.model = "text-embedding-ada-002";
 
         return request;
     }
