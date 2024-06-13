@@ -112,9 +112,10 @@ public class PickController {
                 EmbeddingRequest.createTextEmbedding3Small(registerPickRequest.getPickTitle()));
 
         PickService pickService = pickServiceStrategy.getPickService();
+
+        // 픽픽픽 작성 및 embedding 저장
         PickRegisterResponse response = pickCommonService.registerPickAndSaveEmbedding(registerPickRequest,
-                pickService, authentication,
-                embeddingOpenAIResponse);
+                pickService, authentication, embeddingOpenAIResponse);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -132,6 +133,8 @@ public class PickController {
                 EmbeddingRequest.createTextEmbedding3Small(modifyPickRequest.getPickTitle()));
 
         PickService pickService = pickServiceStrategy.getPickService();
+
+        // 픽픽픽 수정 및 embedding 저장
         PickModifyResponse response = pickCommonService.modifyPickAndSaveEmbedding(pickService, pickId,
                 modifyPickRequest, authentication, embeddingOpenAIResponse);
 
