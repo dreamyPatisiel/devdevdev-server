@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.firstPickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.secondPickOption;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
@@ -448,7 +449,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, null, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @ParameterizedTest
@@ -659,7 +660,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.registerPick(registerPickRequest, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -806,7 +807,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.modifyPick(1L, modifyPickRequest, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test

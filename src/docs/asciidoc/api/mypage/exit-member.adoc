@@ -32,4 +32,5 @@ include::{snippets}/mypage-member-delete/response-cookies.adoc[]
 
 ==== HTTP Response
 
+include::{snippets}/incomplete-survey-exception/response-body.adoc[]
 include::{snippets}/not-found-member-exception/response-body.adoc[]

@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.oauth2.handler;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -74,7 +75,7 @@ class OAuth2SuccessHandlerTest {
         // when // then
         assertThatThrownBy(() -> oAuth2SuccessHandler.onAuthenticationSuccess(request, response, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -96,7 +97,8 @@ class OAuth2SuccessHandlerTest {
         oAuth2SuccessHandler.onAuthenticationSuccess(request, response, authentication);
 
         // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType).get();
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email),
+                socialType).get();
         Cookie accessCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_ACCESS_TOKEN);
         Cookie refreshCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);
         Cookie loginStatusCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS);

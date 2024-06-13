@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.common;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -72,7 +73,7 @@ class MemberProviderTest {
         // when // then
         assertThatThrownBy(() -> memberProvider.getMemberByAuthentication(authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
