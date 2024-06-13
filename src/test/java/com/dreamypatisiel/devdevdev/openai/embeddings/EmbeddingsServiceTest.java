@@ -77,7 +77,7 @@ class EmbeddingsServiceTest {
         System.out.println("요청 시간=" + (end - start));
 
         long start2 = System.currentTimeMillis();
-        embeddingsService.saveEmbedding(pick, embeddingOpenAIResponse);
+        embeddingsService.saveEmbedding(pick.getId(), embeddingOpenAIResponse);
         long end2 = System.currentTimeMillis();
         System.out.println("저장 시간=" + (end2 - start2));
 

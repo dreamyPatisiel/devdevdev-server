@@ -207,7 +207,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         Map<PickOptionType, RegisterPickOptionRequest> pickOptions = registerPickRequest.getPickOptions();
         savePickOptionWithPickOptionImages(pick, pickOptions);
 
-        return new PickRegisterResponse(pick.getId());
+        return PickRegisterResponse.from(pick);
     }
 
     /**
@@ -237,9 +237,10 @@ public class MemberPickService extends PickCommonService implements PickService 
         List<PickOption> pickOptions = findPick.getPickOptions();
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions = modifyPickRequest.getPickOptions();
 
+        // 픽픽픽 및 픽픽픽 옵션 업데이트
         changePickOptionAndPickOptionImages(modifyPickRequestPickOptions, pickOptions);
 
-        return new PickModifyResponse(findPick.getId());
+        return PickModifyResponse.from(findPick);
     }
 
     /**

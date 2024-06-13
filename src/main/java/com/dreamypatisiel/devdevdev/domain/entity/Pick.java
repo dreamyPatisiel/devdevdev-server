@@ -20,6 +20,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.util.ObjectUtils;
 
 @Entity
 @Getter
@@ -77,7 +79,7 @@ public class Pick extends BasicTime {
 
     @Column(columnDefinition = "longtext")
     @JdbcTypeCode(SqlTypes.JSON)
-    private List<Double> embeddings;
+    private List<String> embeddings;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -107,7 +109,7 @@ public class Pick extends BasicTime {
         this.thumbnailUrl = thumbnailUrl;
         this.author = author;
         this.contentStatus = contentStatus;
-        this.embeddings = embeddings;
+        this.embeddings = this.convertEmbeddings(embeddings);
         this.member = member;
     }
 
@@ -191,7 +193,24 @@ public class Pick extends BasicTime {
         return this.contentStatus.equals(contentStatus);
     }
 
-    public void changeEmbedding(List<Double> embeddings) {
-        this.embeddings = embeddings;
+    public void changeEmbeddings(List<Double> embeddings) {
+        this.embeddings = convertEmbeddings(embeddings);
+    }
+
+    public List<Double> getEmbeddings() {
+        return this.embeddings.stream()
+                .map(Double::valueOf)
+                .toList();
+    }
+
+    private List<String> convertEmbeddings(List<Double> embeddings) {
+
+        if (ObjectUtils.isEmpty(embeddings)) {
+            return Collections.emptyList();
+        }
+
+        return embeddings.stream()
+                .map(embedding -> String.valueOf(embedding.doubleValue()))
+                .toList();
     }
 }

@@ -1732,7 +1732,198 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
 
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회한다.")
+    void getSimilarPicks() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        Pick targetPick = createPick(new Title("나 유소영 일본 간다!"), new Count(1), new Count(1), member,
+                ContentStatus.APPROVAL,
+                List.of(1.0, 1.0, 1.0));
+        Pick pick1 = createPick(new Title("쏘영쏘 일본 진짜 대박 짱 부럽다!!!"), new Count(2), new Count(5), member,
+                ContentStatus.APPROVAL,
+                List.of(0.1, 0.2, 0.3));
+        Pick pick2 = createPick(new Title("쏘영님 일본 진짜 부럽다.."), new Count(3), new Count(4), member,
+                ContentStatus.APPROVAL,
+                List.of(0.2, 0.3, 0.4));
+        Pick pick3 = createPick(new Title("소영님 일본 부럽다."), new Count(4), new Count(3), member,
+                ContentStatus.APPROVAL,
+                List.of(0.3, 0.4, 0.5));
+        Pick pick4 = createPick(new Title("나도 일본 가고 싶따....ㅠㅠ"), new Count(5), new Count(2), member, ContentStatus.READY,
+                List.of(0.4, 0.5, 0.6));
+        Pick pick5 = createPick(new Title("일본 맛있는거 진짜 많겠찌...? ㅠ0ㅠ"), new Count(6), new Count(1), member,
+                ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", targetPick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-similarity",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("datas").type(ARRAY).description("응답 데이터"),
+                        fieldWithPath("datas.[].id").type(NUMBER).description("픽픽픽 아이디"),
+                        fieldWithPath("datas.[].title").type(STRING).description("픽픽픽 제목"),
+                        fieldWithPath("datas.[].voteTotalCount").type(NUMBER).description("픽픽픽 총 투표 수"),
+                        fieldWithPath("datas.[].commentTotalCount").type(NUMBER).description("픽픽픽 총 댓글 수"),
+                        fieldWithPath("datas.[].similarity").type(NUMBER).description("타겟 픽픽픽과 유사도 점수")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽이 존재하지 않으면 예외가 발생한다.")
+    void getSimilarPicks_NOT_FOUND() throws Exception {
+        // given // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", 0L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-similarity-not-found",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
+    void getSimilarPicks_BAD_REQUEST() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 거절상태의 타겟 픽픽픽
+        Pick targetPick = createPick(new Title("유소영"), new Count(1), new Count(1), member, ContentStatus.REJECT,
+                List.of(1.0, 1.0, 1.0));
+
+        Pick pick1 = createPick(new Title("유쏘영"), new Count(2), new Count(5), member, ContentStatus.APPROVAL,
+                List.of(0.1, 0.2, 0.3));
+        Pick pick2 = createPick(new Title("소영쏘"), new Count(3), new Count(4), member, ContentStatus.APPROVAL,
+                List.of(0.2, 0.3, 0.4));
+        Pick pick3 = createPick(new Title("쏘영쏘"), new Count(4), new Count(3), member, ContentStatus.APPROVAL,
+                List.of(0.3, 0.4, 0.5));
+        Pick pick4 = createPick(new Title("쏘주쏘"), new Count(5), new Count(2), member, ContentStatus.READY,
+                List.of(0.4, 0.5, 0.6));
+        Pick pick5 = createPick(new Title("쏘주"), new Count(6), new Count(1), member, ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", targetPick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-similarity-bad-request",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽의 embeddings 값이 없으면 예외가 발생한다.")
+    void getSimilarPicks_INTERNAL_SERVER_EXCEPTION() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 임베딩 값이 없는 타겟 픽픽픽
+        Pick targetPick = createPick(new Title("유소영"), new Count(1), new Count(1), member, ContentStatus.APPROVAL,
+                List.of());
+
+        Pick pick1 = createPick(new Title("유쏘영"), new Count(2), new Count(5), member, ContentStatus.APPROVAL,
+                List.of(0.1, 0.2, 0.3));
+        Pick pick2 = createPick(new Title("소영쏘"), new Count(3), new Count(4), member, ContentStatus.APPROVAL,
+                List.of(0.2, 0.3, 0.4));
+        Pick pick3 = createPick(new Title("쏘영쏘"), new Count(4), new Count(3), member, ContentStatus.APPROVAL,
+                List.of(0.3, 0.4, 0.5));
+        Pick pick4 = createPick(new Title("쏘주쏘"), new Count(5), new Count(2), member, ContentStatus.READY,
+                List.of(0.4, 0.5, 0.6));
+        Pick pick5 = createPick(new Title("쏘주"), new Count(6), new Count(1), member, ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", targetPick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is5xxServerError());
+
+        // docs
+        actions.andDo(document("pick-similarity-internal-server-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    private Pick createPick(Title title, Count pickVoteCount, Count commentTotalCount, Member member,
+                            ContentStatus contentStatus, List<Double> embeddings) {
+        return Pick.builder()
+                .title(title)
+                .voteTotalCount(pickVoteCount)
+                .commentTotalCount(commentTotalCount)
+                .member(member)
+                .contentStatus(contentStatus)
+                .embeddings(embeddings)
+                .build();
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {

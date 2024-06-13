@@ -3,7 +3,7 @@ name: Build and Deploy to EC2
 
 on:
   push:
-    branches: ["develop"]
+    branches: [ "develop" ]
 
 # 환경 변수 $변수명으로 사용
 env:
@@ -46,14 +46,16 @@ jobs:
           echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
           echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
 
-      ## 테스트 코드에도 sotrage-s3 가 필요함!
+      ## 테스트 코드에도 sotrage-s3, open-ai 가 필요함!
       - name: make application-storage-s3.yml
         run: |
           cd ./src/test/resources
           touch ./application-storage-s3.yml
           
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           
           cat ./application-storage-s3.yml
 

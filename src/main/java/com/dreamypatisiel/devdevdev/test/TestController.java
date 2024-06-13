@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(value = {"test", "local", "dev"})
 @Slf4j
 @RestController
-@RequestMapping("/devdevdev/api/v1")
+@RequestMapping("/devdevdev/api/v1/test")
 @RequiredArgsConstructor
 public class TestController {
 
@@ -59,6 +59,7 @@ public class TestController {
     public ResponseEntity<String> publicTest() {
         return new ResponseEntity<>("모두에게 공개된 페이지", HttpStatus.OK);
     }
+    
 
     @Data
     static class Member {

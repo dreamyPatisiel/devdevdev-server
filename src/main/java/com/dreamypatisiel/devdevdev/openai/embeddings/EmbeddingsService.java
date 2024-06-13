@@ -1,8 +1,11 @@
 package com.dreamypatisiel.devdevdev.openai.embeddings;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.openai.response.PickWithSimilarityDto;
@@ -19,17 +22,19 @@ public class EmbeddingsService {
     private final PickRepository pickRepository;
 
     @Transactional
-    public Long saveEmbedding(Pick pick, OpenAIResponse<Embedding> embeddingOpenAIResponse) {
+    public Long saveEmbedding(Long pickId, OpenAIResponse<Embedding> embeddingOpenAIResponse) {
 
-        // embeddings 추출
         List<Double> embeddings = embeddingOpenAIResponse.getData().stream()
                 .flatMap(data -> data.getEmbedding().stream())
                 .toList();
 
-        // 저장
-        pick.changeEmbedding(embeddings);
+        // 픽픽픽 조회
+        Pick findPick = pickRepository.findById(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
-        return pick.getId();
+        findPick.changeEmbeddings(embeddings);
+
+        return findPick.getId();
     }
 
     /**

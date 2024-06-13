@@ -11,8 +11,14 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
+import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
+import com.dreamypatisiel.devdevdev.openai.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
@@ -49,6 +55,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class PickController {
 
     private final PickServiceStrategy pickServiceStrategy;
+    private final EmbeddingsService embeddingsService;
+    private final EmbeddingRequestHandler embeddingRequestHandler;
 
     @Operation(summary = "픽픽픽 메인 조회", description = "픽픽픽 메인 페이지에 필요한 데이터를 커서 방식으로 조회합니다.")
     @GetMapping("/picks")
@@ -59,6 +67,7 @@ public class PickController {
             @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
         PickService pickService = pickServiceStrategy.getPickService();
         Slice<PickMainResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, anonymousMemberId,
                 authentication);
@@ -99,6 +108,13 @@ public class PickController {
         PickService pickService = pickServiceStrategy.getPickService();
         PickRegisterResponse response = pickService.registerPick(registerPickRequest, authentication);
 
+        // open ai api 호출
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = embeddingRequestHandler.postEmbeddings(
+                EmbeddingRequest.createTextEmbedding3Small(response.getPickTitle()));
+
+        // 임베딩 값 저장
+        embeddingsService.saveEmbedding(response.getPickId(), embeddingOpenAIResponse);
+
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
@@ -112,6 +128,13 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
         PickModifyResponse response = pickService.modifyPick(pickId, modifyPickRequest, authentication);
+
+        // open ai api 호출
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = embeddingRequestHandler.postEmbeddings(
+                EmbeddingRequest.createTextEmbedding3Small(response.getPickTitle()));
+
+        // 임베딩 값 저장
+        embeddingsService.saveEmbedding(response.getPickId(), embeddingOpenAIResponse);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -133,6 +156,7 @@ public class PickController {
     public ResponseEntity<BasicResponse<VotePickResponse>> votePickOption(
             @RequestBody @Validated VotePickOptionRequest votePickOptionRequest,
             @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
+
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickService pickService = pickServiceStrategy.getPickService();
@@ -152,5 +176,15 @@ public class PickController {
         pickService.deletePick(pickId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success());
+    }
+
+    @Operation(summary = "나도 고민했는데 픽픽픽", description = "픽픽픽 상세와 유사한 성격의 픽픽픽 3개를 추천합니다.")
+    @GetMapping("/picks/similarity/{pickId}")
+    public ResponseEntity<BasicResponse<SimilarPickResponse>> getSimilarPicks(@PathVariable Long pickId) {
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        List<SimilarPickResponse> response = pickService.findTop3SimilarPicks(pickId);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
     }
 }

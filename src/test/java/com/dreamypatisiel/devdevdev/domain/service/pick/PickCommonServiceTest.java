@@ -16,6 +16,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
+import com.dreamypatisiel.devdevdev.exception.InternalServerException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import java.util.List;
@@ -47,7 +48,7 @@ class PickCommonServiceTest {
     PickRepository pickRepository;
 
     @Test
-    @DisplayName("타겟 픽픽픽을 기준으로 다른 픽픽픽과 유사도를 계산하여 타겟 픽픽픽을 제외한 상위 3개의 픽픽픽을 조회한다.")
+    @DisplayName("타겟 픽픽픽을 기준으로 다른 픽픽픽과 유사도를 계산하여 타겟 픽픽픽을 제외한 승인상태인 상위 3개의 픽픽픽을 조회한다.")
     void findTop3SimilarPicks() {
         // given
         // 픽픽픽 작성자 생성
@@ -63,26 +64,25 @@ class PickCommonServiceTest {
                 List.of(0.2, 0.3, 0.4));
         Pick pick3 = createPick(new Title("쏘영쏘"), new Count(4), new Count(3), member, ContentStatus.APPROVAL,
                 List.of(0.3, 0.4, 0.5));
-        Pick pick4 = createPick(new Title("쏘주쏘"), new Count(5), new Count(2), member, ContentStatus.APPROVAL,
+        Pick pick4 = createPick(new Title("쏘주쏘"), new Count(5), new Count(2), member, ContentStatus.READY,
                 List.of(0.4, 0.5, 0.6));
-        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4));
+        Pick pick5 = createPick(new Title("쏘주"), new Count(6), new Count(1), member, ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
 
         // when
         List<SimilarPickResponse> top3SimilarPicks = pickCommonService.findTop3SimilarPicks(targetPick.getId());
 
         // then
         assertThat(top3SimilarPicks).hasSize(3)
-                .extracting("id", "voteTotalCount", "commentTotalCount", "similarity")
+                .extracting("id", "title", "voteTotalCount", "commentTotalCount", "similarity")
                 .containsExactly(
-                        tuple(pick4.getId(), pick4.getVoteTotalCount().getCount(),
-                                pick4.getCommentTotalCount().getCount(),
-                                0.9869275424396535),
-                        tuple(pick3.getId(), pick3.getVoteTotalCount().getCount(),
-                                pick3.getCommentTotalCount().getCount(),
-                                0.9797958971132711),
-                        tuple(pick2.getId(), pick2.getVoteTotalCount().getCount(),
-                                pick2.getCommentTotalCount().getCount(),
-                                0.9649012813540153)
+                        tuple(pick3.getId(), pick3.getTitle().getTitle(), pick3.getVoteTotalCount().getCount(),
+                                pick3.getCommentTotalCount().getCount(), 0.9797958971132711),
+                        tuple(pick2.getId(), pick2.getTitle().getTitle(), pick2.getVoteTotalCount().getCount(),
+                                pick2.getCommentTotalCount().getCount(), 0.9649012813540153),
+                        tuple(pick1.getId(), pick1.getTitle().getTitle(), pick1.getVoteTotalCount().getCount(),
+                                pick1.getCommentTotalCount().getCount(), 0.9258200997725515)
                 );
     }
 
@@ -113,6 +113,25 @@ class PickCommonServiceTest {
         assertThatThrownBy(() -> pickCommonService.findTop3SimilarPicks(targetPick.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("타겟 픽픽픽을 기준으로 다른 픽픽픽과 유사도를 계산하여 타겟 픽픽픽을 제외한 상위 3개의 픽픽픽을 조회할 때 타겟 픽픽픽의 임베딩 값이 존재하지 않으면 예외가 발생한다.")
+    void findTop3SimilarPicks_EXTERNAL_SYSTEM_ERROR_MESSAGE() {
+        // given
+        // 픽픽픽 작성자 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 임베딩 값이 없음
+        Pick targetPick = createPick(new Title("유소영"), new Count(1), new Count(1),
+                member, ContentStatus.APPROVAL, List.of());
+        pickRepository.save(targetPick);
+
+        // when // then
+        assertThatThrownBy(() -> pickCommonService.findTop3SimilarPicks(targetPick.getId()))
+                .isInstanceOf(InternalServerException.class);
     }
 
     private Pick createPick(Title title, Count pickVoteCount, Count commentTotalCount, Member member,

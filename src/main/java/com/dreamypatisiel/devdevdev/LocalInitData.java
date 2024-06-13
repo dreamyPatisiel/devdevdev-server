@@ -226,6 +226,8 @@ public class LocalInitData {
                     pickCommentTotalCount, thumbnailUrl + number, author,
                     List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)), member);
             pick.changePopularScore(pickPopularScorePolicy);
+            pick.changeEmbeddings(List.of(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9));
+
             picks.add(pick);
         }
 
@@ -240,6 +242,7 @@ public class LocalInitData {
                     pickCommentTotalCount, thumbnailUrl + number, author,
                     List.of(pickOptions.get(number * 2), pickOptions.get(number * 2 + 1)), member);
             pick.changePopularScore(pickPopularScorePolicy);
+            pick.changeEmbeddings(List.of(0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1));
             picks.add(pick);
         }
 
