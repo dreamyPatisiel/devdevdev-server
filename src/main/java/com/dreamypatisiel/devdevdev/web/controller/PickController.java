@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
@@ -55,6 +56,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class PickController {
 
     private final PickServiceStrategy pickServiceStrategy;
+    private final PickCommonService pickCommonService;
     private final EmbeddingsService embeddingsService;
     private final EmbeddingRequestHandler embeddingRequestHandler;
 
@@ -105,15 +107,14 @@ public class PickController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickService pickService = pickServiceStrategy.getPickService();
-        PickRegisterResponse response = pickService.registerPick(registerPickRequest, authentication);
-
         // open ai api 호출
         OpenAIResponse<Embedding> embeddingOpenAIResponse = embeddingRequestHandler.postEmbeddings(
-                EmbeddingRequest.createTextEmbedding3Small(response.getPickTitle()));
+                EmbeddingRequest.createTextEmbedding3Small(registerPickRequest.getPickTitle()));
 
-        // 임베딩 값 저장
-        embeddingsService.saveEmbedding(response.getPickId(), embeddingOpenAIResponse);
+        PickService pickService = pickServiceStrategy.getPickService();
+        PickRegisterResponse response = pickCommonService.registerPickAndSaveEmbedding(registerPickRequest,
+                pickService, authentication,
+                embeddingOpenAIResponse);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -126,15 +127,13 @@ public class PickController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickService pickService = pickServiceStrategy.getPickService();
-        PickModifyResponse response = pickService.modifyPick(pickId, modifyPickRequest, authentication);
-
         // open ai api 호출
         OpenAIResponse<Embedding> embeddingOpenAIResponse = embeddingRequestHandler.postEmbeddings(
-                EmbeddingRequest.createTextEmbedding3Small(response.getPickTitle()));
+                EmbeddingRequest.createTextEmbedding3Small(modifyPickRequest.getPickTitle()));
 
-        // 임베딩 값 저장
-        embeddingsService.saveEmbedding(response.getPickId(), embeddingOpenAIResponse);
+        PickService pickService = pickServiceStrategy.getPickService();
+        PickModifyResponse response = pickCommonService.modifyPickAndSaveEmbedding(pickService, pickId,
+                modifyPickRequest, authentication, embeddingOpenAIResponse);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

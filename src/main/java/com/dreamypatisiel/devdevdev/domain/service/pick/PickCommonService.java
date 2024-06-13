@@ -6,19 +6,28 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.exception.InternalServerException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
+import com.dreamypatisiel.devdevdev.openai.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.openai.response.PickWithSimilarityDto;
+import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PickCommonService {
 
     private static final int SIMILARITY_PICK_MAX_COUNT = 3;
@@ -51,5 +60,34 @@ public class PickCommonService {
                 .sorted(Comparator.comparingDouble(SimilarPickResponse::getSimilarity).reversed()) // 내림차순
                 .limit(SIMILARITY_PICK_MAX_COUNT)
                 .toList();
+    }
+
+    @Transactional
+    public PickRegisterResponse registerPickAndSaveEmbedding(RegisterPickRequest registerPickRequest,
+                                                             PickService pickService, Authentication authentication,
+                                                             OpenAIResponse<Embedding> embeddingOpenAIResponse) {
+
+        // 픽픽픽 작성
+        PickRegisterResponse response = pickService.registerPick(registerPickRequest, authentication);
+
+        // 임베딩 값 저장
+        embeddingsService.saveEmbedding(response.getPickId(), embeddingOpenAIResponse);
+
+        return response;
+    }
+
+    @Transactional
+    public PickModifyResponse modifyPickAndSaveEmbedding(PickService pickService, Long pickId,
+                                                         ModifyPickRequest modifyPickRequest,
+                                                         Authentication authentication,
+                                                         OpenAIResponse<Embedding> embeddingOpenAIResponse) {
+
+        // 픽픽픽 수정
+        PickModifyResponse response = pickService.modifyPick(pickId, modifyPickRequest, authentication);
+
+        // 임베딩 값 저장
+        embeddingsService.saveEmbedding(response.getPickId(), embeddingOpenAIResponse);
+
+        return response;
     }
 }
