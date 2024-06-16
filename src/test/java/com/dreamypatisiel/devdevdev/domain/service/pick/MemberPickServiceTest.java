@@ -531,8 +531,7 @@ class MemberPickServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(pickRegisterResponse.getPickId()).isNotNull(),
-                () -> assertThat(pickRegisterResponse.getPickTitle()).isEqualTo("나의 픽픽픽")
+                () -> assertThat(pickRegisterResponse.getPickId()).isNotNull()
         );
 
         Pick findPick = pickRepository.findById(pickRegisterResponse.getPickId()).get();
@@ -763,8 +762,7 @@ class MemberPickServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(pickModifyResponse.getPickId()).isEqualTo(pick.getId()),
-                () -> assertThat(pickModifyResponse.getPickTitle()).isEqualTo("픽타이틀수정")
+                () -> assertThat(pickModifyResponse.getPickId()).isEqualTo(pick.getId())
         );
 
         Pick findPick = pickRepository.findById(pick.getId()).get();

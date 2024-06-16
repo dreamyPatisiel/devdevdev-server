@@ -10,6 +10,7 @@ import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerato
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.yearMonthDateTimeType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -66,6 +67,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
+import com.dreamypatisiel.devdevdev.openai.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.openai.response.Usage;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
@@ -91,6 +96,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -573,7 +579,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         RegisterPickRequest registerPickRequest = createPickRegisterRequest("Svelte VS React", pickOptions);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -642,7 +660,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         RegisterPickRequest registerPickRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -719,7 +749,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -819,7 +861,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -1058,7 +1112,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -1764,7 +1830,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", targetPick.getId())
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", targetPick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -1797,7 +1863,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽이 존재하지 않으면 예외가 발생한다.")
     void getSimilarPicks_NOT_FOUND() throws Exception {
         // given // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", 0L)
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", 0L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -1845,7 +1911,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", targetPick.getId())
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", targetPick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -1893,7 +1959,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/similarity/{pickId}", targetPick.getId())
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", targetPick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))

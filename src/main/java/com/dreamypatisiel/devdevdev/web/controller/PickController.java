@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
-import com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService;
+import com.dreamypatisiel.devdevdev.domain.service.pick.PickMultiServiceHandler;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
@@ -16,7 +16,6 @@ import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
-import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
@@ -56,8 +55,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class PickController {
 
     private final PickServiceStrategy pickServiceStrategy;
-    private final PickCommonService pickCommonService;
-    private final EmbeddingsService embeddingsService;
+    private final PickMultiServiceHandler pickMultiServiceHandler;
     private final EmbeddingRequestHandler embeddingRequestHandler;
 
     @Operation(summary = "픽픽픽 메인 조회", description = "픽픽픽 메인 페이지에 필요한 데이터를 커서 방식으로 조회합니다.")
@@ -113,9 +111,11 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
 
+        pickMultiServiceHandler.selectPickService(pickService);
+
         // 픽픽픽 작성 및 embedding 저장
-        PickRegisterResponse response = pickCommonService.registerPickAndSaveEmbedding(registerPickRequest,
-                pickService, authentication, embeddingOpenAIResponse);
+        PickRegisterResponse response = pickMultiServiceHandler.registerPickAndSaveEmbedding(
+                registerPickRequest, authentication, embeddingOpenAIResponse);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -134,8 +134,10 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
 
+        pickMultiServiceHandler.selectPickService(pickService);
+
         // 픽픽픽 수정 및 embedding 저장
-        PickModifyResponse response = pickCommonService.modifyPickAndSaveEmbedding(pickService, pickId,
+        PickModifyResponse response = pickMultiServiceHandler.modifyPickAndSaveEmbedding(pickId,
                 modifyPickRequest, authentication, embeddingOpenAIResponse);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -181,7 +183,7 @@ public class PickController {
     }
 
     @Operation(summary = "나도 고민했는데 픽픽픽", description = "픽픽픽 상세와 유사한 성격의 픽픽픽 3개를 추천합니다.")
-    @GetMapping("/picks/similarity/{pickId}")
+    @GetMapping("picks/{pickId}/similarties")
     public ResponseEntity<BasicResponse<SimilarPickResponse>> getSimilarPicks(@PathVariable Long pickId) {
 
         PickService pickService = pickServiceStrategy.getPickService();
