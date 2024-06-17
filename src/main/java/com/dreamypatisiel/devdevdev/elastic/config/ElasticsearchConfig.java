@@ -11,6 +11,7 @@ import org.springframework.data.elasticsearch.config.AbstractElasticsearchConfig
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
+import org.springframework.lang.NonNull;
 
 @Profile({"local", "dev", "test"})
 @Configuration
@@ -23,9 +24,9 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
     private String port;
 
     @Override
-    public RestHighLevelClient elasticsearchClient() {
+    public @NonNull RestHighLevelClient elasticsearchClient() {
         ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-                .connectedTo(host+":"+port)
+                .connectedTo(host + ":" + port)
                 .build();
         return RestClients.create(clientConfiguration).rest();
     }
