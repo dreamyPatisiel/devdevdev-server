@@ -1,5 +1,5 @@
 [[Pick-Main]]
-== 나도 고민 했는데 픽픽픽 API(GET: /devdevdev/api/v1/picks/similarity/{pickId})
+== 나도 고민 했는데 픽픽픽 API(GET: /devdevdev/api/v1/picks/{pickId}/similarties)
 
 * 픽픽픽 상세와 유사도가 가장 높은 픽픽픽 3개를 조회한다.
 * 유사도가 가장 높은 픽픽픽이 존재하지 않으면 빈 배열로 응답된다.
