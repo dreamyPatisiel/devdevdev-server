@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.web.controller.exception.SystemErrorC
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.dreamypatisiel.devdevdev.exception.ImageFileException;
+import com.dreamypatisiel.devdevdev.exception.InternalServerException;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
@@ -55,7 +56,7 @@ public class ApiControllerAdvice {
                 BasicResponse.fail(KEYWORD_WITH_SPECIAL_SYMBOLS_EXCEPTION_MESSAGE, HttpStatus.BAD_REQUEST.value()),
                 HttpStatus.BAD_REQUEST);
     }
-    
+
     // 요청을 하거나 응답을 처리하는 동안 클라이언트에서 오류가 발생한 경우.
     @ExceptionHandler(SdkClientException.class)
     public ResponseEntity<BasicResponse<Object>> sdkClientException(SdkClientException e) {
@@ -137,5 +138,13 @@ public class ApiControllerAdvice {
 
         return new ResponseEntity<>(BasicResponse.fail(defaultMessage, HttpStatus.BAD_REQUEST.value()),
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InternalServerException.class)
+    public ResponseEntity<BasicResponse<Object>> amazonServiceException(InternalServerException e) {
+        log.error("internalServerException={}", e.getMessage(), e);
+        return new ResponseEntity<>(
+                BasicResponse.fail(EXTERNAL_SYSTEM_ERROR_MESSAGE, HttpStatus.SERVICE_UNAVAILABLE.value()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

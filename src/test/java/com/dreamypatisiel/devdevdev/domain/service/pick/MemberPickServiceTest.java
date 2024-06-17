@@ -493,7 +493,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("일반 회원이 픽픽픽을 작성한다.")
+    @DisplayName("일반 회원이 픽픽픽을 작성하면 픽픽픽은 대기(READY) 상태이다.")
     void registerPickRoleUser() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -530,6 +530,10 @@ class MemberPickServiceTest {
         PickRegisterResponse pickRegisterResponse = memberPickService.registerPick(pickRegisterRequest, authentication);
 
         // then
+        assertAll(
+                () -> assertThat(pickRegisterResponse.getPickId()).isNotNull()
+        );
+
         Pick findPick = pickRepository.findById(pickRegisterResponse.getPickId()).get();
         assertAll(
                 () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
@@ -545,7 +549,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("어드민 회원이 픽픽픽을 작성한다.")
+    @DisplayName("어드민 회원이 픽픽픽을 작성하면 픽픽픽은 승인상태(APPROVAL) 이다.")
     void registerPickRoleAdmin() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
@@ -757,7 +761,9 @@ class MemberPickServiceTest {
         em.clear();
 
         // then
-        assertThat(pickModifyResponse.getPickId()).isEqualTo(pick.getId());
+        assertAll(
+                () -> assertThat(pickModifyResponse.getPickId()).isEqualTo(pick.getId())
+        );
 
         Pick findPick = pickRepository.findById(pick.getId()).get();
         assertThat(findPick.getTitle().getTitle()).isEqualTo("픽타이틀수정");

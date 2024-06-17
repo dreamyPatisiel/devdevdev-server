@@ -8,7 +8,7 @@ public class SecurityConstant {
     public static final String OAUTH2_REDIRECT_URL_PREFIX = "/devdevdev/api/v1/login/oauth2/code/**";
     public static final String BEARER_PREFIX = "Bearer ";
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String[] WHITELIST_URL = new String[] {
+    public static final String[] WHITELIST_URL = new String[]{
             "/",
             "/docs/index.html",
             "/swagger-ui/**",
@@ -28,13 +28,12 @@ public class SecurityConstant {
             "/devdevdev/api/v1/login/oauth2/code/kakao",
             "/h2-console/**",
             "/h2-console",
-            "/devdevdev/api/v1/members",
-            "/devdevdev/api/v1/authentication",
+            "/devdevdev/api/v1/test/**",
             "/devdevdev/api/v1/token/**",
             "/devdevdev/api/v1/picks/**",
             "/devdevdev/api/v1/articles/**"
     };
-    public static final String[] JWT_FILTER_WHITELIST_URL = new String[] {
+    public static final String[] JWT_FILTER_WHITELIST_URL = new String[]{
             "/docs/index.html",
             "/swagger-ui",
             "/v3/api-docs",
@@ -43,8 +42,7 @@ public class SecurityConstant {
             "/favicon.ico",
             "/devdevdev/api/v1/oauth2/authorization",
             "/devdevdev/api/v1/login/oauth2/code",
-            "/devdevdev/api/v1/members",
-            "/devdevdev/api/v1/public",
+            "/devdevdev/api/v1/test",
             "/devdevdev/api/v1/token"
     };
 
@@ -60,7 +58,7 @@ public class SecurityConstant {
             "/devdevdev/api/v1/token/**"
     };
 
-    public static final String[] POST_WHITELIST = new String[] {
+    public static final String[] POST_WHITELIST = new String[]{
 
     };
 }
