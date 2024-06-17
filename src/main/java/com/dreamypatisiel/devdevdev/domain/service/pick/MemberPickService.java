@@ -36,6 +36,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.exception.ImageFileException;
@@ -43,6 +44,7 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
@@ -53,7 +55,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -65,9 +66,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class MemberPickService implements PickService {
+public class MemberPickService extends PickCommonService implements PickService {
 
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
     public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";
@@ -82,6 +82,24 @@ public class MemberPickService implements PickService {
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
+
+    public MemberPickService(PickRepository pickRepository,
+                             EmbeddingsService embeddingsService,
+                             AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
+                             MemberProvider memberProvider,
+                             PickRepository pickRepository1, PickOptionRepository pickOptionRepository,
+                             PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
+                             PickPopularScorePolicy pickPopularScorePolicy) {
+        super(pickRepository, embeddingsService);
+        this.awsS3Properties = awsS3Properties;
+        this.awsS3Uploader = awsS3Uploader;
+        this.memberProvider = memberProvider;
+        this.pickRepository = pickRepository1;
+        this.pickOptionRepository = pickOptionRepository;
+        this.pickOptionImageRepository = pickOptionImageRepository;
+        this.pickVoteRepository = pickVoteRepository;
+        this.pickPopularScorePolicy = pickPopularScorePolicy;
+    }
 
     /**
      * 픽픽픽 메인 조회
@@ -189,7 +207,7 @@ public class MemberPickService implements PickService {
         Map<PickOptionType, RegisterPickOptionRequest> pickOptions = registerPickRequest.getPickOptions();
         savePickOptionWithPickOptionImages(pick, pickOptions);
 
-        return new PickRegisterResponse(pick.getId());
+        return PickRegisterResponse.from(pick);
     }
 
     /**
@@ -219,9 +237,10 @@ public class MemberPickService implements PickService {
         List<PickOption> pickOptions = findPick.getPickOptions();
         Map<PickOptionType, ModifyPickOptionRequest> modifyPickRequestPickOptions = modifyPickRequest.getPickOptions();
 
+        // 픽픽픽 및 픽픽픽 옵션 업데이트
         changePickOptionAndPickOptionImages(modifyPickRequestPickOptions, pickOptions);
 
-        return new PickModifyResponse(findPick.getId());
+        return PickModifyResponse.from(findPick);
     }
 
     /**
@@ -414,6 +433,11 @@ public class MemberPickService implements PickService {
 
         // 픽픽픽 삭제
         pickRepository.deleteById(findPick.getId());
+    }
+
+    @Override
+    public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
+        return super.findTop3SimilarPicks(pickId);
     }
 
     private void changePickOptionAndPickOptionImages(

@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.firstPickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.secondPickOption;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
@@ -448,7 +449,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.findPicksMain(pageable, Long.MAX_VALUE, null, null, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @ParameterizedTest
@@ -492,7 +493,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("일반 회원이 픽픽픽을 작성한다.")
+    @DisplayName("일반 회원이 픽픽픽을 작성하면 픽픽픽은 대기(READY) 상태이다.")
     void registerPickRoleUser() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -529,6 +530,10 @@ class MemberPickServiceTest {
         PickRegisterResponse pickRegisterResponse = memberPickService.registerPick(pickRegisterRequest, authentication);
 
         // then
+        assertAll(
+                () -> assertThat(pickRegisterResponse.getPickId()).isNotNull()
+        );
+
         Pick findPick = pickRepository.findById(pickRegisterResponse.getPickId()).get();
         assertAll(
                 () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
@@ -544,7 +549,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("어드민 회원이 픽픽픽을 작성한다.")
+    @DisplayName("어드민 회원이 픽픽픽을 작성하면 픽픽픽은 승인상태(APPROVAL) 이다.")
     void registerPickRoleAdmin() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
@@ -654,7 +659,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.registerPick(registerPickRequest, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -756,7 +761,9 @@ class MemberPickServiceTest {
         em.clear();
 
         // then
-        assertThat(pickModifyResponse.getPickId()).isEqualTo(pick.getId());
+        assertAll(
+                () -> assertThat(pickModifyResponse.getPickId()).isEqualTo(pick.getId())
+        );
 
         Pick findPick = pickRepository.findById(pick.getId()).get();
         assertThat(findPick.getTitle().getTitle()).isEqualTo("픽타이틀수정");
@@ -798,7 +805,7 @@ class MemberPickServiceTest {
         // when // then
         assertThatThrownBy(() -> memberPickService.modifyPick(1L, modifyPickRequest, authentication))
                 .isInstanceOf(MemberException.class)
-                .hasMessage(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE);
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test

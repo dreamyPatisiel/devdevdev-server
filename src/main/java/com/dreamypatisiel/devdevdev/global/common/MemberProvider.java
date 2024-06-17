@@ -1,8 +1,10 @@
 package com.dreamypatisiel.devdevdev.global.common;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Email;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -32,7 +34,7 @@ public class MemberProvider {
         String email = userPrincipal.getEmail();
         SocialType socialType = userPrincipal.getSocialType();
 
-        return memberRepository.findMemberByEmailAndSocialType(new Email(email), socialType)
-                .orElseThrow(() -> new MemberException(MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE));
+        return memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(email), socialType)
+                .orElseThrow(() -> new MemberException(INVALID_MEMBER_NOT_FOUND_MESSAGE));
     }
 }

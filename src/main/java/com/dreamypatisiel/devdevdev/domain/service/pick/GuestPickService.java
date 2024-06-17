@@ -13,7 +13,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
@@ -24,11 +23,13 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.math.BigDecimal;
@@ -36,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -48,17 +48,29 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class GuestPickService implements PickService {
+public class GuestPickService extends PickCommonService implements PickService {
 
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
+    public static final int SIMILARITY_PICK_MAX_COUNT = 3;
 
     private final PickRepository pickRepository;
-    private final PickOptionRepository pickOptionRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
     private final PickVoteRepository pickVoteRepository;
     private final AnonymousMemberRepository anonymousMemberRepository;
+    private final EmbeddingsService embeddingsService;
+
+    public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
+                            PickRepository pickRepository1, PickPopularScorePolicy pickPopularScorePolicy,
+                            PickVoteRepository pickVoteRepository, AnonymousMemberRepository anonymousMemberRepository,
+                            EmbeddingsService embeddingsService1, PickCommonService pickCommonService) {
+        super(pickRepository, embeddingsService);
+        this.pickRepository = pickRepository1;
+        this.pickPopularScorePolicy = pickPopularScorePolicy;
+        this.pickVoteRepository = pickVoteRepository;
+        this.anonymousMemberRepository = anonymousMemberRepository;
+        this.embeddingsService = embeddingsService1;
+    }
 
     @Override
     public Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
@@ -274,6 +286,11 @@ public class GuestPickService implements PickService {
     @Override
     public void deletePick(Long pickId, Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Override
+    public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
+        return super.findTop3SimilarPicks(pickId);
     }
 
     private void validateAnonymousMemberId(String anonymousMemberId) {

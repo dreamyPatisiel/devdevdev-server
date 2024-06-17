@@ -28,8 +28,7 @@ public class SecurityConstant {
             "/devdevdev/api/v1/login/oauth2/code/kakao",
             "/h2-console/**",
             "/h2-console",
-            "/devdevdev/api/v1/members",
-            "/devdevdev/api/v1/authentication",
+            "/devdevdev/api/v1/test/**",
             "/devdevdev/api/v1/token/**",
             "/devdevdev/api/v1/picks/**",
             "/devdevdev/api/v1/articles/**",
@@ -44,8 +43,7 @@ public class SecurityConstant {
             "/favicon.ico",
             "/devdevdev/api/v1/oauth2/authorization",
             "/devdevdev/api/v1/login/oauth2/code",
-            "/devdevdev/api/v1/members",
-            "/devdevdev/api/v1/public",
+            "/devdevdev/api/v1/test",
             "/devdevdev/api/v1/token"
     };
 

@@ -137,7 +137,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // when // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(userEmail),
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(userEmail),
                 SocialType.valueOf(socialType)).get();
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/user")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -192,7 +192,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // when // then
-        Member findMember = memberRepository.findMemberByEmailAndSocialType(new Email(adminEmail),
+        Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(adminEmail),
                 SocialType.valueOf(socialType)).get();
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
                         .contentType(MediaType.APPLICATION_JSON))

@@ -6,3 +6,4 @@ spring:
       - oauth2-dev
       - jwt-dev
       - storage-s3
+      - open-ai

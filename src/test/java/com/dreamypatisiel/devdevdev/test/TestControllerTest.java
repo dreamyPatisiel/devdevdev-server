@@ -18,7 +18,7 @@ class TestControllerTest {
 
     @Autowired
     MockMvc mockMvc;
-    String urlTemplate = "/devdevdev/api/v1/members";
+    final String urlTemplate = "/devdevdev/api/v1/test/members";
 
     @Test
     @DisplayName("API 호출 테스트")

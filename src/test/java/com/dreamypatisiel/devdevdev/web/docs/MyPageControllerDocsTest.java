@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import static com.dreamypatisiel.devdevdev.exception.MemberException.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
@@ -13,6 +14,7 @@ import static org.springframework.restdocs.cookies.CookieDocumentation.responseC
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -38,6 +40,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
@@ -58,6 +61,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyAnswerRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
@@ -68,11 +72,11 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.persistence.EntityManager;
-import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -90,6 +94,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
 
 public class MyPageControllerDocsTest extends SupportControllerDocsTest {
@@ -118,6 +126,8 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     SurveyVersionQuestionMapperRepository surveyVersionQuestionMapperRepository;
     @Autowired
     SurveyQuestionRepository surveyQuestionRepository;
+    @Autowired
+    SurveyAnswerRepository surveyAnswerRepository;
     @Autowired
     SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     @Autowired
@@ -273,7 +283,6 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     void getBookmarkedTechArticlesNotFoundMemberException() throws Exception {
         // given
         Long id = FIRST_TECH_ARTICLE_ID;
-        // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -302,20 +311,79 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("회원이 회원탈퇴를 한다.")
+    @DisplayName("탈퇴 서베이를 완료한 회원이 회원탈퇴를 하면"
+            + " 회원 정보가 비활성화되고"
+            + " 리프레시 토큰 쿠키를 초기화 하고"
+            + " 로그인 활성화 유무 쿠키를 비활성화 한다.")
     void deleteMember() throws Exception {
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
-        member.updateRefreshToken(refreshToken);
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
 
-        Cookie cookie = new Cookie(DEVDEVDEV_REFRESH_TOKEN, refreshToken);
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("정보가 부족해요.")
+                .sortOrder(1)
+                .build();
+        option2.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option3 = SurveyQuestionOption.builder()
+                .title("기타.")
+                .sortOrder(2)
+                .build();
+        option3.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2, option3));
+
+        SurveyAnswer surveyAnswer = SurveyAnswer.builder()
+                .surveyQuestion(question)
+                .surveyQuestionOption(option1)
+                .member(savedMember)
+                .build();
+        surveyAnswerRepository.save(surveyAnswer);
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/profile")
+                        delete(DEFAULT_PATH_V1 + "/mypage/profile")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -336,6 +404,90 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("탈퇴 서베이를 완료하지 않은 회원이 회원탈퇴를 할 경우 예외가 발생한다.")
+    void deleteMemberIncompleteSurvey() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        Member savedMember = memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 서베이 버전 생성
+        SurveyVersion surveyVersion1 = SurveyVersion.builder()
+                .versionName("회원탈퇴-A")
+                .isActive(true)
+                .build();
+        SurveyVersion surveyVersion2 = SurveyVersion.builder()
+                .versionName("회원탈퇴-B")
+                .isActive(false)
+                .build();
+        surveyVersionRepository.saveAll(List.of(surveyVersion1, surveyVersion2));
+
+        // 서베이 질문 생성
+        SurveyQuestion question = SurveyQuestion.builder()
+                .title("#nickName님 회원 탈퇴하는 이유를 알려주세요.")
+                .content("회원 탈퇴하는 이유를 상세하게 알려주세요.")
+                .sortOrder(0)
+                .build();
+        surveyQuestionRepository.save(question);
+
+        // 서베이 매퍼 생성
+        SurveyVersionQuestionMapper mapper = SurveyVersionQuestionMapper.builder()
+                .surveyVersion(surveyVersion1)
+                .surveyQuestion(question)
+                .build();
+        surveyVersionQuestionMapperRepository.save(mapper);
+
+        // 서베이 질문 옵션 생성
+        SurveyQuestionOption option1 = SurveyQuestionOption.builder()
+                .title("채용정보가 부족해요.")
+                .sortOrder(0)
+                .build();
+        option1.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option2 = SurveyQuestionOption.builder()
+                .title("정보가 부족해요.")
+                .sortOrder(1)
+                .build();
+        option2.changeSurveyQuestion(question);
+
+        SurveyQuestionOption option3 = SurveyQuestionOption.builder()
+                .title("기타.")
+                .sortOrder(2)
+                .build();
+        option3.changeSurveyQuestion(question);
+        surveyQuestionOptionRepository.saveAll(List.of(option1, option2, option3));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.delete("/devdevdev/api/v1/mypage/profile")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(MEMBER_INCOMPLETE_SURVEY_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+
+        // Docs
+        actions.andDo(document("incomplete-survey-exception",
+                preprocessResponse(prettyPrint()),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
                 )
         ));
     }

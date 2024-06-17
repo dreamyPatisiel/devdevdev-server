@@ -10,6 +10,7 @@ import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerato
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionImageNameType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.yearMonthDateTimeType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -66,6 +67,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
+import com.dreamypatisiel.devdevdev.openai.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.openai.response.Usage;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
@@ -91,6 +96,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -573,7 +579,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         RegisterPickRequest registerPickRequest = createPickRegisterRequest("Svelte VS React", pickOptions);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -642,7 +660,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         RegisterPickRequest registerPickRequest = createPickRegisterRequest("나의 픽픽픽", pickOptions);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -719,7 +749,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -819,7 +861,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -1058,7 +1112,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
         ModifyPickRequest modifyPickRequest = createModifyPickRequest("픽타이틀수정", modifyPickOptionRequests);
 
-        // when // then
+        // when
+        // 모킹된 빈에 필요한 의존성을 설정
+        ReflectionTestUtils.setField(embeddingRequestHandler, "openAIApiKey", openAIApiKey);
+        ReflectionTestUtils.setField(embeddingRequestHandler, "restTemplate", restTemplate);
+
+        // 테스트 할 때마다 open api 를 호출할 수 없기 때문에 mocking 함
+        Embedding embedding = new Embedding("mockEmbedding", 1, List.of(1.0));
+        OpenAIResponse<Embedding> embeddingOpenAIResponse = new OpenAIResponse<>("mockObject", List.of(embedding),
+                "mockModel", new Usage(1, 1));
+        when(embeddingRequestHandler.postEmbeddings(any(EmbeddingRequest.class))).thenReturn(
+                embeddingOpenAIResponse);
+
+        // then
         ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -1732,7 +1798,198 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
 
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회한다.")
+    void getSimilarPicks() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        Pick targetPick = createPick(new Title("나 유소영 일본 간다!"), new Count(1), new Count(1), member,
+                ContentStatus.APPROVAL,
+                List.of(1.0, 1.0, 1.0));
+        Pick pick1 = createPick(new Title("쏘영쏘 일본 진짜 대박 짱 부럽다!!!"), new Count(2), new Count(5), member,
+                ContentStatus.APPROVAL,
+                List.of(0.1, 0.2, 0.3));
+        Pick pick2 = createPick(new Title("쏘영님 일본 진짜 부럽다.."), new Count(3), new Count(4), member,
+                ContentStatus.APPROVAL,
+                List.of(0.2, 0.3, 0.4));
+        Pick pick3 = createPick(new Title("소영님 일본 부럽다."), new Count(4), new Count(3), member,
+                ContentStatus.APPROVAL,
+                List.of(0.3, 0.4, 0.5));
+        Pick pick4 = createPick(new Title("나도 일본 가고 싶따....ㅠㅠ"), new Count(5), new Count(2), member, ContentStatus.READY,
+                List.of(0.4, 0.5, 0.6));
+        Pick pick5 = createPick(new Title("일본 맛있는거 진짜 많겠찌...? ㅠ0ㅠ"), new Count(6), new Count(1), member,
+                ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", targetPick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-similarity",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("datas").type(ARRAY).description("응답 데이터"),
+                        fieldWithPath("datas.[].id").type(NUMBER).description("픽픽픽 아이디"),
+                        fieldWithPath("datas.[].title").type(STRING).description("픽픽픽 제목"),
+                        fieldWithPath("datas.[].voteTotalCount").type(NUMBER).description("픽픽픽 총 투표 수"),
+                        fieldWithPath("datas.[].commentTotalCount").type(NUMBER).description("픽픽픽 총 댓글 수"),
+                        fieldWithPath("datas.[].similarity").type(NUMBER).description("타겟 픽픽픽과 유사도 점수")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽이 존재하지 않으면 예외가 발생한다.")
+    void getSimilarPicks_NOT_FOUND() throws Exception {
+        // given // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", 0L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-similarity-not-found",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
+    void getSimilarPicks_BAD_REQUEST() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 거절상태의 타겟 픽픽픽
+        Pick targetPick = createPick(new Title("유소영"), new Count(1), new Count(1), member, ContentStatus.REJECT,
+                List.of(1.0, 1.0, 1.0));
+
+        Pick pick1 = createPick(new Title("유쏘영"), new Count(2), new Count(5), member, ContentStatus.APPROVAL,
+                List.of(0.1, 0.2, 0.3));
+        Pick pick2 = createPick(new Title("소영쏘"), new Count(3), new Count(4), member, ContentStatus.APPROVAL,
+                List.of(0.2, 0.3, 0.4));
+        Pick pick3 = createPick(new Title("쏘영쏘"), new Count(4), new Count(3), member, ContentStatus.APPROVAL,
+                List.of(0.3, 0.4, 0.5));
+        Pick pick4 = createPick(new Title("쏘주쏘"), new Count(5), new Count(2), member, ContentStatus.READY,
+                List.of(0.4, 0.5, 0.6));
+        Pick pick5 = createPick(new Title("쏘주"), new Count(6), new Count(1), member, ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", targetPick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("pick-similarity-bad-request",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("나도 고민했는데 픽픽픽을 조회할 때 타겟 픽픽픽의 embeddings 값이 없으면 예외가 발생한다.")
+    void getSimilarPicks_INTERNAL_SERVER_EXCEPTION() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 임베딩 값이 없는 타겟 픽픽픽
+        Pick targetPick = createPick(new Title("유소영"), new Count(1), new Count(1), member, ContentStatus.APPROVAL,
+                List.of());
+
+        Pick pick1 = createPick(new Title("유쏘영"), new Count(2), new Count(5), member, ContentStatus.APPROVAL,
+                List.of(0.1, 0.2, 0.3));
+        Pick pick2 = createPick(new Title("소영쏘"), new Count(3), new Count(4), member, ContentStatus.APPROVAL,
+                List.of(0.2, 0.3, 0.4));
+        Pick pick3 = createPick(new Title("쏘영쏘"), new Count(4), new Count(3), member, ContentStatus.APPROVAL,
+                List.of(0.3, 0.4, 0.5));
+        Pick pick4 = createPick(new Title("쏘주쏘"), new Count(5), new Count(2), member, ContentStatus.READY,
+                List.of(0.4, 0.5, 0.6));
+        Pick pick5 = createPick(new Title("쏘주"), new Count(6), new Count(1), member, ContentStatus.REJECT,
+                List.of(0.4, 0.5, 0.6));
+        pickRepository.saveAll(List.of(targetPick, pick1, pick2, pick3, pick4, pick5));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/similarties", targetPick.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is5xxServerError());
+
+        // docs
+        actions.andDo(document("pick-similarity-internal-server-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("pickId").description("타겟 픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    private Pick createPick(Title title, Count pickVoteCount, Count commentTotalCount, Member member,
+                            ContentStatus contentStatus, List<Double> embeddings) {
+        return Pick.builder()
+                .title(title)
+                .voteTotalCount(pickVoteCount)
+                .commentTotalCount(commentTotalCount)
+                .member(member)
+                .contentStatus(contentStatus)
+                .embeddings(embeddings)
+                .build();
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {

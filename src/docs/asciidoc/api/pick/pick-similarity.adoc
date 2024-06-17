@@ -1,0 +1,38 @@
+[[Pick-Similarties]]
+== 나도 고민 했는데 픽픽픽 API(GET: /devdevdev/api/v1/picks/{pickId}/similarties)
+
+* 픽픽픽 상세와 유사도가 가장 높은 픽픽픽 3개를 조회한다.
+* 유사도가 가장 높은 픽픽픽이 존재하지 않으면 빈 배열로 응답된다.
+* 유사도 계산에 사용되는 embeddings 값이 없을 경우 503 예외를 발생한다.
+** 외부 API(Open AI API) 를 사용하기 때문에 embeddings 값을 저장하지 못할 수 있다.
+* 회원/익명 사용자 모두 조회할 수 있다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/pick-similarity/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/pick-similarity/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/pick-similarity/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/pick-similarity/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/pick-similarity/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/pick-similarity-not-found/response-body.adoc[]
+include::{snippets}/pick-similarity-bad-request/response-body.adoc[]
+include::{snippets}/pick-similarity-internal-server-exception/response-body.adoc[]

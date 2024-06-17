@@ -41,9 +41,12 @@ public class ElasticsearchSupportTest {
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
-                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", company.getId(),
-                    company.getName().getCompanyName(), (long) i, (long) i, (long) i, (long) i * 10);
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
+                    i > 1 ? createRandomDate() : LocalDate.of(2024, 3, 11), "내용",
+                    "http://example.com/" + i, "설명", "http://example.com/", "작성자",
+                    savedCompany.getName().getCompanyName(), savedCompany.getId(), (long) i, (long) i,
+                    (long) i,
+                    (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
@@ -78,14 +81,16 @@ public class ElasticsearchSupportTest {
         return startDate.plusDays(randomDays);
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
+    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
+                                                               String contents,
                                                                String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
-                                                               Long companyId, String company,
+                                                               String company, Long companyId,
                                                                Long viewTotalCount, Long recommendTotalCount,
                                                                Long commentTotalCount,
                                                                Long popularScore) {
         return ElasticTechArticle.builder()
+                .id(id)
                 .title(title)
                 .regDate(regDate)
                 .contents(contents)
@@ -93,8 +98,8 @@ public class ElasticsearchSupportTest {
                 .description(description)
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
-                .companyId(companyId)
                 .company(company)
+                .companyId(companyId)
                 .viewTotalCount(viewTotalCount)
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)
