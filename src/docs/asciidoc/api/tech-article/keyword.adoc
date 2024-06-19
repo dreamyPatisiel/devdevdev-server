@@ -1,5 +1,5 @@
 [[TechArticleKeyword]]
-== 기술블로그 검색어 자동완성 API(POST: /devdevdev/api/v1/keywords/auto-complete)
+== 기술블로그 검색어 자동완성 API(GET: /devdevdev/api/v1/keywords/auto-complete)
 
 * 회원 또는 익명회원은 기술블로그 키워드를 검색하면 해당 키워드로 시작하는 키워드 후보 리스트를 최대 20개 조회할 수 있다.
 
