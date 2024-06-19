@@ -34,8 +34,6 @@ public class ElasticKeywordService {
 
     public List<String> autocompleteKeyword(String prefix) throws IOException {
 
-        System.out.println("hello " + INDEX_NAME + INDEX_NAME_POSTFIX);
-
         // suggest 쿼리 생성
         CompletionSuggestionBuilder completionSuggestionBuilder = SuggestBuilders
                 .completionSuggestion(SUGGEST_FIELD_NAME)

@@ -5,10 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticKeyword;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticKeywordRepository;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -90,5 +93,25 @@ class ElasticKeywordServiceTest {
 
         // then
         assertThat(keywords).isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {19, 20, 21, 22})
+    @DisplayName("검색어와 prefix가 일치하는 키워드를 최대 20개 조회한다.")
+    void autocompleteKeywordWithMax20(int n) throws IOException {
+        // given
+        List<ElasticKeyword> elasticKeywords = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            elasticKeywords.add(ElasticKeyword.create(List.of("키워드" + i)));
+        }
+        elasticKeywordRepository.saveAll(elasticKeywords);
+
+        String prefix = "키워드";
+
+        // when
+        List<String> keywords = elasticKeywordService.autocompleteKeyword(prefix);
+
+        // then
+        assertThat(keywords).hasSizeLessThanOrEqualTo(20);
     }
 }
