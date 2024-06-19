@@ -13,8 +13,6 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-import static com.dreamypatisiel.devdevdev.elastic.config.ContainerExtension.esContainer;
-
 @Disabled
 @Profile("test")
 @TestConfiguration
@@ -26,18 +24,10 @@ public class ElasticsearchTestConfig extends AbstractElasticsearchConfiguration 
     @Value("${elasticsearch.port}")
     private String port;
 
-//    @Override
-//    public RestHighLevelClient elasticsearchClient() {
-//        ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-//                .connectedTo(esContainer.getHost()+":"+esContainer.getMappedPort(9200))
-//                .build();
-//        return RestClients.create(clientConfiguration).rest();
-//    }
-
     @Override
     public RestHighLevelClient elasticsearchClient() {
         ClientConfiguration clientConfiguration = ClientConfiguration.builder()
-                .connectedTo(host+":"+port)
+                .connectedTo(host + ":" + port)
                 .build();
         return RestClients.create(clientConfiguration).rest();
     }
