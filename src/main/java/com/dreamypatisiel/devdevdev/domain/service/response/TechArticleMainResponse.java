@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
 
 @Data
 public class TechArticleMainResponse {
@@ -64,7 +65,7 @@ public class TechArticleMainResponse {
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
@@ -86,7 +87,7 @@ public class TechArticleMainResponse {
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
@@ -108,7 +109,7 @@ public class TechArticleMainResponse {
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
@@ -132,7 +133,7 @@ public class TechArticleMainResponse {
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(elasticTechArticle.getThumbnailUrl())
+                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
@@ -142,6 +143,15 @@ public class TechArticleMainResponse {
                 .score(getValidScore(score))
                 .isBookmarked(isBookmarkedByMember(techArticle, member))
                 .build();
+    }
+
+    private static String getThumbnailUrl(ElasticTechArticle elasticTechArticle, CompanyResponse companyResponse) {
+        // 썸네일 이미지가 없다면 회사 로고로 내려준다.
+        if (ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl())) {
+            return companyResponse.getThumbnailImageUrl();
+        }
+
+        return elasticTechArticle.getThumbnailUrl();
     }
 
     private static Float getValidScore(Float score) {

@@ -94,8 +94,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
-        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"),
-                new Url("https://example.com"));
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         Company savedCompany = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
@@ -189,6 +188,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                 .description("기술블로그 회사 이름"),
                         fieldWithPath("data.content.[].company.careerUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 채용페이지"),
+                        fieldWithPath("data.content.[].company.thumbnailImageUrl").type(JsonFieldType.STRING)
+                                .description("기술블로그 회사 로고 이미지"),
                         fieldWithPath("data.content.[].regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.content.[].author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
                         fieldWithPath("data.content.[].viewTotalCount").type(JsonFieldType.NUMBER)
@@ -366,6 +367,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.company.name").type(JsonFieldType.STRING).description("기술블로그 회사 이름"),
                         fieldWithPath("data.company.careerUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 채용페이지"),
+                        fieldWithPath("data.company.thumbnailImageUrl").type(JsonFieldType.STRING)
+                                .description("기술블로그 회사 로고 이미지"),
                         fieldWithPath("data.regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
                         fieldWithPath("data.contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
@@ -597,6 +600,16 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)
                 .popularScore(popularScore)
+                .build();
+    }
+
+    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+                                         String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .thumbnailImageUrl(thumbnailImageUrl)
+                .careerUrl(new Url(thumbnailUrl))
+                .thumbnailUrl(new Url(careerUrl))
                 .build();
     }
 }

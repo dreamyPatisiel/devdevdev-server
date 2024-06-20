@@ -147,14 +147,14 @@ public class LocalInitData {
 
     private List<Company> createCompanies() {
         List<Company> companies = new ArrayList<>();
-        companies.add(Company.of(new CompanyName("Toss"), new Url("https://toss.tech"),
-                new Url("https://toss.im/career/jobs")));
-        companies.add(Company.of(new CompanyName("우아한 형제들"), new Url("https://techblog.woowahan.com"),
-                new Url("https://career.woowahan.com")));
-        companies.add(Company.of(new CompanyName("AWS"), new Url("https://aws.amazon.com/ko/blogs/tech"),
-                new Url("https://aws.amazon.com/ko/careers")));
-        companies.add(Company.of(new CompanyName("채널톡"), new Url("https://channel.io/ko/blog"),
-                new Url("https://channel.io/ko/jobs")));
+        companies.add(createCompany("Toss", "https://toss.tech",
+                "https://toss.im/career/jobs"));
+        companies.add(createCompany("우아한 형제들", "https://techblog.woowahan.com",
+                "https://career.woowahan.com"));
+        companies.add(createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
+                "https://aws.amazon.com/ko/careers"));
+        companies.add(createCompany("채널톡", "https://channel.io/ko/blog",
+                "https://channel.io/ko/jobs"));
         return companies;
     }
 
@@ -164,6 +164,14 @@ public class LocalInitData {
                         Company::getId,
                         Function.identity()
                 ));
+    }
+
+    private static Company createCompany(String companyName, String thumbnailUrl, String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .careerUrl(new Url(thumbnailUrl))
+                .thumbnailUrl(new Url(careerUrl))
+                .build();
     }
 
     private List<Bookmark> createBookmarks(Member member, List<TechArticle> techArticles) {
