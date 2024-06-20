@@ -35,8 +35,8 @@ public class ElasticsearchSupportTest {
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
-        Company company = Company.of(new CompanyName("꿈빛 파티시엘"), new Url("https://example.com"),
-                new Url("https://example.com"));
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+
         Company savedCompany = companyRepository.save(company);
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
@@ -104,6 +104,16 @@ public class ElasticsearchSupportTest {
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)
                 .popularScore(popularScore)
+                .build();
+    }
+
+    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+                                         String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .thumbnailImageUrl(thumbnailImageUrl)
+                .careerUrl(new Url(thumbnailUrl))
+                .thumbnailUrl(new Url(careerUrl))
                 .build();
     }
 }
