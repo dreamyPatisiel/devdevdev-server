@@ -20,6 +20,7 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {
 
     @Value("${elasticsearch.host}")
     private String host;
+
     @Value("${elasticsearch.port}")
     private String port;
 
