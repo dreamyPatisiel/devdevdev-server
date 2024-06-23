@@ -16,7 +16,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PickOptionImage extends BasicTime {
+public class
+PickOptionImage extends BasicTime {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +33,7 @@ public class PickOptionImage extends BasicTime {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_option_id", nullable = false)
+    @JoinColumn(name = "pick_option_id")
     private PickOption pickOption;
 
     @Builder

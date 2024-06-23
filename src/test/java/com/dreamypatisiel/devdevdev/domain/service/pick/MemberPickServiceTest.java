@@ -159,8 +159,10 @@ class MemberPickServiceTest {
         pick.changePopularScore(pickPopularScorePolicy);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, pickContents1, pickOptionVoteCount1);
-        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, pickContents2, pickOptionVoteCount2);
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, pickContents1, pickOptionVoteCount1,
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, pickContents2, pickOptionVoteCount2,
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickVote pickVote = createPickVote(member, pickOption1, pick);
@@ -197,8 +199,8 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 회원 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_VIEWED() {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), firstPickOption);
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), secondPickOption);
         pickOption1.changePickVoteCount(new Count(1));
         pickOption2.changePickVoteCount(new Count(2));
 
@@ -1463,7 +1465,7 @@ class MemberPickServiceTest {
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
 
-    private PickOption createPickOption(Title title, Count voteTotalCount, PickOptionType pickOptionType, Pick pick) {
+    private PickOption createPickOption(Title title, Count voteTotalCount, Pick pick, PickOptionType pickOptionType) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .voteTotalCount(voteTotalCount)
@@ -1514,6 +1516,7 @@ class MemberPickServiceTest {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
                 .imageUrl(imageUrl)
+                .imageKey("imageKey")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -1524,6 +1527,8 @@ class MemberPickServiceTest {
     private PickOptionImage createPickOptionImage(String name, PickOption pickOption) {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
+                .imageUrl("imageUrl")
+                .imageKey("imageKey")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -1616,11 +1621,12 @@ class MemberPickServiceTest {
     }
 
     private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents,
-                                        Count voteTotalCount) {
+                                        Count voteTotalCount, PickOptionType pickOptionType) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
                 .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
                 .build();
 
         pickOption.changePick(pick);
@@ -1628,7 +1634,8 @@ class MemberPickServiceTest {
         return pickOption;
     }
 
-    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents) {
+    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents,
+                                        PickOptionType pickOptionType) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .pickOptionType(pickOptionType)
@@ -1642,13 +1649,11 @@ class MemberPickServiceTest {
     }
 
     private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents,
-                                        Count pickOptionVoteCount,
-                                        PickOptionType pickOptionType) {
+                                        Count pickOptionVoteCount) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
                 .voteTotalCount(pickOptionVoteCount)
-                .pickOptionType(pickOptionType)
                 .build();
 
         pickOption.changePick(pick);

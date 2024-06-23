@@ -73,6 +73,7 @@ public class PickOption extends BasicTime {
         this.contents = contents;
         this.voteTotalCount = voteTotalCount;
         this.pickOptionType = pickOptionType;
+        this.pick = pick;
     }
 
     public static PickOption create(Title title, PickOptionContents pickOptionContents, PickOptionType pickOptionType,
