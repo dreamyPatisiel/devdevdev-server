@@ -99,7 +99,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          author_name: [ DEV ] 배포 결과를 알려드려요 # default: 8398a7@action-slack
+          author_name: "[DEV] 배포 결과를 알려드려요" # default: 8398a7@action-slack
           fields: repo,message,commit,author,eventName,ref,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
