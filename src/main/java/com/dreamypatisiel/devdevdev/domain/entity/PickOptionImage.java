@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -20,12 +21,18 @@ public class PickOptionImage extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(length = 255, nullable = false)
     private String imageUrl;
+
+    @Column(length = 500, nullable = false)
     private String imageKey;
+
+    @Column(length = 255, nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_option_id")
+    @JoinColumn(name = "pick_option_id", nullable = false)
     private PickOption pickOption;
 
     @Builder

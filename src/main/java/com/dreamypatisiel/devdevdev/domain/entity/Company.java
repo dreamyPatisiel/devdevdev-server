@@ -24,23 +24,24 @@ public class Company extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Embedded
     @AttributeOverride(name = "companyName",
-            column = @Column(name = "name")
+            column = @Column(name = "name", length = 30, nullable = false)
     )
     private CompanyName name;
 
     @Embedded
     @AttributeOverride(name = "url",
-            column = @Column(name = "thumbnailUrl")
+            column = @Column(name = "official_url")
     )
-    private Url thumbnailUrl;
+    private Url officialUrl;
 
-    private String thumbnailImageUrl;
+    private String officialImageUrl;
 
     @Embedded
     @AttributeOverride(name = "url",
-            column = @Column(name = "careerUrl")
+            column = @Column(name = "career_url")
     )
     private Url careerUrl;
 
@@ -48,11 +49,11 @@ public class Company extends BasicTime {
     private List<TechArticle> techArticles = new ArrayList<>();
 
     @Builder
-    private Company(CompanyName name, Url thumbnailUrl, String thumbnailImageUrl, Url careerUrl,
+    private Company(CompanyName name, Url officialUrl, String officialImageUrl, Url careerUrl,
                     List<TechArticle> techArticles) {
         this.name = name;
-        this.thumbnailUrl = thumbnailUrl;
-        this.thumbnailImageUrl = thumbnailImageUrl;
+        this.officialUrl = officialUrl;
+        this.officialImageUrl = officialImageUrl;
         this.careerUrl = careerUrl;
         this.techArticles = techArticles;
     }

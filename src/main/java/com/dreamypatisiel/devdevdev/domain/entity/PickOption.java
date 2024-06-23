@@ -37,11 +37,11 @@ public class PickOption extends BasicTime {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_id")
+    @JoinColumn(name = "pick_id", nullable = false)
     private Pick pick;
 
     @Embedded
-    @Column(length = 150)
+    @Column(length = 150, nullable = false)
     private Title title;
 
     @Embedded
@@ -57,6 +57,7 @@ public class PickOption extends BasicTime {
     private Count voteTotalCount;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PickOptionType pickOptionType;
 
     @OneToMany(mappedBy = "pickOption")

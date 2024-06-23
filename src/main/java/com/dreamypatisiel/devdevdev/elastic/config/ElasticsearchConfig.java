@@ -13,7 +13,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.lang.NonNull;
 
-@Profile({"local", "dev", "test"})
+@Profile({"local", "dev", "test", "prod"})
 @Configuration
 @EnableElasticsearchRepositories(basePackages = {"com.dreamypatisiel.devdevdev.elastic.domain.repository"})
 public class ElasticsearchConfig extends AbstractElasticsearchConfiguration {

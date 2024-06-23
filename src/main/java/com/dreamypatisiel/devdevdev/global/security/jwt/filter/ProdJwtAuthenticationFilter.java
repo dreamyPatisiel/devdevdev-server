@@ -7,7 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.io.IOException;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,24 +17,21 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-
 /**
- * (상시)
- * API 요청 토큰을 검증하는 필터
- * JWT의 인증 정보를 검사해 현재 쓰레드의 SecurityContext에 저장하는 역할 수행
+ * (상시) API 요청 토큰을 검증하는 필터 JWT의 인증 정보를 검사해 현재 쓰레드의 SecurityContext에 저장하는 역할 수행
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("JwtAuthenticationFilter 시작");
+
+        log.info("DevJwtAuthenticationFilter 시작");
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
@@ -54,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        return Arrays.stream(SecurityConstant.JWT_FILTER_WHITELIST_URL)
+        return Arrays.stream(SecurityConstant.PROD_JWT_FILTER_WHITELIST_URL)
                 .anyMatch(whiteList -> StringUtils.startsWithIgnoreCase(requestURI, whiteList));
     }
 }

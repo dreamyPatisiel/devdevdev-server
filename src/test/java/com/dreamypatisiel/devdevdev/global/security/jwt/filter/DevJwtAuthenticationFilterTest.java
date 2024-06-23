@@ -21,19 +21,19 @@ import org.springframework.web.context.WebApplicationContext;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class JwtAuthenticationFilterTest {
+class DevJwtAuthenticationFilterTest {
 
     @Autowired
     MockMvc mockMvc;
     @MockBean
-    JwtAuthenticationFilter jwtAuthenticationFilter;
+    DevJwtAuthenticationFilter devJwtAuthenticationFilter;
     @Autowired
     WebApplicationContext applicationContext;
 
     @BeforeEach
     void setupMockMvc() {
         mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
-                .addFilter(jwtAuthenticationFilter)
+                .addFilter(devJwtAuthenticationFilter)
                 .alwaysDo(print())
                 .build();
     }
@@ -46,10 +46,10 @@ class JwtAuthenticationFilterTest {
         mockMvc.perform(get(whiteList));
 
         // then
-        verify(jwtAuthenticationFilter, never()).doFilterInternal(any(), any(), any());
+        verify(devJwtAuthenticationFilter, never()).doFilterInternal(any(), any(), any());
     }
 
     private static String[] whiteList() {
-        return SecurityConstant.JWT_FILTER_WHITELIST_URL;
+        return SecurityConstant.DEV_JWT_FILTER_WHITELIST_URL;
     }
 }

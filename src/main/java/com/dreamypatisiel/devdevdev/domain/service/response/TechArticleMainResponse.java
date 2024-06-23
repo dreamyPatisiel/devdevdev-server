@@ -148,7 +148,7 @@ public class TechArticleMainResponse {
     private static String getThumbnailUrl(ElasticTechArticle elasticTechArticle, CompanyResponse companyResponse) {
         // 썸네일 이미지가 없다면 회사 로고로 내려준다.
         if (ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl())) {
-            return companyResponse.getThumbnailImageUrl();
+            return companyResponse.getOfficialImageUrl();
         }
 
         return elasticTechArticle.getThumbnailUrl();

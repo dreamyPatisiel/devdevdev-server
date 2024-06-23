@@ -24,6 +24,7 @@ public class SurveyQuestion extends BasicTime {
     @Column(length = 100, nullable = false)
     private String title;
 
+    @Column(length = 255)
     private String content;
 
     @Column(nullable = false)

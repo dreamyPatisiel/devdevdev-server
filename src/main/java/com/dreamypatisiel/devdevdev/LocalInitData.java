@@ -166,11 +166,11 @@ public class LocalInitData {
                 ));
     }
 
-    private static Company createCompany(String companyName, String thumbnailUrl, String careerUrl) {
+    private static Company createCompany(String companyName, String officialUrl, String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .careerUrl(new Url(thumbnailUrl))
-                .thumbnailUrl(new Url(careerUrl))
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
                 .build();
     }
 

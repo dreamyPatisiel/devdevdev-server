@@ -21,11 +21,11 @@ public class SurveyVersionQuestionMapper extends BasicTime {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "survey_version_id")
+    @JoinColumn(name = "survey_version_id", nullable = false)
     private SurveyVersion surveyVersion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "survey_question_id")
+    @JoinColumn(name = "survey_question_id", nullable = false)
     private SurveyQuestion surveyQuestion;
 
     @Builder
