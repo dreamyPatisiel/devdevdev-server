@@ -48,6 +48,7 @@ src/main/resources/application-storage-s3-local.yml
 src/main/resources/application-storage-s3-dev.yml
 src/main/resources/application-open-ai.yml
 src/test/resources/application-storage-s3.yml
+src/test/resources/application-storage-s3-prod.yml
 src/test/resources/application-open-ai.yml
 
 ### json

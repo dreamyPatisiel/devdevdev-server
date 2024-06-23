@@ -1,5 +1,5 @@
 ## Default Setting
-name: Build and Deploy to EC2
+name: Build and Deploy to DEV
 
 on:
   push:
@@ -36,11 +36,6 @@ jobs:
         run: |
           ## create application-dev.yml
           cd ./src/main/resources
-          
-          touch ./application-dev.yml
-          touch ./application-jwt-dev.yml
-          touch ./application-oauth2-dev.yml
-          touch ./application-storage-s3.yml
 
           echo "${{ secrets.application_dev }}" >> ./application-dev.yml
           echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
