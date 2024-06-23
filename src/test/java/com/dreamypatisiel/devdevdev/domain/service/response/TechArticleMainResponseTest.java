@@ -31,16 +31,16 @@ class TechArticleMainResponseTest {
                 companyResponse);
 
         // then
-        assertThat(techArticleMainResponse.getThumbnailUrl()).isEqualTo(company.getThumbnailImageUrl());
+        assertThat(techArticleMainResponse.getThumbnailUrl()).isEqualTo(company.getOfficialImageUrl());
     }
 
-    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .careerUrl(new Url(thumbnailUrl))
-                .thumbnailUrl(new Url(careerUrl))
+                .officialImageUrl(officialImageUrl)
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
                 .build();
     }
 

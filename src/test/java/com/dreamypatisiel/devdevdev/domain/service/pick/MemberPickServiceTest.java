@@ -1631,7 +1631,9 @@ class MemberPickServiceTest {
     private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
+                .pickOptionType(pickOptionType)
                 .contents(pickOptionContents)
+                .pick(pick)
                 .build();
 
         pickOption.changePick(pick);

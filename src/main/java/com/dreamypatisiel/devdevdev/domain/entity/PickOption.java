@@ -67,7 +67,8 @@ public class PickOption extends BasicTime {
     private List<PickOptionImage> pickOptionImages = new ArrayList<>();
 
     @Builder
-    private PickOption(Title title, PickOptionContents contents, Count voteTotalCount, PickOptionType pickOptionType) {
+    private PickOption(Title title, PickOptionContents contents, Count voteTotalCount, PickOptionType pickOptionType,
+                       Pick pick) {
         this.title = title;
         this.contents = contents;
         this.voteTotalCount = voteTotalCount;

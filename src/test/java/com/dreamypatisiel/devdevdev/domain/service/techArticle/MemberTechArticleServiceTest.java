@@ -189,7 +189,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
 
@@ -215,7 +215,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
@@ -241,7 +241,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), "elasticId", null);
+                new Count(1L), "elasticId", company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
