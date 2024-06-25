@@ -1219,6 +1219,7 @@ class PickControllerTest extends SupportControllerTest {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
                 .imageUrl(imageUrl)
+                .imageKey("imageKey")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -1271,6 +1272,8 @@ class PickControllerTest extends SupportControllerTest {
     private PickOptionImage createPickOptionImage(String name) {
         return PickOptionImage.builder()
                 .name(name)
+                .imageKey("imageKey")
+                .imageUrl("imageUrl")
                 .build();
     }
 
@@ -1290,6 +1293,8 @@ class PickControllerTest extends SupportControllerTest {
     private PickOptionImage createPickOptionImage(String name, PickOption pickOption) {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
+                .imageKey("imageKey")
+                .imageUrl("imageUrl")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -1333,6 +1338,7 @@ class PickControllerTest extends SupportControllerTest {
 
     private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
         return PickOptionImage.builder()
+                .name("imageName")
                 .imageUrl(imageUrl)
                 .imageKey(imageKey)
                 .build();

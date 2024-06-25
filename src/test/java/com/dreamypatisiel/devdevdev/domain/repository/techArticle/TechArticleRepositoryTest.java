@@ -11,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import jakarta.persistence.EntityManager;
@@ -35,6 +36,8 @@ class TechArticleRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
     @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
     EntityManager em;
 
     @Test
@@ -42,6 +45,7 @@ class TechArticleRepositoryTest {
     void findAllByElasticIdIn() {
         // given
         Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
 
         TechArticle techArticle1 = createTechArticle(company, "elasticId1");
         TechArticle techArticle2 = createTechArticle(company, "elasticId2");
@@ -66,6 +70,7 @@ class TechArticleRepositoryTest {
     void findBookmarkedByCursorOrderByBookmarkedDesc() {
         // given
         Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
@@ -98,6 +103,7 @@ class TechArticleRepositoryTest {
     void findBookmarkedByCursorOrderByLatestDesc() {
         // given
         Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
@@ -130,7 +136,8 @@ class TechArticleRepositoryTest {
     void findBookmarkedByCursorOrderByCommentDesc() {
         // given
         Company company = Company.builder().name(new CompanyName("회사")).build();
-
+        companyRepository.save(company);
+        
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
         Member member = Member.createMemberBy(socialMemberDto);

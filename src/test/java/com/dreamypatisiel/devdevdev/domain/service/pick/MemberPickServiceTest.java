@@ -199,10 +199,6 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 회원 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_VIEWED() {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), firstPickOption);
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), secondPickOption);
-        pickOption1.changePickVoteCount(new Count(1));
-        pickOption2.changePickVoteCount(new Count(2));
 
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
@@ -223,9 +219,7 @@ class MemberPickServiceTest {
                 ContentStatus.REJECT);
         Pick pick4 = createPick(title4, count, pick4ViewTotalCount, count, count, thumbnailUrl, author,
                 ContentStatus.READY);
-
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4));
-        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -256,24 +250,18 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 익명 사용자 전용 생성시간 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainLATEST() {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
-        pickOption1.changePickVoteCount(new Count(1));
-        pickOption2.changePickVoteCount(new Count(2));
-
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
         Title title4 = new Title("픽4타이틀");
         Count count = new Count(1);
+
         Pick pick1 = createPick(title1, count, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL);
         Pick pick2 = createPick(title2, count, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL);
         Pick pick3 = createPick(title3, count, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL);
         Pick pick4 = createPick(title4, count, count, count, count, thumbnailUrl, author, ContentStatus.READY);
         Pick pick5 = createPick(title4, count, count, count, count, thumbnailUrl, author, ContentStatus.REJECT);
-
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5));
-        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -305,11 +293,6 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 익명 사용자 전용 댓글수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_COMMENTED() {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
-        pickOption1.changePickVoteCount(new Count(1));
-        pickOption2.changePickVoteCount(new Count(2));
-
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
@@ -319,6 +302,7 @@ class MemberPickServiceTest {
         Count pick4commentTotalCount = new Count(4);
         Count pick5commentTotalCount = new Count(5);
         Count count = new Count(1);
+
         Pick pick1 = createPick(title1, count, count, pick1commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.APPROVAL);
         Pick pick2 = createPick(title2, count, count, pick2commentTotalCount, count, thumbnailUrl, author,
@@ -329,9 +313,7 @@ class MemberPickServiceTest {
                 ContentStatus.READY);
         Pick pick5 = createPick(title3, count, count, pick5commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.REJECT);
-
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5));
-        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -366,11 +348,6 @@ class MemberPickServiceTest {
             + ", 조회수:" + PickPopularScorePolicy.VIEW_WEIGHT + ")")
     void findPicksMainPOPULAR() {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"));
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"));
-        pickOption1.changePickVoteCount(new Count(1));
-        pickOption2.changePickVoteCount(new Count(2));
-
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
@@ -406,9 +383,7 @@ class MemberPickServiceTest {
         Pick pick5 = createPick(new Title("픽5타이틀"), pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
                 thumbnailUrl, author, ContentStatus.REJECT, List.of());
         pick5.changePopularScore(pickPopularScorePolicy);
-
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5));
-        pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -722,8 +697,10 @@ class MemberPickServiceTest {
         Pick pick = createPick(pickTitle, member);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -855,8 +832,10 @@ class MemberPickServiceTest {
         Pick pick = createPick(pickTitle, otherMember); // 다른회윈이 작성한 픽픽픽
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -1188,9 +1167,9 @@ class MemberPickServiceTest {
 
         // 픽픽픽 옵션 생성
         PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
-                PickOptionType.firstPickOption, pick);
+                pick, PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
-                PickOptionType.secondPickOption, pick);
+                pick, PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         VotePickOptionDto dto = VotePickOptionDto.builder()
@@ -1248,9 +1227,9 @@ class MemberPickServiceTest {
 
         // 픽픽픽 옵션 생성
         PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(1),
-                PickOptionType.firstPickOption, pick);
+                pick, PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
-                PickOptionType.secondPickOption, pick);
+                pick, PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 첫 번째 픽픽픽 옵션에 투표이력 생성
@@ -1313,9 +1292,9 @@ class MemberPickServiceTest {
 
         // 픽픽픽 옵션 생성
         PickOption firstPickOption = createPickOption(new Title("첫번째 픽옵션 제목"), new Count(0),
-                PickOptionType.firstPickOption, pick);
+                pick, PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(new Title("두번째 픽옵션 제목"), new Count(0),
-                PickOptionType.secondPickOption, pick);
+                pick, PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 투표 생성
@@ -1379,19 +1358,19 @@ class MemberPickServiceTest {
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
-        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"));
-        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, fistPickOption, pick);
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -1405,7 +1384,7 @@ class MemberPickServiceTest {
 
         // then
         Stream.of(pickRepository.findById(pick.getId()),
-                        pickOptionRepository.findById(fistPickOption.getId()),
+                        pickOptionRepository.findById(firstPickOption.getId()),
                         pickOptionRepository.findById(secondPickOption.getId()),
                         pickOptionImageRepository.findById(firstPickOptionImage.getId()),
                         pickOptionImageRepository.findById(secondPickOptionImage.getId()),
@@ -1441,19 +1420,19 @@ class MemberPickServiceTest {
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
-        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
-        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(author, fistPickOption, pick);
+        PickVote pickVote = createPickVote(author, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -1509,6 +1488,8 @@ class MemberPickServiceTest {
     private PickOptionImage createPickOptionImage(String name) {
         return PickOptionImage.builder()
                 .name(name)
+                .imageUrl("imageUrl")
+                .imageKey("imageKey")
                 .build();
     }
 
@@ -1661,10 +1642,12 @@ class MemberPickServiceTest {
         return pickOption;
     }
 
-    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents) {
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents,
+                                        PickOptionType pickOptionType) {
         return PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
+                .pickOptionType(pickOptionType)
                 .build();
     }
 
