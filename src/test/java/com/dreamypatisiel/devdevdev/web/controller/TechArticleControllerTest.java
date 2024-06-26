@@ -51,6 +51,7 @@ import org.springframework.http.MediaType;
 class TechArticleControllerTest extends SupportControllerTest {
 
     private static Long FIRST_TECH_ARTICLE_ID;
+    private static Company company;
 
     @Autowired
     TechArticleRepository techArticleRepository;
@@ -79,13 +80,12 @@ class TechArticleControllerTest extends SupportControllerTest {
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-
-        Company savedCompany = companyRepository.save(company);
+        company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
@@ -407,7 +407,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
 
@@ -427,7 +427,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     void getTechArticleNotFoundElasticIdException() throws Exception {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
-                new Count(1L), new Count(1L), null, null);
+                new Count(1L), new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
@@ -448,7 +448,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), "elasticId", null);
+                new Count(1L), "elasticId", company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
@@ -495,7 +495,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
 
@@ -599,13 +599,13 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .build();
     }
 
-    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .careerUrl(new Url(thumbnailUrl))
-                .thumbnailUrl(new Url(careerUrl))
+                .officialImageUrl(officialImageUrl)
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
                 .build();
     }
 }

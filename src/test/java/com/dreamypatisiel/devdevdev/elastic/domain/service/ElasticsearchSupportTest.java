@@ -29,22 +29,23 @@ public class ElasticsearchSupportTest {
     public static Long FIRST_TECH_ARTICLE_ID;
     public static TechArticle firstTechArticle;
     public static Long COMPANY_ID;
+    public static Company company;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
 
-        Company savedCompany = companyRepository.save(company);
+        company = companyRepository.save(company);
 
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
                     i > 1 ? createRandomDate() : LocalDate.of(2024, 3, 11), "내용",
                     "http://example.com/" + i, "설명", "http://example.com/", "작성자",
-                    savedCompany.getName().getCompanyName(), savedCompany.getId(), (long) i, (long) i,
+                    company.getName().getCompanyName(), company.getId(), (long) i, (long) i,
                     (long) i,
                     (long) i * 10);
             elasticTechArticles.add(elasticTechArticle);
@@ -54,13 +55,13 @@ public class ElasticsearchSupportTest {
 
         List<TechArticle> techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
         firstTechArticle = savedTechArticles.getFirst();
         FIRST_TECH_ARTICLE_ID = firstTechArticle.getId();
-        COMPANY_ID = savedCompany.getId();
+        COMPANY_ID = company.getId();
     }
 
     @AfterAll
@@ -107,13 +108,13 @@ public class ElasticsearchSupportTest {
                 .build();
     }
 
-    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .careerUrl(new Url(thumbnailUrl))
-                .thumbnailUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
+                .careerUrl(new Url(careerUrl))
+                .officialImageUrl(officialImageUrl)
                 .build();
     }
 }

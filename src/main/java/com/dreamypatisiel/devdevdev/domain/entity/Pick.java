@@ -67,7 +67,7 @@ public class Pick extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "popluar_score")
+            column = @Column(name = "popular_score")
     )
     private Count popularScore;
 

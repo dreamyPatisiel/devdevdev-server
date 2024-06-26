@@ -3,12 +3,15 @@ package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import jakarta.persistence.EntityManager;
@@ -33,16 +36,21 @@ class TechArticleRepositoryTest {
     @Autowired
     MemberRepository memberRepository;
     @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
     EntityManager em;
 
     @Test
     @DisplayName("elasticIds 리스트의 elasticId에 해당하는 기술블로그 엔티티를 순서대로 가져올 수 있다.")
     void findAllByElasticIdIn() {
         // given
-        TechArticle techArticle1 = createTechArticle("elasticId1");
-        TechArticle techArticle2 = createTechArticle("elasticId2");
-        TechArticle techArticle3 = createTechArticle("elasticId3");
-        TechArticle techArticle4 = createTechArticle("elasticId4");
+        Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
+
+        TechArticle techArticle1 = createTechArticle(company, "elasticId1");
+        TechArticle techArticle2 = createTechArticle(company, "elasticId2");
+        TechArticle techArticle3 = createTechArticle(company, "elasticId3");
+        TechArticle techArticle4 = createTechArticle(company, "elasticId4");
 
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3, techArticle4));
 
@@ -61,14 +69,17 @@ class TechArticleRepositoryTest {
     @DisplayName("기술블로그 북마크 목록을 북마크 등록시간 내림차순으로 가져올 수 있다.")
     void findBookmarkedByCursorOrderByBookmarkedDesc() {
         // given
+        Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
+
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
-        TechArticle techArticle1 = createTechArticle(new Count(1L));
-        TechArticle techArticle2 = createTechArticle(new Count(1L));
-        TechArticle techArticle3 = createTechArticle(new Count(1L));
+        TechArticle techArticle1 = createTechArticle(company, new Count(1L));
+        TechArticle techArticle2 = createTechArticle(company, new Count(1L));
+        TechArticle techArticle3 = createTechArticle(company, new Count(1L));
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
 
         Bookmark bookmark1 = createBookmark(member, techArticle1, true);
@@ -91,14 +102,17 @@ class TechArticleRepositoryTest {
     @DisplayName("기술블로그 북마크 목록을 게시글 최신순으로 가져올 수 있다.")
     void findBookmarkedByCursorOrderByLatestDesc() {
         // given
+        Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
+
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
-        TechArticle techArticle1 = createTechArticle(new Count(1L));
-        TechArticle techArticle2 = createTechArticle(new Count(1L));
-        TechArticle techArticle3 = createTechArticle(new Count(1L));
+        TechArticle techArticle1 = createTechArticle(company, new Count(1L));
+        TechArticle techArticle2 = createTechArticle(company, new Count(1L));
+        TechArticle techArticle3 = createTechArticle(company, new Count(1L));
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
 
         Bookmark bookmark1 = createBookmark(member, techArticle1, true);
@@ -121,14 +135,17 @@ class TechArticleRepositoryTest {
     @DisplayName("기술블로그 북마크 목록을 댓글수 내림차순으로 가져올 수 있다.")
     void findBookmarkedByCursorOrderByCommentDesc() {
         // given
+        Company company = Company.builder().name(new CompanyName("회사")).build();
+        companyRepository.save(company);
+        
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
-        TechArticle techArticle1 = createTechArticle(new Count(3L));
-        TechArticle techArticle2 = createTechArticle(new Count(2L));
-        TechArticle techArticle3 = createTechArticle(new Count(1L));
+        TechArticle techArticle1 = createTechArticle(company, new Count(3L));
+        TechArticle techArticle2 = createTechArticle(company, new Count(2L));
+        TechArticle techArticle3 = createTechArticle(company, new Count(1L));
         techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
 
         Bookmark bookmark1 = createBookmark(member, techArticle1, true);
@@ -147,14 +164,16 @@ class TechArticleRepositoryTest {
                 .containsExactly(techArticle1, techArticle3);
     }
 
-    private static TechArticle createTechArticle(String elasticId) {
+    private static TechArticle createTechArticle(Company company, String elasticId) {
         return TechArticle.builder()
+                .company(company)
                 .elasticId(elasticId)
                 .build();
     }
 
-    private static TechArticle createTechArticle(Count commentTotalCount) {
+    private static TechArticle createTechArticle(Company company, Count commentTotalCount) {
         return TechArticle.builder()
+                .company(company)
                 .commentTotalCount(commentTotalCount)
                 .build();
     }

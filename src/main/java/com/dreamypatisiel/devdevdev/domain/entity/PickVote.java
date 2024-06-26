@@ -30,11 +30,11 @@ public class PickVote extends BasicTime {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_option_id")
+    @JoinColumn(name = "pick_option_id", nullable = false)
     private PickOption pickOption;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_id")
+    @JoinColumn(name = "pick_id", nullable = false)
     private Pick pick;
 
     @Builder

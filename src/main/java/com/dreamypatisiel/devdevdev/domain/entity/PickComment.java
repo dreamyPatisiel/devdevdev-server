@@ -42,11 +42,11 @@ public class PickComment extends BasicTime {
     private Count recommendTotalCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pick_id")
+    @JoinColumn(name = "pick_id", nullable = false)
     private Pick pick;
 
 }

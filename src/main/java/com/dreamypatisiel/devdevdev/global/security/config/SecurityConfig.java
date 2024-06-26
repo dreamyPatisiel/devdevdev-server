@@ -1,8 +1,14 @@
 package com.dreamypatisiel.devdevdev.global.security.config;
 
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.DEV_WHITELIST_URL;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.OAUTH2_LOGIN_URL_PREFIX;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.PROD_WHITELIST_URL;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.SPRING_H2_CONSOLE_ENABLED;
+
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.filter.SecurityExceptionFilter;
-import com.dreamypatisiel.devdevdev.global.security.jwt.filter.JwtAuthenticationFilter;
+import com.dreamypatisiel.devdevdev.global.security.jwt.filter.DevJwtAuthenticationFilter;
+import com.dreamypatisiel.devdevdev.global.security.jwt.filter.ProdJwtAuthenticationFilter;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAccessDeniedHandler;
 import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAuthenticationEntryPointHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
@@ -23,8 +29,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.*;
-
 @Slf4j
 @EnableWebSecurity
 @Configuration
@@ -39,7 +43,8 @@ public class SecurityConfig {
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPointHandler jwtAuthenticationEntryPointHandler;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final DevJwtAuthenticationFilter devJwtAuthenticationFilter;
+    private final ProdJwtAuthenticationFilter prodJwtAuthenticationFilter;
     private final SecurityExceptionFilter securityExceptionFilter;
     private final CorsConfig corsConfig;
 
@@ -51,7 +56,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfig.apiCorsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(WHITELIST_URL).permitAll()
+                        .requestMatchers(DEV_WHITELIST_URL).permitAll()
                         .requestMatchers(PathRequest.toH2Console()).permitAll()
                         .requestMatchers("/devdevdev/api/v1/public").permitAll()
                         .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
@@ -77,8 +82,8 @@ public class SecurityConfig {
                         .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))
         );
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(securityExceptionFilter, JwtAuthenticationFilter.class);
+        http.addFilterBefore(devJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(securityExceptionFilter, DevJwtAuthenticationFilter.class);
 
         return http.build();
     }
@@ -99,7 +104,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfig.apiCorsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(WHITELIST_URL).permitAll()
+                        .requestMatchers(DEV_WHITELIST_URL).permitAll()
                         .requestMatchers("/devdevdev/api/v1/public").permitAll()
                         .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
                         .requestMatchers("/devdevdev/api/v1/user").hasAnyRole(ADMIN, USER)
@@ -114,7 +119,7 @@ public class SecurityConfig {
                 .accessDeniedHandler(jwtAccessDeniedHandler));
 
         http.oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                .userService(oAuth2UserServiceImpl))
+                        .userService(oAuth2UserServiceImpl))
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2AuthenticationFailureHandler)
                 .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
@@ -124,8 +129,47 @@ public class SecurityConfig {
                         .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))
         );
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(securityExceptionFilter, JwtAuthenticationFilter.class);
+        http.addFilterBefore(devJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(securityExceptionFilter, DevJwtAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    @Profile({"prod"})
+    public SecurityFilterChain securityFilterChainOnProd(HttpSecurity http) throws Exception {
+
+        http
+                .cors(cors -> cors.configurationSource(corsConfig.apiCorsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers(PROD_WHITELIST_URL).permitAll()
+                        .requestMatchers("/devdevdev/api/v1/public").permitAll()
+                        .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
+                        .requestMatchers("/devdevdev/api/v1/user").hasAnyRole(ADMIN, USER)
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable);
+
+        http.exceptionHandling(exception -> exception
+                .authenticationEntryPoint(jwtAuthenticationEntryPointHandler)
+                .accessDeniedHandler(jwtAccessDeniedHandler));
+
+        http.oauth2Login(oauth2 -> oauth2.userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
+                        .userService(oAuth2UserServiceImpl))
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
+                .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig
+                        .baseUri(OAUTH2_LOGIN_URL_PREFIX)
+                )
+                .redirectionEndpoint(redirectionEndpointConfig -> redirectionEndpointConfig
+                        .baseUri(SecurityConstant.OAUTH2_REDIRECT_URL_PREFIX))
+        );
+
+        http.addFilterBefore(prodJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(securityExceptionFilter, ProdJwtAuthenticationFilter.class);
 
         return http.build();
     }

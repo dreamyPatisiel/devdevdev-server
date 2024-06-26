@@ -10,14 +10,14 @@ public class CompanyResponse {
     public final Long id;
     public final String name;
     public final String careerUrl;
-    public final String thumbnailImageUrl;
+    public final String officialImageUrl;
 
     @Builder
-    private CompanyResponse(Long id, String name, String careerUrl, String thumbnailImageUrl) {
+    private CompanyResponse(Long id, String name, String careerUrl, String officialImageUrl) {
         this.id = id;
         this.name = name;
         this.careerUrl = careerUrl;
-        this.thumbnailImageUrl = thumbnailImageUrl;
+        this.officialImageUrl = officialImageUrl;
     }
 
     public static CompanyResponse of(Long id, String name, String careerUrl) {
@@ -33,7 +33,7 @@ public class CompanyResponse {
                 .id(company.getId())
                 .name(company.getName().getCompanyName())
                 .careerUrl(company.getCareerUrl().getUrl())
-                .thumbnailImageUrl(company.getThumbnailImageUrl())
+                .officialImageUrl(company.getOfficialImageUrl())
                 .build();
     }
 }

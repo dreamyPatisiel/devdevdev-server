@@ -2,19 +2,19 @@ package com.dreamypatisiel.devdevdev.domain.entity.embedded;
 
 import com.dreamypatisiel.devdevdev.exception.UrlException;
 import jakarta.persistence.Embeddable;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.commons.validator.routines.UrlValidator;
 
-import java.util.regex.Pattern;
-
 @Getter
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 public class Url {
+
     private static final String URL_REGEX =
             "^((http|https)://)?([a-zA-Z0-9-]+(\\.[a-zA-Z]{2,})+)(/[a-zA-Z0-9-]*)*(\\?\\S*)?$";
     public static final String INVALID_URL_MESSAGE = "알맞은 URL 형식이 아닙니다.";

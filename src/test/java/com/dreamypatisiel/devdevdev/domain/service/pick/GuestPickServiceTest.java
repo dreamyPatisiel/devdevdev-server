@@ -121,8 +121,10 @@ class GuestPickServiceTest {
                 thumbnailUrl, author, List.of());
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, pickOptionContents1, pickOptionVoteCount1);
-        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, pickOptionContents2, pickOptionVoteCount2);
+        PickOption pickOption1 = createPickOption(pick, pickOptionTitle1, pickOptionContents1, pickOptionVoteCount1,
+                PickOptionType.firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, pickOptionTitle2, pickOptionContents2, pickOptionVoteCount2,
+                PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         Pageable pageable = PageRequest.of(0, 10);
@@ -174,17 +176,17 @@ class GuestPickServiceTest {
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
 
         PickOption pickOption1 = createPickOption(pick1, new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"),
-                new Count(1));
+                new Count(1), PickOptionType.firstPickOption);
         PickOption pickOption2 = createPickOption(pick1, new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"),
-                new Count(2));
+                new Count(2), PickOptionType.secondPickOption);
         PickOption pickOption3 = createPickOption(pick2, new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"),
-                new Count(3));
+                new Count(3), PickOptionType.firstPickOption);
         PickOption pickOption4 = createPickOption(pick2, new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"),
-                new Count(4));
+                new Count(4), PickOptionType.secondPickOption);
         PickOption pickOption5 = createPickOption(pick3, new Title("픽옵션5"), new PickOptionContents("픽콘텐츠5"),
-                new Count(5));
+                new Count(5), PickOptionType.firstPickOption);
         PickOption pickOption6 = createPickOption(pick3, new Title("픽옵션6"), new PickOptionContents("픽콘텐츠6"),
-                new Count(6));
+                new Count(6), PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(
                 List.of(pickOption1, pickOption2, pickOption3, pickOption4, pickOption5, pickOption6));
 
@@ -224,17 +226,17 @@ class GuestPickServiceTest {
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
 
         PickOption pickOption1 = createPickOption(pick1, new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"),
-                new Count(1));
+                new Count(1), PickOptionType.firstPickOption);
         PickOption pickOption2 = createPickOption(pick1, new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"),
-                new Count(2));
+                new Count(2), PickOptionType.secondPickOption);
         PickOption pickOption3 = createPickOption(pick2, new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"),
-                new Count(3));
+                new Count(3), PickOptionType.firstPickOption);
         PickOption pickOption4 = createPickOption(pick2, new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"),
-                new Count(4));
+                new Count(4), PickOptionType.secondPickOption);
         PickOption pickOption5 = createPickOption(pick3, new Title("픽옵션5"), new PickOptionContents("픽콘텐츠5"),
-                new Count(5));
+                new Count(5), PickOptionType.firstPickOption);
         PickOption pickOption6 = createPickOption(pick3, new Title("픽옵션6"), new PickOptionContents("픽콘텐츠6"),
-                new Count(6));
+                new Count(6), PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(
                 List.of(pickOption1, pickOption2, pickOption3, pickOption4, pickOption5, pickOption6));
 
@@ -278,17 +280,17 @@ class GuestPickServiceTest {
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
 
         PickOption pickOption1 = createPickOption(pick1, new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"),
-                new Count(1));
+                new Count(1), PickOptionType.firstPickOption);
         PickOption pickOption2 = createPickOption(pick1, new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"),
-                new Count(2));
+                new Count(2), PickOptionType.secondPickOption);
         PickOption pickOption3 = createPickOption(pick2, new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"),
-                new Count(3));
+                new Count(3), PickOptionType.firstPickOption);
         PickOption pickOption4 = createPickOption(pick2, new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"),
-                new Count(4));
+                new Count(4), PickOptionType.secondPickOption);
         PickOption pickOption5 = createPickOption(pick3, new Title("픽옵션5"), new PickOptionContents("픽콘텐츠5"),
-                new Count(5));
+                new Count(5), PickOptionType.firstPickOption);
         PickOption pickOption6 = createPickOption(pick3, new Title("픽옵션6"), new PickOptionContents("픽콘텐츠6"),
-                new Count(6));
+                new Count(6), PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(
                 List.of(pickOption1, pickOption2, pickOption3, pickOption4, pickOption5, pickOption6));
 
@@ -350,17 +352,17 @@ class GuestPickServiceTest {
         pickRepository.saveAll(List.of(pick1, pick2, pick3));
 
         PickOption pickOption1 = createPickOption(pick1, new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"),
-                new Count(1));
+                new Count(1), PickOptionType.firstPickOption);
         PickOption pickOption2 = createPickOption(pick1, new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"),
-                new Count(2));
+                new Count(2), PickOptionType.secondPickOption);
         PickOption pickOption3 = createPickOption(pick2, new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"),
-                new Count(3));
+                new Count(3), PickOptionType.firstPickOption);
         PickOption pickOption4 = createPickOption(pick2, new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"),
-                new Count(4));
+                new Count(4), PickOptionType.secondPickOption);
         PickOption pickOption5 = createPickOption(pick3, new Title("픽옵션5"), new PickOptionContents("픽콘텐츠5"),
-                new Count(5));
+                new Count(5), PickOptionType.firstPickOption);
         PickOption pickOption6 = createPickOption(pick3, new Title("픽옵션6"), new PickOptionContents("픽콘텐츠6"),
-                new Count(6));
+                new Count(6), PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(
                 List.of(pickOption1, pickOption2, pickOption3, pickOption4, pickOption5, pickOption6));
 
@@ -904,25 +906,11 @@ class GuestPickServiceTest {
                 .build();
     }
 
-    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents,
-                                        Count pickOptionVoteCount,
-                                        PickOptionType pickOptionType) {
-        PickOption pickOption = PickOption.builder()
-                .title(title)
-                .contents(pickOptionContents)
-                .voteTotalCount(pickOptionVoteCount)
-                .pickOptionType(pickOptionType)
-                .build();
-
-        pickOption.changePick(pick);
-
-        return pickOption;
-    }
-
     private PickOptionImage createPickOptionImage(String name, String imageUrl, PickOption pickOption) {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
                 .imageUrl(imageUrl)
+                .imageKey("imageKey")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -972,11 +960,12 @@ class GuestPickServiceTest {
     }
 
     private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents,
-                                        Count voteTotalCount) {
+                                        Count voteTotalCount, PickOptionType pickOptionType) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
                 .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
                 .build();
 
         pickOption.changePick(pick);

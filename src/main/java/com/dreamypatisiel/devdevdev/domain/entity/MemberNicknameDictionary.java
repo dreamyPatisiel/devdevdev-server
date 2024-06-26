@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Word;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.WordType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -18,14 +19,17 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberNicknameDictionary extends BasicTime {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Embedded
+    @Column(length = 20, nullable = false)
     private Word word;
 
     @Enumerated(value = EnumType.STRING)
+    @Column(nullable = false)
     private WordType wordType;
 
     @Builder

@@ -42,17 +42,19 @@ public class Member extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(length = 30)
     private String name;
 
     @Embedded
     @AttributeOverride(name = "nickname",
-            column = @Column(name = "nickname")
+            column = @Column(name = "nickname", length = 30)
     )
     private Nickname nickname;
 
     @Embedded
     @AttributeOverride(name = "email",
-            column = @Column(name = "email")
+            column = @Column(name = "email", length = 50)
     )
     private Email email;
 
@@ -62,6 +64,7 @@ public class Member extends BasicTime {
 
     private String profileImage;
 
+    @Column(length = 50)
     private String job;
 
     @Embedded
@@ -76,7 +79,7 @@ public class Member extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "email",
-            column = @Column(name = "subscription_letter_email")
+            column = @Column(name = "subscription_letter_email", length = 50)
     )
     private Email subscriptionLetterEmail;
 
@@ -88,7 +91,9 @@ public class Member extends BasicTime {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(nullable = false)
     private Boolean isDeleted;
+
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "member")

@@ -38,11 +38,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /**
- * JWT의 생성과 인증, 인가를 담당하는 책임을 가진 클래스
- * 토큰 생성, 검증, 쿠키에서 토큰 추출, 클레임 추출
- *
- * 토큰을 생성할 때는 클레임으로 email, socialType, role을 사용한다.
- * 토큰으로 Authentication을 생성할 때는 email, socialType, role만 사용한다.
+ * JWT의 생성과 인증, 인가를 담당하는 책임을 가진 클래스 토큰 생성, 검증, 쿠키에서 토큰 추출, 클레임 추출
+ * <p>
+ * 토큰을 생성할 때는 클레임으로 email, socialType, role을 사용한다. 토큰으로 Authentication을 생성할 때는 email, socialType, role만 사용한다.
  */
 @Slf4j
 @Service
@@ -111,7 +109,7 @@ public class TokenService {
 
     public boolean validateToken(String token) {
         try {
-            if(!StringUtils.hasText(token)) {
+            if (!StringUtils.hasText(token)) {
                 throw new TokenNotFoundException(INVALID_TOKEN_NOT_FOUND_MESSAGE);
             }
 

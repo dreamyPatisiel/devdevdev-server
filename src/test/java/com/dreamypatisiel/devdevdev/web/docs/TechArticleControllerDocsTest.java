@@ -64,6 +64,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
     private static Long FIRST_TECH_ARTICLE_ID;
+    private static Company company;
 
     @Autowired
     TechArticleRepository techArticleRepository;
@@ -94,12 +95,12 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        Company savedCompany = companyRepository.save(company);
+        company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
+            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
@@ -188,7 +189,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                 .description("기술블로그 회사 이름"),
                         fieldWithPath("data.content.[].company.careerUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 채용페이지"),
-                        fieldWithPath("data.content.[].company.thumbnailImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("data.content.[].company.officialImageUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 로고 이미지"),
                         fieldWithPath("data.content.[].regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.content.[].author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
@@ -367,7 +368,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.company.name").type(JsonFieldType.STRING).description("기술블로그 회사 이름"),
                         fieldWithPath("data.company.careerUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 채용페이지"),
-                        fieldWithPath("data.company.thumbnailImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("data.company.officialImageUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 로고 이미지"),
                         fieldWithPath("data.regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
@@ -421,7 +422,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
 
@@ -449,7 +450,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), null, null);
+                new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
@@ -477,7 +478,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         // given
         TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
                 new Count(1L),
-                new Count(1L), "elasticId", null);
+                new Count(1L), "elasticId", company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
@@ -603,13 +604,13 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .build();
     }
 
-    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .careerUrl(new Url(thumbnailUrl))
-                .thumbnailUrl(new Url(careerUrl))
+                .officialImageUrl(officialImageUrl)
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
                 .build();
     }
 }
