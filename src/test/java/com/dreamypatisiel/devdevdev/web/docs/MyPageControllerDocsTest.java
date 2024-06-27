@@ -233,7 +233,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                                 .description("기술블로그 회사 이름"),
                         fieldWithPath("data.content.[].company.careerUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 채용페이지"),
-                        fieldWithPath("data.content.[].company.thumbnailImageUrl").type(JsonFieldType.STRING)
+                        fieldWithPath("data.content.[].company.officialImageUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 회사 로고 이미지"),
                         fieldWithPath("data.content.[].regDate").type(JsonFieldType.STRING).description("기술블로그 작성일"),
                         fieldWithPath("data.content.[].author").type(JsonFieldType.STRING).description("기술블로그 작성자"),
@@ -981,13 +981,13 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                 .build();
     }
 
-    private static Company createCompany(String companyName, String thumbnailImageUrl, String thumbnailUrl,
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .thumbnailImageUrl(thumbnailImageUrl)
-                .careerUrl(new Url(thumbnailUrl))
-                .thumbnailUrl(new Url(careerUrl))
+                .officialImageUrl(officialImageUrl)
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
                 .build();
     }
 }

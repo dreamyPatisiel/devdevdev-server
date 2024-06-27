@@ -4,14 +4,23 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import jakarta.persistence.*;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Entity
@@ -47,14 +56,15 @@ public class TechArticle extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "url",
-            column = @Column(name = "tech_article_url")
+            column = @Column(name = "tech_article_url", length = 255)
     )
     private Url techArticleUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
+    @Column(length = 255)
     private String elasticId;
 
     @OneToMany(mappedBy = "techArticle")
@@ -62,7 +72,7 @@ public class TechArticle extends BasicTime {
 
     @Builder
     private TechArticle(Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount, Count popularScore,
-                       Url techArticleUrl, Company company, String elasticId) {
+                        Url techArticleUrl, Company company, String elasticId) {
         this.techArticleUrl = techArticleUrl;
         this.viewTotalCount = viewTotalCount;
         this.recommendTotalCount = recommendTotalCount;
@@ -84,7 +94,8 @@ public class TechArticle extends BasicTime {
                 .build();
     }
 
-    public static TechArticle of(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount,
+    public static TechArticle of(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
+                                 Count commentTotalCount,
                                  Count popularScore, String elasticId, Company company) {
         return TechArticle.builder()
                 .techArticleUrl(techArticleUrl)
@@ -98,7 +109,7 @@ public class TechArticle extends BasicTime {
     }
 
     public void changeBookmarks(List<Bookmark> bookmarks) {
-        for(Bookmark bookmark : bookmarks) {
+        for (Bookmark bookmark : bookmarks) {
             bookmark.changeTechArticle(this);
             this.getBookmarks().add(bookmark);
         }

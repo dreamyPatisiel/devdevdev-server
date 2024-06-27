@@ -24,13 +24,14 @@ public class SurveyQuestionOption extends BasicTime {
     @Column(length = 100, nullable = false)
     private String title;
 
+    @Column(length = 255)
     private String content;
 
     @Column(nullable = false)
     private int sortOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "survey_question_id")
+    @JoinColumn(name = "survey_question_id", nullable = false)
     private SurveyQuestion surveyQuestion;
 
     @Builder

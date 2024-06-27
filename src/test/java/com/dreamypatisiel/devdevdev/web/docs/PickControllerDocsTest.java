@@ -719,8 +719,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Pick pick = createPick(new Title("픽제목"), member);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -831,8 +833,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Pick pick = createPick(new Title("픽제목"), otherMember);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -929,8 +933,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Pick pick = createPick(new Title("픽제목"), member);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -1016,8 +1022,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Pick pick = createPick(new Title("픽제목"), member);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -1082,8 +1090,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Pick pick = createPick(new Title("픽제목"), member);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -1187,8 +1197,10 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         Pick pick = createPick(new Title("픽제목"), member);
         pickRepository.save(pick);
 
-        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"));
-        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"));
+        PickOption pickOption1 = createPickOption(pick, new Title("픽옵션1제목"), new PickOptionContents("픽옵션1콘텐츠"),
+                firstPickOption);
+        PickOption pickOption2 = createPickOption(pick, new Title("픽옵션2제목"), new PickOptionContents("픽옵션2콘텐츠"),
+                secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = createPickOptionImage("픽옵션1사진1", pickOption1);
@@ -1697,19 +1709,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
-        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
-        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, fistPickOption, pick);
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -1760,19 +1772,19 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
-        PickOption fistPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
         PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"));
-        pickOptionRepository.saveAll(List.of(fistPickOption, secondPickOption));
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", fistPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", fistPickOption);
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", secondPickOption);
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(author, fistPickOption, pick);
+        PickVote pickVote = createPickVote(author, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -2021,6 +2033,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
                 .imageUrl(imageUrl)
+                .imageKey("imageKey")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -2054,6 +2067,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     private PickOptionImage createPickOptionImage(String name) {
         return PickOptionImage.builder()
                 .name(name)
+                .imageUrl("imageUrl")
+                .imageKey("imageKey")
                 .build();
     }
 
@@ -2074,6 +2089,8 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
     private PickOptionImage createPickOptionImage(String name, PickOption pickOption) {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
+                .imageUrl("imageUrl")
+                .imageKey("imageKey")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -2191,10 +2208,12 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 .build();
     }
 
-    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents) {
+    private PickOption createPickOption(Pick pick, Title title, PickOptionContents pickOptionContents,
+                                        PickOptionType pickOptionType) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
+                .pickOptionType(pickOptionType)
                 .build();
 
         pickOption.changePick(pick);
@@ -2204,6 +2223,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
 
     private PickOptionImage createPickOptionImage(String imageUrl, String imageKey) {
         return PickOptionImage.builder()
+                .name("imageName")
                 .imageUrl(imageUrl)
                 .imageKey(imageKey)
                 .build();

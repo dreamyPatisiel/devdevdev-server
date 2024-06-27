@@ -11,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import jakarta.persistence.EntityManager;
@@ -48,10 +49,14 @@ class PickRepositoryTest {
     @DisplayName("findPicksByCursor 쿼리 확인")
     void findPicksByCursor() {
         // given
-        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1));
-        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2));
-        PickOption pickOption3 = createPickOption(new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"), new Count(3));
-        PickOption pickOption4 = createPickOption(new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"), new Count(4));
+        PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1),
+                PickOptionType.firstPickOption);
+        PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2),
+                PickOptionType.secondPickOption);
+        PickOption pickOption3 = createPickOption(new Title("픽옵션3"), new PickOptionContents("픽콘텐츠3"), new Count(3),
+                PickOptionType.firstPickOption);
+        PickOption pickOption4 = createPickOption(new Title("픽옵션4"), new PickOptionContents("픽콘텐츠4"), new Count(4),
+                PickOptionType.secondPickOption);
 
         Count pick1VoteTotalCount = new Count(
                 pickOption1.getVoteTotalCount().getCount() + pickOption2.getVoteTotalCount().getCount());
@@ -202,9 +207,9 @@ class PickRepositoryTest {
         pickRepository.save(pick);
 
         PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽옵션콘텐츠1"), new Count(1),
-                pick);
+                pick, PickOptionType.firstPickOption);
         PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽옵션콘텐츠2"), new Count(2),
-                pick);
+                pick, PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
         PickOptionImage pickOption1Image1 = cratePickOptionImage("픽옵션1이미지1", pickOption1);
@@ -246,6 +251,8 @@ class PickRepositoryTest {
     private PickOptionImage cratePickOptionImage(String name, PickOption pickOption) {
         PickOptionImage pickOptionImage = PickOptionImage.builder()
                 .name(name)
+                .imageKey("imageKey")
+                .imageUrl("imageUrl")
                 .build();
 
         pickOptionImage.changePickOption(pickOption);
@@ -313,11 +320,12 @@ class PickRepositoryTest {
     }
 
     private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount,
-                                        Pick pick) {
+                                        Pick pick, PickOptionType pickOptionType) {
         PickOption pickOption = PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
                 .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
                 .build();
 
         pickOption.changePick(pick);
@@ -325,11 +333,13 @@ class PickRepositoryTest {
         return pickOption;
     }
 
-    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount) {
+    private PickOption createPickOption(Title title, PickOptionContents pickOptionContents, Count voteTotalCount,
+                                        PickOptionType pickOptionType) {
         return PickOption.builder()
                 .title(title)
                 .contents(pickOptionContents)
                 .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
                 .build();
     }
 }
