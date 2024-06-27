@@ -74,6 +74,12 @@ dependencies {
     // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
     implementation 'org.apache.commons:commons-math3:3.6.1'
 
+    // rateLimiter
+    implementation group: 'com.giffing.bucket4j.spring.boot.starter', name: 'bucket4j-spring-boot-starter', version: '0.6.0'
+
+    // https://mvnrepository.com/artifact/com.github.vladimir-bukhtoyarov/bucket4j-redis
+    implementation group: 'com.github.vladimir-bukhtoyarov', name: 'bucket4j-redis', version: '7.6.0'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'

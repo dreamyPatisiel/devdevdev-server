@@ -35,7 +35,7 @@ import org.springframework.util.ObjectUtils;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
         @Index(name = "idx__content_status", columnList = "contentStatus"),
-        @Index(name = "idx__member", columnList = "member")
+        @Index(name = "idx__member", columnList = "member_id")
 })
 public class Pick extends BasicTime {
 

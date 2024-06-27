@@ -1,9 +1,9 @@
 spring:
   profiles:
     active:
-      - prod
+      - dev
     include:
-      - oauth2-prod
-      - jwt-prod
-      - storage-s3-prod
+      - oauth2-dev
+      - jwt-dev
+      - storage-s3-dev
       - open-ai
