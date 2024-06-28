@@ -171,7 +171,6 @@ public class LocalInitData {
                 .name(new CompanyName(companyName))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
-                .techArticles(new ArrayList<>())
                 .build();
     }
 
@@ -196,7 +195,7 @@ public class LocalInitData {
             if (company == null) {
                 log.info("company가 null 이다. elasticTechArticleId={} count={}", elasticTechArticle.getId(), count);
             }
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
+            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         return techArticles;

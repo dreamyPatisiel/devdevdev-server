@@ -13,6 +13,7 @@ import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.entity.ContentType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -30,12 +31,16 @@ public class LimiterFilter extends OncePerRequestFilter {
 
     private final TokenBucketResolver tokenBucketResolver;
 
+    @Value("${bucket.plan}")
+    private String bucketPlan;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
-            String limiterKey = LimiterPlan.createLimiterKey(request);
-            log.info("limiterKey={} ", limiterKey);
+            LimiterPlan limiterPlan = LimiterPlan.getLimiterPlan(bucketPlan);
+            String limiterKey = limiterPlan.createLimiterKey(request);
+            
             tokenBucketResolver.checkBucketCounter(limiterKey);
 
             filterChain.doFilter(request, response);

@@ -85,7 +85,7 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
+            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
@@ -405,7 +405,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
@@ -426,7 +427,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L), new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -446,7 +448,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L), "elasticId", company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
@@ -493,7 +496,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("회원이 기술블로그 북마크를 요청할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
     void updateBookmarkNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);

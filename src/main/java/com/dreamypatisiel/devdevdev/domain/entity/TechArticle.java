@@ -82,7 +82,7 @@ public class TechArticle extends BasicTime {
         this.elasticId = elasticId;
     }
 
-    public static TechArticle of(ElasticTechArticle elasticTechArticle, Company company) {
+    public static TechArticle createTechArticle(ElasticTechArticle elasticTechArticle, Company company) {
         TechArticle techArticle = TechArticle.builder()
                 .techArticleUrl(new Url(elasticTechArticle.getTechArticleUrl()))
                 .viewTotalCount(new Count(elasticTechArticle.getViewTotalCount()))
@@ -97,9 +97,9 @@ public class TechArticle extends BasicTime {
         return techArticle;
     }
 
-    public static TechArticle of(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
-                                 Count commentTotalCount,
-                                 Count popularScore, String elasticId, Company company) {
+    public static TechArticle createTechArticle(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
+                                                Count commentTotalCount,
+                                                Count popularScore, String elasticId, Company company) {
         return TechArticle.builder()
                 .techArticleUrl(techArticleUrl)
                 .viewTotalCount(viewTotalCount)

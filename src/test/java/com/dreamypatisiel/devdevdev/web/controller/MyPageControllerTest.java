@@ -73,6 +73,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -86,6 +88,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
 
+@TestInstance(Lifecycle.PER_CLASS)
 class MyPageControllerTest extends SupportControllerTest {
 
     private static Long FIRST_TECH_ARTICLE_ID;
@@ -119,11 +122,13 @@ class MyPageControllerTest extends SupportControllerTest {
 
     private static List<TechArticle> techArticles;
 
-    @BeforeAll
-    static void setup(@Autowired TechArticleRepository techArticleRepository,
-                      @Autowired CompanyRepository companyRepository,
-                      @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+    @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
+    ElasticTechArticleRepository elasticTechArticleRepository;
 
+    @BeforeAll
+    void setup() {
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
@@ -134,12 +139,11 @@ class MyPageControllerTest extends SupportControllerTest {
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-
-        Company savedCompany = companyRepository.save(company);
+        companyRepository.save(company);
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
+            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
@@ -147,8 +151,7 @@ class MyPageControllerTest extends SupportControllerTest {
     }
 
     @AfterAll
-    static void tearDown(@Autowired TechArticleRepository techArticleRepository,
-                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+    void tearDown() {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
     }

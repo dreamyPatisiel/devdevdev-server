@@ -19,12 +19,34 @@ public enum LimiterPlan {
         public Bandwidth getLimit() {
             return Bandwidth.classic(120, Refill.intervally(120, Duration.ofMinutes(1)));
         }
+
+        @Override
+        public String createLimiterKey(HttpServletRequest request) {
+            String ip = request.getRemoteAddr();
+            try {
+                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                return gaId + DASH + ip;
+            } catch (CookieException e) {
+                return ip;
+            }
+        }
     },
     TEST {
         @Override
         public Bandwidth getLimit() {
-            return Bandwidth.classic(1_000, Refill.intervally(1_000, Duration.ofSeconds(1)));
+            return Bandwidth.classic(1_000, Refill.intervally(1_000, Duration.ofMinutes(1)));
 
+        }
+
+        @Override
+        public String createLimiterKey(HttpServletRequest request) {
+            String ip = request.getRemoteAddr();
+            try {
+                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                return gaId + DASH + ip;
+            } catch (CookieException e) {
+                return ip;
+            }
         }
     },
     LOCAL {
@@ -32,11 +54,33 @@ public enum LimiterPlan {
         public Bandwidth getLimit() {
             return Bandwidth.classic(5, Refill.intervally(5, Duration.ofSeconds(10)));
         }
+
+        @Override
+        public String createLimiterKey(HttpServletRequest request) {
+            String ip = request.getRemoteAddr();
+            try {
+                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                return gaId + DASH + ip;
+            } catch (CookieException e) {
+                return ip;
+            }
+        }
     },
     DEV {
         @Override
         public Bandwidth getLimit() {
             return Bandwidth.classic(120, Refill.intervally(120, Duration.ofMinutes(1)));
+        }
+
+        @Override
+        public String createLimiterKey(HttpServletRequest request) {
+            String ip = request.getRemoteAddr();
+            try {
+                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                return gaId + DASH + ip;
+            } catch (CookieException e) {
+                return ip;
+            }
         }
     },
     PROD {
@@ -44,32 +88,38 @@ public enum LimiterPlan {
         public Bandwidth getLimit() {
             return Bandwidth.classic(120, Refill.intervally(120, Duration.ofMinutes(1)));
         }
+
+        @Override
+        public String createLimiterKey(HttpServletRequest request) {
+            String ip = request.getRemoteAddr();
+            try {
+                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                return gaId + DASH + ip;
+            } catch (CookieException e) {
+                return ip;
+            }
+        }
     };
 
     public static final String DASH = "-";
 
     public abstract Bandwidth getLimit();
 
-    public static Bandwidth resolvePlan(String targetPlan) {
-        return Arrays.stream(LimiterPlan.values())
-                .filter(limiterPlan -> limiterPlan.name().equalsIgnoreCase(targetPlan))
-                .map(LimiterPlan::getLimit)
-                .findFirst()
-                .orElseGet(DEFAULT::getLimit);
-    }
-
     /**
-     * @Note: 기본적으로 _ga와 ip를 조합하여 key를 생성한다. <br/> _ga의 쿠키가 없으면 ip로 key를 생성한다.
+     * @Note: 현재 모든 정책에 _ga와 ip를 조합하여 key를 생성한다. <br/> _ga의 쿠키가 없으면 ip로 key를 생성한다.
      * @Author: 장세웅
      * @Since: 2024.06.26
      */
-    public static String createLimiterKey(HttpServletRequest request) {
-        String ip = request.getRemoteAddr();
-        try {
-            String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
-            return gaId + DASH + ip;
-        } catch (CookieException e) {
-            return ip;
-        }
+    public abstract String createLimiterKey(HttpServletRequest request);
+
+    public static Bandwidth resolvePlan(String targetPlan) {
+        return getLimiterPlan(targetPlan).getLimit();
+    }
+
+    public static LimiterPlan getLimiterPlan(String targetPlan) {
+        return Arrays.stream(LimiterPlan.values())
+                .filter(limiterPlan -> limiterPlan.name().equalsIgnoreCase(targetPlan))
+                .findAny()
+                .orElseGet(() -> DEFAULT);
     }
 }

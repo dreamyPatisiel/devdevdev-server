@@ -17,17 +17,12 @@ public class TokenBucketResolver {
     private final BucketConfiguration bucketConfiguration;
     private final LettuceBasedProxyManager lettuceBasedProxyManager;
 
-    public boolean checkBucketCounter(String key) {
+    public void checkBucketCounter(String key) {
         Bucket bucket = bucket(key);
+        // 버킷의 토큰을 소비할 수 없으면
         if (!bucket.tryConsume(MIN_CONSUME_TOKENS)) {
             throw new LimiterException(TOO_MANY_REQUEST_MESSAGE);
         }
-
-        return true;
-    }
-
-    public long getAvailableTokens(String key) {
-        return bucket(key).getAvailableTokens();
     }
 
     private Bucket bucket(String key) {

@@ -155,7 +155,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
 
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, savedCompany);
+            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, savedCompany);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);

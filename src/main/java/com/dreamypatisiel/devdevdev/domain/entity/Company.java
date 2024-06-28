@@ -49,13 +49,11 @@ public class Company extends BasicTime {
     private List<TechArticle> techArticles = new ArrayList<>();
 
     @Builder
-    private Company(CompanyName name, Url officialUrl, String officialImageUrl, Url careerUrl,
-                    List<TechArticle> techArticles) {
+    private Company(CompanyName name, Url officialUrl, String officialImageUrl, Url careerUrl) {
         this.name = name;
         this.officialUrl = officialUrl;
         this.officialImageUrl = officialImageUrl;
         this.careerUrl = careerUrl;
-        this.techArticles = techArticles;
     }
 
     public void changeTechArticles(List<TechArticle> techArticles) {

@@ -16,6 +16,8 @@ import org.springframework.context.annotation.DependsOn;
 @DependsOn({"embeddedRedisConfig"}) // 빈 초기화 순서 지정
 public class LimiterConfig {
 
+    private static final int MAX_SECONDS = 10;
+
     @Value("${spring.data.redis.host}")
     private String redisHost;
 
@@ -40,7 +42,7 @@ public class LimiterConfig {
     public LettuceBasedProxyManager lettuceBasedProxyManager() {
 
         ExpirationAfterWriteStrategy expirationAfterWriteStrategy = ExpirationAfterWriteStrategy.basedOnTimeForRefillingBucketUpToMax(
-                Duration.ofSeconds(10));
+                Duration.ofSeconds(MAX_SECONDS));
 
         return LettuceBasedProxyManager.builderFor(redisClient())
                 .withExpirationStrategy(expirationAfterWriteStrategy)
