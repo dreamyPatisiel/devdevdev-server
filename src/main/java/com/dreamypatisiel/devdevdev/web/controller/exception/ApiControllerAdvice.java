@@ -14,6 +14,7 @@ import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
 import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.limiter.exception.LimiterException;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -146,5 +147,11 @@ public class ApiControllerAdvice {
         return new ResponseEntity<>(
                 BasicResponse.fail(EXTERNAL_SYSTEM_ERROR_MESSAGE, HttpStatus.SERVICE_UNAVAILABLE.value()),
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(LimiterException.class)
+    public ResponseEntity<BasicResponse<Object>> limiterException(LimiterException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.TOO_MANY_REQUESTS.value()),
+                HttpStatus.TOO_MANY_REQUESTS);
     }
 }

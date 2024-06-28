@@ -1,9 +1,9 @@
 spring:
   profiles:
     active:
-      - dev
+      - local
     include:
-      - oauth2-dev
-      - jwt-dev
-      - storage-s3-dev
+      - oauth2-local
+      - jwt-local
+      - storage-s3-local
       - open-ai

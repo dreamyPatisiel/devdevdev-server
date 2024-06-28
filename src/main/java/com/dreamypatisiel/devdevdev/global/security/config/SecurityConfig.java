@@ -14,6 +14,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.handler.JwtAuthenticatio
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2AuthenticationFailureHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.handler.OAuth2SuccessHandler;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.service.OAuth2UserServiceImpl;
+import com.dreamypatisiel.devdevdev.limiter.filter.LimiterFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -46,6 +47,7 @@ public class SecurityConfig {
     private final DevJwtAuthenticationFilter devJwtAuthenticationFilter;
     private final ProdJwtAuthenticationFilter prodJwtAuthenticationFilter;
     private final SecurityExceptionFilter securityExceptionFilter;
+    private final LimiterFilter limiterFilter;
     private final CorsConfig corsConfig;
 
     @Bean
@@ -84,6 +86,7 @@ public class SecurityConfig {
 
         http.addFilterBefore(devJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(securityExceptionFilter, DevJwtAuthenticationFilter.class);
+        http.addFilterBefore(limiterFilter, SecurityExceptionFilter.class);
 
         return http.build();
     }
@@ -144,9 +147,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(PROD_WHITELIST_URL).permitAll()
-                        .requestMatchers("/devdevdev/api/v1/public").permitAll()
-                        .requestMatchers("/devdevdev/api/v1/admin").hasRole(ADMIN)
-                        .requestMatchers("/devdevdev/api/v1/user").hasAnyRole(ADMIN, USER)
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

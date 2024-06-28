@@ -83,15 +83,18 @@ public class TechArticle extends BasicTime {
     }
 
     public static TechArticle of(ElasticTechArticle elasticTechArticle, Company company) {
-        return TechArticle.builder()
+        TechArticle techArticle = TechArticle.builder()
                 .techArticleUrl(new Url(elasticTechArticle.getTechArticleUrl()))
                 .viewTotalCount(new Count(elasticTechArticle.getViewTotalCount()))
                 .recommendTotalCount(new Count(elasticTechArticle.getRecommendTotalCount()))
                 .commentTotalCount(new Count(elasticTechArticle.getCommentTotalCount()))
                 .popularScore(new Count(elasticTechArticle.getPopularScore()))
                 .elasticId(elasticTechArticle.getId())
-                .company(company)
                 .build();
+
+        techArticle.changeCompany(company);
+
+        return techArticle;
     }
 
     public static TechArticle of(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
@@ -120,6 +123,7 @@ public class TechArticle extends BasicTime {
     }
 
     public void changeCompany(Company company) {
+        company.getTechArticles().add(this);
         this.company = company;
     }
 
