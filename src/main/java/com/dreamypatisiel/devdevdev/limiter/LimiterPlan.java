@@ -24,7 +24,7 @@ public enum LimiterPlan {
         public String createLimiterKey(HttpServletRequest request) {
             String ip = request.getRemoteAddr();
             try {
-                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
                 return gaId + DASH + ip;
             } catch (CookieException e) {
                 return ip;
@@ -35,14 +35,13 @@ public enum LimiterPlan {
         @Override
         public Bandwidth getLimit() {
             return Bandwidth.classic(1_000, Refill.intervally(1_000, Duration.ofMinutes(1)));
-
         }
 
         @Override
         public String createLimiterKey(HttpServletRequest request) {
             String ip = request.getRemoteAddr();
             try {
-                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
                 return gaId + DASH + ip;
             } catch (CookieException e) {
                 return ip;
@@ -52,14 +51,14 @@ public enum LimiterPlan {
     LOCAL {
         @Override
         public Bandwidth getLimit() {
-            return Bandwidth.classic(5, Refill.intervally(5, Duration.ofSeconds(10)));
+            return Bandwidth.classic(15, Refill.intervally(15, Duration.ofSeconds(5)));
         }
 
         @Override
         public String createLimiterKey(HttpServletRequest request) {
             String ip = request.getRemoteAddr();
             try {
-                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
                 return gaId + DASH + ip;
             } catch (CookieException e) {
                 return ip;
@@ -76,7 +75,7 @@ public enum LimiterPlan {
         public String createLimiterKey(HttpServletRequest request) {
             String ip = request.getRemoteAddr();
             try {
-                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
                 return gaId + DASH + ip;
             } catch (CookieException e) {
                 return ip;
@@ -93,7 +92,7 @@ public enum LimiterPlan {
         public String createLimiterKey(HttpServletRequest request) {
             String ip = request.getRemoteAddr();
             try {
-                String gaId = CookieUtils.getRequestCookieValueByName(request, "_ga");
+                String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
                 return gaId + DASH + ip;
             } catch (CookieException e) {
                 return ip;
@@ -102,6 +101,7 @@ public enum LimiterPlan {
     };
 
     public static final String DASH = "-";
+    public static final String GA = "_ga";
 
     public abstract Bandwidth getLimit();
 

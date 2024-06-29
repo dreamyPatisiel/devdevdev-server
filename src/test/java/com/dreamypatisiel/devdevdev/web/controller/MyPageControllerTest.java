@@ -73,8 +73,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -88,7 +86,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
 
-@TestInstance(Lifecycle.PER_CLASS)
 class MyPageControllerTest extends SupportControllerTest {
 
     private static Long FIRST_TECH_ARTICLE_ID;
@@ -122,13 +119,10 @@ class MyPageControllerTest extends SupportControllerTest {
 
     private static List<TechArticle> techArticles;
 
-    @Autowired
-    CompanyRepository companyRepository;
-    @Autowired
-    ElasticTechArticleRepository elasticTechArticleRepository;
-
     @BeforeAll
-    void setup() {
+    static void setup(@Autowired CompanyRepository companyRepository,
+                      @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                      @Autowired TechArticleRepository techArticleRepository) {
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
@@ -151,7 +145,8 @@ class MyPageControllerTest extends SupportControllerTest {
     }
 
     @AfterAll
-    void tearDown() {
+    static void tearDown(@Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                         @Autowired TechArticleRepository techArticleRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
     }

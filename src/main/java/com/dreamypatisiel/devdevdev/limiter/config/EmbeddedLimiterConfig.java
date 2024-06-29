@@ -10,11 +10,13 @@ import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 
 @Configuration
-@Profile({"dev", "prod"})
-public class LimiterConfig {
+@DependsOn({"embeddedRedisServerConfig"}) // 빈 초기화 순서 지정
+@Profile({"test", "local"})
+public class EmbeddedLimiterConfig {
 
     private static final int MAX_SECONDS = 10;
 

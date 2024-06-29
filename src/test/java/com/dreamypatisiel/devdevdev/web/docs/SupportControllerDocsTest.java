@@ -16,6 +16,7 @@ import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.Date;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,10 @@ import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDoc
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.connection.DefaultStringRedisConnection;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.restdocs.payload.ResponseFieldsSnippet;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +55,8 @@ public class SupportControllerDocsTest {
     protected RestTemplate restTemplate;
     @Value("${open-ai.api-key}")
     protected String openAIApiKey;
+    @Autowired
+    protected RedisTemplate<?, ?> redisTemplate;
 
     protected String refreshToken;
     protected String accessToken;
@@ -73,6 +80,16 @@ public class SupportControllerDocsTest {
         Token token = tokenService.generateTokenBy(email, socialType, role);
         refreshToken = token.getRefreshToken();
         accessToken = token.getAccessToken();
+    }
+
+    @AfterEach
+    void tearDown() {
+        RedisConnection redisConnection = redisTemplate.getConnectionFactory().getConnection();
+        RedisSerializer<String> redisSerializer = (RedisSerializer<String>) redisTemplate.getKeySerializer();
+        DefaultStringRedisConnection defaultStringRedisConnection = new DefaultStringRedisConnection(redisConnection,
+                redisSerializer);
+
+        defaultStringRedisConnection.flushAll();
     }
 
     protected ResponseFieldsSnippet exceptionResponseFields() {
