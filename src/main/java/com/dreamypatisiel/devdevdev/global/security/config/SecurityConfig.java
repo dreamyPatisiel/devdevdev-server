@@ -134,6 +134,7 @@ public class SecurityConfig {
 
         http.addFilterBefore(devJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(securityExceptionFilter, DevJwtAuthenticationFilter.class);
+        http.addFilterBefore(limiterFilter, SecurityExceptionFilter.class);
 
         return http.build();
     }
@@ -170,6 +171,7 @@ public class SecurityConfig {
 
         http.addFilterBefore(prodJwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.addFilterBefore(securityExceptionFilter, ProdJwtAuthenticationFilter.class);
+        http.addFilterBefore(limiterFilter, SecurityExceptionFilter.class);
 
         return http.build();
     }
