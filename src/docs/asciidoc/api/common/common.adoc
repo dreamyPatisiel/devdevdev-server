@@ -49,3 +49,16 @@ include::{snippets}/token-invalid-blanked-accessToken-exception/response-body.ad
   "errorCode" : 400
 }
 ----
+
+=== 처리율 제한 예외
+
+==== HTTP Response
+
+[source,json,options="nowrap"]
+----
+{
+  "resultType" : "FAIL",
+  "message" : "너무 많은 요청을 했습니다. 잠시 후 다시 시도해 주세요.",
+  "errorCode" : 429
+}
+----
