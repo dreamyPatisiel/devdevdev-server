@@ -8,14 +8,12 @@ import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
+import org.apache.http.entity.ContentType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -45,11 +43,11 @@ public class SecurityExceptionFilter extends OncePerRequestFilter {
     }
 
     private void sendErrorMessage(HttpServletResponse response, int status, Exception e) throws IOException {
-        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+        response.setContentType(ContentType.APPLICATION_JSON.toString());
         response.setStatus(status);
         response.getWriter().write(
                 ErrorResponse.of(e.getMessage(), status)
-                .convertToJson()
+                        .convertToJson()
         );
     }
 

@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.limiter.TokenBucketResolver;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,10 +29,13 @@ public class TokenController {
 
     private final JwtMemberService jwtMemberService;
     private final TokenService tokenService;
+    private final TokenBucketResolver tokenBucketResolver;
 
     @Operation(summary = "리프레시 요청", description = "쿠키에 담긴 RefreshToken을 통해 AccessToken을 재발급합니다.", deprecated = true)
     @PostMapping("/refresh")
-    public ResponseEntity<BasicResponse<Object>> getRefreshToken(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<BasicResponse<Object>> getRefreshToken(HttpServletRequest request,
+                                                                 HttpServletResponse response) {
+
         // 쿠키에서 refresh를 꺼내온다.
         String refreshToken = CookieUtils.getRequestCookieValueByName(request,
                 JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN);

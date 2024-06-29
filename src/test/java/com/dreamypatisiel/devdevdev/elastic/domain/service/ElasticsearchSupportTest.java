@@ -55,7 +55,7 @@ public class ElasticsearchSupportTest {
 
         List<TechArticle> techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
+            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);

@@ -23,7 +23,7 @@ class TechArticleMainResponseTest {
         Company company = createCompany("꿈빛 파티시엘", "https://companylogo.png", "https://example.com",
                 "https://example.com");
 
-        TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
+        TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
         CompanyResponse companyResponse = CompanyResponse.from(company);
 
         // when

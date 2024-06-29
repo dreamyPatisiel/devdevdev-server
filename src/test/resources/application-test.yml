@@ -1,3 +1,6 @@
+bucket:
+  plan: test
+
 domain:
   frontend:
     host: https://www.devdevdev.co.kr

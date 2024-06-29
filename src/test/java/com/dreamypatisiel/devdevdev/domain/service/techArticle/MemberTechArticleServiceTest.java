@@ -187,7 +187,8 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
@@ -213,7 +214,8 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
@@ -239,7 +241,8 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.of(new Url("https://example.com"), new Count(1L), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L), "elasticId", company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);

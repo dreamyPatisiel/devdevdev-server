@@ -82,21 +82,24 @@ public class TechArticle extends BasicTime {
         this.elasticId = elasticId;
     }
 
-    public static TechArticle of(ElasticTechArticle elasticTechArticle, Company company) {
-        return TechArticle.builder()
+    public static TechArticle createTechArticle(ElasticTechArticle elasticTechArticle, Company company) {
+        TechArticle techArticle = TechArticle.builder()
                 .techArticleUrl(new Url(elasticTechArticle.getTechArticleUrl()))
                 .viewTotalCount(new Count(elasticTechArticle.getViewTotalCount()))
                 .recommendTotalCount(new Count(elasticTechArticle.getRecommendTotalCount()))
                 .commentTotalCount(new Count(elasticTechArticle.getCommentTotalCount()))
                 .popularScore(new Count(elasticTechArticle.getPopularScore()))
                 .elasticId(elasticTechArticle.getId())
-                .company(company)
                 .build();
+
+        techArticle.changeCompany(company);
+
+        return techArticle;
     }
 
-    public static TechArticle of(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
-                                 Count commentTotalCount,
-                                 Count popularScore, String elasticId, Company company) {
+    public static TechArticle createTechArticle(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
+                                                Count commentTotalCount,
+                                                Count popularScore, String elasticId, Company company) {
         return TechArticle.builder()
                 .techArticleUrl(techArticleUrl)
                 .viewTotalCount(viewTotalCount)
@@ -120,6 +123,7 @@ public class TechArticle extends BasicTime {
     }
 
     public void changeCompany(Company company) {
+        company.getTechArticles().add(this);
         this.company = company;
     }
 

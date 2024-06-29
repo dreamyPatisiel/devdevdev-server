@@ -97,8 +97,8 @@ public class LocalInitData {
         List<Pick> picks = creatPicks(pickOptions, member);
         List<PickVote> pickVotes = createPickVotes(member, picks.get(0), pickOptions);
         pickRepository.saveAll(picks);
-        pickVoteRepository.saveAll(pickVotes);
         pickOptionRepository.saveAll(pickOptions);
+        pickVoteRepository.saveAll(pickVotes);
 
         List<Company> companies = createCompanies();
         List<Company> savedCompanies = companyRepository.saveAll(companies);
@@ -187,10 +187,15 @@ public class LocalInitData {
 
     private List<TechArticle> createTechArticles(Map<Long, Company> companyIdMap) {
         List<TechArticle> techArticles = new ArrayList<>();
-        Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findAll();
+        Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findTop10By();
+        int count = 0;
         for (ElasticTechArticle elasticTechArticle : elasticTechArticles) {
+            count++;
             Company company = companyIdMap.get(elasticTechArticle.getCompanyId());
-            TechArticle techArticle = TechArticle.of(elasticTechArticle, company);
+            if (company == null) {
+                log.info("company가 null 이다. elasticTechArticleId={} count={}", elasticTechArticle.getId(), count);
+            }
+            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         return techArticles;
