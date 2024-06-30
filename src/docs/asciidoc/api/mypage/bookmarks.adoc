@@ -1,0 +1,23 @@
+[[MypageBookmarks]]
+== 기술블로그 북마크 목록 API(GET: /devdevdev/api/v1/mypage/bookmarks)
+* 회원은 기술블로그 북마크 목록을 조회할 수 있다.
+* 비회원은 기술블로그 북마크 목록을 조회할 수 없다.
+* 다음 페이지 요청 시 정렬 조건과 커서(마지막 데이터의 id)를 요청에 담아야 한다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/mypage-bookmarks/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/mypage-bookmarks/request-headers.adoc[]
+==== HTTP Request Query Parameters Fields
+include::{snippets}/mypage-bookmarks/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/mypage-bookmarks/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/mypage-bookmarks/response-fields.adoc[]
+
+
+=== 예외
+==== HTTP Response
+include::{snippets}/not-found-member-exception/response-body.adoc[]

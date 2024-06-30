@@ -1,0 +1,11 @@
+= 픽픽픽
+
+include::pick-main.adoc[]
+include::pick-detail.adoc[]
+include::pick-register.adoc[]
+include::pick-modify.adoc[]
+include::pick-delete.adoc[]
+include::pick-vote.adoc[]
+include::pick-option-register-image.adoc[]
+include::pick-option-delete-image.adoc[]
+include::pick-similarity.adoc[]

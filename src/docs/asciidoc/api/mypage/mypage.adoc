@@ -1,0 +1,7 @@
+= 마이 페이지
+
+include::bookmarks.adoc[]
+include::mypick-main.adoc[]
+include::exit-member.adoc[]
+include::exit-survey.adoc[]
+include::record-exit-survey.adoc[]

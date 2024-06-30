@@ -1,0 +1,22 @@
+[[TechArticleKeyword]]
+== 기술블로그 검색어 자동완성 API(GET: /devdevdev/api/v1/keywords/auto-complete)
+
+* 회원 또는 익명회원은 기술블로그 키워드를 검색하면 해당 키워드로 시작하는 키워드 후보 리스트를 최대 20개 조회할 수 있다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/tech-article-keywords-autocomplete/http-request.adoc[]
+
+==== HTTP Request Query Parameters Fields
+
+include::{snippets}/tech-article-keywords-autocomplete/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/tech-article-keywords-autocomplete/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/tech-article-keywords-autocomplete/response-fields.adoc[]

@@ -1,0 +1,34 @@
+[[Pick-Detail]]
+== 픽픽픽 상세 API(GET: /devdevdev/api/v1/picks/{pickId})
+
+* 픽픽픽 아이디로 상세 화면을 조회할 수 있다.
+* 픽픽픽 게시글의 상태가 승인 상태(`APPROVAL`)가 아니면 조회할 수 없다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/pick-detail/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/pick-detail/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/pick-detail/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/pick-detail/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/pick-detail/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/pick-detail-not-found-exception/response-body.adoc[]
+include::{snippets}/pick-detail-ready/response-body.adoc[]

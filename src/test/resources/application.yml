@@ -1,0 +1,8 @@
+spring:
+  profiles:
+    include:
+      - test
+      - oauth2-test
+      - jwt-test
+      - storage-s3
+      - open-ai

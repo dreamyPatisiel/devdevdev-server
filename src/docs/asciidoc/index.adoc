@@ -1,0 +1,17 @@
+ifndef::snippets[]
+:snippets: ../../build/generated-snippets
+endif::[]
+= DEVDEVDEV REST API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 1
+:sectlinks:
+
+include::api/common/common.adoc[]
+include::api/token/token.adoc[]
+include::api/member/member.adoc[]
+include::api/mypage/mypage.adoc[]
+include::api/pick/pick.adoc[]
+include::api/tech-article/tech-article.adoc[]

@@ -1,0 +1,4 @@
+jwt:
+  secret: devdevdevtestdevdevdevtestdevdevdevtestdevdevdevtest
+  redirectUri:
+    path: /home

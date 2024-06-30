@@ -1,0 +1,22 @@
+[[Delete-Pick-Option-Image]]
+== 픽픽픽 이미지 삭제 API(DELETE: /devdevdev/api/v1/picks/image/{pickOptionImageId})
+* 픽픽픽 옵션 이미지 1개를 삭제 한다.
+* 비회원은 이미지를 삭제 할 수 없다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/pick-main-option-delete-image/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/pick-main-option-delete-image/request-headers.adoc[]
+==== HTTP Request Path Parameters Fields
+include::{snippets}/pick-main-option-delete-image/path-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/pick-main-option-delete-image/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/pick-main-option-delete-image/response-fields.adoc[]
+
+=== 예외
+==== HTTP Response
+include::{snippets}/pick-main-option-delete-image-anonymous-exception/response-body.adoc[]
+include::{snippets}/pick-main-option-delete-image-not-found-exception/response-body.adoc[]

@@ -1,0 +1,70 @@
+bucket:
+  plan: local
+
+elasticsearch:
+  host: es.dev.devdevdev.co.kr
+  port: 9200
+
+springdoc:
+  packages-to-scan: com.dreamypatisiel.devdevdev
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
+  swagger-ui:
+    path: /index.html
+    disable-swagger-default-url: true
+    display-request-duration: true
+    operations-sorter: alpha
+
+domain:
+  frontend:
+    # host: http://localhost:3000
+    # host: https://devdevdev-client.vercel.app
+    # host: https://www.devdevdev.co.kr
+    host: http://localhost:8080
+  backend:
+    host: http://localhost:8080
+
+cors:
+  origin:
+    http://localhost:3000
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 1000
+
+  datasource:
+    url: jdbc:h2:mem:devdevdev-test
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 8
+          min-idle: 2
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG

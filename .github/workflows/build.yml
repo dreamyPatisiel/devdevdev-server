@@ -1,0 +1,61 @@
+## Default Setting
+name: Build Test on PR
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  build:
+    name: build
+    # 실행 환경 설정
+    runs-on: ubuntu-latest
+
+    # 차례대로 실행
+    steps:
+      # 작업에서 액세스할 수 있도록 $GITHUB_WORKSPACE에서 저장소를 체크아웃합니다.
+      - uses: actions/checkout@v3
+
+      ## open jdk 21 버전 환경 세팅
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: corretto
+
+      # 환경파일 작성 : github에 올리지 못하는 정보의 설정파일을 runner에 삽입
+      ## create application-dev.yml
+      - name: make application-dev.yml
+        run: |
+          ## create application-dev.yml
+          cd ./src/main/resources
+          
+          touch ./application-dev.yml
+          touch ./application-jwt-dev.yml
+          touch ./application-oauth2-dev.yml
+          touch ./application-storage-s3.yml
+          
+          echo "${{ secrets.application_dev }}" >> ./application-dev.yml
+          echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
+          echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
+          echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+
+      ## 테스트 코드에도 sotrage-s3, open-ai 가 필요함!
+      - name: make application-storage-s3.yml
+        run: |
+          cd ./src/test/resources
+          touch ./application-storage-s3.yml
+          
+          echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+
+        shell: bash
+
+      ## Springboot 프로젝트 빌드
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build and Test with Gradle
+        run: ./gradlew bootJar -Pprofile=dev

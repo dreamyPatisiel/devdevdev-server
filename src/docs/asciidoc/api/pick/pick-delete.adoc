@@ -1,0 +1,33 @@
+[[Pick-Delete]]
+== 픽픽픽 삭제 API(DELETE: /devdevdev/api/v1/picks/{pickId})
+
+* 회원이 자신이 작성한 픽픽픽 아이디로 픽픽픽을 삭제한다.
+* 회원 자신이 작성한 글이 아니면 삭제할 수 없다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/delete-pick/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/delete-pick/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/delete-pick/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/delete-pick/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/delete-pick/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/delete-pick-not-found-exception/response-body.adoc[]

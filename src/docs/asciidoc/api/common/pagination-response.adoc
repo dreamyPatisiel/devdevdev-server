@@ -1,0 +1,115 @@
+|===
+|Path|Type|Authentication|Description|Format
+
+    |`+resultType+`
+    |`+String+`
+    |
+    |응답 결과
+    |
+    |`+data+`
+    |`+Object+`
+    |
+    |응답 데이터
+    |
+    |`+data.content+`
+    |`+Array+`
+    |
+    |픽픽픽 메인 페이지네이션 정보
+    |
+    |`+data.pageable.pageNumber+`
+    |`+Number+`
+    |
+    |페이지 번호
+    |
+    |`+data.pageable.pageSize+`
+    |`+Number+`
+    |
+    |페이지 사이즈
+    |
+    |`+data.pageable.sort+`
+    |`+Object+`
+    |
+    |정렬 정보
+    |
+    |`+data.pageable.sort.empty+`
+    |`+Boolean+`
+    |
+    |정렬 정보가 비어있는지 여부
+    |
+    |`+data.pageable.sort.sorted+`
+    |`+Boolean+`
+    |
+    |정렬 여부
+    |
+    |`+data.pageable.sort.unsorted+`
+    |`+Boolean+`
+    |
+    |비정렬 여부
+    |
+    |`+data.pageable.offset+`
+    |`+Number+`
+    |
+    |페이지 오프셋 (페이지 크기 * 페이지 번호)
+    |
+    |`+data.pageable.paged+`
+    |`+Boolean+`
+    |
+    |페이지 정보 포함 여부
+    |
+    |`+data.pageable.unpaged+`
+    |`+Boolean+`
+    |
+    |페이지 정보 비포함 여부
+    |
+    |`+data.first+`
+    |`+Boolean+`
+    |
+    |현재 페이지가 첫 페이지 여부
+    |
+    |`+data.last+`
+    |`+Boolean+`
+    |
+    |현재 페이지가 마지막 페이지 여부
+    |
+    |`+data.size+`
+    |`+Number+`
+    |
+    |페이지 크기
+    |
+    |`+data.number+`
+    |`+Number+`
+    |
+    |현재 페이지
+    |
+    |`+data.sort+`
+    |`+Object+`
+    |
+    |정렬 정보
+    |
+    |`+data.sort.empty+`
+    |`+Boolean+`
+    |
+    |정렬 정보가 비어있는지 여부
+    |
+    |`+data.sort.sorted+`
+    |`+Boolean+`
+    |
+    |정렬 상태 여부
+    |
+    |`+data.sort.unsorted+`
+    |`+Boolean+`
+    |
+    |비정렬 상태 여부
+    |
+    |`+data.numberOfElements+`
+    |`+Number+`
+    |
+    |현재 페이지 데이터 수
+    |
+    |`+data.empty+`
+    |`+Boolean+`
+    |
+    |현재 빈 페이지 여부
+    |
+
+|===
