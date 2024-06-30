@@ -61,7 +61,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build and Test with Gradle
-        run: ./gradlew build bootjar
+        run: ./gradlew bootJar -Pprofile=prod
 
       # build한 후 프로젝트 코드 압축
       - name: Make zip file

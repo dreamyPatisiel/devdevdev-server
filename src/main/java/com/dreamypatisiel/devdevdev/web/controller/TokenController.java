@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,25 +51,33 @@ public class TokenController {
         return ResponseEntity.ok(BasicResponse.success());
     }
 
+    @Profile({"test", "local", "dev"})
     @Operation(summary = "USER 테스트 계정 토큰 생성", description = "USER 테스트 계정의 토큰을 생성하고 해당 계정의 refresh 토큰을 갱신합니다.")
     @GetMapping("/test/user")
     public ResponseEntity<BasicResponse<Token>> createUserToken() {
+
         // 테스트 계정 토큰 생성
         Token newToken = tokenService.generateTokenBy(LocalInitData.userEmail,
                 LocalInitData.userSocialType.name(), LocalInitData.userRole.name());
+
         // 테스트 계정의 refresh 갱신
         jwtMemberService.updateMemberRefreshToken(newToken.getRefreshToken());
+
         return ResponseEntity.ok(BasicResponse.success(newToken));
     }
 
+    @Profile({"test", "local", "dev"})
     @Operation(summary = "ADMIN 테스트 계정 토큰 생성", description = "ADMIN 테스트 계정의 토큰을 생성하고 해당 계정의 refresh 토큰을 갱신합니다.")
     @GetMapping("/test/admin")
     public ResponseEntity<BasicResponse<Token>> createAdminToken() {
+
         // 테스트 계정 토큰 생성
         Token newToken = tokenService.generateTokenBy(LocalInitData.adminEmail,
                 LocalInitData.adminSocialType.name(), LocalInitData.adminRole.name());
+
         // 테스트 계정의 refresh 갱신
         jwtMemberService.updateMemberRefreshToken(newToken.getRefreshToken());
+
         return ResponseEntity.ok(BasicResponse.success(newToken));
     }
 }

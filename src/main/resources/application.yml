@@ -1,9 +1,9 @@
 spring:
   profiles:
     active:
-      - dev
+      - ${spring.profiles.active}
     include:
-      - oauth2-dev
-      - jwt-dev
-      - storage-s3-dev
+      - "oauth2-${spring.profiles.active}"
+      - "jwt-${spring.profiles.active}"
+      - "storage-s3-${spring.profiles.active}"
       - open-ai
