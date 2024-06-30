@@ -43,6 +43,14 @@ jobs:
           echo "${{ secrets.application_storage_s3_prod }}" >> ./application-storage-s3-prod.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
 
+      # Dockerfile 주입
+      - name: make Dockerfile
+        run: |
+          cd
+          ls
+          rm Dockerfile
+          echo "${{ secrets.dockerfile_prod }}" >> ./Dockerfile
+
       ## 테스트 코드에도 sotrage-s3, open-ai 가 필요함!
       - name: make application-storage-s3.yml
         run: |
@@ -61,7 +69,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build and Test with Gradle
-        run: ./gradlew bootJar -Pprofile=prod
+        run: ./gradlew bootJar
 
       # build한 후 프로젝트 코드 압축
       - name: Make zip file
