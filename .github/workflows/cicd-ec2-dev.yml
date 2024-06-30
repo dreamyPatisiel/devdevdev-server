@@ -46,7 +46,7 @@ jobs:
       # Dockerfile 주입
       - name: make Dockerfile
         run: |
-          cd
+          cd $GITHUB_WORKSPACE
           ls
           rm Dockerfile
           echo "${{ secrets.dockerfile_dev }}" >> ./Dockerfile
