@@ -57,9 +57,9 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
             String ip = request.getRemoteAddr();
             try {
                 String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
-                sentryUser.setId(gaId);
+                sentryUser.setEmail(gaId);
             } catch (CookieException e) {
-                sentryUser.setId(ip);
+                sentryUser.setEmail(ip);
             } finally {
                 Sentry.setUser(sentryUser);
             }
