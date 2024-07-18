@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.global.security.jwt.filter;
 
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
+import io.sentry.Sentry;
 import io.sentry.protocol.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,6 +46,7 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
             String email = tokenService.getEmail(accessToken);
             User sentryUser = new User();
             sentryUser.setEmail(email);
+            Sentry.setUser(sentryUser);
         }
 
         // 다음 Filter 실행
