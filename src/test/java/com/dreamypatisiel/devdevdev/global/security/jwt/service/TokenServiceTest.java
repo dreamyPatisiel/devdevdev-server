@@ -166,7 +166,7 @@ class TokenServiceTest {
                 () -> assertThatThrownBy(() -> tokenService.validateToken(accessTokenBy))
                         .isInstanceOf(TokenInvalidException.class)
                         .hasMessage(TokenService.INVALID_EXPIRED_TOKEN_MESSAGE)
-                );
+        );
     }
 
     @ParameterizedTest
@@ -332,14 +332,16 @@ class TokenServiceTest {
         assertThat(claimsByAccessToken).isNotNull();
         assertAll(
                 () -> assertThat(claimsByAccessToken.get(JwtClaimConstant.email).toString()).isEqualTo(email),
-                () -> assertThat(claimsByAccessToken.get(JwtClaimConstant.socialType).toString()).isEqualTo(socialType.name()),
+                () -> assertThat(claimsByAccessToken.get(JwtClaimConstant.socialType).toString()).isEqualTo(
+                        socialType.name()),
                 () -> assertThat(claimsByAccessToken.get(JwtClaimConstant.role).toString()).isEqualTo(role)
         );
 
         assertThat(claimsByRefreshToken).isNotNull();
         assertAll(
                 () -> assertThat(claimsByRefreshToken.get(JwtClaimConstant.email).toString()).isEqualTo(email),
-                () -> assertThat(claimsByRefreshToken.get(JwtClaimConstant.socialType).toString()).isEqualTo(socialType.name()),
+                () -> assertThat(claimsByRefreshToken.get(JwtClaimConstant.socialType).toString()).isEqualTo(
+                        socialType.name()),
                 () -> assertThat(claimsByRefreshToken.get(JwtClaimConstant.role).toString()).isEqualTo(role)
         );
     }
@@ -392,6 +394,16 @@ class TokenServiceTest {
         assertThat(result).isEqualTo(role);
     }
 
-
+    @Test
+    @DisplayName("만료 토큰 생성")
+    void test() {
+        // given
+        when(timeProvider.getDateNow()).thenReturn(new Date());
+        // when
+        Token token = tokenService.generateTokenBy("alsdudr97@naver.com", "KAKAO", "ROLE_ADMIN");
+        // then
+        System.out.println(token.getAccessToken());
+        System.out.println(token.getRefreshToken());
+    }
 }
 

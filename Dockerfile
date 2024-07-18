@@ -1,13 +1,9 @@
 FROM openjdk:21-jdk
-
-# JAR_FILE 변수 정의 -> 기본적으로 jar file이 2개이기 때문에 이름을 특정한다.
-ARG JAR_FILE=build/libs/*.jar
-
 # JAR 파일 메인 디렉토리에 복사
-COPY ${JAR_FILE} app.jar
+COPY build/libs/*.jar app.jar
 
 # 타임존 설정
 ENV TZ Asia/Seoul
 
 # 시스템 진입점 정의
-ENTRYPOINT ["java","-jar","/app.jar"]
+CMD java -jar -Dspring.profiles.active=local /app.jar
