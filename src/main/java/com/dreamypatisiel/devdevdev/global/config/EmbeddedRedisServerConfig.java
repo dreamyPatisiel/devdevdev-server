@@ -43,10 +43,7 @@ public class EmbeddedRedisServerConfig {
         if (isArmMac()) {
             redisServer = new RedisServer(getRedisFileForArcMac(), port);
         } else {
-            redisServer = RedisServer.builder()
-                    .port(port)
-                    .setting("maxmemory 128MB")
-                    .build();
+            redisServer = new RedisServer(getRedisFileForX86Mac(), port);
         }
 
         redisServer.start();
@@ -128,6 +125,17 @@ public class EmbeddedRedisServerConfig {
     private File getRedisFileForArcMac() {
         try {
             return new ClassPathResource("redis/redis-server-mac-arm64").getFile();
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    /**
+     * X86 아키텍처를 사용하는 Mac에서 실행할 수 있는 Redis 바이너리 파일을 반환
+     */
+    private File getRedisFileForX86Mac() {
+        try {
+            return new ClassPathResource("redis/redis-server-mac-x86").getFile();
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
