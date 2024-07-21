@@ -39,6 +39,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'io.sentry:sentry-spring-boot-starter-jakarta:7.12.0'
+
     // https://mvnrepository.com/artifact/it.ozimov/embedded-redis
     implementation('it.ozimov:embedded-redis:0.7.3') { exclude group: "org.slf4j", module: "slf4j-simple" }
     // https://mvnrepository.com/artifact/commons-validator/commons-validator
