@@ -41,6 +41,7 @@ jobs:
           echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_dev }}" >> ./application-opensearch-dev.yml
 
       ## 테스트 코드에도 sotrage-s3, open-ai 가 필요함!
       - name: make application-storage-s3.yml
@@ -50,6 +51,7 @@ jobs:
           
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
 
         shell: bash
 
