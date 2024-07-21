@@ -1,9 +1,9 @@
 bucket:
   plan: local
 
-elasticsearch:
-  host: es.dev.devdevdev.co.kr
-  port: 9200
+#elasticsearch:
+#  host: es.dev.devdevdev.co.kr
+#  port: 9200
 
 springdoc:
   packages-to-scan: com.dreamypatisiel.devdevdev

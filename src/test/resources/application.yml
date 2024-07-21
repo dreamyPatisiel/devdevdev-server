@@ -6,3 +6,4 @@ spring:
       - jwt-test
       - storage-s3
       - open-ai
+      - opensearch
