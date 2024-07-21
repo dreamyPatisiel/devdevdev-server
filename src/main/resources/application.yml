@@ -7,4 +7,4 @@ spring:
       - "jwt-${spring.profiles.active}"
       - "storage-s3-${spring.profiles.active}"
       - open-ai
-      - opensearch
+      - "opensearch-${spring.profiles.active}"

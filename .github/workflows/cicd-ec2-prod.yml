@@ -42,6 +42,7 @@ jobs:
           echo "${{ secrets.application_oauth2_prod }}" >> ./application-oauth2-prod.yml
           echo "${{ secrets.application_storage_s3_prod }}" >> ./application-storage-s3-prod.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_prod }}" >> ./application-opensearch-prod.yml
 
       # Dockerfile 주입
       - name: make Dockerfile
