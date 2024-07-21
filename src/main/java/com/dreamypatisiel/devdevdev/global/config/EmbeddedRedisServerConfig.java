@@ -42,8 +42,13 @@ public class EmbeddedRedisServerConfig {
         int port = isRedisRunning() ? findAvailablePort() : redisPort;
         if (isArmMac()) {
             redisServer = new RedisServer(getRedisFileForArcMac(), port);
-        } else {
+        } else if (isX86Mac()) {
             redisServer = new RedisServer(getRedisFileForX86Mac(), port);
+        } else {
+            redisServer = RedisServer.builder()
+                    .port(port)
+                    .setting("maxmemory 128MB")
+                    .build();
         }
 
         redisServer.start();
@@ -116,6 +121,15 @@ public class EmbeddedRedisServerConfig {
      */
     private boolean isArmMac() {
         return Objects.equals(System.getProperty("os.arch"), "aarch64")
+                && Objects.equals(System.getProperty("os.name"), "Mac OS X");
+    }
+
+    /**
+     * 현재 시스템이 X86 아키텍처를 사용하는 MAC인지 확인 System.getProperty("os.arch") : JVM이 실행되는 시스템 아키텍처 반환
+     * System.getProperty("os.name") : 시스템 이름 반환
+     */
+    private boolean isX86Mac() {
+        return Objects.equals(System.getProperty("os.arch"), "x86_64")
                 && Objects.equals(System.getProperty("os.name"), "Mac OS X");
     }
 
