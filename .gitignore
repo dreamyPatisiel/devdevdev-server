@@ -47,9 +47,13 @@ src/main/resources/application-storage-s3.yml
 src/main/resources/application-storage-s3-local.yml
 src/main/resources/application-storage-s3-dev.yml
 src/main/resources/application-open-ai.yml
+src/main/resources/application-opensearch-local.yml
+src/main/resources/application-opensearch-dev.yml
+src/main/resources/application-opensearch-prod.yml
 src/test/resources/application-storage-s3.yml
 src/test/resources/application-storage-s3-prod.yml
 src/test/resources/application-open-ai.yml
+src/test/resources/application-opensearch-test.yml
 
 ### json
 src/main/resources/storage/gcs-key.json

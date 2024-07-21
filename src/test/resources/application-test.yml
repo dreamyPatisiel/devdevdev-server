@@ -52,7 +52,7 @@ logging:
     org.hibernate.type: TRACE
     org.springframework.jdbc: DEBUG
 
-elasticsearch:
-  host: es.dev.devdevdev.co.kr
-  port: 9200
-  index: _test
+#elasticsearch:
+#  host: es.dev.devdevdev.co.kr
+#  port: 9200
+#  index: _test

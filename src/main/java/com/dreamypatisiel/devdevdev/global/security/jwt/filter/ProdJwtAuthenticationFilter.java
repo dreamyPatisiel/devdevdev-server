@@ -1,8 +1,14 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.filter;
 
 
+import static com.dreamypatisiel.devdevdev.limiter.LimiterPlan.GA;
+
+import com.dreamypatisiel.devdevdev.exception.CookieException;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
+import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import io.sentry.Sentry;
+import io.sentry.protocol.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,11 +40,29 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("DevJwtAuthenticationFilter 시작");
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
+        // 센트리 회원
+        User sentryUser = new User();
+
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
         if (StringUtils.hasText(accessToken) && tokenService.validateToken(accessToken)) {
             // JWT 기반으로 authentication 설정
             Authentication authenticationToken = tokenService.createAuthenticationByToken(accessToken);
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+            // 센트리 이메일 설정
+            String email = tokenService.getEmail(accessToken);
+            sentryUser.setEmail(email);
+            Sentry.setUser(sentryUser);
+        } else {
+            String ip = request.getRemoteAddr();
+            try {
+                String gaId = CookieUtils.getRequestCookieValueByName(request, GA);
+                sentryUser.setEmail(gaId);
+            } catch (CookieException e) {
+                sentryUser.setEmail(ip);
+            } finally {
+                Sentry.setUser(sentryUser);
+            }
         }
 
         // 다음 Filter 실행

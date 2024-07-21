@@ -3,7 +3,10 @@ package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.elasticsearch.search.sort.*;
+import org.opensearch.search.sort.FieldSortBuilder;
+import org.opensearch.search.sort.SortBuilder;
+import org.opensearch.search.sort.SortBuilders;
+import org.opensearch.search.sort.SortOrder;
 
 @Getter
 @RequiredArgsConstructor
@@ -67,11 +70,12 @@ public enum TechArticleSort {
     };
 
     abstract public SortBuilder<?> getSortCondition();
+
     abstract public Object getSearchAfterCondition(ElasticTechArticle elasticTechArticle);
 
     private static FieldSortBuilder getFieldSortBuilder(String sortFieldName) {
         return SortBuilders.fieldSort(sortFieldName).order(SortOrder.DESC);
-    };
+    }
 
     private final static String LATEST_SORT_FIELD_NAME = "regDate";
     private final static String POPULAR_SORT_FIELD_NAME = "popularScore";

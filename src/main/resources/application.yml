@@ -1,9 +1,10 @@
 spring:
   profiles:
-    #    active:
-    #      - ${spring.profiles.active}
+    active:
+      - ${spring.profiles.active}
     include:
       - "oauth2-${spring.profiles.active}"
       - "jwt-${spring.profiles.active}"
       - "storage-s3-${spring.profiles.active}"
+      - "opensearch-${spring.profiles.active}"
       - open-ai
