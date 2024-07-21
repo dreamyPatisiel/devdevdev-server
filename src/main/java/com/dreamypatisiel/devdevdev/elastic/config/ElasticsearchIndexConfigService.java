@@ -7,6 +7,6 @@ import org.springframework.stereotype.Service;
 @Getter
 @Service
 public class ElasticsearchIndexConfigService {
-    @Value("${elasticsearch.index:}")
+    @Value("${opensearch.index:}")
     private String indexName;
 }

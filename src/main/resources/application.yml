@@ -6,5 +6,5 @@ spring:
       - "oauth2-${spring.profiles.active}"
       - "jwt-${spring.profiles.active}"
       - "storage-s3-${spring.profiles.active}"
+      - "opensearch-${spring.profiles.active}"
       - open-ai
-      - sentry

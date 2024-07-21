@@ -42,7 +42,7 @@ jobs:
           echo "${{ secrets.application_oauth2_prod }}" >> ./application-oauth2-prod.yml
           echo "${{ secrets.application_storage_s3_prod }}" >> ./application-storage-s3-prod.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
-          echo "${{ secrets.application_sentry }}" >> ./application-sentry.yml
+          echo "${{ secrets.application_opensearch_prod }}" >> ./application-opensearch-prod.yml
 
       # Dockerfile 주입
       - name: make Dockerfile
@@ -52,16 +52,14 @@ jobs:
           rm Dockerfile
           echo "${{ secrets.dockerfile_prod }}" >> ./Dockerfile
 
-      ## 테스트 코드에도 sotrage-s3, open-ai 가 필요함!
-      - name: make application-storage-s3.yml
+      ## 테스트 코드에도 storage-s3, open-ai 가 필요함!
+      - name: make application-test.yml
         run: |
           cd ./src/test/resources
-          touch ./application-storage-s3.yml
           
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
-          
-          cat ./application-storage-s3.yml
+          echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
 
         shell: bash
 
