@@ -77,8 +77,6 @@ public enum TechArticleSort {
         return SortBuilders.fieldSort(sortFieldName).order(SortOrder.DESC);
     }
 
-    ;
-
     private final static String LATEST_SORT_FIELD_NAME = "regDate";
     private final static String POPULAR_SORT_FIELD_NAME = "popularScore";
     private final static String MOST_VIEWED_SORT_FIELD_NAME = "viewTotalCount";
