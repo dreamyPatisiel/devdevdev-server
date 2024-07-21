@@ -15,13 +15,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-@Profile({"local", "dev", "test", "prod"})
 @Configuration
 @EnableElasticsearchRepositories(basePackages = "com.dreamypatisiel.devdevdev.elastic.domain.repository")
 public class OpenSearchRestClientConfiguration extends AbstractOpenSearchConfiguration {
+
+    public static final String ENDPOINT_SCHEME = "https";
+    public static final int ENDPOINT_PORT = 443;
+    public static final int CONNECTION_TIMEOUT_IN_SECONDS = 30;
+    public static final int SOCKET_TIMEOUT_IN_SECONDS = 60;
+
     @Value("${opensearch.endpoint}")
     private String endpoint;
 
@@ -48,13 +52,13 @@ public class OpenSearchRestClientConfiguration extends AbstractOpenSearchConfigu
         CredentialsProvider credentialsProvider = applicationContext.getBean(
                 CredentialsProvider.class);
 
-        RestClientBuilder builder = RestClient.builder(new HttpHost(endpoint, 443, "https"))
+        RestClientBuilder builder = RestClient.builder(new HttpHost(endpoint, ENDPOINT_PORT, ENDPOINT_SCHEME))
                 .setHttpClientConfigCallback(
                         httpAsyncClientBuilder -> httpAsyncClientBuilder.setDefaultCredentialsProvider(
                                 credentialsProvider))
                 .setRequestConfigCallback(requestConfigBuilder -> requestConfigBuilder
-                        .setConnectTimeout((int) Duration.ofSeconds(600).toMillis())
-                        .setSocketTimeout((int) Duration.ofSeconds(300).toMillis()));
+                        .setConnectTimeout((int) Duration.ofSeconds(CONNECTION_TIMEOUT_IN_SECONDS).toMillis())
+                        .setSocketTimeout((int) Duration.ofSeconds(SOCKET_TIMEOUT_IN_SECONDS).toMillis()));
 
         RestHighLevelClient client = new RestHighLevelClient(builder);
         return client;
