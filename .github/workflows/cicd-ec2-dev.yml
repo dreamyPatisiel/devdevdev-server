@@ -56,13 +56,10 @@ jobs:
       - name: make application-test.yml
         run: |
           cd ./src/test/resources
-          touch ./application-storage-s3-dev.yml
           
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
-          
-          cat ./application-storage-s3.yml
 
         shell: bash
 
