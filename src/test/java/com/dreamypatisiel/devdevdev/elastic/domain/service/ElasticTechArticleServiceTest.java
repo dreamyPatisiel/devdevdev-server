@@ -9,8 +9,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.ElasticTechArticleException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -30,6 +32,8 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
     ElasticTechArticleService elasticTechArticleService;
     @Autowired
     TechArticleRepository techArticleRepository;
+    @Autowired
+    ElasticTechArticleRepository elasticTechArticleRepository;
 
     @Test
     @DisplayName("엘라스틱서치 기술블로그 메인을 조회한다. (기본정렬은 최신순)")
@@ -770,5 +774,42 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         // when // then
         assertThatCode(() -> elasticTechArticleService.getTechArticles(pageable, null, null, keyword, null, null))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("엘라스틱서치 키워드 검색시 기본 쿼리 옵션은 AND로 동작한다.")
+    void test() {
+        // given
+        List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
+        elasticTechArticles.add(ElasticTechArticle.builder().title("자바").build());
+        elasticTechArticles.add(ElasticTechArticle.builder().title("스프링").build());
+        elasticTechArticles.add(ElasticTechArticle.builder().title("자바 스프링").build());
+        elasticTechArticleRepository.saveAll(elasticTechArticles);
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // when
+        SearchHits<ElasticTechArticle> techArticles1 = elasticTechArticleService.getTechArticles(pageable,
+                null, null, "자바", null, null);
+        List<ElasticTechArticle> elasticTechArticles1 = techArticles1.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .toList();
+
+        SearchHits<ElasticTechArticle> techArticles2 = elasticTechArticleService.getTechArticles(pageable,
+                null, null, "스프링", null, null);
+        List<ElasticTechArticle> elasticTechArticles2 = techArticles2.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .toList();
+
+        SearchHits<ElasticTechArticle> techArticles3 = elasticTechArticleService.getTechArticles(pageable,
+                null, null, "자바 스프링", null, null);
+        List<ElasticTechArticle> elasticTechArticles3 = techArticles3.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .toList();
+
+        // then
+        assertThat(elasticTechArticles1).hasSize(2);
+        assertThat(elasticTechArticles2).hasSize(2);
+        assertThat(elasticTechArticles3).hasSize(1);
     }
 }
