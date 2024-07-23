@@ -40,7 +40,7 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("DevJwtAuthenticationFilter 시작");
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
-        // 센트리 회원
+// 센트리 회원
         User sentryUser = new User();
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
@@ -50,9 +50,20 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
             // 센트리 이메일 설정
-            String email = tokenService.getEmail(accessToken);
-            sentryUser.setEmail(email);
-            Sentry.setUser(sentryUser);
+            Sentry.configureScope(scope -> {
+                String email = tokenService.getEmail(accessToken);
+                sentryUser.setEmail(email);
+                scope.setUser(sentryUser);
+
+                // Record a breadcrumb in the scope.
+                Sentry.addBreadcrumb("User did something specific again!");
+
+                scope.setExtra("devdevdev-info-extra", accessToken);
+                scope.setTag("devdevdev-info-tag", accessToken);
+
+                // Send an event with the scope data attached.
+                Sentry.captureMessage("New event message");
+            });
         } else {
             String ip = request.getRemoteAddr();
             try {
