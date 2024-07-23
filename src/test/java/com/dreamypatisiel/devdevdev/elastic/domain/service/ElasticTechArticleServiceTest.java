@@ -808,8 +808,25 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
                 .toList();
 
         // then
-        assertThat(elasticTechArticles1).hasSize(2);
-        assertThat(elasticTechArticles2).hasSize(2);
-        assertThat(elasticTechArticles3).hasSize(1);
+        // "자바" 키워드 검색
+        assertThat(elasticTechArticles1)
+                .hasSize(2)
+                .allSatisfy(article ->
+                        assertThat((article.getContents() != null && article.getContents().contains("자바")) ||
+                                (article.getTitle() != null && article.getTitle().contains("자바"))).isTrue());
+        // "스프링" 키워드 검색
+        assertThat(elasticTechArticles2)
+                .hasSize(2)
+                .allSatisfy(article ->
+                        assertThat((article.getContents() != null && article.getContents().contains("스프링")) ||
+                                (article.getTitle() != null && article.getTitle().contains("스프링"))).isTrue());
+        // "자바 스프링" 키워드 검색
+        assertThat(elasticTechArticles3)
+                .hasSize(1)
+                .allSatisfy(article ->
+                        assertThat((article.getContents() != null
+                                && article.getContents().contains("자바") && article.getContents().contains("스프링"))
+                                || (article.getTitle() != null
+                                && article.getTitle().contains("자바") && article.getTitle().contains("스프링"))).isTrue());
     }
 }
