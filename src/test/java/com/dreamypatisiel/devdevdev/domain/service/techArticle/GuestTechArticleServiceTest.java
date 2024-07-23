@@ -132,8 +132,8 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         // then
         assertThat(techArticleDetailResponse)
                 .satisfies(article -> {
-                    assertThat(article.getViewTotalCount() == prevViewTotalCount + 1);
-                    assertThat(article.getPopularScore() == prevPopularScore + 2);
+                    assertThat(article.getViewTotalCount()).isEqualTo(prevViewTotalCount + 1);
+                    assertThat(article.getPopularScore()).isEqualTo(prevPopularScore + 2);
                 });
     }
 

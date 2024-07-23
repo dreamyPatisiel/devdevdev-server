@@ -1,10 +1,6 @@
 bucket:
   plan: local
 
-#elasticsearch:
-#  host: es.dev.devdevdev.co.kr
-#  port: 9200
-
 springdoc:
   packages-to-scan: com.dreamypatisiel.devdevdev
   default-consumes-media-type: application/json;charset=UTF-8

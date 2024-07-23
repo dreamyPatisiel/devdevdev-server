@@ -1,5 +1,10 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant.LATEST_SORT_FIELD_NAME;
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant.MOST_COMMENTED_SORT_FIELD_NAME;
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant.MOST_VIEWED_SORT_FIELD_NAME;
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant.POPULAR_SORT_FIELD_NAME;
+
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -76,11 +81,6 @@ public enum TechArticleSort {
     private static FieldSortBuilder getFieldSortBuilder(String sortFieldName) {
         return SortBuilders.fieldSort(sortFieldName).order(SortOrder.DESC);
     }
-
-    private final static String LATEST_SORT_FIELD_NAME = "regDate";
-    private final static String POPULAR_SORT_FIELD_NAME = "popularScore";
-    private final static String MOST_VIEWED_SORT_FIELD_NAME = "viewTotalCount";
-    private final static String MOST_COMMENTED_SORT_FIELD_NAME = "commentTotalCount";
 
     private final String description;
 }

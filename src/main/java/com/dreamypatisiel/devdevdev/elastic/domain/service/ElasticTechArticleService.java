@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.elastic.domain.service;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_ELASTIC_METHODS_CALL_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_CURSOR_SCORE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant.LATEST_SORT_FIELD_NAME;
 import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._COMPANY_ID;
 import static com.dreamypatisiel.devdevdev.elastic.constant.ElasticsearchConstant._ID;
 
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.opensearch.action.search.SearchType;
 import org.opensearch.data.client.orhlc.NativeSearchQuery;
 import org.opensearch.data.client.orhlc.NativeSearchQueryBuilder;
+import org.opensearch.index.query.Operator;
 import org.opensearch.index.query.QueryBuilders;
 import org.opensearch.search.sort.FieldSortBuilder;
 import org.opensearch.search.sort.SortBuilder;
@@ -61,8 +63,9 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
                 .withSearchType(SearchType.QUERY_THEN_FETCH)
                 .withPageable(pageable)
                 // 정렬 조건 설정
-                .withSort(getSortCondition(techArticleSort))
-                .withSort(getPrimarySortCondition(_ID));
+                .withSorts(getSortCondition(techArticleSort),
+                        getPrimarySortCondition(LATEST_SORT_FIELD_NAME),
+                        getPrimarySortCondition(_ID));
 
         // 회사 필터 설정
         setFilterWithCompanyId(companyId, queryBuilder);
@@ -94,10 +97,11 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
                 .withSearchType(SearchType.QUERY_THEN_FETCH)
                 .withPageable(pageable)
                 // 쿼리스트링
-                .withQuery(QueryBuilders.queryStringQuery(keyword))
+                .withQuery(QueryBuilders.queryStringQuery(keyword).defaultOperator(Operator.AND))
                 // 정렬 조건 설정
-                .withSort(getSortCondition(techArticleSort))
-                .withSort(getPrimarySortCondition(_ID));
+                .withSorts(getSortCondition(techArticleSort),
+                        getPrimarySortCondition(LATEST_SORT_FIELD_NAME),
+                        getPrimarySortCondition(_ID));
 
         // 회사 필터 설정
         setFilterWithCompanyId(companyId, queryBuilder);
@@ -160,7 +164,9 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
     }
 
     private List<Object> getSearchAfter(ElasticTechArticle elasticTechArticle, TechArticleSort techArticleSort) {
-        return List.of(techArticleSort.getSearchAfterCondition(elasticTechArticle), elasticTechArticle.getId());
+        return List.of(techArticleSort.getSearchAfterCondition(elasticTechArticle),
+                TechArticleSort.LATEST.getSearchAfterCondition(elasticTechArticle),
+                elasticTechArticle.getId());
     }
 
     private List<Object> getSearchAfterWhenSearch(ElasticTechArticle elasticTechArticle,
@@ -175,6 +181,8 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
             throw new ElasticTechArticleException(NOT_FOUND_CURSOR_SCORE_MESSAGE);
         }
 
-        return List.of(score, elasticTechArticle.getId());
+        return List.of(score,
+                TechArticleSort.LATEST.getSearchAfterCondition(elasticTechArticle),
+                elasticTechArticle.getId());
     }
 }
