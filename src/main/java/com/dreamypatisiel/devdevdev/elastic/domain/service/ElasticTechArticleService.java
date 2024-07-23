@@ -164,7 +164,9 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
     }
 
     private List<Object> getSearchAfter(ElasticTechArticle elasticTechArticle, TechArticleSort techArticleSort) {
-        return List.of(techArticleSort.getSearchAfterCondition(elasticTechArticle), elasticTechArticle.getId());
+        return List.of(techArticleSort.getSearchAfterCondition(elasticTechArticle),
+                TechArticleSort.LATEST.getSearchAfterCondition(elasticTechArticle),
+                elasticTechArticle.getId());
     }
 
     private List<Object> getSearchAfterWhenSearch(ElasticTechArticle elasticTechArticle,
@@ -179,6 +181,8 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
             throw new ElasticTechArticleException(NOT_FOUND_CURSOR_SCORE_MESSAGE);
         }
 
-        return List.of(score, elasticTechArticle.getId());
+        return List.of(score,
+                TechArticleSort.LATEST.getSearchAfterCondition(elasticTechArticle),
+                elasticTechArticle.getId());
     }
 }
