@@ -149,10 +149,6 @@ public class Pick extends BasicTime {
         }
     }
 
-    public boolean isEqualsPick(Pick pick) {
-        return this.equals(pick);
-    }
-
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
     }
@@ -166,7 +162,7 @@ public class Pick extends BasicTime {
     }
 
     public boolean isEqualMember(Member member) {
-        return this.member.isEqualMember(member);
+        return this.member.equals(member);
     }
 
     public void changeTitle(String title) {
