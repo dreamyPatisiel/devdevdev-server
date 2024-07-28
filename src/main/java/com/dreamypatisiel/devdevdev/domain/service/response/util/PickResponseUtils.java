@@ -9,14 +9,14 @@ public class PickResponseUtils {
 
     public static boolean isVotedMember(Pick pick, Member member) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick) && pickVote.isMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
+                .filter(pickVote -> pickVote.getPick().isEqualsId(pick.getId()) && pickVote.isMemberNotNull())
+                .anyMatch(pickVote -> pickVote.getMember().isEqualId(member.getId()));
     }
 
     public static boolean isVotedAnonymousMember(Pick pick, AnonymousMember anonymousMember) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsPick(pick) && pickVote.isAnonymousMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
+                .filter(pickVote -> pickVote.getPick().isEqualsId(pick.getId()) && pickVote.isAnonymousMemberNotNull())
+                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember.getId()));
     }
 
     public static boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption,
@@ -24,7 +24,7 @@ public class PickResponseUtils {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOption.getId())
                         && pickVote.isMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getMember().isEqualMember(member));
+                .anyMatch(pickVote -> pickVote.getMember().isEqualId(member.getId()));
     }
 
     public static boolean isPickedPickOptionByAnonymousMember(Pick pick, PickOption pickOption,
@@ -32,7 +32,7 @@ public class PickResponseUtils {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOption.getId())
                         && pickVote.isAnonymousMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember));
+                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember.getId()));
     }
 
     public static String sliceAndMaskEmail(String email) {
