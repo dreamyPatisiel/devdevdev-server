@@ -1,11 +1,11 @@
 package com.dreamypatisiel.devdevdev.elastic.domain.document;
 
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.CompletionField;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Getter
 @Document(indexName = "keywords" + "#{@elasticsearchIndexConfigService.getIndexName()}")
@@ -13,18 +13,18 @@ public class ElasticKeyword {
     @Id
     private String id;
 
-    @CompletionField
-    private List<String> words;
+    @Field(type = FieldType.Text)
+    private String keyword;
 
     @Builder
-    private ElasticKeyword(String id, List<String> words) {
+    private ElasticKeyword(String id, String keyword) {
         this.id = id;
-        this.words = words;
+        this.keyword = keyword;
     }
 
-    public static ElasticKeyword create(List<String> words) {
+    public static ElasticKeyword create(String keyword) {
         return ElasticKeyword.builder()
-                .words(words)
+                .keyword(keyword)
                 .build();
     }
 }
