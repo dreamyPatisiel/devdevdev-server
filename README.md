@@ -13,6 +13,7 @@
 
 </div>
 
+### 목차
 - [개발기간 및 개발인원](#개발기간-및-개발인원)
 - [서버 개발환경](#%EF%B8%8F-서버-개발환경)
 - [기술스택](#-기술스택)
@@ -54,7 +55,13 @@
   - AWS RDS: db.t4g.micro(vCPU 2 Core, Memory 1GB, free tier)
   - Amazon OpenSearch Service: t3.small.search(vCPU 2 Core, Memory 2GB, free tier)
   - AWS ElasticCache: cache.t2.micro(vCPU 1 Core, Memory 0.5GB)
- 
+
+<div align="right">
+  
+[목차로](#목차)
+
+</div>
+
 <br/>
 
 ## 🛠 기술스택
@@ -73,6 +80,12 @@
     - GitHub Actions, S3, CodeDeploy, Docker
 - **Communication**
     - Slack, Jira, Gather
+
+<div align="right">
+  
+[목차로](#목차)
+
+</div>
 
 <br/>
 
@@ -97,16 +110,34 @@
     - 회원탈퇴 설문조사
     - 회원탈퇴
 
+<div align="right">
+  
+[목차로](#목차)
+
+</div>
+
 <br/>
 
 ## 🧩 아키텍처
 ![devdevdev-architecture](https://github.com/user-attachments/assets/60718c31-94c0-4edf-9bb6-b2f90a8f2bb8)
+
+<div align="right">
+  
+[목차로](#목차)
+
+</div>
 
 <br/>
 
 ## 🏷 DB ERD
 
 ![무제 001 1](https://github.com/user-attachments/assets/39cee5c8-5734-4e11-b494-0723db6e8e42)
+
+<div align="right">
+  
+[목차로](#목차)
+
+</div>
 
 <br/>
 
@@ -185,4 +216,10 @@ java.com.dreamypatisiel.devdevdev
       │   └── request
       └── response
 ```
+
+<div align="right">
+  
+[목차로](#목차)
+
+</div>
 
