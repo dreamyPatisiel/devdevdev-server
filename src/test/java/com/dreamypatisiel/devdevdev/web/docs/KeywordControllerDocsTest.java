@@ -1,6 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
@@ -77,10 +76,8 @@ class KeywordControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("prefix").description("검색 키워드")
                 ),
                 responseFields(
-                        fieldWithPath("resultType").type(STRING).description("응답 결과")
-                                .attributes(authenticationType()),
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
                         fieldWithPath("datas").type(ARRAY).description("응답 데이터")
-                                .attributes(authenticationType())
                 )
         ));
     }
