@@ -37,11 +37,11 @@ class KeywordControllerTest extends SupportControllerTest {
     @DisplayName("기술블로그 키워드를 검색하면 자동완성 키워드 후보 리스트를 최대 20개 반환한다.")
     void autocompleteKeyword() throws Exception {
         // given
-        ElasticKeyword keyword1 = ElasticKeyword.create(List.of("자바", "Java"));
-        ElasticKeyword keyword2 = ElasticKeyword.create(List.of("자바스크립트", "JavaScript"));
-        ElasticKeyword keyword3 = ElasticKeyword.create(List.of("자바가 최고야", "Java is the best"));
-        ElasticKeyword keyword4 = ElasticKeyword.create(List.of("스프링", "Spring"));
-        ElasticKeyword keyword5 = ElasticKeyword.create(List.of("스프링부트", "SpringBoot"));
+        ElasticKeyword keyword1 = ElasticKeyword.create("자바");
+        ElasticKeyword keyword2 = ElasticKeyword.create("자바스크립트");
+        ElasticKeyword keyword3 = ElasticKeyword.create("자바가 최고야");
+        ElasticKeyword keyword4 = ElasticKeyword.create("스프링");
+        ElasticKeyword keyword5 = ElasticKeyword.create("스프링부트");
         List<ElasticKeyword> elasticKeywords = List.of(keyword1, keyword2, keyword3, keyword4, keyword5);
         elasticKeywordRepository.saveAll(elasticKeywords);
 
