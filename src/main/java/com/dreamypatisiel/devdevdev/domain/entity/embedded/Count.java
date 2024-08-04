@@ -53,4 +53,8 @@ public class Count {
         }
         return new Count(count.getCount() - 1L);
     }
+
+    public static Count defaultCount() {
+        return new Count(MIN_COUNT);
+    }
 }

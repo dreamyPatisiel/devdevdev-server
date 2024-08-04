@@ -4,12 +4,14 @@ import com.dreamypatisiel.devdevdev.exception.CommentContentException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
+@Getter
 public class CommentContent {
     public static final int MIN_COMMENT_CONTENT_LENGTH = 1;
     public static final int MAX_COMMENT_CONTENT_LENGTH = 1_000;
@@ -23,7 +25,7 @@ public class CommentContent {
     }
 
     private void validationCommentContent(String commentContent) {
-        if(!isCommentContentLength(commentContent)) {
+        if (!isCommentContentLength(commentContent)) {
             throw new CommentContentException(getValidCommentContentMessage());
         }
     }

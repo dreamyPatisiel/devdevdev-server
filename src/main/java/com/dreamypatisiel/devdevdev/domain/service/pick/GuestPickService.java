@@ -31,6 +31,7 @@ import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.math.BigDecimal;
 import java.util.List;
@@ -54,22 +55,18 @@ public class GuestPickService extends PickCommonService implements PickService {
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
     public static final int SIMILARITY_PICK_MAX_COUNT = 3;
 
-    private final PickRepository pickRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
     private final PickVoteRepository pickVoteRepository;
     private final AnonymousMemberRepository anonymousMemberRepository;
-    private final EmbeddingsService embeddingsService;
 
     public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
-                            PickRepository pickRepository1, PickPopularScorePolicy pickPopularScorePolicy,
-                            PickVoteRepository pickVoteRepository, AnonymousMemberRepository anonymousMemberRepository,
-                            EmbeddingsService embeddingsService1, PickCommonService pickCommonService) {
+                            PickPopularScorePolicy pickPopularScorePolicy,
+                            PickVoteRepository pickVoteRepository,
+                            AnonymousMemberRepository anonymousMemberRepository) {
         super(pickRepository, embeddingsService);
-        this.pickRepository = pickRepository1;
         this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickVoteRepository = pickVoteRepository;
         this.anonymousMemberRepository = anonymousMemberRepository;
-        this.embeddingsService = embeddingsService1;
     }
 
     @Override
@@ -166,7 +163,8 @@ public class GuestPickService extends PickCommonService implements PickService {
         // 익명 회원을 조회하거나 생성
         AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
 
-        Optional<PickVote> pickVoteOptional = pickVoteRepository.findByPickIdAndAnonymousMember(pickId,
+        Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndAnonymousMember(
+                pickId,
                 anonymousMember);
 
         return pickVoteOptional
@@ -291,6 +289,12 @@ public class GuestPickService extends PickCommonService implements PickService {
     @Override
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
         return super.findTop3SimilarPicks(pickId);
+    }
+
+    @Override
+    public Long registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
+                                    Authentication authentication) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     private void validateAnonymousMemberId(String anonymousMemberId) {

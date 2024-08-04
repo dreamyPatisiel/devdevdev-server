@@ -2,10 +2,12 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE;
 
@@ -15,15 +17,18 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -47,6 +52,7 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.math.BigDecimal;
@@ -77,28 +83,28 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
     private final MemberProvider memberProvider;
-    private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
+    private final PickCommentRepository pickCommentRepository;
 
     public MemberPickService(PickRepository pickRepository,
                              EmbeddingsService embeddingsService,
                              AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
-                             MemberProvider memberProvider,
-                             PickRepository pickRepository1, PickOptionRepository pickOptionRepository,
+                             MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
                              PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
-                             PickPopularScorePolicy pickPopularScorePolicy) {
+                             PickPopularScorePolicy pickPopularScorePolicy,
+                             PickCommentRepository pickCommentRepository) {
         super(pickRepository, embeddingsService);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
         this.memberProvider = memberProvider;
-        this.pickRepository = pickRepository1;
         this.pickOptionRepository = pickOptionRepository;
         this.pickOptionImageRepository = pickOptionImageRepository;
         this.pickVoteRepository = pickVoteRepository;
         this.pickPopularScorePolicy = pickPopularScorePolicy;
+        this.pickCommentRepository = pickCommentRepository;
     }
 
     /**
@@ -292,7 +298,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 투표 조회
-        Optional<PickVote> pickVoteOptional = pickVoteRepository.findByPickIdAndMember(pickId,
+        Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMember(pickId,
                 findMember);
 
         return pickVoteOptional
@@ -438,6 +444,58 @@ public class MemberPickService extends PickCommonService implements PickService 
     @Override
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
         return super.findTop3SimilarPicks(pickId);
+    }
+
+    /**
+     * @Note: 픽픽픽 게시글에 댓글을 작성한다.
+     * @Author: 장세웅
+     * @Since: 2024.08.04
+     */
+    @Transactional
+    @Override
+    public Long registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
+                                    Authentication authentication) {
+
+        Long pickId = registerPickCommentRequest.getPickId();
+        Long pickOptionId = registerPickCommentRequest.getPickOptionId();
+        String contents = registerPickCommentRequest.getContents();
+        Boolean isPickVotePublic = registerPickCommentRequest.getIsPickVotePublic();
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 픽픽픽 및 픽픽픽 투표 조회(픽픽픽 투표 페치조인)
+        Pick findPick = pickRepository.findWithPickVoteById(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태가 아니면
+        if (!findPick.isTrueContentStatus(ContentStatus.APPROVAL)) {
+            throw new IllegalArgumentException(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE);
+        }
+
+        // 픽픽픽 선택지 투표 공개인 경우
+        if (isPickVotePublic) {
+            // 픽픽픽 투표 조회
+            PickVote findPickVote = findPick.getPickVotes().stream()
+                    .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOptionId))
+                    .findFirst()
+                    .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
+
+            // 픽픽픽 투표한 픽 옵션의 댓글 작성
+            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContent(contents), findMember,
+                    findPick, findPickVote);
+
+            pickCommentRepository.save(pickComment);
+
+            return pickComment.getId();
+        }
+
+        // 픽픽픽 선택지 투표 비공개인 경우
+        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContent(contents), findMember,
+                findPick);
+        pickCommentRepository.save(pickComment);
+
+        return pickComment.getId();
     }
 
     private void changePickOptionAndPickOptionImages(

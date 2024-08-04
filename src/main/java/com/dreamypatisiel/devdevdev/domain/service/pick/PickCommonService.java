@@ -25,7 +25,7 @@ public class PickCommonService {
 
     private static final int SIMILARITY_PICK_MAX_COUNT = 3;
 
-    private final PickRepository pickRepository;
+    protected final PickRepository pickRepository;
     private final EmbeddingsService embeddingsService;
 
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {

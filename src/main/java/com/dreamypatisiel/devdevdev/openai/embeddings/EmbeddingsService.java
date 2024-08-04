@@ -44,7 +44,7 @@ public class EmbeddingsService {
      */
     public List<PickWithSimilarityDto> getPicksWithSimilarityDtoExcludeTargetPick(Pick targetPick) {
 
-        // embedding 값이 존재하고 승인된 픽픽픽 중에 최신순으로 1000개 까지만 조회한다.
+        // embedding 값이 존재하고 승인된 픽픽픽 중에 최신순으로 1,000개 까지만 조회한다.
         List<Pick> picks = pickRepository.findTop1000ByContentStatusAndEmbeddingsIsNotNullOrderByCreatedAtDesc(
                 ContentStatus.APPROVAL);
 

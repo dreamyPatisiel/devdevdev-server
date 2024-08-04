@@ -23,6 +23,7 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -36,6 +37,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -60,6 +62,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
@@ -107,6 +110,8 @@ class MemberPickServiceTest {
     PickOptionImageRepository pickOptionImageRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
+    @Autowired
+    PickCommentRepository pickCommentRepository;
     @PersistenceContext
     EntityManager em;
     @Autowired
@@ -1422,8 +1427,8 @@ class MemberPickServiceTest {
         // 픽픽픽 옵션 생성
         PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
                 new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.secondPickOption);
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
+                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 픽픽픽 이미지 생성
@@ -1442,6 +1447,80 @@ class MemberPickServiceTest {
         assertThatThrownBy(() -> memberPickService.deletePick(pick.getId(), authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성한다.")
+    void registerPickCommentWithPickVote() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
+                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
+                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 이미지 생성
+        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(author, firstPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        em.flush();
+        em.clear();
+
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(pick.getId(), "안녕하세웅",
+                firstPickOption.getId(), true);
+
+        // when
+        Long pickCommentId = memberPickService.registerPickComment(registerPickCommentRequest, authentication);
+
+        // then
+        assertThat(pickCommentId).isNotNull();
+
+        PickComment findPickComment = pickCommentRepository.findById(pickCommentId).get();
+        assertAll(
+                () -> assertThat(findPickComment.getContent().getCommentContent()).isEqualTo("안녕하세웅"),
+                () -> assertThat(findPickComment.getIsPublic()).isEqualTo(true),
+                () -> assertThat(findPickComment.getDeletedAt()).isNull(),
+                () -> assertThat(findPickComment.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findPickComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findPickComment.getPick().getId()).isEqualTo(pick.getId()),
+                () -> assertThat(findPickComment.getMember().getId()).isEqualTo(member.getId()),
+                () -> assertThat(findPickComment.getPickVote().getId()).isEqualTo(pickVote.getId())
+        );
+    }
+
+    private Pick createPick(Title title, ContentStatus contentStatus, Member member) {
+        return Pick.builder()
+                .title(title)
+                .contentStatus(contentStatus)
+                .member(member)
+                .build();
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, Pick pick, PickOptionType pickOptionType) {
