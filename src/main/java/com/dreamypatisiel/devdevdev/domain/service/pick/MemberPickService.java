@@ -356,9 +356,9 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     // 픽픽픽 투표 이력이 없는 경우
-    private VotePickResponse getVoteResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(Long pickId,
-                                                                                                          Long pickOptionId,
-                                                                                                          Member member) {
+    private VotePickResponse getVoteResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(
+            Long pickId, Long pickOptionId, Member member) {
+
         // 픽픽픽 조회
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
@@ -385,8 +385,9 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     // 투표 생성 로직
-    private VotePickOptionResponse getVotePickOptionResponseAndCreatePickVote(PickOption pickOption, Pick pick,
-                                                                              Member member) {
+    private VotePickOptionResponse getVotePickOptionResponseAndCreatePickVote(
+            PickOption pickOption, Pick pick, Member member) {
+
         // 투표 생성
         PickVote newPickVote = PickVote.createByMember(member, pickOption.getPick(), pickOption);
         pickVoteRepository.save(newPickVote);
@@ -401,8 +402,9 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     // 투표 삭제 로직
-    private VotePickOptionResponse getVotePickOptionResponseAndDeletePickVote(PickOption findPickOption, Pick findPick,
-                                                                              PickVote pickVote) {
+    private VotePickOptionResponse getVotePickOptionResponseAndDeletePickVote(
+            PickOption findPickOption, Pick findPick, PickVote pickVote) {
+
         // 기존 픽픽픽 옵션 투표수 감소
         findPickOption.minusVoteTotalCount();
 

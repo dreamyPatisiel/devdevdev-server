@@ -45,6 +45,7 @@ import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -831,6 +832,23 @@ class GuestPickServiceTest {
 
         // when // then
         assertThatThrownBy(() -> guestPickService.deletePick(pick.getId(), authentication))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("비회원은 픽픽픽 댓글을 작성할 때 예외가 발생한다.")
+    void registerPickCommentAccessDeniedException() {
+        // given
+        // 익명 회원 생성
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(1L, "안녕하세웅",
+                1L, true);
+
+        // when // then
+        assertThatThrownBy(() -> guestPickService.registerPickComment(registerPickCommentRequest, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
