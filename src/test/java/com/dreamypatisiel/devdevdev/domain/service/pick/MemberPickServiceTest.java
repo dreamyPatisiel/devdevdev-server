@@ -46,6 +46,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -1490,7 +1491,7 @@ class MemberPickServiceTest {
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(author, firstPickOption, pick);
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -1500,14 +1501,15 @@ class MemberPickServiceTest {
                 firstPickOption.getId(), true);
 
         // when
-        Long pickCommentId = memberPickService.registerPickComment(registerPickCommentRequest, authentication);
+        PickCommentResponse pickCommentResponse = memberPickService.registerPickComment(registerPickCommentRequest,
+                authentication);
 
         // then
-        assertThat(pickCommentId).isNotNull();
+        assertThat(pickCommentResponse.getPickCommentId()).isNotNull();
 
-        PickComment findPickComment = pickCommentRepository.findById(pickCommentId).get();
+        PickComment findPickComment = pickCommentRepository.findById(pickCommentResponse.getPickCommentId()).get();
         assertAll(
-                () -> assertThat(findPickComment.getContent().getCommentContent()).isEqualTo("안녕하세웅"),
+                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo("안녕하세웅"),
                 () -> assertThat(findPickComment.getIsPublic()).isEqualTo(true),
                 () -> assertThat(findPickComment.getDeletedAt()).isNull(),
                 () -> assertThat(findPickComment.getBlameTotalCount().getCount()).isEqualTo(0L),
@@ -1556,7 +1558,7 @@ class MemberPickServiceTest {
         pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
 
         // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(author, firstPickOption, pick);
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         em.flush();
@@ -1566,14 +1568,15 @@ class MemberPickServiceTest {
                 firstPickOption.getId(), false);
 
         // when
-        Long pickCommentId = memberPickService.registerPickComment(registerPickCommentRequest, authentication);
+        PickCommentResponse pickCommentResponse = memberPickService.registerPickComment(registerPickCommentRequest,
+                authentication);
 
         // then
-        assertThat(pickCommentId).isNotNull();
+        assertThat(pickCommentResponse.getPickCommentId()).isNotNull();
 
-        PickComment findPickComment = pickCommentRepository.findById(pickCommentId).get();
+        PickComment findPickComment = pickCommentRepository.findById(pickCommentResponse.getPickCommentId()).get();
         assertAll(
-                () -> assertThat(findPickComment.getContent().getCommentContent()).isEqualTo("안녕하세웅"),
+                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo("안녕하세웅"),
                 () -> assertThat(findPickComment.getIsPublic()).isEqualTo(false),
                 () -> assertThat(findPickComment.getDeletedAt()).isNull(),
                 () -> assertThat(findPickComment.getBlameTotalCount().getCount()).isEqualTo(0L),

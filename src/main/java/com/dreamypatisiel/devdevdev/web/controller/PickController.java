@@ -7,6 +7,7 @@ import com.dreamypatisiel.devdevdev.domain.service.pick.PickMultiServiceHandler;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
@@ -20,6 +21,7 @@ import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
@@ -190,5 +192,18 @@ public class PickController {
         List<SimilarPickResponse> response = pickService.findTop3SimilarPicks(pickId);
 
         return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "픽픽픽 댓글 작성", description = "회원은 픽픽픽 댓글을 작성할 수 있습니다.")
+    @PostMapping("/picks/comments")
+    public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
+            @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickService pickService = pickServiceStrategy.getPickService();
+        PickCommentResponse pickCommentResponse = pickService.registerPickComment(registerPickCommentRequest,
+                authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 }

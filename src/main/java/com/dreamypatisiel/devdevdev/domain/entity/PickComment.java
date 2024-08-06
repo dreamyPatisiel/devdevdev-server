@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -33,10 +33,10 @@ public class PickComment extends BasicTime {
     private Long id;
 
     @Embedded
-    @AttributeOverride(name = "commentContent",
-            column = @Column(name = "content")
+    @AttributeOverride(name = "commentContents",
+            column = @Column(name = "contents")
     )
-    private CommentContent content;
+    private CommentContents contents;
 
     @Embedded
     @AttributeOverride(name = "count",
@@ -69,9 +69,9 @@ public class PickComment extends BasicTime {
 
 
     @Builder
-    private PickComment(CommentContent content, Count blameTotalCount, Count recommendTotalCount, Member member,
+    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Member member,
                         Pick pick, PickVote pickVote) {
-        this.content = content;
+        this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.member = member;
@@ -79,9 +79,9 @@ public class PickComment extends BasicTime {
         this.pickVote = pickVote;
     }
 
-    public static PickComment createPrivateVoteComment(CommentContent content, Member member, Pick pick) {
+    public static PickComment createPrivateVoteComment(CommentContents content, Member member, Pick pick) {
         PickComment pickComment = new PickComment();
-        pickComment.content = content;
+        pickComment.contents = content;
         pickComment.isPublic = false;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
@@ -91,10 +91,10 @@ public class PickComment extends BasicTime {
         return pickComment;
     }
 
-    public static PickComment createPublicVoteComment(CommentContent content, Member member, Pick pick,
+    public static PickComment createPublicVoteComment(CommentContents content, Member member, Pick pick,
                                                       PickVote pickVote) {
         PickComment pickComment = new PickComment();
-        pickComment.content = content;
+        pickComment.contents = content;
         pickComment.isPublic = true;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();

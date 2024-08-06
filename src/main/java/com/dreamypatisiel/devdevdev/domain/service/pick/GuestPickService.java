@@ -17,6 +17,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
@@ -292,8 +293,8 @@ public class GuestPickService extends PickCommonService implements PickService {
     }
 
     @Override
-    public Long registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
-                                    Authentication authentication) {
+    public PickCommentResponse registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
+                                                   Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 

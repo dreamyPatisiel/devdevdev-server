@@ -12,16 +12,16 @@ import org.springframework.util.StringUtils;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 @Getter
-public class CommentContent {
+public class CommentContents {
     public static final int MIN_COMMENT_CONTENT_LENGTH = 1;
     public static final int MAX_COMMENT_CONTENT_LENGTH = 1_000;
     public static final String VALID_COMMENT_CONTENT_MESSAGE = "댓글은 %d글자 이상 %d글자 이하여야 합니다.";
 
-    private String commentContent;
+    private String commentContents;
 
-    public CommentContent(String commentContent) {
-        validationCommentContent(commentContent);
-        this.commentContent = commentContent;
+    public CommentContents(String commentContents) {
+        validationCommentContent(commentContents);
+        this.commentContents = commentContents;
     }
 
     private void validationCommentContent(String commentContent) {

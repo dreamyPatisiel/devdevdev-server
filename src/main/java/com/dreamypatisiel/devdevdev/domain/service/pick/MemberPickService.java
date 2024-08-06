@@ -21,7 +21,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
@@ -35,6 +35,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
@@ -455,8 +456,8 @@ public class MemberPickService extends PickCommonService implements PickService 
      */
     @Transactional
     @Override
-    public Long registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
-                                    Authentication authentication) {
+    public PickCommentResponse registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
+                                                   Authentication authentication) {
 
         Long pickId = registerPickCommentRequest.getPickId();
         Long pickOptionId = registerPickCommentRequest.getPickOptionId();
@@ -477,27 +478,28 @@ public class MemberPickService extends PickCommonService implements PickService 
 
         // 픽픽픽 선택지 투표 공개인 경우
         if (isPickVotePublic) {
-            // 픽픽픽 투표 조회
+            // 회원이 투표한 픽픽픽 투표 조회
             PickVote findPickVote = findPick.getPickVotes().stream()
                     .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOptionId))
+                    .filter(pickVote -> pickVote.isEqualsMemberId(findMember.getId()))
                     .findFirst()
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
-            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContent(contents), findMember,
+            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContents(contents), findMember,
                     findPick, findPickVote);
 
             pickCommentRepository.save(pickComment);
 
-            return pickComment.getId();
+            return new PickCommentResponse(pickComment.getId());
         }
 
         // 픽픽픽 선택지 투표 비공개인 경우
-        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContent(contents), findMember,
+        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContents(contents), findMember,
                 findPick);
         pickCommentRepository.save(pickComment);
 
-        return pickComment.getId();
+        return new PickCommentResponse(pickComment.getId());
     }
 
     private void changePickOptionAndPickOptionImages(
