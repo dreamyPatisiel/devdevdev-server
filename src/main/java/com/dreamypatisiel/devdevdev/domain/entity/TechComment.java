@@ -13,9 +13,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TechComment extends BasicTime {
     @Id
@@ -48,4 +51,22 @@ public class TechComment extends BasicTime {
     @JoinColumn(name = "tech_article_id", nullable = false)
     private TechArticle techArticle;
 
+    @Builder
+    private TechComment(Long id, CommentContent content, Count blameTotalCount, Count recommendTotalCount,
+                        Member member, TechArticle techArticle) {
+        this.id = id;
+        this.content = content;
+        this.blameTotalCount = blameTotalCount;
+        this.recommendTotalCount = recommendTotalCount;
+        this.member = member;
+        this.techArticle = techArticle;
+    }
+
+    public static TechComment create(CommentContent content, Member member, TechArticle techArticle) {
+        return TechComment.builder()
+                .content(content)
+                .member(member)
+                .techArticle(techArticle)
+                .build();
+    }
 }
