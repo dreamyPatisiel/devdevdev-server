@@ -20,12 +20,14 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentRegisterResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -320,6 +322,80 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isNotNull()
                 .extracting(techArticleId -> response.techArticleId, updatedStatus -> response.status)
                 .containsExactly(id, status);
+    }
+
+    @Test
+    @DisplayName("회원은 댓글을 작성할 수 있다.")
+    void registerTechComment() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long id = FIRST_TECH_ARTICLE_ID;
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+
+        // when
+        TechCommentRegisterResponse techCommentRegisterResponse = memberTechArticleService.registerTechComment(
+                id, registerTechCommentRequest, authentication);
+        em.flush();
+
+        // then
+        assertThat(techCommentRegisterResponse.getId()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("회원이 존재하지 않는 기술블로그에 댓글을 작성하면 예외가 발생한다.")
+    void registerTechCommentNotFoundTechArticleException() {
+        // given
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId() + 1;
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechArticleService.registerTechComment(id, registerTechCommentRequest, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 작성할 때 회원이 없으면 예외가 발생한다.")
+    void registerTechCommentNotFoundMemberException() {
+        // given
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long id = FIRST_TECH_ARTICLE_ID;
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechArticleService.registerTechComment(id, registerTechCommentRequest, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,

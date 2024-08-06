@@ -77,7 +77,7 @@ public class TechArticleController {
     }
 
     @Operation(summary = "기술블로그 댓글 작성")
-    @PostMapping("/articles/{techArticleId}/comment")
+    @PostMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<TechCommentRegisterResponse>> registerTechComment(
             @PathVariable Long techArticleId,
             @RequestBody @Validated RegisterTechCommentRequest registerTechCommentRequest) {

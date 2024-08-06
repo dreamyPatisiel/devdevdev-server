@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.KEYWORD_WITH_SPECIAL_SYMBOLS_EXCEPTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techArticleSortType;
@@ -40,6 +41,7 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -541,6 +543,168 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.techArticleId").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("북마크 상태")
+                )
+        ));
+    }
+
+
+    @Test
+    @DisplayName("익명 사용자는 기술블로그 댓글을 작성할 수 없다.")
+    void registerTechCommentByAnonymous() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글 내용입니다.");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(om.writeValueAsString(registerTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.FORBIDDEN.value()));
+
+        // Docs
+        actions.andDo(document("tech-article-comments-anonymous-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원은 기술블로그 댓글을 작성할 수 있다.")
+    void registerTechComment() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글 내용입니다.");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .content(om.writeValueAsString(registerTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.id").isNumber());
+
+        // Docs
+        actions.andDo(document("tech-article-comments",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.id").type(JsonFieldType.NUMBER).description("기술블로그 댓글 아이디")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
+    void registerTechCommentNotFoundTechArticleException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
+                new Count(1L),
+                new Count(1L), null, company);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId() + 1;
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글 내용입니다.");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .content(om.writeValueAsString(registerTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+
+        // Docs
+        actions.andDo(document("tech-article-comments-not-found-tech-article-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 회원이라면 예외가 발생한다.")
+    void registerTechCommentNotFoundMemberException() throws Exception {
+        // given
+        Long id = FIRST_TECH_ARTICLE_ID;
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글 내용입니다.");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments", id)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .content(om.writeValueAsString(registerTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+
+        // Docs
+        actions.andDo(document("tech-article-comments-not-found-member-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
                 )
         ));
     }
