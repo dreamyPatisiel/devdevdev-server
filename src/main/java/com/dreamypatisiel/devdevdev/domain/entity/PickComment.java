@@ -34,7 +34,7 @@ public class PickComment extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "commentContents",
-            column = @Column(name = "contents")
+            column = @Column(name = "contents", length = 1000)
     )
     private CommentContents contents;
 

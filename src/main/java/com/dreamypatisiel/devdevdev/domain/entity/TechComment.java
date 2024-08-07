@@ -24,9 +24,9 @@ public class TechComment extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "commentContent",
-            column = @Column(name = "content")
+            column = @Column(name = "contents")
     )
-    private CommentContents content;
+    private CommentContents contents;
 
     @Embedded
     @AttributeOverride(name = "count",
