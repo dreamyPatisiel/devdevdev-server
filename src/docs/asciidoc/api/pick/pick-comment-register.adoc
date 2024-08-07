@@ -1,0 +1,33 @@
+[[Pick-Comment-Register]]
+== 픽픽픽 댓글 작성 API(POST: /devdevdev/api/v1/picks/comments)
+
+* 픽픽픽 댓글을 작성한다.
+* 회원만 픽픽픽 댓글을 작성 할 수 있다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/register-pick-comment/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/register-pick-comment/request-headers.adoc[]
+
+==== HTTP Request Fields
+
+include::{snippets}/register-pick-comment/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/register-pick-comment/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/register-pick-comment/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+include::{snippets}/register-pick-comment-bind-exception/response-body.adoc[]
