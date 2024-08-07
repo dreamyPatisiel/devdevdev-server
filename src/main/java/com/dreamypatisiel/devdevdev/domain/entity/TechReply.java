@@ -24,7 +24,7 @@ public class TechReply extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "commentContent",
-            column = @Column(name = "contents", length = 255)
+            column = @Column(name = "contents", length = 1000)
     )
     private CommentContents contents;
 
