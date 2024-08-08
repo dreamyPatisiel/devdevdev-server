@@ -2,12 +2,10 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE;
 
@@ -17,11 +15,9 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
@@ -34,9 +30,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
@@ -447,56 +441,6 @@ public class MemberPickService extends PickCommonService implements PickService 
     @Override
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
         return super.findTop3SimilarPicks(pickId);
-    }
-
-    /**
-     * @Note: 픽픽픽 게시글에 댓글을 작성한다.
-     * @Author: 장세웅
-     * @Since: 2024.08.04
-     */
-    @Transactional
-    @Override
-    public PickCommentResponse registerPickComment(RegisterPickCommentDto registerPickCommentDto,
-                                                   Authentication authentication) {
-
-        Long pickId = registerPickCommentDto.getPickId();
-        Long pickOptionId = registerPickCommentDto.getPickOptionId();
-        String contents = registerPickCommentDto.getContents();
-        Boolean isPickVotePublic = registerPickCommentDto.getIsPickVotePublic();
-
-        // 회원 조회
-        Member findMember = memberProvider.getMemberByAuthentication(authentication);
-
-        // 픽픽픽 조회
-        Pick findPick = pickRepository.findById(pickId)
-                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
-
-        // 픽픽픽 게시글의 승인 상태가 아니면
-        if (!findPick.isTrueContentStatus(ContentStatus.APPROVAL)) {
-            throw new IllegalArgumentException(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE);
-        }
-
-        // 픽픽픽 선택지 투표 공개인 경우
-        if (isPickVotePublic) {
-            // 회원이 투표한 픽픽픽 투표 조회
-            PickVote findPickVote = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMember(pickId, findMember)
-                    .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
-
-            // 픽픽픽 투표한 픽 옵션의 댓글 작성
-            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContents(contents), findMember,
-                    findPick, findPickVote);
-
-            pickCommentRepository.save(pickComment);
-
-            return new PickCommentResponse(pickComment.getId());
-        }
-
-        // 픽픽픽 선택지 투표 비공개인 경우
-        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContents(contents), findMember,
-                findPick);
-        pickCommentRepository.save(pickComment);
-
-        return new PickCommentResponse(pickComment.getId());
     }
 
     private void changePickOptionAndPickOptionImages(

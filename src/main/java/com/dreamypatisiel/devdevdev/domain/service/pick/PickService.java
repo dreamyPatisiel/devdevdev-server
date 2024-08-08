@@ -1,9 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
@@ -38,7 +36,4 @@ public interface PickService {
     void deletePick(Long pickId, Authentication authentication);
 
     List<SimilarPickResponse> findTop3SimilarPicks(Long pickId);
-
-    PickCommentResponse registerPickComment(RegisterPickCommentDto registerPickCommentDto,
-                                            Authentication authentication);
 }

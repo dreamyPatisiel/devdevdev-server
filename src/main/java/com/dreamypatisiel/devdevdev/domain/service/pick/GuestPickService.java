@@ -16,9 +16,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepo
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
@@ -290,12 +288,6 @@ public class GuestPickService extends PickCommonService implements PickService {
     @Override
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
         return super.findTop3SimilarPicks(pickId);
-    }
-
-    @Override
-    public PickCommentResponse registerPickComment(RegisterPickCommentDto registerPickCommentDto,
-                                                   Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     private void validateAnonymousMemberId(String anonymousMemberId) {
