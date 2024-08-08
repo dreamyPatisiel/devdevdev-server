@@ -1213,11 +1213,11 @@ class PickControllerTest extends SupportControllerTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(pick.getId(), "안녕하세웅",
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
                 firstPickOption.getId(), true);
 
         // when // then
-        mockMvc.perform(post("/devdevdev/api/v1/picks/comments")
+        mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -1227,56 +1227,6 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data.pickCommentId").isNumber());
-    }
-
-    @ParameterizedTest
-    @NullSource
-    @DisplayName("회원이 승인 상태의 픽픽픽에 댓글을 작성할 때 픽픽픽 아이디가 null 이면 예외가 발생한다.")
-    void registerPickCommentBindExceptionPickIdIsNull(Long pickId) throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
-        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
-
-        // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
-        pickVoteRepository.save(pickVote);
-
-        em.flush();
-        em.clear();
-
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(pickId, "안녕하세웅",
-                firstPickOption.getId(), true);
-
-        // when // then
-        mockMvc.perform(post("/devdevdev/api/v1/picks/comments")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
-                .andDo(print())
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
     @ParameterizedTest
@@ -1313,11 +1263,11 @@ class PickControllerTest extends SupportControllerTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(pick.getId(), "안녕하세웅",
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
                 firstPickOption.getId(), isPickVotePublic);
 
         // when // then
-        mockMvc.perform(post("/devdevdev/api/v1/picks/comments")
+        mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -1363,11 +1313,11 @@ class PickControllerTest extends SupportControllerTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(pick.getId(), contents,
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(contents,
                 firstPickOption.getId(), true);
 
         // when // then
-        mockMvc.perform(post("/devdevdev/api/v1/picks/comments")
+        mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)

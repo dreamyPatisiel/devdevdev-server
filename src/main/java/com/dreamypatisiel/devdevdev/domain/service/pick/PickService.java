@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -11,7 +12,6 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageRespo
 import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +39,6 @@ public interface PickService {
 
     List<SimilarPickResponse> findTop3SimilarPicks(Long pickId);
 
-    PickCommentResponse registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
+    PickCommentResponse registerPickComment(RegisterPickCommentDto registerPickCommentDto,
                                             Authentication authentication);
 }

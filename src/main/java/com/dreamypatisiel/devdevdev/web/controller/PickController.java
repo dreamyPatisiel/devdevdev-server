@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickMultiServiceHandler;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -195,13 +196,16 @@ public class PickController {
     }
 
     @Operation(summary = "픽픽픽 댓글 작성", description = "회원은 픽픽픽 댓글을 작성할 수 있습니다.")
-    @PostMapping("/picks/comments")
+    @PostMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
+            @PathVariable Long pickId,
             @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
+        RegisterPickCommentDto registerPickCommentDto = RegisterPickCommentDto.of(pickId, registerPickCommentRequest);
+
         PickService pickService = pickServiceStrategy.getPickService();
-        PickCommentResponse pickCommentResponse = pickService.registerPickComment(registerPickCommentRequest,
+        PickCommentResponse pickCommentResponse = pickService.registerPickComment(registerPickCommentDto,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));

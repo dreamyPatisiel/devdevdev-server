@@ -32,6 +32,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
@@ -45,7 +46,6 @@ import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
 import java.util.List;
@@ -844,11 +844,11 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(1L, "안녕하세웅",
+        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(1L, "안녕하세웅",
                 1L, true);
 
         // when // then
-        assertThatThrownBy(() -> guestPickService.registerPickComment(registerPickCommentRequest, authentication))
+        assertThatThrownBy(() -> guestPickService.registerPickComment(registerPickCommentDto, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

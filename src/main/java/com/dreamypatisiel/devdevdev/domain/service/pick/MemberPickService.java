@@ -34,6 +34,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
@@ -53,7 +54,6 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
 import java.math.BigDecimal;
@@ -456,19 +456,19 @@ public class MemberPickService extends PickCommonService implements PickService 
      */
     @Transactional
     @Override
-    public PickCommentResponse registerPickComment(RegisterPickCommentRequest registerPickCommentRequest,
+    public PickCommentResponse registerPickComment(RegisterPickCommentDto registerPickCommentDto,
                                                    Authentication authentication) {
 
-        Long pickId = registerPickCommentRequest.getPickId();
-        Long pickOptionId = registerPickCommentRequest.getPickOptionId();
-        String contents = registerPickCommentRequest.getContents();
-        Boolean isPickVotePublic = registerPickCommentRequest.getIsPickVotePublic();
+        Long pickId = registerPickCommentDto.getPickId();
+        Long pickOptionId = registerPickCommentDto.getPickOptionId();
+        String contents = registerPickCommentDto.getContents();
+        Boolean isPickVotePublic = registerPickCommentDto.getIsPickVotePublic();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 픽픽픽 및 픽픽픽 투표 조회(픽픽픽 투표 페치조인)
-        Pick findPick = pickRepository.findWithPickVoteById(pickId)
+        // 픽픽픽 조회
+        Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 픽픽픽 게시글의 승인 상태가 아니면
@@ -479,10 +479,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         // 픽픽픽 선택지 투표 공개인 경우
         if (isPickVotePublic) {
             // 회원이 투표한 픽픽픽 투표 조회
-            PickVote findPickVote = findPick.getPickVotes().stream()
-                    .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOptionId))
-                    .filter(pickVote -> pickVote.isEqualsMemberId(findMember.getId()))
-                    .findFirst()
+            PickVote findPickVote = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMember(pickId, findMember)
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
