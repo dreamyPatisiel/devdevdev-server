@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -24,9 +24,9 @@ public class TechComment extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "commentContent",
-            column = @Column(name = "content")
+            column = @Column(name = "contents", length = 1000)
     )
-    private CommentContent content;
+    private CommentContents contents;
 
     @Embedded
     @AttributeOverride(name = "count",

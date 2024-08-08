@@ -95,7 +95,7 @@ public class LocalInitData {
 
         List<PickOption> pickOptions = createPickOptions();
         List<Pick> picks = creatPicks(pickOptions, member);
-        List<PickVote> pickVotes = createPickVotes(member, picks.get(0), pickOptions);
+        List<PickVote> pickVotes = createPickVotes(member, picks, pickOptions);
         pickRepository.saveAll(picks);
         pickOptionRepository.saveAll(pickOptions);
         pickVoteRepository.saveAll(pickVotes);
@@ -213,10 +213,10 @@ public class LocalInitData {
         return members;
     }
 
-    private List<PickVote> createPickVotes(Member member, Pick pick, List<PickOption> pickOptions) {
+    private List<PickVote> createPickVotes(Member member, List<Pick> picks, List<PickOption> pickOptions) {
         List<PickVote> pickVotes = new ArrayList<>();
         for (int number = 0; number < DATA_MAX_COUNT / 2; number++) {
-            PickVote pickVote = PickVote.createByMember(member, pick, pickOptions.get(number * 2));
+            PickVote pickVote = PickVote.createByMember(member, picks.get(number), pickOptions.get(number * 2));
             pickVotes.add(pickVote);
         }
 

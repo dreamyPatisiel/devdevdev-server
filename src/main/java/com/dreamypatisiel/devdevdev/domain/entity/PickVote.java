@@ -82,4 +82,8 @@ public class PickVote extends BasicTime {
     public boolean isMemberNotNull() {
         return this.member != null;
     }
+
+    public boolean isEqualsMemberId(Long memberId) {
+        return this.member.getId().equals(memberId);
+    }
 }

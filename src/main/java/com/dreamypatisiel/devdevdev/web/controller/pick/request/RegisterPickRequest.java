@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller.request;
+package com.dreamypatisiel.devdevdev.web.controller.pick.request;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import jakarta.validation.Valid;
@@ -12,7 +12,7 @@ public class RegisterPickRequest {
 
     @NotBlank(message = "제목을 작성해주세요.")
     private final String pickTitle;
-    
+
     @Valid
     private final Map<PickOptionType, RegisterPickOptionRequest> pickOptions;
 
