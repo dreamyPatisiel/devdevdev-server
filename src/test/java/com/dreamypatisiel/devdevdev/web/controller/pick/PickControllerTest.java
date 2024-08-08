@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.firstPickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.secondPickOption;
@@ -49,11 +49,12 @@ import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.openai.response.Usage;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.io.FileInputStream;
@@ -1176,6 +1177,14 @@ class PickControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    private Pick createPick(Title title, ContentStatus contentStatus, Member member) {
+        return Pick.builder()
+                .title(title)
+                .contentStatus(contentStatus)
+                .member(member)
+                .build();
     }
 
     private Pick createPick(Title title, Count pickVoteCount, Count commentTotalCount, Member member,

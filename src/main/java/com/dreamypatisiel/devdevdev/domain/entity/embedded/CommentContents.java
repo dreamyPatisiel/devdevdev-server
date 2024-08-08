@@ -4,12 +4,14 @@ import com.dreamypatisiel.devdevdev.exception.CommentContentsException;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
 
 @Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
+@Getter
 public class CommentContents {
     public static final int MIN_COMMENT_CONTENTS_LENGTH = 1;
     public static final int MAX_COMMENT_CONTENTS_LENGTH = 1_000;

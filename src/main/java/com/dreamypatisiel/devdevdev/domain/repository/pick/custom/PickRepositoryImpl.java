@@ -111,7 +111,7 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .orElse(PickSort.LATEST.getCursorCondition(findPick));
     }
 
-    private OrderSpecifier pickSort(PickSort pickSort) {
+    private OrderSpecifier<?> pickSort(PickSort pickSort) {
         return Optional.ofNullable(pickSort)
                 .orElse(PickSort.LATEST).getOrderSpecifierByPickSort();
     }

@@ -34,4 +34,3 @@ include::{snippets}/pick-register/response-fields.adoc[]
 ==== HTTP Response
 
 include::{snippets}/pick-register-anonymous-exception/response-body.adoc[]
-include::{snippets}/pick-register-pick-option-name-exception/response-body.adoc[]

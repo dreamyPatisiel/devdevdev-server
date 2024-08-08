@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.pick;
 
 import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 
@@ -19,9 +19,9 @@ import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
 import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

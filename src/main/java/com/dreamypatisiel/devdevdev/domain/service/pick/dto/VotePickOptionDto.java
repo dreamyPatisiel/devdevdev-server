@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick.dto;
 
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.VotePickOptionRequest;
 import lombok.Builder;
 import lombok.Data;
 

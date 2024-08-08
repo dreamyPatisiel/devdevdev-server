@@ -45,10 +45,10 @@ import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +77,6 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final AwsS3Properties awsS3Properties;
     private final AwsS3Uploader awsS3Uploader;
     private final MemberProvider memberProvider;
-    private final PickRepository pickRepository;
     private final PickOptionRepository pickOptionRepository;
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
@@ -86,15 +85,13 @@ public class MemberPickService extends PickCommonService implements PickService 
     public MemberPickService(PickRepository pickRepository,
                              EmbeddingsService embeddingsService,
                              AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
-                             MemberProvider memberProvider,
-                             PickRepository pickRepository1, PickOptionRepository pickOptionRepository,
+                             MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
                              PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
                              PickPopularScorePolicy pickPopularScorePolicy) {
         super(pickRepository, embeddingsService);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
         this.memberProvider = memberProvider;
-        this.pickRepository = pickRepository1;
         this.pickOptionRepository = pickOptionRepository;
         this.pickOptionImageRepository = pickOptionImageRepository;
         this.pickVoteRepository = pickVoteRepository;
@@ -292,7 +289,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 투표 조회
-        Optional<PickVote> pickVoteOptional = pickVoteRepository.findByPickIdAndMember(pickId,
+        Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMember(pickId,
                 findMember);
 
         return pickVoteOptional
@@ -350,9 +347,9 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     // 픽픽픽 투표 이력이 없는 경우
-    private VotePickResponse getVoteResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(Long pickId,
-                                                                                                          Long pickOptionId,
-                                                                                                          Member member) {
+    private VotePickResponse getVoteResponseAndHandlePickVoteAndPickOptionNotExistingPickVoteOnPickOption(
+            Long pickId, Long pickOptionId, Member member) {
+
         // 픽픽픽 조회
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
@@ -379,8 +376,9 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     // 투표 생성 로직
-    private VotePickOptionResponse getVotePickOptionResponseAndCreatePickVote(PickOption pickOption, Pick pick,
-                                                                              Member member) {
+    private VotePickOptionResponse getVotePickOptionResponseAndCreatePickVote(
+            PickOption pickOption, Pick pick, Member member) {
+
         // 투표 생성
         PickVote newPickVote = PickVote.createByMember(member, pickOption.getPick(), pickOption);
         pickVoteRepository.save(newPickVote);
@@ -395,8 +393,9 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     // 투표 삭제 로직
-    private VotePickOptionResponse getVotePickOptionResponseAndDeletePickVote(PickOption findPickOption, Pick findPick,
-                                                                              PickVote pickVote) {
+    private VotePickOptionResponse getVotePickOptionResponseAndDeletePickVote(
+            PickOption findPickOption, Pick findPick, PickVote pickVote) {
+
         // 기존 픽픽픽 옵션 투표수 감소
         findPickOption.minusVoteTotalCount();
 
