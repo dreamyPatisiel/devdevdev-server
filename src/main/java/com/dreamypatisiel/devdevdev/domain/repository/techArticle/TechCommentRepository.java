@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.repository.techComment;
+package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticKeywordService;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;

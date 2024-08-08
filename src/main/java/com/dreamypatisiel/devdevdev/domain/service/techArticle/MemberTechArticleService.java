@@ -6,12 +6,12 @@ import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.domain.repository.techComment.TechCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
@@ -141,7 +141,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
         // 댓글 엔티티 생성 및 저장
         String contents = registerTechCommentRequest.getContents();
-        TechComment techComment = TechComment.create(new CommentContent(contents), member, techArticle);
+        TechComment techComment = TechComment.create(new CommentContents(contents), member, techArticle);
         techCommentRepository.save(techComment);
 
         // 데이터 가공

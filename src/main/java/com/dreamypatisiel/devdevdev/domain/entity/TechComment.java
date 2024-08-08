@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -26,10 +26,10 @@ public class TechComment extends BasicTime {
     private Long id;
 
     @Embedded
-    @AttributeOverride(name = "commentContent",
-            column = @Column(name = "content")
+    @AttributeOverride(name = "commentContents",
+            column = @Column(name = "contents", length = 1000)
     )
-    private CommentContent content;
+    private CommentContents contents;
 
     @Embedded
     @AttributeOverride(name = "count",
@@ -52,19 +52,19 @@ public class TechComment extends BasicTime {
     private TechArticle techArticle;
 
     @Builder
-    private TechComment(Long id, CommentContent content, Count blameTotalCount, Count recommendTotalCount,
+    private TechComment(Long id, CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
                         Member member, TechArticle techArticle) {
         this.id = id;
-        this.content = content;
+        this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.member = member;
         this.techArticle = techArticle;
     }
 
-    public static TechComment create(CommentContent content, Member member, TechArticle techArticle) {
+    public static TechComment create(CommentContents contents, Member member, TechArticle techArticle) {
         return TechComment.builder()
-                .content(content)
+                .contents(contents)
                 .member(member)
                 .techArticle(techArticle)
                 .build();

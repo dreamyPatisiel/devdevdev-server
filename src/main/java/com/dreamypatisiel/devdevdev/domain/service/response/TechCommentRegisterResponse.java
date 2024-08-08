@@ -7,16 +7,16 @@ import lombok.Data;
 @Data
 public class TechCommentRegisterResponse {
 
-    private final Long id;
+    private final Long techCommentId;
 
     @Builder
-    public TechCommentRegisterResponse(Long id) {
-        this.id = id;
+    public TechCommentRegisterResponse(Long techCommentId) {
+        this.techCommentId = techCommentId;
     }
 
     public static TechCommentRegisterResponse from(TechComment techComment) {
         return TechCommentRegisterResponse.builder()
-                .id(techComment.getId())
+                .techCommentId(techComment.getId())
                 .build();
     }
 }

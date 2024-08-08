@@ -347,7 +347,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         em.flush();
 
         // then
-        assertThat(techCommentRegisterResponse.getId()).isNotNull();
+        assertThat(techCommentRegisterResponse.getTechCommentId()).isNotNull();
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContent;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -24,10 +24,10 @@ public class PickComment extends BasicTime {
     private Long id;
 
     @Embedded
-    @AttributeOverride(name = "commentContent",
-            column = @Column(name = "content")
+    @AttributeOverride(name = "commentContents",
+            column = @Column(name = "contents")
     )
-    private CommentContent content;
+    private CommentContents contents;
 
     @Embedded
     @AttributeOverride(name = "count",
