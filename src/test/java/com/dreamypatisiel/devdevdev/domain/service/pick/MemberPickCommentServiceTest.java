@@ -31,7 +31,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageReposi
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -39,6 +38,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
@@ -63,9 +63,8 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 class MemberPickCommentServiceTest {
-
     @Autowired
-    MemberPickService memberPickService;
+    MemberPickCommentService memberPickCommentService;
     @Autowired
     PickRepository pickRepository;
     @Autowired
@@ -142,11 +141,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
                 firstPickOption.getId(), true);
 
         // when
-        PickCommentResponse pickCommentResponse = memberPickService.registerPickComment(registerPickCommentDto,
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(), request,
                 authentication);
 
         // then
@@ -209,12 +208,12 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
+        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅",
                 firstPickOption.getId(), false);
 
         // when
-        PickCommentResponse pickCommentResponse = memberPickService.registerPickComment(registerPickCommentDto,
-                authentication);
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(),
+                registerPickCommentDto, authentication);
 
         // then
         assertThat(pickCommentResponse.getPickCommentId()).isNotNull();
@@ -247,10 +246,10 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(1L, "안녕하세웅",
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
                 1L, true);
         // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(0L, request, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -274,10 +273,11 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(1L, "안녕하세웅",
+        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅",
                 1L, true);
         // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
+        assertThatThrownBy(
+                () -> memberPickCommentService.registerPickComment(1L, registerPickCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
@@ -318,11 +318,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
                 firstPickOption.getId(), true);
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE);
     }
@@ -362,11 +362,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
                 firstPickOption.getId(), true);
 
         // when // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE);
     }

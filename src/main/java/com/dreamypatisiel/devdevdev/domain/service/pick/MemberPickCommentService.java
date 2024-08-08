@@ -13,10 +13,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -33,13 +33,11 @@ public class MemberPickCommentService {
     private final PickCommentRepository pickCommentRepository;
 
     @Transactional
-    public PickCommentResponse registerPickComment(RegisterPickCommentDto registerPickCommentDto,
+    public PickCommentResponse registerPickComment(Long pickId, RegisterPickCommentRequest registerPickCommentRequest,
                                                    Authentication authentication) {
 
-        Long pickId = registerPickCommentDto.getPickId();
-        Long pickOptionId = registerPickCommentDto.getPickOptionId();
-        String contents = registerPickCommentDto.getContents();
-        Boolean isPickVotePublic = registerPickCommentDto.getIsPickVotePublic();
+        String contents = registerPickCommentRequest.getContents();
+        Boolean isPickVotePublic = registerPickCommentRequest.getIsPickVotePublic();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);

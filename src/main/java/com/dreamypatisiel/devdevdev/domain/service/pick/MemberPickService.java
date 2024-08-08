@@ -24,7 +24,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -82,15 +81,13 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
-    private final PickCommentRepository pickCommentRepository;
 
     public MemberPickService(PickRepository pickRepository,
                              EmbeddingsService embeddingsService,
                              AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
                              MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
                              PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
-                             PickPopularScorePolicy pickPopularScorePolicy,
-                             PickCommentRepository pickCommentRepository) {
+                             PickPopularScorePolicy pickPopularScorePolicy) {
         super(pickRepository, embeddingsService);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
@@ -99,7 +96,6 @@ public class MemberPickService extends PickCommonService implements PickService 
         this.pickOptionImageRepository = pickOptionImageRepository;
         this.pickVoteRepository = pickVoteRepository;
         this.pickPopularScorePolicy = pickPopularScorePolicy;
-        this.pickCommentRepository = pickCommentRepository;
     }
 
     /**

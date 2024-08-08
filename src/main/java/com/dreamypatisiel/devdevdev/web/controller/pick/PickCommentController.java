@@ -1,7 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
@@ -34,10 +33,8 @@ public class PickCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        RegisterPickCommentDto registerPickCommentDto = RegisterPickCommentDto.of(pickId, registerPickCommentRequest);
-
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(registerPickCommentDto,
-                authentication);
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pickId,
+                registerPickCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }

@@ -1,5 +1,5 @@
 [[Pick-Comment-Register]]
-== 픽픽픽 댓글 작성 API(POST: /devdevdev/api/v1/picks/comments)
+== 픽픽픽 댓글 작성 API(POST: /devdevdev/api/v1/picks/{pickId}/comments)
 
 * 픽픽픽 댓글을 작성한다.
 * 회원만 픽픽픽 댓글을 작성 할 수 있다.

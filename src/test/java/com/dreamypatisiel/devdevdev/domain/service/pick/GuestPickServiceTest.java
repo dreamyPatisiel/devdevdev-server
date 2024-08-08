@@ -32,7 +32,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
@@ -832,23 +831,6 @@ class GuestPickServiceTest {
 
         // when // then
         assertThatThrownBy(() -> guestPickService.deletePick(pick.getId(), authentication))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("비회원은 픽픽픽 댓글을 작성할 때 예외가 발생한다.")
-    void registerPickCommentAccessDeniedException() {
-        // given
-        // 익명 회원 생성
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(1L, "안녕하세웅",
-                1L, true);
-
-        // when // then
-        assertThatThrownBy(() -> guestPickService.registerPickComment(registerPickCommentDto, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
