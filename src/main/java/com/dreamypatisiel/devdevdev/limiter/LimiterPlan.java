@@ -51,7 +51,7 @@ public enum LimiterPlan {
     LOCAL {
         @Override
         public Bandwidth getLimit() {
-            return Bandwidth.classic(15, Refill.intervally(15, Duration.ofSeconds(5)));
+            return Bandwidth.classic(20, Refill.intervally(20, Duration.ofSeconds(5)));
         }
 
         @Override
