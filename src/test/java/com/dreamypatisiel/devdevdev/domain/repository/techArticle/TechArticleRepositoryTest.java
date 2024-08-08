@@ -137,7 +137,7 @@ class TechArticleRepositoryTest {
         // given
         Company company = Company.builder().name(new CompanyName("회사")).build();
         companyRepository.save(company);
-        
+
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "행복한 꿈빛파티시엘",
                 "password", "dreamy5patisiel@kakao.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
         Member member = Member.createMemberBy(socialMemberDto);

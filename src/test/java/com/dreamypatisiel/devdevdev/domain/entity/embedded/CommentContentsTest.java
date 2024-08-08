@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.entity.embedded;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.dreamypatisiel.devdevdev.exception.CommentContentException;
+import com.dreamypatisiel.devdevdev.exception.CommentContentsException;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,24 +14,24 @@ class CommentContentsTest {
 
     @ParameterizedTest
     @MethodSource("createValidString")
-    @DisplayName(CommentContents.MIN_COMMENT_CONTENT_LENGTH + "글자 이상 "
-            + CommentContents.MAX_COMMENT_CONTENT_LENGTH + "글자 이하의 "
+    @DisplayName(CommentContents.MIN_COMMENT_CONTENTS_LENGTH + "글자 이상 "
+            + CommentContents.MAX_COMMENT_CONTENTS_LENGTH + "글자 이하의 "
             + "댓글을 입력할 수 있다.")
-    void createCommentContent(String commentContent) {
+    void createCommentContents(String commentContents) {
         // given // when // then
-        assertThatCode(() -> new CommentContents(commentContent))
+        assertThatCode(() -> new CommentContents(commentContents))
                 .doesNotThrowAnyException();
     }
 
     static Stream<Arguments> createValidString() {
-        String commentContentLength1000 = createStringBy(1000);
-        String commentContentLength999 = createStringBy(999);
-        String commentContentLength1 = createStringBy(1);
+        String commentContentsLength1000 = createStringBy(1000);
+        String commentContentsLength999 = createStringBy(999);
+        String commentContentsLength1 = createStringBy(1);
 
         return Stream.of(
-                Arguments.of(commentContentLength1000),
-                Arguments.of(commentContentLength999),
-                Arguments.of(commentContentLength1)
+                Arguments.of(commentContentsLength1000),
+                Arguments.of(commentContentsLength999),
+                Arguments.of(commentContentsLength1)
         );
     }
 
@@ -46,23 +46,23 @@ class CommentContentsTest {
 
     @ParameterizedTest
     @MethodSource("createInValidString")
-    @DisplayName(CommentContents.MIN_COMMENT_CONTENT_LENGTH + "글자 이하 "
-            + CommentContents.MAX_COMMENT_CONTENT_LENGTH + "글자 이상의 "
+    @DisplayName(CommentContents.MIN_COMMENT_CONTENTS_LENGTH + "글자 이하 "
+            + CommentContents.MAX_COMMENT_CONTENTS_LENGTH + "글자 이상의 "
             + "댓글을 입력할 수 없다.")
-    void createCommentContentException(String commentContent) {
+    void createCommentContentsException(String commentContents) {
         // given // when // then
-        assertThatThrownBy(() -> new CommentContents(commentContent))
-                .isInstanceOf(CommentContentException.class)
-                .hasMessage(CommentContents.getValidCommentContentMessage());
+        assertThatThrownBy(() -> new CommentContents(commentContents))
+                .isInstanceOf(CommentContentsException.class)
+                .hasMessage(CommentContents.getValidCommentContentsMessage());
     }
 
     static Stream<Arguments> createInValidString() {
-        String commentContentLength1001 = createStringBy(1001);
-        String commentContentLength0 = createStringBy(0);
+        String commentContentsLength1001 = createStringBy(1001);
+        String commentContentsLength0 = createStringBy(0);
 
         return Stream.of(
-                Arguments.of(commentContentLength1001),
-                Arguments.of(commentContentLength0)
+                Arguments.of(commentContentsLength1001),
+                Arguments.of(commentContentsLength0)
         );
     }
 }

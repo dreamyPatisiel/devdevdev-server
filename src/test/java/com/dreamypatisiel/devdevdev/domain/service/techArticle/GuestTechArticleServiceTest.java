@@ -21,6 +21,7 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -231,6 +232,24 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
 
         // when // then
         assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, status, authentication))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 기술블로그 댓글을 작성하면 예외가 발생한다.")
+    void registerTechCommentAccessDeniedException() {
+        // given
+        when(authentication.getPrincipal()).thenReturn("anonymousUser");
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        Long id = FIRST_TECH_ARTICLE_ID;
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechArticleService.registerTechComment(id, registerTechCommentRequest, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
