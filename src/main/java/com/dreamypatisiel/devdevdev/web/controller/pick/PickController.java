@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.pick;
 
 import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 
@@ -6,9 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickMultiServiceHandler;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
@@ -21,10 +19,9 @@ import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
 import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.VotePickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -193,21 +190,5 @@ public class PickController {
         List<SimilarPickResponse> response = pickService.findTop3SimilarPicks(pickId);
 
         return ResponseEntity.ok(BasicResponse.success(response));
-    }
-
-    @Operation(summary = "픽픽픽 댓글 작성", description = "회원은 픽픽픽 댓글을 작성할 수 있습니다.")
-    @PostMapping("/picks/{pickId}/comments")
-    public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
-            @PathVariable Long pickId,
-            @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
-        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-
-        RegisterPickCommentDto registerPickCommentDto = RegisterPickCommentDto.of(pickId, registerPickCommentRequest);
-
-        PickService pickService = pickServiceStrategy.getPickService();
-        PickCommentResponse pickCommentResponse = pickService.registerPickComment(registerPickCommentDto,
-                authentication);
-
-        return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 }

@@ -46,7 +46,7 @@ import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;

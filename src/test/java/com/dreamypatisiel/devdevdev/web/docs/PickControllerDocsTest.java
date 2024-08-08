@@ -71,12 +71,11 @@ import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.openai.response.Usage;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.VotePickOptionRequest;
 import jakarta.persistence.EntityManager;
 import java.io.IOException;
 import java.net.URL;
@@ -1990,74 +1989,6 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
                 ),
                 exceptionResponseFields()
-        ));
-    }
-
-    @Test
-    @DisplayName("회원이 승인 상태의 픽픽픽에 댓글을 작성한다.")
-    void registerPickComment() throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
-        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
-
-        // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
-        pickVoteRepository.save(pickVote);
-
-        em.flush();
-        em.clear();
-
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), true);
-
-        // when // then
-        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
-                .andDo(print())
-                .andExpect(status().isOk());
-
-        // docs
-        actions.andDo(document("register-pick-comment",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()),
-                requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
-                ),
-                pathParameters(
-                        parameterWithName("pickId").description("픽픽픽 아이디")
-                ),
-                requestFields(
-                        fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)"),
-                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 선택지 아이디").optional(),
-                        fieldWithPath("isPickVotePublic").type(BOOLEAN).description("픽픽픽 공개 여부")
-                ),
-                responseFields(
-                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
-                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
-                        fieldWithPath("data.pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디")
-                )
         ));
     }
 

@@ -5,11 +5,9 @@ import static com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType.se
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_PICK_IMAGE_NAME_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.FIRST_PICK_OPTION_IMAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService.SECOND_PICK_OPTION_IMAGE;
@@ -25,7 +23,6 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -45,9 +42,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.dto.RegisterPickCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
@@ -64,10 +59,10 @@ import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
@@ -80,7 +75,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -1451,279 +1445,6 @@ class MemberPickServiceTest {
         assertThatThrownBy(() -> memberPickService.deletePick(pick.getId(), authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성한다.")
-    void registerPickCommentWithPickVote() {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
-        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
-
-        // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
-        pickVoteRepository.save(pickVote);
-
-        em.flush();
-        em.clear();
-
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
-                firstPickOption.getId(), true);
-
-        // when
-        PickCommentResponse pickCommentResponse = memberPickService.registerPickComment(registerPickCommentDto,
-                authentication);
-
-        // then
-        assertThat(pickCommentResponse.getPickCommentId()).isNotNull();
-
-        PickComment findPickComment = pickCommentRepository.findById(pickCommentResponse.getPickCommentId()).get();
-        assertAll(
-                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo("안녕하세웅"),
-                () -> assertThat(findPickComment.getIsPublic()).isEqualTo(true),
-                () -> assertThat(findPickComment.getDeletedAt()).isNull(),
-                () -> assertThat(findPickComment.getBlameTotalCount().getCount()).isEqualTo(0L),
-                () -> assertThat(findPickComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
-                () -> assertThat(findPickComment.getPick().getId()).isEqualTo(pick.getId()),
-                () -> assertThat(findPickComment.getMember().getId()).isEqualTo(member.getId()),
-                () -> assertThat(findPickComment.getPickVote().getId()).isEqualTo(pickVote.getId())
-        );
-    }
-
-    @Test
-    @DisplayName("승인상태의 픽픽픽에 선택지 투표 비공개 댓글을 작성한다.")
-    void registerPickCommentWithOutPickVote() {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
-        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
-
-        // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
-        pickVoteRepository.save(pickVote);
-
-        em.flush();
-        em.clear();
-
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
-                firstPickOption.getId(), false);
-
-        // when
-        PickCommentResponse pickCommentResponse = memberPickService.registerPickComment(registerPickCommentDto,
-                authentication);
-
-        // then
-        assertThat(pickCommentResponse.getPickCommentId()).isNotNull();
-
-        PickComment findPickComment = pickCommentRepository.findById(pickCommentResponse.getPickCommentId()).get();
-        assertAll(
-                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo("안녕하세웅"),
-                () -> assertThat(findPickComment.getIsPublic()).isEqualTo(false),
-                () -> assertThat(findPickComment.getDeletedAt()).isNull(),
-                () -> assertThat(findPickComment.getBlameTotalCount().getCount()).isEqualTo(0L),
-                () -> assertThat(findPickComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
-                () -> assertThat(findPickComment.getPick().getId()).isEqualTo(pick.getId()),
-                () -> assertThat(findPickComment.getMember().getId()).isEqualTo(member.getId()),
-                () -> assertThat(findPickComment.getPickVote()).isNull()
-        );
-    }
-
-    @Test
-    @DisplayName("픽픽픽 댓글을 작성할 때 회원이 존재하지 않으면 예외가 발생한다.")
-    void registerPickCommentMemberException() {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // when
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(1L, "안녕하세웅",
-                1L, true);
-        // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
-                .isInstanceOf(MemberException.class)
-                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("픽픽픽 댓글을 작성할 때 픽픽픽이 존재하지 않으면 예외가 발생한다.")
-    void registerPickCommentPickNotFoundException() {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        em.flush();
-        em.clear();
-
-        // when
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(1L, "안녕하세웅",
-                1L, true);
-        // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
-    @DisplayName("픽픽픽 댓글을 작성할 때 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
-    void registerPickCommentNotApproval(ContentStatus contentStatus) {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        em.flush();
-        em.clear();
-
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
-                firstPickOption.getId(), true);
-
-        // when // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성할 때 픽픽픽 선택지 투표 이력이 없으면 예외가 발생한다.")
-    void registerPickCommentNotFoundPickVote() {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        em.flush();
-        em.clear();
-
-        RegisterPickCommentDto registerPickCommentDto = new RegisterPickCommentDto(pick.getId(), "안녕하세웅",
-                firstPickOption.getId(), true);
-
-        // when // then
-        assertThatThrownBy(() -> memberPickService.registerPickComment(registerPickCommentDto, authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE);
     }
 
     private Pick createPick(Title title, ContentStatus contentStatus, Member member) {

@@ -1,0 +1,3 @@
+= 픽픽픽 댓글
+
+include::pick-comment-register.adoc[]

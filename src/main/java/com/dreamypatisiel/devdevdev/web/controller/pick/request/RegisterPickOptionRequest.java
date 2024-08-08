@@ -1,7 +1,6 @@
-package com.dreamypatisiel.devdevdev.web.controller.request;
+package com.dreamypatisiel.devdevdev.web.controller.pick.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;

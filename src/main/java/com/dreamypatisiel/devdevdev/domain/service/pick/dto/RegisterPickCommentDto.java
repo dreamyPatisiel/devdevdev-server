@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick.dto;
 
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import lombok.Builder;
 import lombok.Data;
 

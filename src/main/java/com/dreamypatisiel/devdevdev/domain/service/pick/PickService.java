@@ -11,8 +11,8 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

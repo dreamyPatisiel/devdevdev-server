@@ -30,4 +30,10 @@ include::{snippets}/register-pick-comment/response-fields.adoc[]
 
 ==== HTTP Response
 
-include::{snippets}/register-pick-comment-bind-exception/response-body.adoc[]
+* `내용을 작성해주세요.`: 댓글(contents)을 작성하지 않는 경우(공백 이거나 빈문자열)
+* `픽픽픽 공개 여부는 필수 값 입니다.`: 픽픽픽 공개 여부(isPickVotePublic)가 null 인 경우
+* `픽픽픽 게시글이 없습니다.`: 픽픽픽 게시글이 존재하지 않는 경우
+* `승인 상태가 아닌 픽픽픽에는 댓글을 작성할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
+* `투표한 픽픽픽 선택지가 존재하지 않습니다.`: 투표한 픽픽픽 선택지가 존재하지 않는 경우
+
+include::{snippets}/register-pick-comment-bind-exception-pick-vote-public-is-null/response-body.adoc[]

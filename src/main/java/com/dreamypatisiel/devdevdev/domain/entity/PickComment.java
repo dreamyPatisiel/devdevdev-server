@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-        @Index(name = "idx__member_pick_deleted_at", columnList = "member_id, pick_id, deletedAt")
+        @Index(name = "idx__member__pick__deleted_at", columnList = "member_id, pick_id, deletedAt")
 })
 public class PickComment extends BasicTime {
 
