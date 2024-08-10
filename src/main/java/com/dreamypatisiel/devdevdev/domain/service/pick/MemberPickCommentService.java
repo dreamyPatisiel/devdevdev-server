@@ -37,6 +37,11 @@ public class MemberPickCommentService {
     private final PickVoteRepository pickVoteRepository;
     private final PickCommentRepository pickCommentRepository;
 
+    /**
+     * @Note: 픽픽픽 댓글을 작성한다.
+     * @Author: 장세웅
+     * @Since: 2024.08.08
+     */
     @Transactional
     public PickCommentResponse registerPickComment(Long pickId, RegisterPickCommentRequest registerPickCommentRequest,
                                                    Authentication authentication) {
@@ -82,10 +87,11 @@ public class MemberPickCommentService {
     }
 
     /**
-     * @Note: 픽픽픽 댓글 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
+     * @Note: 픽픽픽 댓글을 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
      * @Author: 장세웅
      * @Since: 2024.08.10
      */
+    @Transactional
     public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
                                                  ModifyPickCommentRequest modifyPickCommentRequest,
                                                  Authentication authentication) {
