@@ -1,5 +1,5 @@
 [[Pick-Comment-Modify]]
-== 픽픽픽 댓글 수정 API(POST: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
+== 픽픽픽 댓글 수정 API(PATCH: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
 
 * 픽픽픽 댓글을 수정한다.
 * 회원 본인이 작성한 픽픽픽 수정 할 수 있다.
