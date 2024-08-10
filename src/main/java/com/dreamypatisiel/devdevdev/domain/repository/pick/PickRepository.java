@@ -15,7 +15,4 @@ public interface PickRepository extends JpaRepository<Pick, Long>, PickRepositor
     Optional<Pick> findPickWithPickOptionByIdAndMember(Long id, Member member);
 
     List<Pick> findTop1000ByContentStatusAndEmbeddingsIsNotNullOrderByCreatedAtDesc(ContentStatus contentStatus);
-
-    @EntityGraph(attributePaths = {"pickVotes"})
-    Optional<Pick> findWithPickVoteById(Long id);
 }

@@ -120,8 +120,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), true);
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅", true);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
@@ -190,7 +189,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.clear();
 
         RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), isPickVotePublic);
+                isPickVotePublic);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
