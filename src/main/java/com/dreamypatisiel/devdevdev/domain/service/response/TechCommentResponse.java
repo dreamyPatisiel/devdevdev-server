@@ -5,17 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class TechCommentRegisterResponse {
+public class TechCommentResponse {
 
     private final Long techCommentId;
 
     @Builder
-    public TechCommentRegisterResponse(Long techCommentId) {
+    public TechCommentResponse(Long techCommentId) {
         this.techCommentId = techCommentId;
     }
 
-    public static TechCommentRegisterResponse from(TechComment techComment) {
-        return TechCommentRegisterResponse.builder()
+    public static TechCommentResponse from(TechComment techComment) {
+        return TechCommentResponse.builder()
                 .techCommentId(techComment.getId())
                 .build();
     }

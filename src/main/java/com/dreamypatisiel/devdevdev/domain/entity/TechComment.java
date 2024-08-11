@@ -10,8 +10,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +23,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = {
+        @Index(name = "idx__comment__tech_article__member__deleted_at", columnList = "id, tech_article_id, member_id, deletedAt")
+})
 public class TechComment extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,6 +57,8 @@ public class TechComment extends BasicTime {
     @JoinColumn(name = "tech_article_id", nullable = false)
     private TechArticle techArticle;
 
+    private LocalDateTime deletedAt;
+
     @Builder
     private TechComment(Long id, CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
                         Member member, TechArticle techArticle) {
@@ -70,5 +78,13 @@ public class TechComment extends BasicTime {
                 .blameTotalCount(Count.defaultCount())
                 .recommendTotalCount(Count.defaultCount())
                 .build();
+    }
+
+    public void changeDeletedAt(LocalDateTime now) {
+        this.deletedAt = now;
+    }
+
+    public void changeCommentContents(CommentContents contents) {
+        this.contents = contents;
     }
 }
