@@ -2,8 +2,11 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService.MODIFY;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService.REGISTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -17,6 +20,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -36,6 +40,7 @@ import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
@@ -43,6 +48,7 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOpti
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +56,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.EnumSource.Mode;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -141,8 +148,7 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), true);
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
 
         // when
         PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(), request,
@@ -208,8 +214,7 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), false);
+        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅", false);
 
         // when
         PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(),
@@ -246,8 +251,7 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
-                1L, true);
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
         // then
         assertThatThrownBy(() -> memberPickCommentService.registerPickComment(0L, request, authentication))
                 .isInstanceOf(MemberException.class)
@@ -273,8 +277,7 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when
-        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅",
-                1L, true);
+        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅", true);
         // then
         assertThatThrownBy(
                 () -> memberPickCommentService.registerPickComment(1L, registerPickCommentDto, authentication))
@@ -318,13 +321,12 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), true);
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
 
         // when // then
         assertThatThrownBy(() -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE);
+                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
     }
 
     @Test
@@ -362,13 +364,260 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), true);
+        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
 
         // when // then
         assertThatThrownBy(() -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName("승인 상태이고 회원 본인이 작성한 삭제되지 않은 픽픽픽 댓글을 수정한다.")
+    void modifyPickComment(boolean isPublic) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when
+        PickCommentResponse response = memberPickCommentService.modifyPickComment(pickComment.getId(),
+                pick.getId(), request, authentication);
+
+        // then
+        PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
+        assertAll(
+                () -> assertThat(response.getPickCommentId()).isEqualTo(pickComment.getId()),
+                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo(request.getContents())
+        );
+    }
+
+    @Test
+    @DisplayName("픽픽픽 댓글을 수정할 때 회원이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickCommentMemberException() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(0L, 0L, request,
+                authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 댓글을 수정할 때 댓글이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickCommentNotFoundPickComment() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 승인 상태 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(0L, pick.getId(), request,
+                authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 댓글을 수정할 때 본인이 작성한 댓글이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickCommentNotFoundPickCommentOtherMember() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 승인 상태 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성(다른 사람이 작성)
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), request,
+                authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 댓글을 수정할 때 댓글이 삭제 상태이면 예외가 발생한다.")
+    void modifyPickCommentNotFoundPickCommentIsDeletedAt() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 승인 상태 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 삭제 상태의 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
+        pickComment.changeDeletedAt(LocalDateTime.now());
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), request,
+                authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
+    @DisplayName("승인 상태가 아닌 픽픽픽 댓글을 수정할 때 예외가 발생한다.")
+    void modifyPickCommentNotApproval(ContentStatus contentStatus) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 승인 상태가 아닌 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), request,
+                authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, MODIFY);
+    }
+
+    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .member(member)
+                .pick(pick)
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
     }
 
     private Pick createPick(Title title, ContentStatus contentStatus, Member member) {

@@ -35,5 +35,7 @@ include::{snippets}/register-pick-comment/response-fields.adoc[]
 * `픽픽픽 게시글이 없습니다.`: 픽픽픽 게시글이 존재하지 않는 경우
 * `승인 상태가 아닌 픽픽픽에는 댓글을 작성할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
 * `투표한 픽픽픽 선택지가 존재하지 않습니다.`: 투표한 픽픽픽 선택지가 존재하지 않는 경우
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
 
 include::{snippets}/register-pick-comment-bind-exception-pick-vote-public-is-null/response-body.adoc[]

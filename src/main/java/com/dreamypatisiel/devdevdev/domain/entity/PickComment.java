@@ -24,7 +24,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-        @Index(name = "idx__member__pick__deleted_at", columnList = "member_id, pick_id, deletedAt")
+        @Index(name = "idx__member__pick__deleted_at", columnList = "member_id, pick_id, deletedAt"),
+        @Index(name = "idx__comment__member__pick__deleted_at", columnList = "id, member_id, pick_id, deletedAt")
 })
 public class PickComment extends BasicTime {
 
@@ -69,11 +70,13 @@ public class PickComment extends BasicTime {
 
 
     @Builder
-    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Member member,
+    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Boolean isPublic,
+                        Member member,
                         Pick pick, PickVote pickVote) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
+        this.isPublic = isPublic;
         this.member = member;
         this.pick = pick;
         this.pickVote = pickVote;
@@ -113,5 +116,9 @@ public class PickComment extends BasicTime {
 
     public void changeDeletedAt(LocalDateTime now) {
         this.deletedAt = now;
+    }
+
+    public void changeCommentContents(CommentContents contents) {
+        this.contents = contents;
     }
 }

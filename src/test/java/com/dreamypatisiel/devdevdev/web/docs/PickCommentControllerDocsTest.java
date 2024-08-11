@@ -4,6 +4,7 @@ import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTH
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
@@ -27,9 +28,11 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -39,12 +42,14 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
@@ -59,6 +64,7 @@ import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -82,6 +88,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
     PickOptionImageRepository pickOptionImageRepository;
     @Autowired
     PickVoteRepository pickVoteRepository;
+    @Autowired
+    PickCommentRepository pickCommentRepository;
     @Autowired
     EntityManager em;
     @MockBean
@@ -120,8 +128,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), true);
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅", true);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
@@ -190,7 +197,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.clear();
 
         RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
-                firstPickOption.getId(), isPickVotePublic);
+                isPickVotePublic);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
@@ -221,6 +228,126 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
+
+    @Test
+    @DisplayName("승인 상태이고 회원 본인이 작성한 삭제되지 않은 픽픽픽 댓글을 수정한다.")
+    void modifyPickComment() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}",
+                        pick.getId(), pickComment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("modify-pick-comment",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentId").description("픽픽픽 댓글 아이디")
+                ),
+                requestFields(
+                        fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디")
+                )
+        ));
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @DisplayName("승인 상태이고 회원 본인이 작성한 삭제되지 않은 픽픽픽 댓글을 수정할 때 수정할 내용이 공백이면 예외가 발생한다.")
+    void modifyPickCommentBindException(String contents) throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickCommentRequest request = new ModifyPickCommentRequest(contents);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}",
+                        pick.getId(), pickComment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("modify-pick-comment-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentId").description("픽픽픽 댓글 아이디")
+                ),
+                requestFields(
+                        fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .member(member)
+                .pick(pick)
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
     }
 
     private Pick createPick(Title title, ContentStatus contentStatus, Member member) {
