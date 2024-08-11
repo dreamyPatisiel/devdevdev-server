@@ -16,6 +16,10 @@ include::{snippets}/modify-pick-comment/http-request.adoc[]
 
 include::{snippets}/modify-pick-comment/request-headers.adoc[]
 
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/modify-pick-comment/path-parameters.adoc[]
+
 ==== HTTP Request Fields
 
 include::{snippets}/modify-pick-comment/request-fields.adoc[]

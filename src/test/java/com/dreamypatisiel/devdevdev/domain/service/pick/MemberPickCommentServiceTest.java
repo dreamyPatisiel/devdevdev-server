@@ -610,7 +610,7 @@ class MemberPickCommentServiceTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    @DisplayName("회원 본인이 작성한 승인 상태의 픽픽픽의 댓글을 삭제한다.")
+    @DisplayName("회원 본인이 작성한 승인 상태의 픽픽픽의 삭제상태가 아닌 댓글을 삭제한다.")
     void deletePickComment(boolean isPublic) {
         // given
         // 회원 생성

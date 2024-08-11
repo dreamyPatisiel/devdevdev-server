@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,7 +42,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글 수정", description = "회원은 픽픽픽 댓글을 수정할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글 수정", description = "회원은 자신이 작성한 픽픽픽 댓글을 수정할 수 있습니다.")
     @PatchMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> modifyPickComment(
             @PathVariable(name = "pickId") Long pickId,
@@ -52,6 +53,20 @@ public class PickCommentController {
 
         PickCommentResponse pickCommentResponse = memberPickCommentService.modifyPickComment(pickId, pickCommentId,
                 modifyPickCommentRequest, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
+    }
+
+    @Operation(summary = "픽픽픽 댓글 삭제", description = "회원은 자신이 작성한 픽픽픽 댓글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
+    @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}")
+    public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(
+            @PathVariable(name = "pickId") Long pickId,
+            @PathVariable(name = "pickCommentId") Long pickCommentId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickCommentResponse pickCommentResponse = memberPickCommentService.deletePickComment(pickId, pickCommentId,
+                authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }

@@ -90,7 +90,7 @@ public class MemberPickCommentService {
     }
 
     /**
-     * @Note: 픽픽픽 댓글을 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
+     * @Note: 회원 자신이 작성한 픽픽픽 댓글을 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
      * @Author: 장세웅
      * @Since: 2024.08.10
      */
