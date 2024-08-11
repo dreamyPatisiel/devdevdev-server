@@ -5,10 +5,12 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest.FIRST_TECH_ARTICLE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
@@ -17,6 +19,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentRegisterResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -43,6 +46,9 @@ public class MemberTechCommentServiceTest {
 
     @Autowired
     TechArticleRepository techArticleRepository;
+
+    @Autowired
+    TechCommentRepository techCommentRepository;
 
     @Autowired
     CompanyRepository companyRepository;
@@ -93,6 +99,17 @@ public class MemberTechCommentServiceTest {
 
         // then
         assertThat(techCommentRegisterResponse.getTechCommentId()).isNotNull();
+
+        TechComment findTechComment = techCommentRepository.findById(techCommentRegisterResponse.getTechCommentId())
+                .get();
+
+        assertAll(
+                () -> assertThat(findTechComment.getContents().getCommentContents()).isEqualTo("댓글입니다."),
+                () -> assertThat(findTechComment.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechComment.getMember().getId()).isEqualTo(member.getId()),
+                () -> assertThat(findTechComment.getTechArticle().getId()).isEqualTo(id)
+        );
     }
 
     @Test
