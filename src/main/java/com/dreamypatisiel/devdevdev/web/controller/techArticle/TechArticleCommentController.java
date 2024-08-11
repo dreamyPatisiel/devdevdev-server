@@ -1,10 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentRegisterResponse;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TechArticleCommentController {
 
-    private final TechArticleServiceStrategy techArticleServiceStrategy;
+    private final MemberTechCommentService memberTechCommentService;
 
     @Operation(summary = "기술블로그 댓글 작성")
     @PostMapping("/articles/{techArticleId}/comments")
@@ -32,9 +31,9 @@ public class TechArticleCommentController {
             @PathVariable Long techArticleId,
             @RequestBody @Validated RegisterTechCommentRequest registerTechCommentRequest) {
 
-        TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        TechCommentRegisterResponse response = techArticleService.registerTechComment(techArticleId,
+
+        TechCommentRegisterResponse response = memberTechCommentService.registerTechComment(techArticleId,
                 registerTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));

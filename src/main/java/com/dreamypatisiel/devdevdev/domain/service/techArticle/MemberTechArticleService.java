@@ -5,25 +5,20 @@ import static com.dreamypatisiel.devdevdev.domain.service.response.util.TechArti
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentRegisterResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +39,6 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     private final ElasticTechArticleService elasticTechArticleService;
     private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
     private final BookmarkRepository bookmarkRepository;
-    private final TechCommentRepository techCommentRepository;
     private final MemberProvider memberProvider;
 
 
@@ -53,13 +47,11 @@ public class MemberTechArticleService extends TechArticleCommonService implement
                                     ElasticTechArticleService elasticTechArticleService,
                                     TechArticlePopularScorePolicy techArticlePopularScorePolicy,
                                     BookmarkRepository bookmarkRepository,
-                                    TechCommentRepository techCommentRepository,
                                     MemberProvider memberProvider) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
         this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
         this.bookmarkRepository = bookmarkRepository;
-        this.techCommentRepository = techCommentRepository;
         this.memberProvider = memberProvider;
     }
 
@@ -122,30 +114,6 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         );
 
         return new BookmarkResponse(techArticle.getId(), status);
-    }
-
-    /**
-     * @Note: 기술블로그에 댓글을 작성한다.
-     * @Author: 유소영
-     * @Since: 2024.08.06
-     */
-    @Override
-    public TechCommentRegisterResponse registerTechComment(Long techArticleId,
-                                                           RegisterTechCommentRequest registerTechCommentRequest,
-                                                           Authentication authentication) {
-        // 회원 조회
-        Member member = memberProvider.getMemberByAuthentication(authentication);
-
-        // 기술블로그 조회
-        TechArticle techArticle = findTechArticle(techArticleId);
-
-        // 댓글 엔티티 생성 및 저장
-        String contents = registerTechCommentRequest.getContents();
-        TechComment techComment = TechComment.create(new CommentContents(contents), member, techArticle);
-        techCommentRepository.save(techComment);
-
-        // 데이터 가공
-        return TechCommentRegisterResponse.from(techComment);
     }
 
     /**

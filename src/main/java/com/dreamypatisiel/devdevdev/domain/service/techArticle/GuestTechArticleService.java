@@ -10,14 +10,12 @@ import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentRegisterResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -89,13 +87,6 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
     @Override
     public BookmarkResponse updateBookmark(Long techArticleId, boolean status, Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
-
-    @Override
-    public TechCommentRegisterResponse registerTechComment(Long techArticleId,
-                                                           RegisterTechCommentRequest registerTechCommentRequest,
-                                                           Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 

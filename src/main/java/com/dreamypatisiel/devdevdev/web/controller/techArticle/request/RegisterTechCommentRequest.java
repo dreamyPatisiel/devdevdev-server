@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller.request;
+package com.dreamypatisiel.devdevdev.web.controller.techArticle.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

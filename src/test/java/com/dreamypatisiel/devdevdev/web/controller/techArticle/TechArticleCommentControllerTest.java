@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
@@ -22,11 +22,14 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
+import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -69,7 +72,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.FORBIDDEN.value()));
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.METHOD_NOT_ALLOWED.value()));
     }
 
     @Test
@@ -183,6 +186,36 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
                 .build();
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @DisplayName("회원이 기술블로그 댓글을 작성할 때 댓글 내용이 공백이라면 예외가 발생한다.")
+    void registerTechCommentContentsIsNullException(String contents) throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
+                new Count(1L),
+                new Count(1L), null, company);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId();
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest(contents);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/comments", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsString(registerTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,

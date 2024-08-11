@@ -67,6 +67,8 @@ public class TechComment extends BasicTime {
                 .contents(contents)
                 .member(member)
                 .techArticle(techArticle)
+                .blameTotalCount(Count.defaultCount())
+                .recommendTotalCount(Count.defaultCount())
                 .build();
     }
 }
