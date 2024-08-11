@@ -136,7 +136,7 @@ public class MemberPickCommentService {
         // 어드민은 자신이 작성하지 않은 댓글도 삭제 가능
         if (findMember.isAdmin()) {
             // 픽픽픽 댓글 조회(삭제되지 않은 댓글)
-            PickComment findPickComment = pickCommentRepository.findWithPickByIdAndPickIdAndDeletedAtIsNull(
+            PickComment findPickComment = pickCommentRepository.findByIdAndPickIdAndDeletedAtIsNull(
                             pickCommentId, pickId)
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 

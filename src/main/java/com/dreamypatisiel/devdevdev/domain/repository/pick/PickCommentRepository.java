@@ -11,5 +11,5 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long> 
     Optional<PickComment> findWithPickByIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long pickId,
                                                                                     Long createdById);
 
-    Optional<PickComment> findWithPickByIdAndPickIdAndDeletedAtIsNull(Long id, Long pickId);
+    Optional<PickComment> findByIdAndPickIdAndDeletedAtIsNull(Long id, Long pickId);
 }
