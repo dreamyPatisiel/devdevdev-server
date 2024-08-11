@@ -294,7 +294,7 @@ class PickCommentControllerTest extends SupportControllerTest {
         PickComment pickComment = PickComment.builder()
                 .contents(contents)
                 .isPublic(isPublic)
-                .member(member)
+                .createdBy(member)
                 .pick(pick)
                 .build();
 

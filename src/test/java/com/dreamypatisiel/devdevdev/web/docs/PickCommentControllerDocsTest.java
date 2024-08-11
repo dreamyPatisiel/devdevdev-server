@@ -144,14 +144,13 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)"),
-                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 선택지 아이디").optional(),
                         fieldWithPath("isPickVotePublic").type(BOOLEAN).description("픽픽픽 공개 여부")
                 ),
                 responseFields(
@@ -216,14 +215,13 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)"),
-                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 선택지 아이디").optional(),
                         fieldWithPath("isPickVotePublic").type(NULL).description("픽픽픽 공개 여부")
                 ),
                 exceptionResponseFields()
@@ -268,7 +266,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
@@ -324,7 +322,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
@@ -341,7 +339,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         PickComment pickComment = PickComment.builder()
                 .contents(contents)
                 .isPublic(isPublic)
-                .member(member)
+                .createdBy(member)
                 .pick(pick)
                 .build();
 

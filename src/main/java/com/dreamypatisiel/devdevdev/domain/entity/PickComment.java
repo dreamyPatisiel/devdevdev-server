@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
         @Index(name = "idx__member__pick__deleted_at", columnList = "member_id, pick_id, deletedAt"),
-        @Index(name = "idx__comment__member__pick__deleted_at", columnList = "id, member_id, pick_id, deletedAt")
+        @Index(name = "idx__comment__member__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt")
 })
 public class PickComment extends BasicTime {
 
@@ -41,13 +41,13 @@ public class PickComment extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "blame_total_count")
+            column = @Column(name = "blame_total_count", columnDefinition = "bigint default 0")
     )
     private Count blameTotalCount;
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "recommend_total_count")
+            column = @Column(name = "recommend_total_count", columnDefinition = "bigint default 0")
     )
     private Count recommendTotalCount;
 
@@ -57,8 +57,12 @@ public class PickComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "created_by", nullable = false)
+    private Member createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deleted_by")
+    private Member deletedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pick_id", nullable = false)
@@ -71,37 +75,36 @@ public class PickComment extends BasicTime {
 
     @Builder
     private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Boolean isPublic,
-                        Member member,
-                        Pick pick, PickVote pickVote) {
+                        Member createdBy, Pick pick, PickVote pickVote) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.isPublic = isPublic;
-        this.member = member;
+        this.createdBy = createdBy;
         this.pick = pick;
         this.pickVote = pickVote;
     }
 
-    public static PickComment createPrivateVoteComment(CommentContents content, Member member, Pick pick) {
+    public static PickComment createPrivateVoteComment(CommentContents content, Member createdBy, Pick pick) {
         PickComment pickComment = new PickComment();
         pickComment.contents = content;
         pickComment.isPublic = false;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
-        pickComment.member = member;
+        pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
 
         return pickComment;
     }
 
-    public static PickComment createPublicVoteComment(CommentContents content, Member member, Pick pick,
+    public static PickComment createPublicVoteComment(CommentContents content, Member createdBy, Pick pick,
                                                       PickVote pickVote) {
         PickComment pickComment = new PickComment();
         pickComment.contents = content;
         pickComment.isPublic = true;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
-        pickComment.member = member;
+        pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
         pickComment.pickVote = pickVote;
 
@@ -114,8 +117,9 @@ public class PickComment extends BasicTime {
         this.pick = pick;
     }
 
-    public void changeDeletedAt(LocalDateTime now) {
+    public void changeDeletedAt(LocalDateTime now, Member deletedBy) {
         this.deletedAt = now;
+        this.deletedBy = deletedBy;
     }
 
     public void changeCommentContents(CommentContents contents) {
