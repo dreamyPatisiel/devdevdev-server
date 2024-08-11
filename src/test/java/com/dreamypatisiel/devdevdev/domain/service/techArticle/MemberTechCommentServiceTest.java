@@ -110,7 +110,7 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findTechComment.getContents().getCommentContents()).isEqualTo("댓글입니다."),
                 () -> assertThat(findTechComment.getBlameTotalCount().getCount()).isEqualTo(0L),
                 () -> assertThat(findTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
-                () -> assertThat(findTechComment.getMember().getId()).isEqualTo(member.getId()),
+                () -> assertThat(findTechComment.getCreatedBy().getId()).isEqualTo(member.getId()),
                 () -> assertThat(findTechComment.getTechArticle().getId()).isEqualTo(id)
         );
     }
@@ -209,7 +209,7 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findTechComment.getContents().getCommentContents()).isEqualTo("댓글 수정입니다."),
                 () -> assertThat(findTechComment.getBlameTotalCount().getCount()).isEqualTo(0L),
                 () -> assertThat(findTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
-                () -> assertThat(findTechComment.getMember().getId()).isEqualTo(member.getId()),
+                () -> assertThat(findTechComment.getCreatedBy().getId()).isEqualTo(member.getId()),
                 () -> assertThat(findTechComment.getTechArticle().getId()).isEqualTo(techArticleId),
                 () -> assertThat(findTechComment.getId()).isEqualTo(techCommentId)
         );

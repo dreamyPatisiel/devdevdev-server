@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-        @Index(name = "idx__comment__tech_article__member__deleted_at", columnList = "id, tech_article_id, member_id, deletedAt")
+        @Index(name = "idx__comment__tech_article__created_by__deleted_at", columnList = "id, tech_article_id, created_by, deletedAt")
 })
 public class TechComment extends BasicTime {
     @Id
@@ -50,8 +50,12 @@ public class TechComment extends BasicTime {
     private Count recommendTotalCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "created_by", nullable = false)
+    private Member createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deleted_by")
+    private Member deletedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tech_article_id", nullable = false)
@@ -61,19 +65,19 @@ public class TechComment extends BasicTime {
 
     @Builder
     private TechComment(Long id, CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
-                        Member member, TechArticle techArticle) {
+                        Member createdBy, TechArticle techArticle) {
         this.id = id;
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
-        this.member = member;
+        this.createdBy = createdBy;
         this.techArticle = techArticle;
     }
 
-    public static TechComment create(CommentContents contents, Member member, TechArticle techArticle) {
+    public static TechComment create(CommentContents contents, Member createdBy, TechArticle techArticle) {
         return TechComment.builder()
                 .contents(contents)
-                .member(member)
+                .createdBy(createdBy)
                 .techArticle(techArticle)
                 .blameTotalCount(Count.defaultCount())
                 .recommendTotalCount(Count.defaultCount())

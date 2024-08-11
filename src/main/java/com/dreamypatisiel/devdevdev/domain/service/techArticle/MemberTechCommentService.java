@@ -61,7 +61,7 @@ public class MemberTechCommentService {
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 기술블로그 댓글 조회
-        TechComment findTechComment = techCommentRepository.findByIdAndTechArticleIdAndMemberIdAndDeletedAtIsNull(
+        TechComment findTechComment = techCommentRepository.findByIdAndTechArticleIdAndCreatedByIdAndDeletedAtIsNull(
                         techCommentId, techArticleId, findMember.getId())
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
