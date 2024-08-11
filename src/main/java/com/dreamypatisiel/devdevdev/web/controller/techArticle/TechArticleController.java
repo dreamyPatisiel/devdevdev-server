@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
@@ -49,7 +49,7 @@ public class TechArticleController {
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    @Operation(summary = "기술블로그 상세")
+    @Operation(summary = "기술블로그 상세 조회")
     @GetMapping("/articles/{techArticleId}")
     public ResponseEntity<BasicResponse<TechArticleDetailResponse>> getTechArticle(@PathVariable Long techArticleId) {
 

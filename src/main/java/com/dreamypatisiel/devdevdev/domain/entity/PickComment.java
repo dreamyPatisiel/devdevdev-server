@@ -57,7 +57,7 @@ public class PickComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "created_by", nullable = false)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
