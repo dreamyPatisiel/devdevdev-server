@@ -4,6 +4,7 @@ import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTH
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -144,14 +145,13 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)"),
-                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 선택지 아이디").optional(),
                         fieldWithPath("isPickVotePublic").type(BOOLEAN).description("픽픽픽 공개 여부")
                 ),
                 responseFields(
@@ -216,14 +216,13 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)"),
-                        fieldWithPath("pickOptionId").type(NUMBER).description("픽픽픽 선택지 아이디").optional(),
                         fieldWithPath("isPickVotePublic").type(NULL).description("픽픽픽 공개 여부")
                 ),
                 exceptionResponseFields()
@@ -268,7 +267,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
@@ -324,7 +323,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
@@ -337,11 +336,111 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         ));
     }
 
+    @Test
+    @DisplayName("회원 본인이 작성한 승인 상태의 픽픽픽의 삭제상태가 아닌 댓글을 삭제한다.")
+    void deletePickComment() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}",
+                        pick.getId(), pickComment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("delete-pick-comment",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentId").description("픽픽픽 댓글 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("픽픽픽 댓글을 삭제할 때 본인이 작성한 댓글이 아니면 예외가 발생한다.")
+    void deletePickCommentOtherMemberException() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 다른 회원 생성
+        SocialMemberDto otherSocialMemberDto = createSocialDto("helloWorld", "헬로월드",
+                "헬로월드", "1234", "helloWorld@kakao.com", socialType, role);
+        Member ohterMember = Member.createMemberBy(otherSocialMemberDto);
+        memberRepository.save(ohterMember);
+
+        // 다른 회원이 작성한 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, ohterMember, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}",
+                        pick.getId(), pickComment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("delete-pick-comment-not-found-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentId").description("픽픽픽 댓글 아이디")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
     private PickComment createPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick) {
         PickComment pickComment = PickComment.builder()
                 .contents(contents)
                 .isPublic(isPublic)
-                .member(member)
+                .createdBy(member)
                 .pick(pick)
                 .build();
 
