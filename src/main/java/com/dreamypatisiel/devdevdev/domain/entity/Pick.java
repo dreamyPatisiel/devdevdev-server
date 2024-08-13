@@ -89,9 +89,6 @@ public class Pick extends BasicTime {
     private List<PickComment> pickComments = new ArrayList<>();
 
     @OneToMany(mappedBy = "pick")
-    private List<PickReply> pickReplies = new ArrayList<>();
-
-    @OneToMany(mappedBy = "pick")
     private List<PickOption> pickOptions = new ArrayList<>();
 
     @OneToMany(mappedBy = "pick")

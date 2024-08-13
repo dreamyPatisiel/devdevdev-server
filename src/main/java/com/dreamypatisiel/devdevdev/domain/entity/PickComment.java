@@ -125,4 +125,8 @@ public class PickComment extends BasicTime {
     public void changeCommentContents(CommentContents contents) {
         this.contents = contents;
     }
+
+    public boolean isDeletedAtNull() {
+        return deletedAt == null;
+    }
 }
