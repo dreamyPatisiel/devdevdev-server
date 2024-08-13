@@ -1,8 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentRegisterResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,14 +29,29 @@ public class TechArticleCommentController {
 
     @Operation(summary = "기술블로그 댓글 작성")
     @PostMapping("/articles/{techArticleId}/comments")
-    public ResponseEntity<BasicResponse<TechCommentRegisterResponse>> registerTechComment(
+    public ResponseEntity<BasicResponse<TechCommentResponse>> registerTechComment(
             @PathVariable Long techArticleId,
             @RequestBody @Validated RegisterTechCommentRequest registerTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        TechCommentRegisterResponse response = memberTechCommentService.registerTechComment(techArticleId,
+        TechCommentResponse response = memberTechCommentService.registerTechComment(techArticleId,
                 registerTechCommentRequest, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 댓글 수정")
+    @PatchMapping("/articles/{techArticleId}/comments/{techCommentId}")
+    public ResponseEntity<BasicResponse<TechCommentResponse>> modifyTechComment(
+            @PathVariable Long techArticleId,
+            @PathVariable Long techCommentId,
+            @RequestBody @Validated ModifyTechCommentRequest modifyTechCommentRequest) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        TechCommentResponse response = memberTechCommentService.modifyTechComment(techArticleId, techCommentId,
+                modifyTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

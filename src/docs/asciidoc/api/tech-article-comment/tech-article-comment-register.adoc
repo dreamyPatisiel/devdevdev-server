@@ -18,6 +18,10 @@ include::{snippets}/tech-article-comments/request-headers.adoc[]
 
 include::{snippets}/tech-article-comments/path-parameters.adoc[]
 
+==== HTTP Request Fields
+
+include::{snippets}/tech-article-comments/request-fields.adoc[]
+
 ==== HTTP Response
 
 include::{snippets}/tech-article-comments/http-response.adoc[]
