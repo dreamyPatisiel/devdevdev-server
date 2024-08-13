@@ -2,3 +2,4 @@
 
 include::tech-article-comment-register.adoc[]
 include::tech-article-comment-modify.adoc[]
+include::tech-article-comment-delete.adoc[]

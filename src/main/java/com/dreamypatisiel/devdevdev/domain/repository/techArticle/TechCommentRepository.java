@@ -8,4 +8,6 @@ public interface TechCommentRepository extends JpaRepository<TechComment, Long> 
 
     Optional<TechComment> findByIdAndTechArticleIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long techArticleId,
                                                                                    Long createdById);
+
+    Optional<TechComment> findByIdAndTechArticleIdAndDeletedAtIsNull(Long id, Long techArticleId);
 }

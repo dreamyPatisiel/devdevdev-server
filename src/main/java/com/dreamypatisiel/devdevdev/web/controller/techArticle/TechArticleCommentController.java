@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,6 +53,20 @@ public class TechArticleCommentController {
 
         TechCommentResponse response = memberTechCommentService.modifyTechComment(techArticleId, techCommentId,
                 modifyTechCommentRequest, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 댓글 삭제")
+    @DeleteMapping("/articles/{techArticleId}/comments/{techCommentId}")
+    public ResponseEntity<BasicResponse<TechCommentResponse>> deleteTechComment(
+            @PathVariable Long techArticleId,
+            @PathVariable Long techCommentId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        TechCommentResponse response = memberTechCommentService.deleteTechComment(techArticleId, techCommentId,
+                authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

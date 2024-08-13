@@ -304,7 +304,7 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow());
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
         em.flush();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
