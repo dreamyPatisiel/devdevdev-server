@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-        @Index(name = "idx__comment__tech_article__created_by__deleted_at", columnList = "id, tech_article_id, created_by, deletedAt")
+        @Index(name = "idx__comment__tech_article__created_by__deleted_at", columnList = "id, tech_article_id, created_by, deletedAt"),
         @Index(name = "idx__comment__tech_article__deleted_at", columnList = "id, tech_article_id, deletedAt")
 })
 public class TechComment extends BasicTime {
@@ -87,6 +87,7 @@ public class TechComment extends BasicTime {
 
     public void changeDeletedAt(LocalDateTime now, Member member) {
         this.deletedAt = now;
+        this.deletedBy = member;
     }
 
     public void changeCommentContents(CommentContents contents) {
