@@ -30,7 +30,9 @@ import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -53,6 +55,8 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     CompanyRepository companyRepository;
     @Autowired
     TechCommentRepository techCommentRepository;
+    @Autowired
+    EntityManager em;
 
     @Test
     @DisplayName("익명 사용자는 기술블로그 댓글을 작성할 수 없다.")
@@ -312,6 +316,47 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(patch("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}", techArticleId, 0L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsString(modifyTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 수정할 때 댓글 내용이 공백이라면 예외가 발생한다.")
+    void modifyTechCommentAlreadyDeletedException() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        techComment.changeDeletedAt(LocalDateTime.now());
+        em.flush();
+
+        ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
+
+        // when // then
+        mockMvc.perform(patch("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}", techArticleId,
+                        techCommentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)

@@ -31,6 +31,7 @@ public class MemberTechCommentService {
      * @Author: 유소영
      * @Since: 2024.08.06
      */
+    @Transactional
     public TechCommentResponse registerTechComment(Long techArticleId,
                                                    RegisterTechCommentRequest registerTechCommentRequest,
                                                    Authentication authentication) {
@@ -54,6 +55,7 @@ public class MemberTechCommentService {
      * @Author: 유소영
      * @Since: 2024.08.11
      */
+    @Transactional
     public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId,
                                                  ModifyTechCommentRequest modifyTechCommentRequest,
                                                  Authentication authentication) {
