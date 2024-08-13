@@ -934,7 +934,7 @@ class MemberPickCommentServiceTest {
     }
 
     @Test
-    @DisplayName("회원은 승인 상태의 픽픽픽의 삭제상태가 아닌 댓글에 답글을 작성할 수 있다.")
+    @DisplayName("회원은 승인 상태의 픽픽픽의 삭제 상태가 아닌 댓글에 답글을 작성할 수 있다.")
     void registerPickReply() {
         // given
         // 회원 생성
