@@ -8,5 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PickCommentRepository extends JpaRepository<PickComment, Long> {
 
     @EntityGraph(attributePaths = {"pick"})
-    Optional<PickComment> findWithPickByIdAndPickIdAndMemberIdAndDeletedAtIsNull(Long id, Long pickId, Long memberId);
+    Optional<PickComment> findWithPickByIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long pickId,
+                                                                                    Long createdById);
+
+    Optional<PickComment> findByIdAndPickIdAndDeletedAtIsNull(Long id, Long pickId);
 }
