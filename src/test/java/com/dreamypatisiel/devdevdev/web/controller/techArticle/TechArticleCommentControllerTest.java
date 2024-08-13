@@ -24,6 +24,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
@@ -32,7 +33,6 @@ import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterT
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -55,6 +55,8 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     CompanyRepository companyRepository;
     @Autowired
     TechCommentRepository techCommentRepository;
+    @Autowired
+    TimeProvider timeProvider;
     @Autowired
     EntityManager em;
 
@@ -328,7 +330,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     }
 
     @Test
-    @DisplayName("회원이 기술블로그 댓글을 수정할 때 댓글 내용이 공백이라면 예외가 발생한다.")
+    @DisplayName("회원이 기술블로그 댓글을 수정할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
     void modifyTechCommentAlreadyDeletedException() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
@@ -349,7 +351,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
-        techComment.changeDeletedAt(LocalDateTime.now());
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow());
         em.flush();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");

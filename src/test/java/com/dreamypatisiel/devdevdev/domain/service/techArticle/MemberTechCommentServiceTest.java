@@ -25,6 +25,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRep
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
@@ -58,6 +59,9 @@ public class MemberTechCommentServiceTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    TimeProvider timeProvider;
 
     @Autowired
     EntityManager em;
@@ -268,6 +272,46 @@ public class MemberTechCommentServiceTest {
         // when // then
         assertThatThrownBy(
                 () -> memberTechCommentService.modifyTechComment(techArticleId, 0L, modifyTechCommentRequest,
+                        authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 수정할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
+    void modifyTechCommentAlreadyDeletedException() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow());
+        em.flush();
+
+        ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.modifyTechComment(techArticleId, techCommentId, modifyTechCommentRequest,
                         authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
