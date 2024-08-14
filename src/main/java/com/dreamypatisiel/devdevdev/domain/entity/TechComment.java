@@ -10,8 +10,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +23,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = {
+        @Index(name = "idx__comment__tech_article__created_by__deleted_at", columnList = "id, tech_article_id, created_by, deletedAt")
+})
 public class TechComment extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,31 +50,45 @@ public class TechComment extends BasicTime {
     private Count recommendTotalCount;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "created_by", nullable = false)
+    private Member createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deleted_by")
+    private Member deletedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tech_article_id", nullable = false)
     private TechArticle techArticle;
 
+    private LocalDateTime deletedAt;
+
     @Builder
     private TechComment(Long id, CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
-                        Member member, TechArticle techArticle) {
+                        Member createdBy, TechArticle techArticle) {
         this.id = id;
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
-        this.member = member;
+        this.createdBy = createdBy;
         this.techArticle = techArticle;
     }
 
-    public static TechComment create(CommentContents contents, Member member, TechArticle techArticle) {
+    public static TechComment create(CommentContents contents, Member createdBy, TechArticle techArticle) {
         return TechComment.builder()
                 .contents(contents)
-                .member(member)
+                .createdBy(createdBy)
                 .techArticle(techArticle)
                 .blameTotalCount(Count.defaultCount())
                 .recommendTotalCount(Count.defaultCount())
                 .build();
+    }
+
+    public void changeDeletedAt(LocalDateTime now) {
+        this.deletedAt = now;
+    }
+
+    public void changeCommentContents(CommentContents contents) {
+        this.contents = contents;
     }
 }

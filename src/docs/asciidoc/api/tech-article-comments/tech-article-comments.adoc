@@ -1,3 +1,0 @@
-= 기술블로그 댓글
-
-include::tech-article-comments-register.adoc[]
