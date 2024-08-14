@@ -47,8 +47,8 @@ public class PickCommentController {
     @Operation(summary = "픽픽픽 댓글 수정", description = "회원은 자신이 작성한 픽픽픽 댓글을 수정할 수 있습니다.")
     @PatchMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> modifyPickComment(
-            @PathVariable(name = "pickId") Long pickId,
-            @PathVariable(name = "pickCommentId") Long pickCommentId,
+            @PathVariable Long pickId,
+            @PathVariable Long pickCommentId,
             @RequestBody @Validated ModifyPickCommentRequest modifyPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
@@ -62,8 +62,8 @@ public class PickCommentController {
     @Operation(summary = "픽픽픽 댓글 삭제", description = "회원은 자신이 작성한 픽픽픽 댓글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
     @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(
-            @PathVariable(name = "pickId") Long pickId,
-            @PathVariable(name = "pickCommentId") Long pickCommentId) {
+            @PathVariable Long pickId,
+            @PathVariable Long pickCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
