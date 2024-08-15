@@ -91,4 +91,8 @@ public class PickReply extends BasicTime {
         this.deletedAt = deletedAt;
         this.deletedBy = deletedBy;
     }
+
+    public void changeCommentContents(CommentContents contents) {
+        this.contents = contents;
+    }
 }

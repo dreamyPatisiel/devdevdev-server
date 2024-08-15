@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_REPLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService.DELETE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService.MODIFY;
@@ -51,6 +52,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
@@ -1121,6 +1123,320 @@ class MemberPickCommentServiceTest {
                 request, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, REGISTER);
+    }
+
+    @Test
+    @DisplayName("승인 상태의 픽픽픽 게시글의 댓글에 회원 본인이 작성한 답글을 수정한다.")
+    void modifyPickReply() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when
+        PickReplyResponse response = memberPickCommentService.modifyPickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), request, authentication);
+
+        // then
+        assertThat(response.getPickReplyId()).isEqualTo(pickReply.getId());
+
+        PickReply findPickReply = pickReplyRepository.findById(response.getPickReplyId()).get();
+        assertAll(
+                () -> assertThat(findPickReply.getContents().getCommentContents()).isEqualTo(request.getContents()),
+                () -> assertThat(findPickReply.getPickComment().getId()).isEqualTo(pickComment.getId()),
+                () -> assertThat(findPickReply.getPickComment().getPick().getId()).isEqualTo(pick.getId()),
+                () -> assertThat(findPickReply.getCreatedBy().getId()).isEqualTo(member.getId())
+        );
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 수정할 때 회원이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickReplyMemberException() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when
+        Pick mockPick = mock(Pick.class);
+        PickComment mockPickComment = mock(PickComment.class);
+        PickReply mockPickReply = mock(PickReply.class);
+
+        when(mockPick.getId()).thenReturn(1L);
+        when(mockPickComment.getId()).thenReturn(1L);
+        when(mockPickReply.getId()).thenReturn(1L);
+
+        // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickReply(
+                mockPickReply.getId(), mockPickComment.getId(), mockPick.getId(), request, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 수정할 때 픽픽픽이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickReplyNotFoundExceptionPick() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when
+        Pick mockPick = mock(Pick.class);
+        PickComment mockPickComment = mock(PickComment.class);
+        PickReply mockPickReply = mock(PickReply.class);
+
+        when(mockPick.getId()).thenReturn(1L);
+        when(mockPickComment.getId()).thenReturn(1L);
+        when(mockPickReply.getId()).thenReturn(1L);
+
+        // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickReply(
+                mockPickReply.getId(), mockPickComment.getId(), mockPick.getId(), request, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 수정할 때 픽픽픽이 댓글이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickReplyNotFoundExceptionPickComment() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when
+        PickComment mockPickComment = mock(PickComment.class);
+        PickReply mockPickReply = mock(PickReply.class);
+
+        when(mockPickComment.getId()).thenReturn(1L);
+        when(mockPickReply.getId()).thenReturn(1L);
+
+        // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickReply(
+                mockPickReply.getId(), mockPickComment.getId(), pick.getId(), request, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 수정할 때 픽픽픽이 답글이 존재하지 않으면 예외가 발생한다.")
+    void modifyPickReplyNotFoundExceptionPickReply() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when
+        PickReply mockPickReply = mock(PickReply.class);
+
+        when(mockPickReply.getId()).thenReturn(1L);
+
+        // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickReply(
+                mockPickReply.getId(), pickComment.getId(), pick.getId(), request, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 수정할 때 자신이 작성한 픽픽픽 답글이 아니면 예외가 발생한다.")
+    void modifyPickReplyNotFoundExceptionCreatedBy() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 작성 회원 생성
+        SocialMemberDto otherSocialMemberDto = createSocialDto("otherMember", name, nickname, password,
+                "otherMember@gmail.com", socialType, role);
+        Member otherMember = Member.createMemberBy(otherSocialMemberDto);
+        memberRepository.save(otherMember);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), otherMember, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickReply(
+                pickReply.getId(), pickComment.getId(), pick.getId(), request, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
+    @DisplayName("픽픽픽 답글을 작성할 때 픽픽픽이 승인 상태가 아니면 예외가 발생한다.")
+    void modifyPickReplyException(ContentStatus contentStatus) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickReply(
+                pickReply.getId(), pickComment.getId(), pick.getId(), request, authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, MODIFY);
+    }
+
+    private PickReply createPickReply(CommentContents commentContents, Member member, PickComment pickComment) {
+        return PickReply.builder()
+                .contents(commentContents)
+                .createdBy(member)
+                .pickComment(pickComment)
+                .build();
     }
 
     private PickComment createPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick) {
