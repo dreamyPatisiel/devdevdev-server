@@ -85,9 +85,9 @@ public class TechComment extends BasicTime {
                 .build();
     }
 
-    public void changeDeletedAt(LocalDateTime now, Member member) {
+    public void changeDeletedAt(LocalDateTime now, Member deletedBy) {
         this.deletedAt = now;
-        this.deletedBy = member;
+        this.deletedBy = deletedBy;
     }
 
     public void changeCommentContents(CommentContents contents) {

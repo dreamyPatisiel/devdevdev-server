@@ -423,12 +423,9 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
-
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.modifyTechComment(techArticleId, 0L, modifyTechCommentRequest,
-                        authentication))
+                () -> memberTechCommentService.deleteTechComment(techArticleId, 0L, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
