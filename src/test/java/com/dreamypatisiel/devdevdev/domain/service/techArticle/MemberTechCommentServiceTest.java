@@ -73,7 +73,13 @@ public class MemberTechCommentServiceTest {
     String password = "password";
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
-    String author = "운영자";
+    String adminUserId = "dreamy5patisiel-admin";
+    String adminName = "꿈빛파티시엘 관리자";
+    String adminNickname = "행복한 꿈빛파티시엘 관리자";
+    String adminEmail = "dreamy5patisiel-admin@kakao.com";
+    String adminPassword = "password";
+    String adminSocialType = SocialType.KAKAO.name();
+    String adminRole = Role.ROLE_ADMIN.name();
 
     @Test
     @DisplayName("회원은 기술블로그 댓글을 작성할 수 있다.")
@@ -304,7 +310,7 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow());
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
         em.flush();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
@@ -315,6 +321,216 @@ public class MemberTechCommentServiceTest {
                         authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원은 본인이 작성한, 아직 삭제되지 않은 댓글을 삭제할 수 있다.")
+    void deleteTechComment() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        em.flush();
+
+        // when
+        memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication);
+
+        // then
+        TechComment findTechComment = techCommentRepository.findById(techCommentId).get();
+
+        assertAll(
+                () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
+                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(member.getId())
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 댓글을 삭제할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
+    void deleteTechCommentAlreadyDeletedException() {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+        em.flush();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 댓글을 삭제할 때, 댓글이 존재하지 않으면 예외가 발생한다.")
+    void deleteTechCommentNotFoundException() {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.deleteTechComment(techArticleId, 0L, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("어드민 권한의 회원은 본인이 작성하지 않은 댓글을 삭제할 수 있다.")
+    void deleteTechCommentAdmin() {
+        // given
+        SocialMemberDto socialAdminDto = createSocialDto(adminUserId, adminName, adminNickname, adminPassword,
+                adminEmail, adminSocialType, adminRole);
+        Member admin = Member.createMemberBy(socialAdminDto);
+        memberRepository.save(admin);
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(admin);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        em.flush();
+
+        // when
+        memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication);
+
+        // then
+        TechComment findTechComment = techCommentRepository.findById(techCommentId).get();
+
+        assertAll(
+                () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
+                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(admin.getId())
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 본인이 작성하지 않은 댓글을 삭제하려고 하면 예외가 발생한다.")
+    void deleteTechCommentNotByMemberException() {
+        // given
+        SocialMemberDto authorDto = createSocialDto(adminUserId, adminName, adminNickname, adminPassword, adminEmail,
+                adminSocialType, adminRole);
+        Member author = Member.createMemberBy(authorDto);
+        memberRepository.save(author);
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), author, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("댓글을 삭제할 때 회원이 존재하지 않으면 예외가 발생한다.")
+    void deleteTechCommentNotFoundMemberException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.deleteTechComment(0L, 0L, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
 
