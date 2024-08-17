@@ -178,7 +178,7 @@ public class MemberPickCommentService {
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
         // 픽픽픽 댓글이 삭제 상태이면 답글 작성이 불가
-        if (!findPickComment.isDeletedAtNull()) {
+        if (!findPickComment.isDeleted()) {
             String message = String.format(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
             throw new IllegalArgumentException(message);
         }
