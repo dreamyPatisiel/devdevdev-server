@@ -26,7 +26,7 @@ class PickReplyRepositoryTest {
 
     @Test
     @DisplayName("픽픽픽 답글 조회 쿼리 테스트(픽픽픽, 픽픽픽 답글 페치조인)")
-    void findWithPickWithPickCommentByIdAndPickIdAndPickCommentIdAndCreatedById() {
+    void findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull() {
         // given
         // 회원 생성
         Member member = Member.builder()
@@ -60,8 +60,8 @@ class PickReplyRepositoryTest {
         em.clear();
 
         // when
-        PickReply findPickReply = pickReplyRepository.findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedById(
-                pickReply.getId(), pick.getId(), pickComment.getId(), member.getId()).get();
+        PickReply findPickReply = pickReplyRepository.findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
+                pickReply.getId(), pickComment.getId(), pick.getId(), member.getId()).get();
 
         // then
         assertAll(

@@ -211,7 +211,7 @@ public class MemberPickCommentService {
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 답글 조회(픽픽픽, 픽픽픽 댓글 페치 조인)
-        PickReply findPickReply = pickReplyRepository.findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedById(
+        PickReply findPickReply = pickReplyRepository.findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
                         pickReplyId, pickCommentId, pickId, findMember.getId())
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE));
 

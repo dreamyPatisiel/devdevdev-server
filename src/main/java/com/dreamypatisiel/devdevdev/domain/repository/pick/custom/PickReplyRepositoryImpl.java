@@ -15,10 +15,11 @@ public class PickReplyRepositoryImpl implements PickReplyRepositoryCustom {
     private final JPQLQueryFactory query;
 
     @Override
-    public Optional<PickReply> findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedById(Long id,
-                                                                                                      Long pickCommentId,
-                                                                                                      Long pickId,
-                                                                                                      Long createdById) {
+    public Optional<PickReply> findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
+            Long id,
+            Long pickCommentId,
+            Long pickId,
+            Long createdById) {
 
         PickReply findPickReply = query.selectFrom(pickReply)
                 .innerJoin(pickReply.pickComment, pickComment).fetchJoin()
