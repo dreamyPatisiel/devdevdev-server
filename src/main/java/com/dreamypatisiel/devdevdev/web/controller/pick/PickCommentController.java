@@ -5,6 +5,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
@@ -84,6 +85,22 @@ public class PickCommentController {
 
         PickReplyResponse pickReplyResponse = memberPickCommentService.registerPickReply(pickCommentId, pickId,
                 registerPickReplyRequest, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
+    }
+
+    @Operation(summary = "픽픽픽 답글 수정", description = "회원은 자신이 작성한 픽픽픽 답글을 수정할 수 있습니다.")
+    @PatchMapping("/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}")
+    public ResponseEntity<BasicResponse<PickReplyResponse>> modifyPickReply(
+            @PathVariable Long pickId,
+            @PathVariable Long pickCommentId,
+            @PathVariable Long pickReplyId,
+            @RequestBody @Validated ModifyPickReplyRequest modifyPickReplyRequest) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickReplyResponse pickReplyResponse = memberPickCommentService.modifyPickReply(
+                pickReplyId, pickCommentId, pickId, modifyPickReplyRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
     }
