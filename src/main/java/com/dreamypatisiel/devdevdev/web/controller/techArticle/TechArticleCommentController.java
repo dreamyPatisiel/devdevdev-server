@@ -1,10 +1,12 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechReplyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechReplyRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -67,6 +69,21 @@ public class TechArticleCommentController {
 
         TechCommentResponse response = memberTechCommentService.deleteTechComment(techArticleId, techCommentId,
                 authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 답글 작성")
+    @PostMapping("/articles/{techArticleId}/comments/{techCommentId}/replies")
+    public ResponseEntity<BasicResponse<TechReplyResponse>> registerTechReplies(
+            @PathVariable Long techArticleId,
+            @PathVariable Long techCommentId,
+            @RequestBody @Validated RegisterTechReplyRequest registerTechReplyRequest) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        TechReplyResponse response = memberTechCommentService.registerTechReply(techArticleId, techCommentId,
+                registerTechReplyRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

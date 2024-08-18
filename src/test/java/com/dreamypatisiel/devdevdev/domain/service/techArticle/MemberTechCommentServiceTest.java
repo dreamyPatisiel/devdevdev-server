@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest.FIRST_TECH_ARTICLE_ID;
@@ -12,6 +13,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.TechReply;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -22,7 +24,9 @@ import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechReplyRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechReplyResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -30,6 +34,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechReplyRequest;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,6 +58,8 @@ public class MemberTechCommentServiceTest {
 
     @Autowired
     TechCommentRepository techCommentRepository;
+    @Autowired
+    TechReplyRepository techReplyRepository;
 
     @Autowired
     CompanyRepository companyRepository;
@@ -529,6 +536,156 @@ public class MemberTechCommentServiceTest {
         // when // then
         assertThatThrownBy(
                 () -> memberTechCommentService.deleteTechComment(0L, 0L, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원은 기술블로그 댓글에 답글을 작성할 수 있다.")
+    void registerTechReply() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        RegisterTechReplyRequest registerTechReplyRequest = new RegisterTechReplyRequest("답글입니다.");
+
+        // when
+        TechReplyResponse techReplyResponse = memberTechCommentService.registerTechReply(
+                techArticleId, techCommentId, registerTechReplyRequest, authentication);
+        em.flush();
+
+        // then
+        assertThat(techReplyResponse.getTechReplyId()).isNotNull();
+
+        TechReply findTechReply = techReplyRepository.findById(techReplyResponse.getTechReplyId())
+                .get();
+
+        assertAll(
+                () -> assertThat(findTechReply.getContents().getCommentContents()).isEqualTo("답글입니다."),
+                () -> assertThat(findTechReply.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechReply.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechReply.getCreatedBy().getId()).isEqualTo(member.getId()),
+                () -> assertThat(findTechReply.getTechComment().getId()).isEqualTo(techCommentId)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글에 답글을 작성할 때 존재하지 않는 댓글에 답글을 작성하면 예외가 발생한다.")
+    void registerTechReplyNotFoundTechCommentException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId() + 1;
+
+        RegisterTechReplyRequest registerTechReplyRequest = new RegisterTechReplyRequest("답글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.registerTechReply(techArticleId, techCommentId, registerTechReplyRequest,
+                        authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글에 답글을 작성할 때 삭제된 댓글에 답글을 작성하면 예외가 발생한다.")
+    void registerTechReplyDeletedTechCommentException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+
+        em.flush();
+        em.clear();
+
+        RegisterTechReplyRequest registerTechReplyRequest = new RegisterTechReplyRequest("답글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.registerTechReply(techArticleId, techCommentId, registerTechReplyRequest,
+                        authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글에 답글을 작성할 때 회원이 없으면 예외가 발생한다.")
+    void registerTechReplyNotFoundMemberException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        em.flush();
+        em.clear();
+
+        RegisterTechReplyRequest registerTechReplyRequest = new RegisterTechReplyRequest("답글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.registerTechReply(0L, 0L, registerTechReplyRequest,
+                        authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
