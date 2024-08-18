@@ -9,6 +9,7 @@ public class PickExceptionMessage {
     public static final String INVALID_NOT_FOUND_CAN_MODIFY_PICK_MESSAGE = "수정할 수 있는 픽픽픽 게시글이 없습니다.";
     public static final String INVALID_NOT_FOUND_PICK_MESSAGE = "픽픽픽 게시글이 없습니다.";
     public static final String INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE = "픽픽픽 댓글이 없습니다.";
+    public static final String INVALID_NOT_FOUND_PICK_REPLY_MESSAGE = "픽픽픽 답글이 없습니다.";
     public static final String INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE = "삭제된 픽픽픽 댓글에는 답글을 %s할 수 없습니다.";
     public static final String INVALID_MODIFY_MEMBER_PICK_ONLY_MESSAGE = "회원 본인이 작성한 게시글만 수정할 수 있습니다.";
     public static final String INVALID_NOT_FOUND_PICK_OPTION_MESSAGE = "픽픽픽 선택지가 존재하지 않습니다.";

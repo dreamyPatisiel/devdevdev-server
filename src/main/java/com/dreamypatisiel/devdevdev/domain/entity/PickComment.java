@@ -72,7 +72,6 @@ public class PickComment extends BasicTime {
     @JoinColumn(name = "pick_vote_id")
     private PickVote pickVote;
 
-
     @Builder
     private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Boolean isPublic,
                         Member createdBy, Pick pick, PickVote pickVote) {
