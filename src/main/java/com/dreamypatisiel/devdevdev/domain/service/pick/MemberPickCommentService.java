@@ -1,25 +1,33 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_REPLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickReply;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickReplyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -39,6 +47,7 @@ public class MemberPickCommentService {
     private final PickRepository pickRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickCommentRepository pickCommentRepository;
+    private final PickReplyRepository pickReplyRepository;
 
     /**
      * @Note: 픽픽픽 댓글을 작성한다.
@@ -59,12 +68,8 @@ public class MemberPickCommentService {
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
-        // 픽픽픽 게시글의 승인 상태가 아니면
-        if (!findPick.isTrueContentStatus(ContentStatus.APPROVAL)) {
-            throw new IllegalArgumentException(
-                    String.format(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER)
-            );
-        }
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
 
         // 픽픽픽 선택지 투표 공개인 경우
         if (isPickVotePublic) {
@@ -75,7 +80,6 @@ public class MemberPickCommentService {
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
             PickComment pickComment = PickComment.createPublicVoteComment(new CommentContents(contents), findMember,
                     findPick, findPickVote);
-
             pickCommentRepository.save(pickComment);
 
             return new PickCommentResponse(pickComment.getId());
@@ -109,12 +113,9 @@ public class MemberPickCommentService {
                         pickCommentId, pickId, findMember.getId())
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
-        // 픽픽픽 게시글의 승인 상태가 아니면
-        if (!findPickComment.getPick().isTrueContentStatus(ContentStatus.APPROVAL)) {
-            throw new IllegalArgumentException(
-                    String.format(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, MODIFY)
-            );
-        }
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE,
+                MODIFY);
 
         // 댓글 수정
         findPickComment.changeCommentContents(new CommentContents(contents));
@@ -151,16 +152,84 @@ public class MemberPickCommentService {
                         pickCommentId, pickId, findMember.getId())
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
-        // 픽픽픽 게시글의 승인 상태가 아니면
-        if (!findPickComment.getPick().isTrueContentStatus(ContentStatus.APPROVAL)) {
-            throw new IllegalArgumentException(
-                    String.format(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, DELETE)
-            );
-        }
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE,
+                DELETE);
 
         // 소프트 삭제
         findPickComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
 
         return new PickCommentResponse(findPickComment.getId());
+    }
+
+    /**
+     * @Note: 픽픽픽 댓글에 답글을 작성한다.
+     * @Author: 장세웅
+     * @Since: 2024.08.13
+     */
+    @Transactional
+    public PickReplyResponse registerPickReply(Long pickCommentId, Long pickId,
+                                               RegisterPickReplyRequest registerPickReplyRequest,
+                                               Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 픽픽픽 댓글 조회
+        PickComment findPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickCommentId, pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+
+        // 픽픽픽 댓글이 삭제 상태이면 답글 작성이 불가
+        if (!findPickComment.isDeleted()) {
+            String message = String.format(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
+            throw new IllegalArgumentException(message);
+        }
+
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
+                REGISTER);
+
+        // 픽픽픽 답글 작성
+        String contents = registerPickReplyRequest.getContents();
+        PickReply pickReply = PickReply.create(new CommentContents(contents), findMember, findPickComment);
+        pickReplyRepository.save(pickReply);
+
+        return new PickReplyResponse(pickReply.getId());
+    }
+
+    /**
+     * @Note: 픽픽픽 댓글에 답글을 수정한다.
+     * @Author: 장세웅
+     * @Since: 2024.08.15
+     */
+    @Transactional
+    public PickReplyResponse modifyPickReply(Long pickReplyId, Long pickCommentId, Long pickId,
+                                             ModifyPickReplyRequest modifyPickReplyRequest,
+                                             Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 픽픽픽 답글 조회(픽픽픽, 픽픽픽 댓글 페치 조인)
+        PickReply findPickReply = pickReplyRepository.findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
+                        pickReplyId, pickCommentId, pickId, findMember.getId())
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPickReply.getPickComment().getPick(),
+                INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, MODIFY);
+
+        // 답글 수정
+        String contents = modifyPickReplyRequest.getContents();
+        findPickReply.changeCommentContents(new CommentContents(contents));
+
+        return new PickReplyResponse(findPickReply.getId());
+    }
+
+    // 픽픽픽 게시글의 승인 상태 검증
+    private void validateIsApprovalPickContentStatus(Pick pick, String message, String messageArgs) {
+        if (!pick.isTrueContentStatus(ContentStatus.APPROVAL)) {
+            throw new IllegalArgumentException(String.format(message, messageArgs));
+        }
     }
 }

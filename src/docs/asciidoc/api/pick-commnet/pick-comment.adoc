@@ -1,5 +1,7 @@
-= 픽픽픽 댓글
+= 픽픽픽 댓글/답글
 
 include::pick-comment-register.adoc[]
 include::pick-comment-modify.adoc[]
 include::pick-comment-delete.adoc[]
+include::pick-reply-register.adoc[]
+include::pick-reply-modify.adoc[]
