@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -54,7 +55,7 @@ public class MemberTechCommentService {
         techCommentRepository.save(techComment);
 
         // 데이터 가공
-        return TechCommentResponse.from(techComment);
+        return new TechCommentResponse(techComment.getId());
     }
 
     /**
@@ -79,7 +80,7 @@ public class MemberTechCommentService {
         findTechComment.changeCommentContents(new CommentContents(contents));
 
         // 데이터 가공
-        return TechCommentResponse.from(findTechComment);
+        return new TechCommentResponse(findTechComment.getId());
     }
 
     /**
@@ -105,7 +106,7 @@ public class MemberTechCommentService {
             // 소프트 삭제
             findTechComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
 
-            return TechCommentResponse.from(findTechComment);
+            return new TechCommentResponse(findTechComment.getId());
         }
 
         // 기술블로그 댓글 조회
@@ -117,7 +118,7 @@ public class MemberTechCommentService {
         findTechComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
 
         // 데이터 가공
-        return TechCommentResponse.from(findTechComment);
+        return new TechCommentResponse(findTechComment.getId());
     }
 
     /**
@@ -125,6 +126,7 @@ public class MemberTechCommentService {
      * @Author: 유소영
      * @Since: 2024.08.18
      */
+    @Transactional
     public TechReplyResponse registerTechReply(Long techArticleId, Long techCommentId,
                                                RegisterTechReplyRequest registerTechReplyRequest,
                                                Authentication authentication) {
@@ -132,16 +134,20 @@ public class MemberTechCommentService {
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 기술블로그 댓글 조회
-        TechComment techComment = techCommentRepository.findByIdAndTechArticleIdAndDeletedAtIsNull(
-                        techCommentId, techArticleId)
+        TechComment findTechComment = techCommentRepository.findByIdAndTechArticleId(techCommentId, techArticleId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 삭제된 댓글에는 답글 작성 불가
+        if (findTechComment.isDeleted()) {
+            throw new IllegalArgumentException(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
+        }
 
         // 답글 엔티티 생성 및 저장
         String contents = registerTechReplyRequest.getContents();
-        TechReply techReply = TechReply.create(new CommentContents(contents), findMember, techComment);
+        TechReply techReply = TechReply.create(new CommentContents(contents), findMember, findTechComment);
         techReplyRepository.save(techReply);
 
         // 데이터 가공
-        return TechReplyResponse.from(techReply);
+        return new TechReplyResponse(techReply.getId());
     }
 }

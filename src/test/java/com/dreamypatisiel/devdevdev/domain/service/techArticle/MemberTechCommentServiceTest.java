@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest.FIRST_TECH_ARTICLE_ID;
@@ -659,8 +660,8 @@ public class MemberTechCommentServiceTest {
         assertThatThrownBy(
                 () -> memberTechCommentService.registerTechReply(techArticleId, techCommentId, registerTechReplyRequest,
                         authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
     }
 
     @Test

@@ -93,4 +93,8 @@ public class TechComment extends BasicTime {
     public void changeCommentContents(CommentContents contents) {
         this.contents = contents;
     }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
 }
