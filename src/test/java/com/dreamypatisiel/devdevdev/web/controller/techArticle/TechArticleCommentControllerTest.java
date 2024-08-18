@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -351,7 +352,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow());
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
         em.flush();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
@@ -381,6 +382,75 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
                 .build();
+    }
+
+    @Test
+    @DisplayName("회원은 본인이 작성한 기술블로그 댓글을 삭제할 수 있다.")
+    void deleteTechComment() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        // when // then
+        mockMvc.perform(delete("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}", techArticleId,
+                        techCommentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.techCommentId").isNumber());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 삭제할 때 댓글이 존재하지 않으면 예외가 발생한다.")
+    void deleteTechCommentNotFoundException() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        // when // then
+        mockMvc.perform(delete("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}", techArticleId, 0L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,

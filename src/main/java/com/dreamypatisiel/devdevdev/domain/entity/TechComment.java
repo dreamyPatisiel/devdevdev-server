@@ -24,7 +24,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-        @Index(name = "idx__comment__tech_article__created_by__deleted_at", columnList = "id, tech_article_id, created_by, deletedAt")
+        @Index(name = "idx__comment__tech_article__created_by__deleted_at", columnList = "id, tech_article_id, created_by, deletedAt"),
+        @Index(name = "idx__comment__tech_article__deleted_at", columnList = "id, tech_article_id, deletedAt")
 })
 public class TechComment extends BasicTime {
     @Id
@@ -39,13 +40,13 @@ public class TechComment extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "blame_total_count")
+            column = @Column(name = "blame_total_count", columnDefinition = "bigint default 0")
     )
     private Count blameTotalCount;
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "recommend_total_count")
+            column = @Column(name = "recommend_total_count", columnDefinition = "bigint default 0")
     )
     private Count recommendTotalCount;
 
@@ -84,8 +85,9 @@ public class TechComment extends BasicTime {
                 .build();
     }
 
-    public void changeDeletedAt(LocalDateTime now) {
+    public void changeDeletedAt(LocalDateTime now, Member deletedBy) {
         this.deletedAt = now;
+        this.deletedBy = deletedBy;
     }
 
     public void changeCommentContents(CommentContents contents) {

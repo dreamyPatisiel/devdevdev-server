@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTH
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -462,6 +463,110 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
 
         // Docs
         actions.andDo(document("modify-tech-article-comments-not-found-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디"),
+                        parameterWithName("techCommentId").description("기술블로그 댓글 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원은 본인이 작성한 기술블로그 댓글을 삭제할 수 있다.")
+    void deleteTechComment() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        delete("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}", techArticleId,
+                                techCommentId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.techCommentId").isNumber());
+
+        // Docs
+        actions.andDo(document("delete-tech-article-comments",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디"),
+                        parameterWithName("techCommentId").description("기술블로그 댓글 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.techCommentId").type(JsonFieldType.NUMBER).description("기술블로그 댓글 아이디")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글을 삭제할 때 댓글이 존재하지 않으면 예외가 발생한다.")
+    void deleteTechCommentNotFoundException() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        delete("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}", techArticleId, 0L)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+
+        // Docs
+        actions.andDo(document("delete-tech-article-comments-not-found-exception",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 pathParameters(
