@@ -5,14 +5,18 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.TechReply;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechReplyRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechReplyResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechReplyRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,7 @@ public class MemberTechCommentService {
 
     private final TechArticleCommonService techArticleCommonService;
     private final TechCommentRepository techCommentRepository;
+    private final TechReplyRepository techReplyRepository;
     private final MemberProvider memberProvider;
     private final TimeProvider timeProvider;
 
@@ -113,5 +118,30 @@ public class MemberTechCommentService {
 
         // 데이터 가공
         return TechCommentResponse.from(findTechComment);
+    }
+
+    /**
+     * @Note: 기술블로그 댓글에 답글을 작성한다.
+     * @Author: 유소영
+     * @Since: 2024.08.18
+     */
+    public TechReplyResponse registerTechReply(Long techArticleId, Long techCommentId,
+                                               RegisterTechReplyRequest registerTechReplyRequest,
+                                               Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 기술블로그 댓글 조회
+        TechComment techComment = techCommentRepository.findByIdAndTechArticleIdAndDeletedAtIsNull(
+                        techCommentId, techArticleId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 답글 엔티티 생성 및 저장
+        String contents = registerTechReplyRequest.getContents();
+        TechReply techReply = TechReply.create(new CommentContents(contents), findMember, techComment);
+        techReplyRepository.save(techReply);
+
+        // 데이터 가공
+        return TechReplyResponse.from(techReply);
     }
 }
