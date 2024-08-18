@@ -27,7 +27,8 @@ public class PickReplyRepositoryImpl implements PickReplyRepositoryCustom {
                 .where(pickReply.id.eq(id)
                         .and(pickComment.id.eq(pickCommentId))
                         .and(pickReply.createdBy.id.eq(createdById))
-                        .and(pick.id.eq(pickId)))
+                        .and(pick.id.eq(pickId))
+                        .and(pickReply.deletedAt.isNull()))
                 .fetchOne();
 
         return Optional.ofNullable(findPickReply);
