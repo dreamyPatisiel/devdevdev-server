@@ -111,7 +111,7 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
 
-        pickMultiServiceHandler.selectPickService(pickService);
+        pickMultiServiceHandler.invokePickService(pickService);
 
         // 픽픽픽 작성 및 embedding 저장
         PickRegisterResponse response = pickMultiServiceHandler.registerPickAndSaveEmbedding(
@@ -134,7 +134,7 @@ public class PickController {
 
         PickService pickService = pickServiceStrategy.getPickService();
 
-        pickMultiServiceHandler.selectPickService(pickService);
+        pickMultiServiceHandler.invokePickService(pickService);
 
         // 픽픽픽 수정 및 embedding 저장
         PickModifyResponse response = pickMultiServiceHandler.modifyPickAndSaveEmbedding(pickId,
