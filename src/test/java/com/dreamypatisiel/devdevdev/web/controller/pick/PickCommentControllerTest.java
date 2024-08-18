@@ -557,6 +557,88 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
+    @Test
+    @DisplayName("회원이 승인 상태의 픽픽픽 댓글의 본인이 작성한 삭제되지 않은 답글을 삭제한다.")
+    void deletePickReply() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                "꿈빛맛티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        // when // then
+        mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}",
+                        pick.getId(), pickComment.getId(), pickReply.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.pickReplyId").isNumber());
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 삭제할 때 본인이 작성한 답글이 아니면 예외가 발생한다.")
+    void deletePickReplyNotFoundException() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                "꿈빛맛티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), author, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        // when // then
+        mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}",
+                        pick.getId(), pickComment.getId(), pickReply.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
     private PickReply createPickReply(CommentContents commentContents, Member member, PickComment pickComment) {
         return PickReply.builder()
                 .contents(commentContents)
