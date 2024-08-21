@@ -54,7 +54,7 @@ public class PickMultiServiceHandler {
         return response;
     }
 
-    public void invokePickService(PickService pickService) {
+    public void injectPickService(PickService pickService) {
         validatePickService(pickService);
         this.pickService = pickService;
     }
