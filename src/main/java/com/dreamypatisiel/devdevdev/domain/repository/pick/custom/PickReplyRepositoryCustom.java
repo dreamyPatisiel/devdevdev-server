@@ -5,9 +5,7 @@ import java.util.Optional;
 
 public interface PickReplyRepositoryCustom {
     Optional<PickReply> findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
-            Long id, Long pickId,
-            Long pickCommentId,
-            Long createdById);
+            Long id, Long pickId, Long pickCommentId, Long createdById);
 
     Optional<PickReply> findByIdAndPickCommentIdAndPickIdAndDeletedAtIsNull(Long id, Long pickCommentId, Long pickId);
 }
