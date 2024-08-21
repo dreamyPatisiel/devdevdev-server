@@ -4,7 +4,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickReply;
 import java.util.Optional;
 
 public interface PickReplyRepositoryCustom {
-    Optional<PickReply> findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long pickId,
-                                                                                                                 Long pickCommentId,
-                                                                                                                 Long createdById);
+    Optional<PickReply> findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
+            Long id, Long pickId, Long pickCommentId, Long createdById);
+
+    Optional<PickReply> findByIdAndPickCommentIdAndPickIdAndDeletedAtIsNull(Long id, Long pickCommentId, Long pickId);
 }

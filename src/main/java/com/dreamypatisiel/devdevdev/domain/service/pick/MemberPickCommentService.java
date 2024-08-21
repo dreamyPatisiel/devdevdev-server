@@ -226,6 +226,45 @@ public class MemberPickCommentService {
         return new PickReplyResponse(findPickReply.getId());
     }
 
+    /**
+     * @Note: 픽픽픽 댓글의 답글을 삭제한다.
+     * @Author: 장세웅
+     * @Since: 2024.08.18
+     */
+    @Transactional
+    public PickReplyResponse deletePickReply(Long pickReplyId, Long pickCommentId, Long pickId,
+                                             Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 어드민은 자신이 작성하지 않은 댓글도 삭제 가능
+        if (findMember.isAdmin()) {
+            // 픽픽픽 답글 조회(삭제되지 않은 답글)
+            PickReply findPickReply = pickReplyRepository.findByIdAndPickCommentIdAndPickIdAndDeletedAtIsNull(
+                            pickReplyId, pickCommentId, pickId)
+                    .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE));
+
+            // 소프트 삭제
+            findPickReply.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
+
+            return new PickReplyResponse(findPickReply.getId());
+        }
+
+        // 픽픽픽 답글 조회(픽픽픽, 픽픽픽 댓글 페치 조인)
+        PickReply findPickReply = pickReplyRepository.findWithPickWithPickCommentByIdAndPickCommentIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(
+                        pickReplyId, pickCommentId, pickId, findMember.getId())
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPickReply.getPickComment().getPick(),
+                INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, DELETE);
+
+        // 소프트 삭제
+        findPickReply.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
+
+        return new PickReplyResponse(findPickReply.getId());
+    }
+
     // 픽픽픽 게시글의 승인 상태 검증
     private void validateIsApprovalPickContentStatus(Pick pick, String message, String messageArgs) {
         if (!pick.isTrueContentStatus(ContentStatus.APPROVAL)) {

@@ -1483,6 +1483,347 @@ class MemberPickCommentServiceTest {
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, MODIFY);
     }
 
+    @Test
+    @DisplayName("회원이 승인 상태의 픽픽픽 댓글의 본인이 작성한 삭제되지 않은 답글을 삭제한다.")
+    void deletePickReply() {
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickReplyResponse response = memberPickCommentService.deletePickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication);
+
+        // then
+        assertThat(response.getPickReplyId()).isEqualTo(pickReply.getId());
+
+        PickReply findPickReply = pickReplyRepository.findById(response.getPickReplyId()).get();
+        assertAll(
+                () -> assertThat(findPickReply.getDeletedAt()).isNotNull(),
+                () -> assertThat(findPickReply.getDeletedBy().getId()).isEqualTo(member.getId())
+        );
+    }
+
+    @ParameterizedTest
+    @EnumSource(ContentStatus.class)
+    @DisplayName("어드민 권한이 있는 회원은 다른 회원의 삭제상태가 아닌 픽픽픽 답글을 삭제할 수 있다.")
+    void deletePickReplyByAdmin(ContentStatus contentStatus) {
+        // 어드민 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
+                Role.ROLE_ADMIN.name());
+        Member admin = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(admin);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(admin);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), author, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickReplyResponse response = memberPickCommentService.deletePickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication);
+
+        // then
+        assertThat(response.getPickReplyId()).isEqualTo(pickReply.getId());
+
+        PickReply findPickReply = pickReplyRepository.findById(response.getPickReplyId()).get();
+        assertAll(
+                () -> assertThat(findPickReply.getDeletedAt()).isNotNull(),
+                () -> assertThat(findPickReply.getDeletedBy().getId()).isEqualTo(admin.getId())
+        );
+    }
+
+    @ParameterizedTest
+    @EnumSource(ContentStatus.class)
+    @DisplayName("어드민 권한이 있는 회원이 픽픽픽 답글을 삭제할 때 픽픽픽 답글이 삭제상태 이면 예외가 발생한다.")
+    void deletePickReplyByAdminNotFoundExceptionPickReplyIsDeleted(ContentStatus contentStatus) {
+        // 어드민 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
+                Role.ROLE_ADMIN.name());
+        Member admin = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(admin);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(admin);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), author, pickComment);
+        pickReply.changeDeletedAt(LocalDateTime.now(), author);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.deletePickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(ContentStatus.class)
+    @DisplayName("어드민 권한이 있는 회원이 픽픽픽 답글을 삭제할 때 픽픽픽 답글이 존재하지 않으면 예외가 발생한다.")
+    void deletePickReplyByAdminNotFoundExceptionPickReply(ContentStatus contentStatus) {
+        // 어드민 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
+                Role.ROLE_ADMIN.name());
+        Member admin = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(admin);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(admin);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickReply mockPickReply = mock(PickReply.class);
+        when(mockPickReply.getId()).thenReturn(1L);
+
+        // then
+        assertThatThrownBy(() -> memberPickCommentService.deletePickReply(mockPickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 삭제할 때 회원 본인이 작성하지 않은 답글이면 예외가 발생한다.")
+    void deletePickReplyNoFoundExceptionCreatedBy() {
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 다른 회원 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), author, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.deletePickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 답글을 삭제할 때 픽픽픽 답글이 삭제 상태이면 예외가 발생한다.")
+    void deletePickReplyNotFoundExceptionPickReplyIsDeleted() {
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
+        pickReply.changeDeletedAt(LocalDateTime.now(), member);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.deletePickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 답글을 삭제할 때 픽픽픽 답글이 존재하지 않으면 예외가 발생한다.")
+    void deletePickReplyNotFoundPickReply() {
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickReply mockPickReply = mock(PickReply.class);
+        when(mockPickReply.getId()).thenReturn(1L);
+
+        // then
+        assertThatThrownBy(() -> memberPickCommentService.deletePickReply(mockPickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_REPLY_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
+    @DisplayName("회원이 픽픽픽 답글을 삭제할 때 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
+    void deletePickReplyPickIsNotApproval(ContentStatus contentStatus) {
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
+        pickReplyRepository.save(pickReply);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickCommentService.deletePickReply(pickReply.getId(), pickComment.getId(),
+                pick.getId(), authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, DELETE);
+    }
+
     private PickReply createPickReply(CommentContents commentContents, Member member, PickComment pickComment) {
         return PickReply.builder()
                 .contents(commentContents)

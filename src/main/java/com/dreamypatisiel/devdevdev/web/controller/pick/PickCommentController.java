@@ -104,4 +104,19 @@ public class PickCommentController {
 
         return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
     }
+
+    @Operation(summary = "픽픽픽 답글 삭제", description = "회원은 자신이 작성한 픽픽픽 답글을 삭제할 수 있습니다.(어드민은 모든 답글 삭제 가능)")
+    @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}")
+    public ResponseEntity<BasicResponse<PickReplyResponse>> deletePickReply(
+            @PathVariable Long pickId,
+            @PathVariable Long pickCommentId,
+            @PathVariable Long pickReplyId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickReplyResponse pickReplyResponse = memberPickCommentService.deletePickReply(
+                pickReplyId, pickCommentId, pickId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
+    }
 }
