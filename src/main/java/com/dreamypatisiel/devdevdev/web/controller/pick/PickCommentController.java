@@ -6,7 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickMainCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,12 +35,12 @@ public class PickCommentController {
     @PostMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
             @PathVariable Long pickId,
-            @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
+            @RequestBody @Validated RegisterPickMainCommentRequest registerPickMainCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pickId,
-                registerPickCommentRequest, authentication);
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickMainComment(pickId,
+                registerPickMainCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }

@@ -25,7 +25,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
         @Index(name = "idx__created_by__pick__deleted_at", columnList = "created_by, pick_id, deletedAt"),
-        @Index(name = "idx__comment__created_by__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt")
+        @Index(name = "idx__comment__created_by__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt"),
+        @Index(name = "idx__parent__origin_parent__deleted_at", columnList = "parent_id, origin_parent_id, deletedAt")
 })
 public class PickComment extends BasicTime {
 
@@ -57,6 +58,14 @@ public class PickComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    private PickComment parent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origin_parent_id", referencedColumnName = "id")
+    private PickComment originParent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private Member createdBy;
 
@@ -72,18 +81,65 @@ public class PickComment extends BasicTime {
     @JoinColumn(name = "pick_vote_id")
     private PickVote pickVote;
 
+
     @Builder
     private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Boolean isPublic,
-                        Member createdBy, Pick pick, PickVote pickVote) {
+                        PickComment parent, PickComment originParent, Member createdBy, Pick pick, PickVote pickVote) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.isPublic = isPublic;
+        this.parent = parent;
+        this.originParent = originParent;
         this.createdBy = createdBy;
         this.pick = pick;
         this.pickVote = pickVote;
     }
 
+    // 투표 비공개 메인 댓글 생성
+    public static PickComment createPrivateVoteMainComment(CommentContents content, Member createdBy, Pick pick) {
+        PickComment pickComment = new PickComment();
+        pickComment.contents = content;
+        pickComment.isPublic = false;
+        pickComment.blameTotalCount = Count.defaultCount();
+        pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.createdBy = createdBy;
+        pickComment.changePick(pick);
+
+        return pickComment;
+    }
+
+    // 투표 공개 메인 댓글 생성
+    public static PickComment createPrivateVoteMainComment(CommentContents content, Member createdBy, Pick pick,
+                                                           PickVote pickVote) {
+        PickComment pickComment = new PickComment();
+        pickComment.contents = content;
+        pickComment.isPublic = true;
+        pickComment.blameTotalCount = Count.defaultCount();
+        pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.createdBy = createdBy;
+        pickComment.changePick(pick);
+        pickComment.pickVote = pickVote;
+
+        return pickComment;
+    }
+
+    // 서브 댓글 생성
+    public static PickComment createVoteSubComment(CommentContents content, PickComment parent,
+                                                   PickComment originParent, Member createdBy, Pick pick) {
+        PickComment pickComment = new PickComment();
+        pickComment.contents = content;
+        pickComment.blameTotalCount = Count.defaultCount();
+        pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.parent = parent;
+        pickComment.originParent = originParent;
+        pickComment.createdBy = createdBy;
+        pickComment.changePick(pick);
+
+        return pickComment;
+    }
+
+    @Deprecated
     public static PickComment createPrivateVoteComment(CommentContents content, Member createdBy, Pick pick) {
         PickComment pickComment = new PickComment();
         pickComment.contents = content;
@@ -96,6 +152,7 @@ public class PickComment extends BasicTime {
         return pickComment;
     }
 
+    @Deprecated
     public static PickComment createPublicVoteComment(CommentContents content, Member createdBy, Pick pick,
                                                       PickVote pickVote) {
         PickComment pickComment = new PickComment();

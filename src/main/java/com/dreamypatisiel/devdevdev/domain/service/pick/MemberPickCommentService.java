@@ -26,7 +26,7 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickMainCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -50,16 +50,17 @@ public class MemberPickCommentService {
     private final PickReplyRepository pickReplyRepository;
 
     /**
-     * @Note: 픽픽픽 댓글을 작성한다.
+     * @Note: 픽픽픽 메인 댓글을 작성한다.
      * @Author: 장세웅
-     * @Since: 2024.08.08
+     * @Since: 2024.08.23
      */
     @Transactional
-    public PickCommentResponse registerPickComment(Long pickId, RegisterPickCommentRequest registerPickCommentRequest,
-                                                   Authentication authentication) {
+    public PickCommentResponse registerPickMainComment(Long pickId,
+                                                       RegisterPickMainCommentRequest pickMainCommentRequest,
+                                                       Authentication authentication) {
 
-        String contents = registerPickCommentRequest.getContents();
-        Boolean isPickVotePublic = registerPickCommentRequest.getIsPickVotePublic();
+        String contents = pickMainCommentRequest.getContents();
+        Boolean isPickVotePublic = pickMainCommentRequest.getIsPickVotePublic();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -78,7 +79,8 @@ public class MemberPickCommentService {
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
-            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContents(contents), findMember,
+            PickComment pickComment = PickComment.createPrivateVoteMainComment(new CommentContents(contents),
+                    findMember,
                     findPick, findPickVote);
             pickCommentRepository.save(pickComment);
 
@@ -86,7 +88,7 @@ public class MemberPickCommentService {
         }
 
         // 픽픽픽 선택지 투표 비공개인 경우
-        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContents(contents), findMember,
+        PickComment pickComment = PickComment.createPrivateVoteMainComment(new CommentContents(contents), findMember,
                 findPick);
         pickCommentRepository.save(pickComment);
 
@@ -94,7 +96,7 @@ public class MemberPickCommentService {
     }
 
     /**
-     * @Note: 회원 자신이 작성한 픽픽픽 댓글을 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
+     * @Note: 회원 자신이 작성한 픽픽픽 댓글/답글을 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
      * @Author: 장세웅
      * @Since: 2024.08.10
      */
@@ -124,7 +126,7 @@ public class MemberPickCommentService {
     }
 
     /**
-     * @Note: 회원 자신이 작성한 픽픽픽 댓글을 삭제한다. 소프트 삭제를 진행한다. 어드민은 모든 댓글을 삭제할 수 있다.
+     * @Note: 회원 자신이 작성한 픽픽픽 댓글/답글을 삭제한다. 소프트 삭제를 진행한다. 어드민은 모든 댓글/답글을 삭제할 수 있다.
      * @Author: 장세웅
      * @Since: 2024.08.11
      */
@@ -167,6 +169,7 @@ public class MemberPickCommentService {
      * @Author: 장세웅
      * @Since: 2024.08.13
      */
+    @Deprecated
     @Transactional
     public PickReplyResponse registerPickReply(Long pickCommentId, Long pickId,
                                                RegisterPickReplyRequest registerPickReplyRequest,
@@ -202,6 +205,7 @@ public class MemberPickCommentService {
      * @Author: 장세웅
      * @Since: 2024.08.15
      */
+    @Deprecated
     @Transactional
     public PickReplyResponse modifyPickReply(Long pickReplyId, Long pickCommentId, Long pickId,
                                              ModifyPickReplyRequest modifyPickReplyRequest,
@@ -231,6 +235,7 @@ public class MemberPickCommentService {
      * @Author: 장세웅
      * @Since: 2024.08.18
      */
+    @Deprecated
     @Transactional
     public PickReplyResponse deletePickReply(Long pickReplyId, Long pickCommentId, Long pickId,
                                              Authentication authentication) {

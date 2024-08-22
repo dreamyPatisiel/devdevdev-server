@@ -54,7 +54,7 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommen
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickMainCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
@@ -123,7 +123,7 @@ class MemberPickCommentServiceTest {
 
     @Test
     @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성한다.")
-    void registerPickCommentWithPickVote() {
+    void registerPickCommentWithPickMainVote() {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -165,10 +165,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest request = new RegisterPickMainCommentRequest("안녕하세웅", true);
 
         // when
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(), request,
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickMainComment(pick.getId(),
+                request,
                 authentication);
 
         // then
@@ -189,7 +190,7 @@ class MemberPickCommentServiceTest {
 
     @Test
     @DisplayName("승인상태의 픽픽픽에 선택지 투표 비공개 댓글을 작성한다.")
-    void registerPickCommentWithOutPickVote() {
+    void registerPickCommentWithOutPickMainVote() {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -231,10 +232,10 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅", false);
+        RegisterPickMainCommentRequest registerPickCommentDto = new RegisterPickMainCommentRequest("안녕하세웅", false);
 
         // when
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(),
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickMainComment(pick.getId(),
                 registerPickCommentDto, authentication);
 
         // then
@@ -255,7 +256,7 @@ class MemberPickCommentServiceTest {
 
     @Test
     @DisplayName("픽픽픽 댓글을 작성할 때 회원이 존재하지 않으면 예외가 발생한다.")
-    void registerPickCommentMemberException() {
+    void registerPickMainCommentMemberException() {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -268,16 +269,16 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest request = new RegisterPickMainCommentRequest("안녕하세웅", true);
         // then
-        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(0L, request, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.registerPickMainComment(0L, request, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
     @Test
     @DisplayName("픽픽픽 댓글을 작성할 때 픽픽픽이 존재하지 않으면 예외가 발생한다.")
-    void registerPickCommentPickNotFoundException() {
+    void registerPickCommentPickMainNotFoundException() {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -294,10 +295,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when
-        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest registerPickCommentDto = new RegisterPickMainCommentRequest("안녕하세웅", true);
         // then
         assertThatThrownBy(
-                () -> memberPickCommentService.registerPickComment(1L, registerPickCommentDto, authentication))
+                () -> memberPickCommentService.registerPickMainComment(1L, registerPickCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
@@ -305,7 +306,7 @@ class MemberPickCommentServiceTest {
     @ParameterizedTest
     @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
     @DisplayName("픽픽픽 댓글을 작성할 때 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
-    void registerPickCommentNotApproval(ContentStatus contentStatus) {
+    void registerPickMainCommentNotApproval(ContentStatus contentStatus) {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -338,17 +339,18 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest request = new RegisterPickMainCommentRequest("안녕하세웅", true);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
+        assertThatThrownBy(
+                () -> memberPickCommentService.registerPickMainComment(pick.getId(), request, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
     }
 
     @Test
     @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성할 때 픽픽픽 선택지 투표 이력이 없으면 예외가 발생한다.")
-    void registerPickCommentNotFoundPickVote() {
+    void registerPickCommentNotFoundPickMainVote() {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -381,10 +383,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest request = new RegisterPickMainCommentRequest("안녕하세웅", true);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
+        assertThatThrownBy(
+                () -> memberPickCommentService.registerPickMainComment(pick.getId(), request, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE);
     }

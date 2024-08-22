@@ -35,7 +35,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickMainCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.persistence.EntityManager;
@@ -107,14 +107,15 @@ class PickCommentControllerTest extends SupportControllerTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest registerPickMainCommentRequest = new RegisterPickMainCommentRequest("안녕하세웅",
+                true);
 
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
+                        .content(om.writeValueAsString(registerPickMainCommentRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
@@ -156,7 +157,7 @@ class PickCommentControllerTest extends SupportControllerTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
+        RegisterPickMainCommentRequest registerPickMainCommentRequest = new RegisterPickMainCommentRequest("안녕하세웅",
                 isPickVotePublic);
 
         // when // then
@@ -164,7 +165,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
+                        .content(om.writeValueAsString(registerPickMainCommentRequest)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
@@ -206,7 +207,7 @@ class PickCommentControllerTest extends SupportControllerTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest(contents,
+        RegisterPickMainCommentRequest registerPickMainCommentRequest = new RegisterPickMainCommentRequest(contents,
                 true);
 
         // when // then
@@ -214,7 +215,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
+                        .content(om.writeValueAsString(registerPickMainCommentRequest)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))

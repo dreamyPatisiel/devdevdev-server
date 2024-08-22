@@ -56,7 +56,7 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommen
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickMainCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
@@ -135,14 +135,15 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickMainCommentRequest registerPickMainCommentRequest = new RegisterPickMainCommentRequest("안녕하세웅",
+                true);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
+                        .content(om.writeValueAsString(registerPickMainCommentRequest)))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -202,7 +203,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
+        RegisterPickMainCommentRequest registerPickMainCommentRequest = new RegisterPickMainCommentRequest("안녕하세웅",
                 isPickVotePublic);
 
         // when // then
@@ -210,7 +211,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(registerPickCommentRequest)))
+                        .content(om.writeValueAsString(registerPickMainCommentRequest)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
