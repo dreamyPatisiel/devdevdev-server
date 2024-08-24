@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class RegisterPickMainCommentRequest {
+public class RegisterPickCommentRequest {
 
     @NotBlank(message = "내용을 작성해주세요.")
     private final String contents;

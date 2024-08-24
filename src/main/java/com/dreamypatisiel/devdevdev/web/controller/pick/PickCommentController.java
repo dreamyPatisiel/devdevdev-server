@@ -6,7 +6,8 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickMainCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,17 +36,34 @@ public class PickCommentController {
     @PostMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
             @PathVariable Long pickId,
-            @RequestBody @Validated RegisterPickMainCommentRequest registerPickMainCommentRequest) {
+            @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickMainComment(pickId,
-                registerPickMainCommentRequest, authentication);
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pickId,
+                registerPickCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글 수정", description = "회원은 자신이 작성한 픽픽픽 댓글을 수정할 수 있습니다.")
+    @Operation(summary = "픽픽픽 답글 작성", description = "회원은 픽픽픽 댓글에 답글을 작성할 수 있습니다.")
+    @PostMapping("/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}")
+    public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickRepliedComment(
+            @PathVariable Long pickId,
+            @PathVariable Long pickCommentOriginParentId,
+            @PathVariable Long pickCommentParentId,
+            @RequestBody @Validated RegisterPickRepliedCommentRequest registerPickRepliedCommentRequest) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickRepliedComment(
+                pickCommentParentId, pickCommentOriginParentId, pickId, registerPickRepliedCommentRequest,
+                authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
+    }
+
+    @Operation(summary = "픽픽픽 댓글/답글 수정", description = "회원은 자신이 작성한 픽픽픽 댓글/답글을 수정할 수 있습니다.")
     @PatchMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> modifyPickComment(
             @PathVariable Long pickId,
@@ -60,7 +78,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글 삭제", description = "회원은 자신이 작성한 픽픽픽 댓글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
+    @Operation(summary = "픽픽픽 댓글/답글 삭제", description = "회원은 자신이 작성한 픽픽픽 댓글/답글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
     @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(
             @PathVariable Long pickId,
@@ -74,6 +92,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
+    @Deprecated
     @Operation(summary = "픽픽픽 답글 작성", description = "회원은 픽픽픽 댓글에 답글을 작성할 수 있습니다.")
     @PostMapping("/picks/{pickId}/comments/{pickCommentId}/replies")
     public ResponseEntity<BasicResponse<PickReplyResponse>> registerPickReply(
@@ -89,6 +108,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
     }
 
+    @Deprecated
     @Operation(summary = "픽픽픽 답글 수정", description = "회원은 자신이 작성한 픽픽픽 답글을 수정할 수 있습니다.")
     @PatchMapping("/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}")
     public ResponseEntity<BasicResponse<PickReplyResponse>> modifyPickReply(
@@ -105,6 +125,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
     }
 
+    @Deprecated
     @Operation(summary = "픽픽픽 답글 삭제", description = "회원은 자신이 작성한 픽픽픽 답글을 삭제할 수 있습니다.(어드민은 모든 답글 삭제 가능)")
     @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}")
     public ResponseEntity<BasicResponse<PickReplyResponse>> deletePickReply(

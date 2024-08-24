@@ -53,7 +53,7 @@ public class PickComment extends BasicTime {
     private Count recommendTotalCount;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private Boolean isPublic; // true: 투표 선택지 공개, false: 투표 선택지 비공개
+    private Boolean isPublic; // true: 투표 선택지 공개, false: 투표 선택지 비공개/답글
 
     private LocalDateTime deletedAt;
 
@@ -95,51 +95,7 @@ public class PickComment extends BasicTime {
         this.pick = pick;
         this.pickVote = pickVote;
     }
-
-    // 투표 비공개 메인 댓글 생성
-    public static PickComment createPrivateVoteMainComment(CommentContents content, Member createdBy, Pick pick) {
-        PickComment pickComment = new PickComment();
-        pickComment.contents = content;
-        pickComment.isPublic = false;
-        pickComment.blameTotalCount = Count.defaultCount();
-        pickComment.recommendTotalCount = Count.defaultCount();
-        pickComment.createdBy = createdBy;
-        pickComment.changePick(pick);
-
-        return pickComment;
-    }
-
-    // 투표 공개 메인 댓글 생성
-    public static PickComment createPrivateVoteMainComment(CommentContents content, Member createdBy, Pick pick,
-                                                           PickVote pickVote) {
-        PickComment pickComment = new PickComment();
-        pickComment.contents = content;
-        pickComment.isPublic = true;
-        pickComment.blameTotalCount = Count.defaultCount();
-        pickComment.recommendTotalCount = Count.defaultCount();
-        pickComment.createdBy = createdBy;
-        pickComment.changePick(pick);
-        pickComment.pickVote = pickVote;
-
-        return pickComment;
-    }
-
-    // 서브 댓글 생성
-    public static PickComment createVoteSubComment(CommentContents content, PickComment parent,
-                                                   PickComment originParent, Member createdBy, Pick pick) {
-        PickComment pickComment = new PickComment();
-        pickComment.contents = content;
-        pickComment.blameTotalCount = Count.defaultCount();
-        pickComment.recommendTotalCount = Count.defaultCount();
-        pickComment.parent = parent;
-        pickComment.originParent = originParent;
-        pickComment.createdBy = createdBy;
-        pickComment.changePick(pick);
-
-        return pickComment;
-    }
-
-    @Deprecated
+    
     public static PickComment createPrivateVoteComment(CommentContents content, Member createdBy, Pick pick) {
         PickComment pickComment = new PickComment();
         pickComment.contents = content;
@@ -152,7 +108,6 @@ public class PickComment extends BasicTime {
         return pickComment;
     }
 
-    @Deprecated
     public static PickComment createPublicVoteComment(CommentContents content, Member createdBy, Pick pick,
                                                       PickVote pickVote) {
         PickComment pickComment = new PickComment();
@@ -163,6 +118,22 @@ public class PickComment extends BasicTime {
         pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
         pickComment.pickVote = pickVote;
+
+        return pickComment;
+    }
+
+    // 답글 생성
+    public static PickComment createRepliedComment(CommentContents content, PickComment parent,
+                                                   PickComment originParent, Member createdBy, Pick pick) {
+        PickComment pickComment = new PickComment();
+        pickComment.contents = content;
+        pickComment.isPublic = false;
+        pickComment.blameTotalCount = Count.defaultCount();
+        pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.parent = parent;
+        pickComment.originParent = originParent;
+        pickComment.createdBy = createdBy;
+        pickComment.changePick(pick);
 
         return pickComment;
     }
@@ -183,6 +154,10 @@ public class PickComment extends BasicTime {
     }
 
     public boolean isDeleted() {
-        return deletedAt == null;
+        return deletedAt != null;
+    }
+
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
     }
 }
