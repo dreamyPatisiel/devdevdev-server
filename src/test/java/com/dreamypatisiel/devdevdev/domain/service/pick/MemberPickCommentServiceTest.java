@@ -616,7 +616,7 @@ class MemberPickCommentServiceTest {
 
     @Test
     @DisplayName("픽픽픽 답글을 작성할 때 답글 대상의 댓글이 존재하지 않으면 예외가 발생한다."
-            + "(최초 댓글의 답글이 존재하지않고 그 답글에 답글을 작성하는 경우)")
+            + "(최초 댓글의 답글이 존재하지 않고 그 답글에 답글을 작성하는 경우)")
     void registerPickRepliedCommentRepliedNotFoundException() {
         // given
         // 회원 생성
