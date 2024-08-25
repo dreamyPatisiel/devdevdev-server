@@ -949,6 +949,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 .pick(pick)
                 .originParent(originParent)
                 .parent(parent)
+                .replyTotalCount(new Count(0))
                 .build();
 
         pickComment.changePick(pick);
@@ -968,6 +969,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         PickComment pickComment = PickComment.builder()
                 .contents(contents)
                 .isPublic(isPublic)
+                .replyTotalCount(new Count(0))
                 .createdBy(member)
                 .pick(pick)
                 .build();

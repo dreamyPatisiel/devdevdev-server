@@ -2120,6 +2120,7 @@ class MemberPickCommentServiceTest {
                 .contents(contents)
                 .isPublic(isPublic)
                 .createdBy(member)
+                .replyTotalCount(new Count(0))
                 .pick(pick)
                 .build();
 

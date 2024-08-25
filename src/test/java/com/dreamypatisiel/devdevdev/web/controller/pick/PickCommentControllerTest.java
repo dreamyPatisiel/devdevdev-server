@@ -16,6 +16,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickReply;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
@@ -743,6 +744,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .pick(pick)
                 .originParent(originParent)
                 .parent(parent)
+                .replyTotalCount(new Count(0))
                 .build();
 
         pickComment.changePick(pick);
@@ -762,6 +764,7 @@ class PickCommentControllerTest extends SupportControllerTest {
         PickComment pickComment = PickComment.builder()
                 .contents(contents)
                 .isPublic(isPublic)
+                .replyTotalCount(new Count(0))
                 .createdBy(member)
                 .pick(pick)
                 .build();
