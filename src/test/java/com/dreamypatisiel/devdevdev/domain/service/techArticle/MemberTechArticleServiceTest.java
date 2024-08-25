@@ -108,7 +108,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회한다.")
     void getTechArticle() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -137,7 +137,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 조회수가 1 증가한다.")
     void getTechArticleIncrementViewCount() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
         long prevPopularScore = firstTechArticle.getPopularScore().getCount();
 
@@ -169,7 +169,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 회원이 없으면 예외가 발생한다.")
     void getTechArticleNotFoundMemberException() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -278,7 +278,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         Boolean status = true;
 
         // when
@@ -309,7 +309,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Bookmark bookmark = createBookmark(member, techArticle, true);
         bookmarkRepository.save(bookmark);
 
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         Boolean status = false;
 
         // when

@@ -51,8 +51,10 @@ import org.springframework.http.MediaType;
 
 class TechArticleControllerTest extends SupportControllerTest {
 
-    private static Long FIRST_TECH_ARTICLE_ID;
+    private static final int TEST_ARTICLES_COUNT = 20;
     private static Company company;
+    private static TechArticle firstTechArticle;
+    private static List<TechArticle> techArticles;
 
     @Autowired
     TechArticleRepository techArticleRepository;
@@ -63,34 +65,35 @@ class TechArticleControllerTest extends SupportControllerTest {
     @Autowired
     BookmarkRepository bookmarkRepository;
 
-    private static List<TechArticle> techArticles;
-
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+        company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
 
+        // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
+        LocalDate baseDate = LocalDate.of(2024, 8, 30);
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
-                    i > 1 ? createRandomDate() : LocalDate.of(2024, 3, 11), "내용",
-                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", 1L, (long) i, (long) i,
-                    (long) i,
-                    (long) i * 10);
+        for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀_" + i,
+                    baseDate.minusDays(i), "내용", "http://example.com/" + i, "설명", "http://example.com/", "작성자",
+                    company.getName().getCompanyName(), company.getId(), (long) TEST_ARTICLES_COUNT - i,
+                    (long) TEST_ARTICLES_COUNT - i, (long) TEST_ARTICLES_COUNT - i,
+                    (long) (TEST_ARTICLES_COUNT - i) * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
-        company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
 
+        // 엘라스틱 기술블로그를 토대로 RDB 기술블로그 데이터를 생성한다.
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
             TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
-        FIRST_TECH_ARTICLE_ID = savedTechArticles.getFirst().getId();
+        firstTechArticle = savedTechArticles.getFirst();
     }
 
     @AfterAll
@@ -107,7 +110,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         String elasticId = "elasticId_1";
         String keyword = "타이틀";
-        String companyId = "1";
+        String companyId = company.getId().toString();
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
@@ -185,7 +188,7 @@ class TechArticleControllerTest extends SupportControllerTest {
         Pageable pageable = PageRequest.of(0, 10);
         String elasticId = "elasticId_1";
         String keyword = "타이틀";
-        String companyId = "1";
+        String companyId = company.getId().toString();
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles")
@@ -316,7 +319,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회한다.")
     void getTechArticleByAnonymous() throws Exception {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
@@ -348,7 +351,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("회원이 기술블로그 상세를 조회한다.")
     void getTechArticleByMember() throws Exception {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -388,7 +391,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 회원이 없으면 예외가 발생한다.")
     void getTechArticleNotFoundMemberException() throws Exception {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
@@ -471,7 +474,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("회원이 기술블로그 북마크를 요청한다.")
     void updateBookmark() throws Exception {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -527,7 +530,7 @@ class TechArticleControllerTest extends SupportControllerTest {
     @DisplayName("회원이 기술블로그 북마크를 요청할 때 존재하지 않는 회원이라면 예외가 발생한다.")
     void updateBookmarkNotFoundMemberException() throws Exception {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
@@ -579,13 +582,11 @@ class TechArticleControllerTest extends SupportControllerTest {
     }
 
     private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
-                                                               String contents,
-                                                               String techArticleUrl,
+                                                               String contents, String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
                                                                String company, Long companyId,
                                                                Long viewTotalCount, Long recommendTotalCount,
-                                                               Long commentTotalCount,
-                                                               Long popularScore) {
+                                                               Long commentTotalCount, Long popularScore) {
         return ElasticTechArticle.builder()
                 .id(id)
                 .title(title)

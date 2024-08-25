@@ -4,7 +4,6 @@ import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessa
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest.FIRST_TECH_ARTICLE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -173,7 +172,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = 1L;
         RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
 
         // when // then

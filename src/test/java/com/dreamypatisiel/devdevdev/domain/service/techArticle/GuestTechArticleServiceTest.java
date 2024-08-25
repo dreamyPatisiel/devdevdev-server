@@ -94,7 +94,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회한다. 이때 북마크 값은 false 이다.")
     void getTechArticle() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -117,7 +117,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회하면 조회수가 1 증가한다.")
     void getTechArticleIncrementViewCount() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
         long prevPopularScore = firstTechArticle.getPopularScore().getCount();
 
@@ -141,7 +141,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 익명 사용자가 아니면 예외가 발생한다.")
     void getTechArticleNotAnonymousUserException() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -226,7 +226,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         Boolean status = true;
 
         // when // then
