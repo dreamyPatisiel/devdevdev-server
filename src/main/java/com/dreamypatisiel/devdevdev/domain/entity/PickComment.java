@@ -25,7 +25,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
         @Index(name = "idx__created_by__pick__deleted_at", columnList = "created_by, pick_id, deletedAt"),
-        @Index(name = "idx__comment__created_by__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt")
+        @Index(name = "idx__comment__created_by__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt"),
+        @Index(name = "idx__parent__origin_parent__deleted_at", columnList = "parent_id, origin_parent_id, deletedAt")
 })
 public class PickComment extends BasicTime {
 
@@ -51,10 +52,24 @@ public class PickComment extends BasicTime {
     )
     private Count recommendTotalCount;
 
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "reply_total_count", columnDefinition = "bigint default 0")
+    )
+    private Count replyTotalCount;
+
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private Boolean isPublic; // true: 투표 선택지 공개, false: 투표 선택지 비공개
+    private Boolean isPublic; // true: 투표 선택지 공개, false: 투표 선택지 비공개/답글
 
     private LocalDateTime deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    private PickComment parent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origin_parent_id", referencedColumnName = "id")
+    private PickComment originParent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
@@ -72,13 +87,18 @@ public class PickComment extends BasicTime {
     @JoinColumn(name = "pick_vote_id")
     private PickVote pickVote;
 
+
     @Builder
-    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Boolean isPublic,
+    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
+                        Count replyTotalCount, Boolean isPublic, PickComment parent, PickComment originParent,
                         Member createdBy, Pick pick, PickVote pickVote) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
+        this.replyTotalCount = replyTotalCount;
         this.isPublic = isPublic;
+        this.parent = parent;
+        this.originParent = originParent;
         this.createdBy = createdBy;
         this.pick = pick;
         this.pickVote = pickVote;
@@ -90,6 +110,7 @@ public class PickComment extends BasicTime {
         pickComment.isPublic = false;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.replyTotalCount = Count.defaultCount();
         pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
 
@@ -103,9 +124,27 @@ public class PickComment extends BasicTime {
         pickComment.isPublic = true;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.replyTotalCount = Count.defaultCount();
         pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
         pickComment.pickVote = pickVote;
+
+        return pickComment;
+    }
+
+    // 답글 생성
+    public static PickComment createRepliedComment(CommentContents content, PickComment parent,
+                                                   PickComment originParent, Member createdBy, Pick pick) {
+        PickComment pickComment = new PickComment();
+        pickComment.contents = content;
+        pickComment.isPublic = false;
+        pickComment.blameTotalCount = Count.defaultCount();
+        pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.replyTotalCount = Count.defaultCount();
+        pickComment.parent = parent;
+        pickComment.originParent = originParent;
+        pickComment.createdBy = createdBy;
+        pickComment.changePick(pick);
 
         return pickComment;
     }
@@ -126,6 +165,14 @@ public class PickComment extends BasicTime {
     }
 
     public boolean isDeleted() {
-        return deletedAt == null;
+        return deletedAt != null;
+    }
+
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
+    }
+
+    public void plusOneReplyTotalCount() {
+        this.replyTotalCount = Count.plusOne(this.replyTotalCount);
     }
 }

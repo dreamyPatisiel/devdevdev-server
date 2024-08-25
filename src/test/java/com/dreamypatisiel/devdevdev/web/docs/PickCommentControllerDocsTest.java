@@ -58,6 +58,7 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyR
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
@@ -135,7 +136,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅", true);
+        RegisterPickCommentRequest registerPickCommentRequest = new RegisterPickCommentRequest("안녕하세웅",
+                true);
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments", pick.getId())
@@ -230,6 +232,134 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)"),
                         fieldWithPath("isPickVotePublic").type(NULL).description("픽픽픽 공개 여부")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("픽픽픽 답글을 작성한다.")
+    void registerPickRepliedComment() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                "꿈빛맛티시엘", "1234", "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글1"), false, member, pick,
+                pickComment, pickComment);
+        pickCommentRepository.save(replidPickComment);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post(
+                                "/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                                pick.getId(), pickComment.getId(), replidPickComment.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("register-pick-comment-reply",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentOriginParentId").description("픽픽픽 최상단 댓글 아이디"),
+                        parameterWithName("pickCommentParentId").description("픽픽픽 답글 대상의 댓글 아이디")
+                ),
+                requestFields(
+                        fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디")
+                )
+        ));
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @DisplayName("픽픽픽 답글을 작성할 때 답글 내용이 공백이면 예외가 발생한다.")
+    void registerPickRepliedCommentBindException(String contents) throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                "꿈빛맛티시엘", "1234", "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글1"), false, member, pick,
+                pickComment, pickComment);
+        pickCommentRepository.save(replidPickComment);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest(contents);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                                pick.getId(), pickComment.getId(), replidPickComment.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .content(om.writeValueAsString(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("register-pick-comment-reply-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentOriginParentId").description("픽픽픽 최상단 댓글 아이디"),
+                        parameterWithName("pickCommentParentId").description("픽픽픽 답글 대상의 댓글 아이디")
+                ),
+                requestFields(
+                        fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
                 ),
                 exceptionResponseFields()
         ));
@@ -810,6 +940,23 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         ));
     }
 
+    private PickComment createReplidPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick,
+                                                PickComment originParent, PickComment parent) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .createdBy(member)
+                .pick(pick)
+                .originParent(originParent)
+                .parent(parent)
+                .replyTotalCount(new Count(0))
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
+    }
+
     private PickReply createPickReply(CommentContents commentContents, Member member, PickComment pickComment) {
         return PickReply.builder()
                 .contents(commentContents)
@@ -822,6 +969,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         PickComment pickComment = PickComment.builder()
                 .contents(contents)
                 .isPublic(isPublic)
+                .replyTotalCount(new Count(0))
                 .createdBy(member)
                 .pick(pick)
                 .build();
