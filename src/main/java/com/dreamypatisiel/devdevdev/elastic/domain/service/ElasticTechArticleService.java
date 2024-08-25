@@ -56,14 +56,14 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
                                                             TechArticleSort techArticleSort,
                                                             Long companyId) {
         // 정렬 기준 검증
-        techArticleSort = getValidSort(techArticleSort);
+        TechArticleSort validTechArticleSort = getValidSort(techArticleSort);
 
         // 쿼리 생성
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder()
                 .withSearchType(SearchType.QUERY_THEN_FETCH)
                 .withPageable(pageable)
                 // 정렬 조건 설정
-                .withSorts(getSortCondition(techArticleSort),
+                .withSorts(getSortCondition(validTechArticleSort),
                         getPrimarySortCondition(LATEST_SORT_FIELD_NAME),
                         getPrimarySortCondition(_ID));
 
@@ -73,7 +73,7 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
         NativeSearchQuery searchQuery = queryBuilder.build();
 
         // searchAfter 설정
-        setSearchAfterCondition(elasticId, techArticleSort, searchQuery);
+        setSearchAfterCondition(elasticId, validTechArticleSort, searchQuery);
 
         return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
@@ -90,7 +90,7 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
         }
 
         // 정렬 기준 검증
-        techArticleSort = getValidSortWhenSearch(techArticleSort);
+        TechArticleSort validTechArticleSort = getValidSortWhenSearch(techArticleSort);
 
         // 쿼리 생성
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder()
@@ -99,7 +99,7 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
                 // 쿼리스트링
                 .withQuery(QueryBuilders.queryStringQuery(keyword).defaultOperator(Operator.AND))
                 // 정렬 조건 설정
-                .withSorts(getSortCondition(techArticleSort),
+                .withSorts(getSortCondition(validTechArticleSort),
                         getPrimarySortCondition(LATEST_SORT_FIELD_NAME),
                         getPrimarySortCondition(_ID));
 
@@ -109,7 +109,7 @@ public class ElasticTechArticleService implements ElasticService<ElasticTechArti
         NativeSearchQuery searchQuery = queryBuilder.build();
 
         // searchAfter 설정
-        setSearchAfterConditionWhenSearch(elasticId, score, techArticleSort, searchQuery);
+        setSearchAfterConditionWhenSearch(elasticId, score, validTechArticleSort, searchQuery);
 
         return elasticsearchOperations.search(searchQuery, ElasticTechArticle.class);
     }
