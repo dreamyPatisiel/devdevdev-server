@@ -1,10 +1,10 @@
 [[Pick-Comment-Delete]]
-== 픽픽픽 댓글 삭제 API(DELETE: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
+== 픽픽픽 댓글/답글 삭제 API(DELETE: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
 
-* 픽픽픽 댓글을 삭제한다.
-* 회원 본인이 작성한 픽픽픽 댓글만 삭제 할 수 있다.
-* 삭제된 댓글을 삭제 할 수 없다.
-* ##어드민 권한을 가진 회원은 모든 댓글을 삭제##할 수 있다.
+* 픽픽픽 댓글/답글을 삭제한다.
+* 회원 본인이 작성한 픽픽픽 댓글/답글만 삭제 할 수 있다.
+* 삭제된 댓글/답글을 삭제 할 수 없다.
+* ##어드민 권한을 가진 회원은 모든 댓글/답글을 삭제##할 수 있다.
 
 === 정상 요청/응답
 

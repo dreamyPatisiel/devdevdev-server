@@ -1,10 +1,10 @@
 [[Pick-Comment-Modify]]
-== 픽픽픽 댓글 수정 API(PATCH: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
+== 픽픽픽 댓글/답글 수정 API(PATCH: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
 
-* 픽픽픽 댓글을 수정한다.
-* 회원 본인이 작성한 픽픽픽 수정 할 수 있다.
+* 픽픽픽 댓글/답글을 수정한다.
+* 회원 본인이 작성한 픽픽픽 댓글/답글을 수정 할 수 있다.
 * 픽픽픽 공개 여부는 수정 할 수 없다.
-* 삭제된 댓글을 수정 할 수 없다.
+* 삭제된 댓글/답글을 수정 할 수 없다.
 
 === 정상 요청/응답
 
