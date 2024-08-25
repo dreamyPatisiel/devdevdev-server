@@ -437,6 +437,9 @@ class MemberPickCommentServiceTest {
         PickCommentResponse response = memberPickCommentService.registerPickRepliedComment(
                 replidPickComment.getId(), pickComment.getId(), pick.getId(), request, authentication);
 
+        em.flush();
+        em.clear();
+
         // then
         assertThat(response.getPickCommentId()).isNotNull();
 
@@ -450,7 +453,8 @@ class MemberPickCommentServiceTest {
                 () -> assertThat(findPickComment.getPick().getId()).isEqualTo(pick.getId()),
                 () -> assertThat(findPickComment.getCreatedBy().getId()).isEqualTo(member.getId()),
                 () -> assertThat(findPickComment.getParent().getId()).isEqualTo(replidPickComment.getId()),
-                () -> assertThat(findPickComment.getOriginParent().getId()).isEqualTo(pickComment.getId())
+                () -> assertThat(findPickComment.getOriginParent().getId()).isEqualTo(pickComment.getId()),
+                () -> assertThat(findPickComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L)
         );
     }
 

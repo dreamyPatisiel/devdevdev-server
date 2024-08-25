@@ -124,6 +124,8 @@ public class MemberPickCommentService {
         // 픽픽픽 최초 댓글 검증 및 반환
         PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
                 pickCommentOriginParentId, findParentPickComment);
+        // 픽픽픽 최초 댓글의 답글 갯수 증가
+        findOriginParentPickComment.plusOneReplyTotalCount();
 
         // 픽픽픽 서브 댓글(답글) 생성
         PickComment pickSubComment = PickComment.createRepliedComment(new CommentContents(contents),

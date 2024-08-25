@@ -52,6 +52,12 @@ public class PickComment extends BasicTime {
     )
     private Count recommendTotalCount;
 
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "reply_total_count", columnDefinition = "bigint default 0")
+    )
+    private Count replyTotalCount;
+
     @Column(nullable = false, columnDefinition = "boolean default false")
     private Boolean isPublic; // true: 투표 선택지 공개, false: 투표 선택지 비공개/답글
 
@@ -83,11 +89,13 @@ public class PickComment extends BasicTime {
 
 
     @Builder
-    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Boolean isPublic,
-                        PickComment parent, PickComment originParent, Member createdBy, Pick pick, PickVote pickVote) {
+    private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
+                        Count replyTotalCount, Boolean isPublic, PickComment parent, PickComment originParent,
+                        Member createdBy, Pick pick, PickVote pickVote) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
+        this.replyTotalCount = replyTotalCount;
         this.isPublic = isPublic;
         this.parent = parent;
         this.originParent = originParent;
@@ -95,13 +103,14 @@ public class PickComment extends BasicTime {
         this.pick = pick;
         this.pickVote = pickVote;
     }
-    
+
     public static PickComment createPrivateVoteComment(CommentContents content, Member createdBy, Pick pick) {
         PickComment pickComment = new PickComment();
         pickComment.contents = content;
         pickComment.isPublic = false;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.replyTotalCount = Count.defaultCount();
         pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
 
@@ -115,6 +124,7 @@ public class PickComment extends BasicTime {
         pickComment.isPublic = true;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.replyTotalCount = Count.defaultCount();
         pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
         pickComment.pickVote = pickVote;
@@ -130,6 +140,7 @@ public class PickComment extends BasicTime {
         pickComment.isPublic = false;
         pickComment.blameTotalCount = Count.defaultCount();
         pickComment.recommendTotalCount = Count.defaultCount();
+        pickComment.replyTotalCount = Count.defaultCount();
         pickComment.parent = parent;
         pickComment.originParent = originParent;
         pickComment.createdBy = createdBy;
@@ -159,5 +170,9 @@ public class PickComment extends BasicTime {
 
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
+    }
+
+    public void plusOneReplyTotalCount() {
+        this.replyTotalCount = Count.plusOne(this.replyTotalCount);
     }
 }
