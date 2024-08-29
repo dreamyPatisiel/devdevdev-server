@@ -26,7 +26,9 @@ import lombok.NoArgsConstructor;
 @Table(indexes = {
         @Index(name = "idx__created_by__pick__deleted_at", columnList = "created_by, pick_id, deletedAt"),
         @Index(name = "idx__comment__created_by__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt"),
-        @Index(name = "idx__parent__origin_parent__deleted_at", columnList = "parent_id, origin_parent_id, deletedAt")
+        @Index(name = "idx__parent__origin_parent__deleted_at", columnList = "parent_id, origin_parent_id, deletedAt"),
+        @Index(name = "idx__comment__pick__parent__origin_parent__is_public__recommend_total_count__reply_total_count",
+                columnList = "id, pick_id, parent_id, origin_parent_id, isPublic, recommendTotalCount, replyTotalCount")
 })
 public class PickComment extends BasicTime {
 
@@ -86,7 +88,6 @@ public class PickComment extends BasicTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pick_vote_id")
     private PickVote pickVote;
-
 
     @Builder
     private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
@@ -174,5 +175,9 @@ public class PickComment extends BasicTime {
 
     public void plusOneReplyTotalCount() {
         this.replyTotalCount = Count.plusOne(this.replyTotalCount);
+    }
+
+    public boolean isVotePrivate() {
+        return this.isPublic.equals(false);
     }
 }

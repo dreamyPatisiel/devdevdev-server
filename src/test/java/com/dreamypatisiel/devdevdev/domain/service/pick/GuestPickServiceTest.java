@@ -39,7 +39,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.CommonResponseUtil;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -484,7 +484,7 @@ class GuestPickServiceTest {
         assertThat(pickDetail).isNotNull();
         assertAll(
                 () -> assertThat(pickDetail.getUserId()).isEqualTo(
-                        PickResponseUtils.sliceAndMaskEmail(member.getEmail().getEmail())),
+                        CommonResponseUtil.sliceAndMaskEmail(member.getEmail().getEmail())),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(member.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
                 () -> assertThat(pickDetail.getIsAuthor()).isEqualTo(false)

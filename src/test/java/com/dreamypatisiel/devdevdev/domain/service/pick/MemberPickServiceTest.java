@@ -52,7 +52,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse
 import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.CommonResponseUtil;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
@@ -919,7 +919,7 @@ class MemberPickServiceTest {
         assertThat(pickDetail).isNotNull();
         assertAll(
                 () -> assertThat(pickDetail.getUserId()).isEqualTo(
-                        PickResponseUtils.sliceAndMaskEmail(member.getEmail().getEmail())),
+                        CommonResponseUtil.sliceAndMaskEmail(member.getEmail().getEmail())),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(member.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
                 () -> assertThat(pickDetail.getIsAuthor()).isEqualTo(true),
@@ -1022,7 +1022,7 @@ class MemberPickServiceTest {
         assertThat(pickDetail).isNotNull();
         assertAll(
                 () -> assertThat(pickDetail.getUserId()).isEqualTo(
-                        PickResponseUtils.sliceAndMaskEmail(otherMember.getEmail().getEmail())),
+                        CommonResponseUtil.sliceAndMaskEmail(otherMember.getEmail().getEmail())),
                 () -> assertThat(pickDetail.getNickname()).isEqualTo(otherMember.getNickname().getNickname()),
                 () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
                 () -> assertThat(pickDetail.getIsAuthor()).isEqualTo(false),
