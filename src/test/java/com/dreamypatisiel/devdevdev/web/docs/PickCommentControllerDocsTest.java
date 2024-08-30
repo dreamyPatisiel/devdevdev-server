@@ -1,15 +1,20 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickCommentSortType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionTypeType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
 import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
 import static org.springframework.restdocs.payload.JsonFieldType.NULL;
 import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
@@ -20,6 +25,7 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.requestF
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,6 +51,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickReplyRepository;
@@ -65,15 +72,19 @@ import com.dreamypatisiel.devdevdev.web.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -938,6 +949,236 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
+
+    @ParameterizedTest
+    @EnumSource(PickCommentSort.class)
+    @DisplayName("픽픽픽 댓글/답글을 정렬 조건에 따라서 조회한다.")
+    void getPickComments(PickCommentSort pickCommentSort) throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", "1234", "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", "1234", "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", "1234", "mmj9908@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "유소영", "1234", "merooongg@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", "user5", "장세웅", "1234", "howisitgoing@kakao.com",
+                socialType, Role.ROLE_ADMIN.name());
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", "1234", "user6@gmail.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("휴양지의 근본 제주도!"), new Count(2), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("한국의 알프스 강원도!"), new Count(2), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("나는 미뇽냥녕뇽이다!"), true, new Count(2),
+                new Count(2), member1, pick, member1PickVote);
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("임하하하하하"), true, new Count(1),
+                new Count(1), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("손흥민 최고다!"), true, new Count(0),
+                new Count(0), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("나는 소영소"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("힘들면 힘을내자!"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        originParentPickComment5.changeDeletedAt(LocalDateTime.now(), member5);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("미냥뇽냥녕 아닌가요?!"), member2, pick,
+                originParentPickComment1, originParentPickComment1);
+        pickReply1.changeDeletedAt(LocalDateTime.now(), member5);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("손흥민 아닌가요?"), member3, pick,
+                originParentPickComment1, pickReply1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("나는 소주소"), member4, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+
+        em.flush();
+        em.clear();
+
+        Pageable pageable = PageRequest.of(0, 5);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/comments",
+                        pick.getId())
+                        .queryParam("pickCommentId", String.valueOf(Long.MAX_VALUE))
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("pickCommentSort", pickCommentSort.name())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("get-pick-comments",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디")
+                ),
+                queryParameters(
+                        parameterWithName("pickCommentId").optional().description("픽픽픽 댓글 아이디"),
+                        parameterWithName("size").optional().description("조회되는 데이터 수"),
+                        parameterWithName("pickCommentSort").optional().description("픽픽픽 댓글 정렬 조건")
+                                .attributes(pickCommentSortType()),
+                        parameterWithName("pickOptionType").optional().description("픽픽픽 댓글 필터링 옵션 타입(체크박스)")
+                                .attributes(pickOptionTypeType())
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.content").type(ARRAY).description("픽픽픽 댓글/답글 메인 배열"),
+                        fieldWithPath("data.content[].pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디"),
+                        fieldWithPath("data.content[].createdAt").type(STRING).description("픽픽픽 댓글 작성일시"),
+                        fieldWithPath("data.content[].memberId").type(NUMBER).description("픽픽픽 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].author").type(STRING).description("픽픽픽 댓글 작성자 닉네임"),
+                        fieldWithPath("data.content[].isPickAuthor").type(BOOLEAN).description("픽픽픽 게시글 작성자 여부"),
+                        fieldWithPath("data.content[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
+                        fieldWithPath("data.content[].votedPickOption").optional().type(STRING)
+                                .description("픽픽픽 투표 선택 타입").attributes(pickOptionTypeType()),
+                        fieldWithPath("data.content[].votedPickOptionTitle").optional().type(STRING)
+                                .description("픽픽픽 투표 선택 타입 제목").attributes(stringOrNull()),
+                        fieldWithPath("data.content[].contents").type(STRING).description("픽픽픽 댓글 내용"),
+                        fieldWithPath("data.content[].replyTotalCount").type(NUMBER)
+                                .description("픽픽픽 댓글의 답글 총 갯수"),
+                        fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
+                                .description("픽픽픽 댓글 좋아요 총 갯수"),
+
+                        fieldWithPath("data.content[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
+                        fieldWithPath("data.content[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
+                        fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].pickCommentParentId").type(NUMBER)
+                                .description("픽픽픽 답글의 부모 댓글 아이디"),
+                        fieldWithPath("data.content[].replies[].pickCommentOriginParentId").type(NUMBER)
+                                .description("픽픽픽 답글의 최상위 부모 댓글 아이디"),
+                        fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("픽픽픽 답글 작성일시"),
+                        fieldWithPath("data.content[].replies[].isPickAuthor").type(BOOLEAN)
+                                .description("픽픽픽 게시글 작성자 여부"),
+                        fieldWithPath("data.content[].replies[].author").type(STRING).description("픽픽픽 답글 작성자 닉네임"),
+                        fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
+                                .description("픽픽픽 답글 작성자 이메일"),
+                        fieldWithPath("data.content[].replies[].contents").type(STRING).description("픽픽픽 답글 내용"),
+                        fieldWithPath("data.content[].replies[].likeTotalCount").type(NUMBER)
+                                .description("픽픽픽 답글 좋아요 총 갯수"),
+
+                        fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
+                        fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
+                        fieldWithPath("data.pageable.pageSize").type(NUMBER).description("페이지 사이즈"),
+
+                        fieldWithPath("data.pageable.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.pageable.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.pageable.sort.sorted").type(BOOLEAN).description("정렬 여부"),
+                        fieldWithPath("data.pageable.sort.unsorted").type(BOOLEAN).description("비정렬 여부"),
+
+                        fieldWithPath("data.pageable.offset").type(NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
+                        fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
+                        fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
+
+                        fieldWithPath("data.totalElements").type(NUMBER).description("전체 댓글 수"),
+                        fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
+                        fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
+                        fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),
+                        fieldWithPath("data.number").type(NUMBER).description("현재 페이지"),
+
+                        fieldWithPath("data.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.sort.sorted").type(BOOLEAN).description("정렬 상태 여부"),
+                        fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
+                        fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
+                        fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
+                )
+        ));
+    }
+
+    private PickOption createPickOption(Title title, Count voteTotalCount, Pick pick, PickOptionType pickOptionType) {
+        PickOption pickOption = PickOption.builder()
+                .title(title)
+                .voteTotalCount(voteTotalCount)
+                .pickOptionType(pickOptionType)
+                .build();
+
+        pickOption.changePick(pick);
+
+        return pickOption;
+    }
+
+    private Pick createPick(Title title, ContentStatus contentStatus, Count commentTotalCount, Member member) {
+        return Pick.builder()
+                .title(title)
+                .contentStatus(contentStatus)
+                .commentTotalCount(commentTotalCount)
+                .member(member)
+                .build();
+    }
+
+    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count replyTotalCount,
+                                          Count recommendTotalCount, Member member, Pick pick, PickVote pickVote) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .createdBy(member)
+                .replyTotalCount(replyTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .pick(pick)
+                .pickVote(pickVote)
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
+    }
+
+    private PickComment createReplidPickComment(CommentContents contents, Member member, Pick pick,
+                                                PickComment originParent, PickComment parent) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .createdBy(member)
+                .pick(pick)
+                .originParent(originParent)
+                .isPublic(false)
+                .parent(parent)
+                .recommendTotalCount(new Count(0))
+                .replyTotalCount(new Count(0))
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
     }
 
     private PickComment createReplidPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick,

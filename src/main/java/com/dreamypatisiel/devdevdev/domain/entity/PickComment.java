@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
         @Index(name = "idx__created_by__pick__deleted_at", columnList = "created_by, pick_id, deletedAt"),
         @Index(name = "idx__comment__created_by__pick__deleted_at", columnList = "id, created_by, pick_id, deletedAt"),
         @Index(name = "idx__parent__origin_parent__deleted_at", columnList = "parent_id, origin_parent_id, deletedAt"),
-        @Index(name = "idx__comment__pick__parent__origin_parent__is_public__recommend_total_count__reply_total_count",
+        @Index(name = "idx__comment_01",
                 columnList = "id, pick_id, parent_id, origin_parent_id, isPublic, recommendTotalCount, replyTotalCount")
 })
 public class PickComment extends BasicTime {
