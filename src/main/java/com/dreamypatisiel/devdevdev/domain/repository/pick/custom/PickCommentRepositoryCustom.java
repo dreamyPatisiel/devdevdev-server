@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
 public interface PickCommentRepositoryCustom {
-    Slice<PickComment> findOriginParentPickCommentsByCursor(Pageable pageable, Long pickCommentId,
+    Slice<PickComment> findOriginParentPickCommentsByCursor(Pageable pageable, Long pickId, Long pickCommentId,
                                                             PickCommentSort pickCommentSort,
                                                             PickOptionType pickOptionType);
 }

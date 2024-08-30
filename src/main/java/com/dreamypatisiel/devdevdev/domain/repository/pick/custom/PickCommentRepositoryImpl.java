@@ -28,12 +28,12 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
     private final JPQLQueryFactory query;
 
     @Override
-    public Slice<PickComment> findOriginParentPickCommentsByCursor(Pageable pageable, Long pickCommentId,
-                                                                   PickCommentSort pickCommentSort,
+    public Slice<PickComment> findOriginParentPickCommentsByCursor(Pageable pageable, Long pickId,
+                                                                   Long pickCommentId, PickCommentSort pickCommentSort,
                                                                    PickOptionType pickOptionType) {
 
         List<PickComment> contents = query.selectFrom(pickComment)
-                .innerJoin(pickComment.pick, pick).fetchJoin()
+                .innerJoin(pickComment.pick, pick).on(pick.id.eq(pickId))
                 .innerJoin(pickComment.createdBy, member).fetchJoin()
                 .leftJoin(pickComment.pickVote, pickVote).fetchJoin()
                 .leftJoin(pickVote.pickOption, pickOption).fetchJoin()

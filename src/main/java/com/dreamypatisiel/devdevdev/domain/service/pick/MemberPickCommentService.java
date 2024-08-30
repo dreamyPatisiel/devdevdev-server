@@ -45,6 +45,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -250,13 +251,13 @@ public class MemberPickCommentService {
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
-    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickCommentId,
-                                                              PickCommentSort pickCommentSort,
+    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                              Long pickCommentId, PickCommentSort pickCommentSort,
                                                               PickOptionType pickOptionType) {
 
         // 픽픽픽 최상위 댓글 조회
         Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
-                pageable, pickCommentId, pickCommentSort, pickOptionType);
+                pageable, pickId, pickCommentId, pickCommentSort, pickOptionType);
 
         // 최상위 댓글 아이디 추출
         List<PickComment> originParentPickComments = findOriginParentPickComments.getContent();
@@ -275,12 +276,21 @@ public class MemberPickCommentService {
                 .map(originPickComment -> getPickCommentsResponse(originPickComment, pickCommentReplies))
                 .toList();
 
+        // 픽픽픽 최상위 댓글 추출
+        PickComment originParentPickComment = findOriginParentPickComments.getContent().stream()
+                .findFirst()
+                .orElseGet(() -> null);
+
+        // 댓글이 하나도 없으면
+        if (ObjectUtils.isEmpty(originParentPickComment)) {
+            return new SliceCustom<>(pickCommentsResponse, pageable, false, 0L);
+        }
+
         // 픽픽픽 전체 댓글 갯수 추출
-        long pickCommentTotalCount = findOriginParentPickComments.getContent().getFirst().getPick()
-                .getCommentTotalCount().getCount();
+        long originParentPickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
 
         return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
-                pickCommentTotalCount);
+                originParentPickCommentTotalCount);
     }
 
     private PickCommentsResponse getPickCommentsResponse(PickComment originPickComment,

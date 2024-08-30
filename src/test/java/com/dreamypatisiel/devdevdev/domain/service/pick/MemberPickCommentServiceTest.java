@@ -2175,7 +2175,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                Long.MAX_VALUE, pickCommentSort, null);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, null);
 
         em.flush();
         em.flush();
@@ -2413,7 +2413,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                Long.MAX_VALUE, pickCommentSort, PickOptionType.firstPickOption);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.firstPickOption);
 
         em.flush();
         em.flush();
@@ -2597,7 +2597,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption);
 
         em.flush();
         em.flush();
