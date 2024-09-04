@@ -41,7 +41,7 @@ public enum PickCommentSort {
     MOST_COMMENTED("답글 많은순") {
         @Override
         public OrderSpecifier<Long> getOrderSpecifierByPickCommentSort() {
-            return new OrderSpecifier<>(Order.DESC, pickComment.recommendTotalCount.count);
+            return new OrderSpecifier<>(Order.DESC, pickComment.replyTotalCount.count);
         }
 
         @Override

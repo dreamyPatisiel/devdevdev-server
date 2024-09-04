@@ -957,13 +957,13 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
     void getPickComments(PickCommentSort pickCommentSort) throws Exception {
         // given
         // 회원 생성
-        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", "1234", "alsdudr97@naver.com",
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "미뇽냥녕냥녕", "1234", "alsdudr97@naver.com",
                 socialType, role);
-        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", "1234", "wlgks555@naver.com",
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "야임마", "1234", "wlgks555@naver.com",
                 socialType, role);
-        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", "1234", "mmj9908@naver.com",
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "아이러브 손흥민", "1234", "mmj9908@naver.com",
                 socialType, role);
-        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "유소영", "1234", "merooongg@naver.com",
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "소영소", "1234", "merooongg@naver.com",
                 socialType, role);
         SocialMemberDto socialMemberDto5 = createSocialDto("user5", "user5", "장세웅", "1234", "howisitgoing@kakao.com",
                 socialType, Role.ROLE_ADMIN.name());
@@ -1006,7 +1006,6 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 new Count(0), member4, pick, member4PickVote);
         PickComment originParentPickComment5 = createPickComment(new CommentContents("힘들면 힘을내자!"), false, new Count(0),
                 new Count(0), member5, pick, null);
-        originParentPickComment5.changeDeletedAt(LocalDateTime.now(), member5);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
         pickCommentRepository.saveAll(
@@ -1014,14 +1013,16 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         originParentPickComment3, originParentPickComment2, originParentPickComment1));
 
         // 픽픽픽 답글 생성
-        PickComment pickReply1 = createReplidPickComment(new CommentContents("미냥뇽냥녕 아닌가요?!"), member2, pick,
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("누가 빨래좀 대신 개주세여..."), member2, pick,
                 originParentPickComment1, originParentPickComment1);
-        pickReply1.changeDeletedAt(LocalDateTime.now(), member5);
-        PickComment pickReply2 = createReplidPickComment(new CommentContents("손흥민 아닌가요?"), member3, pick,
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("손흥민 사랑해~!"), member3, pick,
                 originParentPickComment1, pickReply1);
-        PickComment pickReply3 = createReplidPickComment(new CommentContents("나는 소주소"), member4, pick,
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("소주 없이는 못살아!!!!"), member4, pick,
                 originParentPickComment2, originParentPickComment2);
-        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+        PickComment pickReply4 = createReplidPickComment(new CommentContents("벌써 9월이당"), member5, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickReply4.changeDeletedAt(LocalDateTime.now(), member5);
+        pickCommentRepository.saveAll(List.of(pickReply4, pickReply3, pickReply2, pickReply1));
 
         em.flush();
         em.clear();
@@ -1078,6 +1079,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 댓글의 답글 총 갯수"),
                         fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글 좋아요 총 갯수"),
+                        fieldWithPath("data.content[].isDeletedByAdmin").type(BOOLEAN)
+                                .description("픽픽픽 댓글 관리자 삭제 여부"),
 
                         fieldWithPath("data.content[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("data.content[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
@@ -1095,6 +1098,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].replies[].contents").type(STRING).description("픽픽픽 답글 내용"),
                         fieldWithPath("data.content[].replies[].likeTotalCount").type(NUMBER)
                                 .description("픽픽픽 답글 좋아요 총 갯수"),
+                        fieldWithPath("data.content[].replies[].isDeletedByAdmin").type(BOOLEAN)
+                                .description("픽픽픽 답글 관리자 삭제 여부"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),

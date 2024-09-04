@@ -31,13 +31,15 @@ public class PickCommentsResponse {
     private String contents;
     private Long replyTotalCount;
     private Long likeTotalCount;
+    private Boolean isDeletedByAdmin;
     private List<PickRepliedCommentsResponse> replies;
 
     @Builder
     public PickCommentsResponse(Long pickCommentId, LocalDateTime createdAt, Long memberId, String author,
                                 Boolean isPickAuthor, String maskedEmail, PickOptionType votedPickOption,
                                 String votedPickOptionTitle, String contents, Long replyTotalCount,
-                                Long likeTotalCount, List<PickRepliedCommentsResponse> replies) {
+                                Long likeTotalCount, Boolean isDeletedByAdmin,
+                                List<PickRepliedCommentsResponse> replies) {
         this.pickCommentId = pickCommentId;
         this.createdAt = createdAt;
         this.memberId = memberId;
@@ -49,6 +51,7 @@ public class PickCommentsResponse {
         this.contents = contents;
         this.replyTotalCount = replyTotalCount;
         this.likeTotalCount = likeTotalCount;
+        this.isDeletedByAdmin = isDeletedByAdmin;
         this.replies = replies;
     }
 
@@ -68,6 +71,7 @@ public class PickCommentsResponse {
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())
                 .likeTotalCount(originParentPickComment.getRecommendTotalCount().getCount())
+                .isDeletedByAdmin(CommentResponseUtil.isDeletedByAdmin(originParentPickComment))
                 .replies(replies);
 
         // 회원이 픽픽픽 투표를 안했거나, 투표 비공개일 경우

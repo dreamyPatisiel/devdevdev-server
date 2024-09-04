@@ -82,6 +82,8 @@ public class MemberPickCommentService {
         // 픽픽픽 조회
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+        // 댓글 갯수 증가
+        findPick.plusOneCommentTotalCount();
 
         // 픽픽픽 게시글의 승인 상태 검증
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
@@ -133,6 +135,8 @@ public class MemberPickCommentService {
         Pick findPick = findParentPickComment.getPick();
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
                 REGISTER);
+        // 댓글 총 갯수 증가
+        findPick.plusOneCommentTotalCount();
 
         // 픽픽픽 최초 댓글 검증 및 반환
         PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
@@ -141,11 +145,11 @@ public class MemberPickCommentService {
         findOriginParentPickComment.plusOneReplyTotalCount();
 
         // 픽픽픽 서브 댓글(답글) 생성
-        PickComment pickSubComment = PickComment.createRepliedComment(new CommentContents(contents),
+        PickComment pickRepliedComment = PickComment.createRepliedComment(new CommentContents(contents),
                 findParentPickComment, findOriginParentPickComment, findMember, findPick);
-        pickCommentRepository.save(pickSubComment);
+        pickCommentRepository.save(pickRepliedComment);
 
-        return new PickCommentResponse(pickSubComment.getId());
+        return new PickCommentResponse(pickRepliedComment.getId());
     }
 
     private PickComment getAndValidateOriginParentPickComment(Long pickCommentOriginParentId,
@@ -286,7 +290,7 @@ public class MemberPickCommentService {
             return new SliceCustom<>(pickCommentsResponse, pageable, false, 0L);
         }
 
-        // 픽픽픽 전체 댓글 갯수 추출
+        // 픽픽픽 전체 댓글/답글 갯수 추출
         long originParentPickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
 
         return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),

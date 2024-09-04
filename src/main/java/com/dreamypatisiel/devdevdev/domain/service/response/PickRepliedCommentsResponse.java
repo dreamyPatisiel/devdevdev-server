@@ -26,11 +26,13 @@ public class PickRepliedCommentsResponse {
     private String maskedEmail;
     private String contents;
     private Long likeTotalCount;
+    private Boolean isDeletedByAdmin;
 
     @Builder
     public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long pickCommentParentId,
                                        Long pickCommentOriginParentId, LocalDateTime createdAt, Boolean isPickAuthor,
-                                       String author, String maskedEmail, String contents, Long likeTotalCount) {
+                                       String author, String maskedEmail, String contents, Long likeTotalCount,
+                                       Boolean isDeletedByAdmin) {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
         this.pickCommentParentId = pickCommentParentId;
@@ -41,6 +43,7 @@ public class PickRepliedCommentsResponse {
         this.maskedEmail = maskedEmail;
         this.contents = contents;
         this.likeTotalCount = likeTotalCount;
+        this.isDeletedByAdmin = isDeletedByAdmin;
     }
 
     public static PickRepliedCommentsResponse from(PickComment repliedPickComment) {
@@ -58,6 +61,7 @@ public class PickRepliedCommentsResponse {
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
                 .likeTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
+                .isDeletedByAdmin(CommentResponseUtil.isDeletedByAdmin(repliedPickComment))
                 .build();
     }
 }

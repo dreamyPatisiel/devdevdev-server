@@ -14,4 +14,11 @@ public class CommentResponseUtil {
 
         return pickComment.getContents().getCommentContents();
     }
+
+    public static boolean isDeletedByAdmin(PickComment pickComment) {
+        if (pickComment.isDeleted()) {
+            return pickComment.getDeletedBy().isAdmin();
+        }
+        return false;
+    }
 }

@@ -49,6 +49,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentsResponse
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.SliceCustom;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.domain.service.response.util.CommonResponseUtil;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -2106,7 +2107,7 @@ class MemberPickCommentServiceTest {
         // given
         // 회원 생성
         SocialMemberDto socialMemberDto1 = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
-                socialType, role);
+                socialType, Role.ROLE_ADMIN.name());
         SocialMemberDto socialMemberDto2 = createSocialDto("user2", name, "nickname2", password, "user2@gmail.com",
                 socialType, role);
         SocialMemberDto socialMemberDto3 = createSocialDto("user3", name, "nickname3", password, "user3@gmail.com",
@@ -2165,6 +2166,7 @@ class MemberPickCommentServiceTest {
                 originParentPickComment1, originParentPickComment1);
         PickComment pickReply2 = createReplidPickComment(new CommentContents("답글1 답글1"), member6, pick,
                 originParentPickComment1, pickReply1);
+        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
@@ -2194,7 +2196,8 @@ class MemberPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount")
+                        "likeTotalCount",
+                        "isDeletedByAdmin")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedAt(),
@@ -2207,7 +2210,8 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment1.getPickVote().getPickOption().getTitle().getTitle(),
                                 originParentPickComment1.getContents().getCommentContents(),
                                 originParentPickComment1.getReplyTotalCount().getCount(),
-                                originParentPickComment1.getRecommendTotalCount().getCount()),
+                                originParentPickComment1.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedAt(),
@@ -2220,7 +2224,8 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment2.getPickVote().getPickOption().getTitle().getTitle(),
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
-                                originParentPickComment2.getRecommendTotalCount().getCount()),
+                                originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedAt(),
@@ -2233,7 +2238,8 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment3.getPickVote().getPickOption().getTitle().getTitle(),
                                 originParentPickComment3.getContents().getCommentContents(),
                                 originParentPickComment3.getReplyTotalCount().getCount(),
-                                originParentPickComment3.getRecommendTotalCount().getCount()),
+                                originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(originParentPickComment4.getId(),
                                 originParentPickComment4.getCreatedAt(),
@@ -2246,7 +2252,8 @@ class MemberPickCommentServiceTest {
                                 null,
                                 originParentPickComment4.getContents().getCommentContents(),
                                 originParentPickComment4.getReplyTotalCount().getCount(),
-                                originParentPickComment4.getRecommendTotalCount().getCount()),
+                                originParentPickComment4.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(originParentPickComment5.getId(),
                                 originParentPickComment5.getCreatedAt(),
@@ -2259,7 +2266,8 @@ class MemberPickCommentServiceTest {
                                 null,
                                 originParentPickComment5.getContents().getCommentContents(),
                                 originParentPickComment5.getReplyTotalCount().getCount(),
-                                originParentPickComment5.getRecommendTotalCount().getCount())
+                                originParentPickComment5.getRecommendTotalCount().getCount(),
+                                false)
                 );
 
         // 첫 번째 최상위 댓글의 답글 검증
@@ -2275,23 +2283,28 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount")
+                        "likeTotalCount",
+                        "isDeletedByAdmin")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
-                                pickReply1.getOriginParent().getId(), pickReply1.getCreatedAt(), true,
+                                pickReply1.getOriginParent().getId(), pickReply1.getCreatedAt(),
+                                true,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
-                                pickReply1.getRecommendTotalCount().getCount()),
+                                pickReply1.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
-                                pickReply2.getOriginParent().getId(), pickReply2.getCreatedAt(), false,
+                                pickReply2.getOriginParent().getId(), pickReply2.getCreatedAt(),
+                                false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
-                                pickReply2.getContents().getCommentContents(),
-                                pickReply2.getRecommendTotalCount().getCount())
+                                CommentResponseUtil.getCommentByPickCommentStatus(pickReply2),
+                                pickReply2.getRecommendTotalCount().getCount(),
+                                true)
                 );
 
         // 두 번째 최상위 댓글의 답글 검증
@@ -2307,7 +2320,8 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount")
+                        "likeTotalCount",
+                        "isDeletedByAdmin")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -2318,7 +2332,8 @@ class MemberPickCommentServiceTest {
                                 pickReply3.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
                                 pickReply3.getContents().getCommentContents(),
-                                pickReply3.getRecommendTotalCount().getCount())
+                                pickReply3.getRecommendTotalCount().getCount(),
+                                false)
                 );
 
         // 세 번째 최상위 댓글의 답글 검증
@@ -2432,7 +2447,8 @@ class MemberPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount")
+                        "likeTotalCount",
+                        "isDeletedByAdmin")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedAt(),
@@ -2445,7 +2461,8 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment1.getPickVote().getPickOption().getTitle().getTitle(),
                                 originParentPickComment1.getContents().getCommentContents(),
                                 originParentPickComment1.getReplyTotalCount().getCount(),
-                                originParentPickComment1.getRecommendTotalCount().getCount()),
+                                originParentPickComment1.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedAt(),
@@ -2458,7 +2475,8 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment2.getPickVote().getPickOption().getTitle().getTitle(),
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
-                                originParentPickComment2.getRecommendTotalCount().getCount())
+                                originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false)
                 );
 
         // 첫 번째 최상위 댓글의 답글 검증
@@ -2474,7 +2492,8 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount")
+                        "likeTotalCount",
+                        "isDeletedByAdmin")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -2482,7 +2501,8 @@ class MemberPickCommentServiceTest {
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
-                                pickReply1.getRecommendTotalCount().getCount()),
+                                pickReply1.getRecommendTotalCount().getCount(),
+                                false),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
@@ -2490,7 +2510,8 @@ class MemberPickCommentServiceTest {
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
                                 pickReply2.getContents().getCommentContents(),
-                                pickReply2.getRecommendTotalCount().getCount())
+                                pickReply2.getRecommendTotalCount().getCount(),
+                                false)
                 );
 
         // 두 번째 최상위 댓글의 답글 검증
@@ -2506,7 +2527,8 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount")
+                        "likeTotalCount",
+                        "isDeletedByAdmin")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -2517,7 +2539,8 @@ class MemberPickCommentServiceTest {
                                 pickReply3.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
                                 pickReply3.getContents().getCommentContents(),
-                                pickReply3.getRecommendTotalCount().getCount())
+                                pickReply3.getRecommendTotalCount().getCount(),
+                                false)
                 );
     }
 
