@@ -133,11 +133,11 @@ public class TechComment extends BasicTime {
     }
 
     public void plusOneReplyTotalCount() {
-        this.replyTotalCount = Count.plusOne(this.recommendTotalCount);
+        this.replyTotalCount = Count.plusOne(this.replyTotalCount);
     }
 
     public void minusOneReplyTotalCount() {
-        this.replyTotalCount = Count.minusOne(this.recommendTotalCount);
+        this.replyTotalCount = Count.minusOne(this.replyTotalCount);
     }
 
     public boolean isEqualsId(Long id) {
