@@ -127,19 +127,19 @@ public class TechArticle extends BasicTime {
         this.company = company;
     }
 
-    public void incrementViewCount() {
-        this.viewTotalCount.incrementCount();
+    public void plusOneViewTotalCount() {
+        this.viewTotalCount = Count.plusOne(this.viewTotalCount);
     }
 
     private Count calculatePopularScore(TechArticlePopularScorePolicy policy) {
         return policy.calculatePopularScore(this);
     }
 
-    public void incrementCommentCount() {
-        this.commentTotalCount.incrementCount();
+    public void plusOneCommentCount() {
+        this.commentTotalCount = Count.plusOne(this.commentTotalCount);
     }
 
-    public void decrementCommentCount() {
-        this.commentTotalCount.decrementCount();
+    public void minusOneCommentCount() {
+        this.commentTotalCount = Count.minusOne(this.commentTotalCount);
     }
 }

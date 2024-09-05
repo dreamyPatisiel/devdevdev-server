@@ -87,7 +87,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
 
         // 조회수 증가
-        techArticle.incrementViewCount();
+        techArticle.plusOneViewTotalCount();
         techArticle.changePopularScore(techArticlePopularScorePolicy);
 
         // 데이터 가공

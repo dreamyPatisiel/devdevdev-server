@@ -17,4 +17,8 @@ public interface TechCommentRepository extends JpaRepository<TechComment, Long> 
 
     @EntityGraph(attributePaths = {"techArticle"})
     Optional<TechComment> findWithTechArticleByIdAndTechArticleId(Long id, Long techArticleId);
+
+    Optional<TechComment> findByIdAndTechArticleIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long techArticleId, Long createdById);
+
+    Optional<TechComment> findByIdAndTechArticleIdAndDeletedAtIsNull(Long id, Long techArticleId);
 }

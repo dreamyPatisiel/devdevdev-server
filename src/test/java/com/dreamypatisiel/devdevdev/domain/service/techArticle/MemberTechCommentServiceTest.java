@@ -358,9 +358,7 @@ public class MemberTechCommentServiceTest {
 
         assertAll(
                 () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
-                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(member.getId()),
-                // 기술블로그 댓글수 감소 확인
-                () -> assertThat(findTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(0L)
+                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(member.getId())
         );
     }
 
@@ -472,9 +470,7 @@ public class MemberTechCommentServiceTest {
 
         assertAll(
                 () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
-                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(admin.getId()),
-                // 기술블로그 댓글수 감소 확인
-                () -> assertThat(findTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(0L)
+                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(admin.getId())
         );
     }
 

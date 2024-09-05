@@ -29,10 +29,6 @@ public class Count {
         }
     }
 
-    public void incrementCount() {
-        this.count++;
-    }
-
     public static String getInvalidCountExceptionMessage() {
         return String.format(INVALID_COUNT_MESSAGE, MIN_COUNT);
     }
@@ -56,9 +52,5 @@ public class Count {
 
     public static Count defaultCount() {
         return new Count(MIN_COUNT);
-    }
-
-    public void decrementCount() {
-        this.count--;
     }
 }
