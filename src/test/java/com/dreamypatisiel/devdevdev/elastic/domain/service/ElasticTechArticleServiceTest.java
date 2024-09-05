@@ -668,7 +668,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         // when
         SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable,
                 null,
-                TechArticleSort.LATEST, null, COMPANY_ID, null);
+                TechArticleSort.LATEST, null, company.getId(), null);
         List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream().map(SearchHit::getContent)
                 .toList();
 
@@ -676,7 +676,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThat(elasticTechArticles)
                 .hasSize(pageable.getPageSize())
                 .allSatisfy(article -> {
-                    assertThat(article.getCompanyId()).isEqualTo(COMPANY_ID);
+                    assertThat(article.getCompanyId()).isEqualTo(company.getId());
                 })
                 .extracting(ElasticTechArticle::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder());
@@ -691,7 +691,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         // when
         SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable,
                 null,
-                TechArticleSort.MOST_VIEWED, null, COMPANY_ID, null);
+                TechArticleSort.MOST_VIEWED, null, company.getId(), null);
         List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream().map(SearchHit::getContent)
                 .toList();
 
@@ -699,7 +699,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThat(elasticTechArticles)
                 .hasSize(pageable.getPageSize())
                 .allSatisfy(article -> {
-                    assertThat(article.getCompanyId()).isEqualTo(COMPANY_ID);
+                    assertThat(article.getCompanyId()).isEqualTo(company.getId());
                 })
                 .extracting(ElasticTechArticle::getViewTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder());
@@ -714,7 +714,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         // when
         SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable,
                 null,
-                TechArticleSort.MOST_COMMENTED, null, COMPANY_ID, null);
+                TechArticleSort.MOST_COMMENTED, null, company.getId(), null);
         List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream().map(SearchHit::getContent)
                 .toList();
 
@@ -722,7 +722,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThat(elasticTechArticles)
                 .hasSize(pageable.getPageSize())
                 .allSatisfy(article -> {
-                    assertThat(article.getCompanyId()).isEqualTo(COMPANY_ID);
+                    assertThat(article.getCompanyId()).isEqualTo(company.getId());
                 })
                 .extracting(ElasticTechArticle::getCommentTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder());
@@ -737,7 +737,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         // when
         SearchHits<ElasticTechArticle> techArticles = elasticTechArticleService.getTechArticles(pageable,
                 null,
-                TechArticleSort.POPULAR, null, COMPANY_ID, null);
+                TechArticleSort.POPULAR, null, company.getId(), null);
         List<ElasticTechArticle> elasticTechArticles = techArticles.getSearchHits().stream().map(SearchHit::getContent)
                 .toList();
 
@@ -745,7 +745,7 @@ public class ElasticTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThat(elasticTechArticles)
                 .hasSize(pageable.getPageSize())
                 .allSatisfy(article -> {
-                    assertThat(article.getCompanyId()).isEqualTo(COMPANY_ID);
+                    assertThat(article.getCompanyId()).isEqualTo(company.getId());
                 })
                 .extracting(ElasticTechArticle::getPopularScore)
                 .isSortedAccordingTo(Comparator.reverseOrder());

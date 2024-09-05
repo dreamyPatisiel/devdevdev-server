@@ -134,4 +134,12 @@ public class TechArticle extends BasicTime {
     private Count calculatePopularScore(TechArticlePopularScorePolicy policy) {
         return policy.calculatePopularScore(this);
     }
+
+    public void incrementCommentCount() {
+        this.commentTotalCount.incrementCount();
+    }
+
+    public void decrementCommentCount() {
+        this.commentTotalCount.decrementCount();
+    }
 }

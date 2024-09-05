@@ -1,27 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.JsonFieldType.STRING;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -32,19 +10,15 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechReplyRequest;
 import com.dreamypatisiel.devdevdev.web.response.ResultType;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,6 +28,25 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+
+import java.nio.charset.StandardCharsets;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.JsonFieldType.STRING;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class TechArticleCommentControllerDocsTest extends SupportControllerDocsTest {
 
@@ -64,13 +57,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     CompanyRepository companyRepository;
 
     @Autowired
-    ElasticTechArticleRepository elasticTechArticleRepository;
-
-    @Autowired
     MemberRepository memberRepository;
-
-    @Autowired
-    BookmarkRepository bookmarkRepository;
 
     @Autowired
     TechCommentRepository techCommentRepository;
@@ -83,9 +70,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         company = companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long id = techArticle.getId();
 
@@ -331,7 +316,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -393,7 +378,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -496,7 +481,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -551,7 +536,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.create(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when // then
@@ -600,26 +585,30 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        TechComment techComment = TechComment.create(new CommentContents("댓글입니다."), member, techArticle);
-        techCommentRepository.save(techComment);
-        Long techCommentId = techComment.getId();
+        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(originParentTechComment);
+        Long originParentTechCommentId = originParentTechComment.getId();
 
-        RegisterTechReplyRequest registerTechReplyRequest = new RegisterTechReplyRequest("답글입니다.");
+        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member, techArticle);
+        techCommentRepository.save(parentTechComment);
+        Long parentTechCommentId = parentTechComment.getId();
+
+        RegisterTechCommentRequest registerRepliedTechCommentRequest = new RegisterTechCommentRequest("답글에 대한 답글입니다.");
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/replies",
-                                techArticleId, techCommentId)
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}",
+                                techArticleId, originParentTechCommentId, parentTechCommentId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                                .content(om.writeValueAsString(registerTechReplyRequest)))
+                                .content(om.writeValueAsString(registerRepliedTechCommentRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data").isMap())
-                .andExpect(jsonPath("$.data.techReplyId").isNumber());
+                .andExpect(jsonPath("$.data.techCommentId").isNumber());
 
         // Docs
         actions.andDo(document("register-tech-article-reply",
@@ -630,15 +619,16 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디"),
-                        parameterWithName("techCommentId").description("기술블로그 댓글 아이디")
+                        parameterWithName("originParentTechCommentId").description("기술블로그 최상단 댓글 아이디"),
+                        parameterWithName("parentTechCommentId").description("기술블로그 답글 대상의 댓글 아이디")
                 ),
                 requestFields(
-                        fieldWithPath("contents").type(STRING).description("기술블로그 답글 내용(최소 1자 이상 최대 1,000자 이하)")
+                        fieldWithPath("contents").type(STRING).description("기술블로그 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
-                        fieldWithPath("data.techReplyId").type(JsonFieldType.NUMBER).description("기술블로그 답글 아이디")
+                        fieldWithPath("data.techCommentId").type(JsonFieldType.NUMBER).description("기술블로그 댓글 아이디")
                 )
         ));
     }
@@ -662,14 +652,18 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long techArticleId = savedTechArticle.getId();
 
-        TechComment techComment = TechComment.create(new CommentContents("댓글입니다."), member, techArticle);
-        techCommentRepository.save(techComment);
-        Long techCommentId = techComment.getId();
+        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(originParentTechComment);
+        Long originParentTechCommentId = originParentTechComment.getId();
+
+        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member, techArticle);
+        techCommentRepository.save(parentTechComment);
+        Long parentTechCommentId = parentTechComment.getId();
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/replies",
-                                techArticleId, techCommentId)
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}",
+                                techArticleId, originParentTechCommentId, parentTechCommentId)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .characterEncoding(StandardCharsets.UTF_8)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -686,7 +680,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessResponse(prettyPrint()),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디"),
-                        parameterWithName("techCommentId").description("기술블로그 댓글 아이디")
+                        parameterWithName("originParentTechCommentId").description("기술블로그 최상단 댓글 아이디"),
+                        parameterWithName("parentTechCommentId").description("기술블로그 답글 대상의 댓글 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),

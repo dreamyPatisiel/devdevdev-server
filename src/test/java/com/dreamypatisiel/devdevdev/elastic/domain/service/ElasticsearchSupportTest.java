@@ -9,10 +9,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,33 +24,31 @@ import org.springframework.transaction.annotation.Transactional;
 public class ElasticsearchSupportTest {
 
     public static final int TEST_ARTICLES_COUNT = 20;
-    public static Long FIRST_TECH_ARTICLE_ID;
     public static TechArticle firstTechArticle;
-    public static Long COMPANY_ID;
     public static Company company;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
-
         company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
 
-        company = companyRepository.save(company);
-
+        // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
+        LocalDate baseDate = LocalDate.of(2024, 8, 30);
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
         for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀" + i,
-                    i > 1 ? createRandomDate() : LocalDate.of(2024, 3, 11), "내용",
-                    "http://example.com/" + i, "설명", "http://example.com/", "작성자",
-                    company.getName().getCompanyName(), company.getId(), (long) i, (long) i,
-                    (long) i,
-                    (long) i * 10);
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀_" + i,
+                    baseDate.minusDays(i), "내용", "http://example.com/" + i, "설명", "http://example.com/", "작성자",
+                    company.getName().getCompanyName(), company.getId(), (long) TEST_ARTICLES_COUNT - i,
+                    (long) TEST_ARTICLES_COUNT - i, (long) TEST_ARTICLES_COUNT - i,
+                    (long) (TEST_ARTICLES_COUNT - i) * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
 
+        // 엘라스틱 기술블로그를 토대로 RDB 기술블로그 데이터를 생성한다.
         List<TechArticle> techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
             TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
@@ -60,8 +56,6 @@ public class ElasticsearchSupportTest {
         }
         List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
         firstTechArticle = savedTechArticles.getFirst();
-        FIRST_TECH_ARTICLE_ID = firstTechArticle.getId();
-        COMPANY_ID = company.getId();
     }
 
     @AfterAll
@@ -71,25 +65,12 @@ public class ElasticsearchSupportTest {
         techArticleRepository.deleteAllInBatch();
     }
 
-    private static LocalDate createRandomDate() {
-        LocalDate startDate = LocalDate.of(2024, 1, 1);
-        LocalDate endDate = LocalDate.of(2024, 3, 10);
-
-        // 시작 날짜와 종료 날짜 사이의 차이 중 랜덤한 일 수 선택
-        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-        long randomDays = ThreadLocalRandom.current().nextLong(daysBetween + 1);
-
-        return startDate.plusDays(randomDays);
-    }
-
     private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
-                                                               String contents,
-                                                               String techArticleUrl,
+                                                               String contents, String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
                                                                String company, Long companyId,
                                                                Long viewTotalCount, Long recommendTotalCount,
-                                                               Long commentTotalCount,
-                                                               Long popularScore) {
+                                                               Long commentTotalCount, Long popularScore) {
         return ElasticTechArticle.builder()
                 .id(id)
                 .title(title)

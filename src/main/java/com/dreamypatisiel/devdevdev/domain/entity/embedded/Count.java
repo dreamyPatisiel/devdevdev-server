@@ -64,4 +64,8 @@ public class Count {
     public static Count defaultCount() {
         return new Count(MIN_COUNT);
     }
+
+    public void decrementCount() {
+        this.count--;
+    }
 }

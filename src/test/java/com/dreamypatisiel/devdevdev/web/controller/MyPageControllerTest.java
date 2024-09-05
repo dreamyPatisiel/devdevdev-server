@@ -88,7 +88,8 @@ import org.springframework.test.web.servlet.ResultActions;
 
 class MyPageControllerTest extends SupportControllerTest {
 
-    private static Long FIRST_TECH_ARTICLE_ID;
+    private static final int TEST_ARTICLES_COUNT = 20;
+    private static List<TechArticle> techArticles;
 
     @Autowired
     TechArticleRepository techArticleRepository;
@@ -117,31 +118,34 @@ class MyPageControllerTest extends SupportControllerTest {
     @Autowired
     EntityManager em;
 
-    private static List<TechArticle> techArticles;
-
     @BeforeAll
-    static void setup(@Autowired CompanyRepository companyRepository,
-                      @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
-                      @Autowired TechArticleRepository techArticleRepository) {
+    static void setup(@Autowired TechArticleRepository techArticleRepository,
+                      @Autowired CompanyRepository companyRepository,
+                      @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
+
+        // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
+        LocalDate baseDate = LocalDate.of(2024, 8, 30);
         List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 1; i <= 20; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("타이틀" + i, createRandomDate(), "내용",
-                    "http://example.com/" + i, "설명", "http://example.com/", "작성자", "DP", (long) i, (long) i, (long) i,
-                    (long) i * 10);
+        for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
+            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀_" + i,
+                    baseDate.minusDays(i), "내용", "http://example.com/" + i, "설명", "http://example.com/", "작성자",
+                    company.getName().getCompanyName(), company.getId(), (long) TEST_ARTICLES_COUNT - i,
+                    (long) TEST_ARTICLES_COUNT - i, (long) TEST_ARTICLES_COUNT - i,
+                    (long) (TEST_ARTICLES_COUNT - i) * 10);
             elasticTechArticles.add(elasticTechArticle);
         }
         Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
                 elasticTechArticles);
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        companyRepository.save(company);
 
+        // 엘라스틱 기술블로그를 토대로 RDB 기술블로그 데이터를 생성한다.
         techArticles = new ArrayList<>();
         for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
             TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
             techArticles.add(techArticle);
         }
-        List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
-        FIRST_TECH_ARTICLE_ID = savedTechArticles.getFirst().getId();
+        techArticleRepository.saveAll(techArticles);
     }
 
     @AfterAll
@@ -227,8 +231,6 @@ class MyPageControllerTest extends SupportControllerTest {
     @Test
     @DisplayName("회원이 기술블로그 북마크 목록을 조회할 때 회원이 없으면 예외가 발생한다.")
     void getBookmarkedTechArticlesNotFoundMemberException() throws Exception {
-        // given
-        Long id = FIRST_TECH_ARTICLE_ID;
         // given
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -859,14 +861,14 @@ class MyPageControllerTest extends SupportControllerTest {
         return startDate.plusDays(randomDays);
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String title, LocalDate regDate, String contents,
-                                                               String techArticleUrl,
+    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
+                                                               String contents, String techArticleUrl,
                                                                String description, String thumbnailUrl, String author,
-                                                               String company,
+                                                               String company, Long companyId,
                                                                Long viewTotalCount, Long recommendTotalCount,
-                                                               Long commentTotalCount,
-                                                               Long popularScore) {
+                                                               Long commentTotalCount, Long popularScore) {
         return ElasticTechArticle.builder()
+                .id(id)
                 .title(title)
                 .regDate(regDate)
                 .contents(contents)
@@ -875,6 +877,7 @@ class MyPageControllerTest extends SupportControllerTest {
                 .thumbnailUrl(thumbnailUrl)
                 .author(author)
                 .company(company)
+                .companyId(companyId)
                 .viewTotalCount(viewTotalCount)
                 .recommendTotalCount(recommendTotalCount)
                 .commentTotalCount(commentTotalCount)
