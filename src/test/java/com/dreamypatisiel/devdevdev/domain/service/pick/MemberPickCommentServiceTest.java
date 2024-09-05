@@ -2179,9 +2179,6 @@ class MemberPickCommentServiceTest {
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort, null);
 
-        em.flush();
-        em.flush();
-
         // then
         // 최상위 댓글 검증
         assertThat(response).hasSize(5)
@@ -2430,9 +2427,6 @@ class MemberPickCommentServiceTest {
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.firstPickOption);
 
-        em.flush();
-        em.flush();
-
         // then
         // 최상위 댓글 검증
         assertThat(response).hasSize(2)
@@ -2621,9 +2615,6 @@ class MemberPickCommentServiceTest {
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption);
-
-        em.flush();
-        em.flush();
 
         // then
         // 최상위 댓글 검증
