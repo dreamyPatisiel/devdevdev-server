@@ -80,7 +80,7 @@ public class TechComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @Builder
-    public TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
+    private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
                        TechComment parent, TechComment originParent, Member createdBy, Member deletedBy,
                        TechArticle techArticle, LocalDateTime deletedAt) {
         this.contents = contents;
@@ -132,11 +132,14 @@ public class TechComment extends BasicTime {
         return deletedAt != null;
     }
 
-    public void incrementReplyTotalCount() {
-        this.replyTotalCount.incrementCount();
+    public void plusOneReplyTotalCount() {
+        this.replyTotalCount = Count.plusOne(this.replyTotalCount);
     }
 
-    public void decrementReplyTotalCount() {
-        this.replyTotalCount.decrementCount();
+    public void minusOneReplyTotalCount() {
+        this.replyTotalCount = Count.minusOne(this.replyTotalCount);
     }
-}
+
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
+    }}
