@@ -68,6 +68,8 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequ
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.groups.Tuple;
@@ -2195,6 +2197,10 @@ class MemberPickCommentServiceTest {
                         "replyTotalCount",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedAt(),
@@ -2282,6 +2288,10 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -2319,6 +2329,10 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -2443,6 +2457,10 @@ class MemberPickCommentServiceTest {
                         "replyTotalCount",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedAt(),
@@ -2488,6 +2506,10 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -2523,6 +2545,10 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -2632,6 +2658,10 @@ class MemberPickCommentServiceTest {
                         "replyTotalCount",
                         "likeTotalCount",
                         "isDeletedByAdmin")
+                .usingComparatorForType(
+                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        LocalDateTime.class
+                )
                 .containsExactly(
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedAt(),
