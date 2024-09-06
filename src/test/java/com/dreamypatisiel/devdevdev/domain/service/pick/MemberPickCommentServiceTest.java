@@ -68,8 +68,6 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequ
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.assertj.core.groups.Tuple;
@@ -2198,7 +2196,9 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
@@ -2289,13 +2289,16 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
-                                pickReply1.getOriginParent().getId(), pickReply1.getCreatedAt(),
+                                pickReply1.getOriginParent().getId(),
+                                pickReply1.getCreatedAt(),
                                 true,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
@@ -2305,7 +2308,8 @@ class MemberPickCommentServiceTest {
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
-                                pickReply2.getOriginParent().getId(), pickReply2.getCreatedAt(),
+                                pickReply2.getOriginParent().getId(),
+                                pickReply2.getCreatedAt(),
                                 false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
@@ -2330,7 +2334,9 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
@@ -2458,7 +2464,9 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
@@ -2507,13 +2515,17 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
-                                pickReply1.getOriginParent().getId(), pickReply1.getCreatedAt(), true,
+                                pickReply1.getOriginParent().getId(),
+                                pickReply1.getCreatedAt(),
+                                true,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
@@ -2522,7 +2534,9 @@ class MemberPickCommentServiceTest {
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
-                                pickReply2.getOriginParent().getId(), pickReply2.getCreatedAt(), false,
+                                pickReply2.getOriginParent().getId(),
+                                pickReply2.getCreatedAt(),
+                                false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
                                 pickReply2.getContents().getCommentContents(),
@@ -2546,7 +2560,9 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
@@ -2659,7 +2675,9 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeletedByAdmin")
                 .usingComparatorForType(
-                        Comparator.comparing((LocalDateTime actual) -> actual.truncatedTo(ChronoUnit.MILLIS)),
+                        (LocalDateTime actual, LocalDateTime expected) ->
+                                actual.isBefore(expected.plusSeconds(1)) && actual.isAfter(expected.minusSeconds(1)) ? 0
+                                        : actual.compareTo(expected),
                         LocalDateTime.class
                 )
                 .containsExactly(
