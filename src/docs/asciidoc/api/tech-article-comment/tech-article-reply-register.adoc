@@ -1,5 +1,5 @@
 [[Tech-Article-Reply-Register]]
-== 기술블로그 답글 작성 API(POST: /devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/replies)
+== 기술블로그 답글 작성 API(POST: /devdevdev/api/v1/articles/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}
 
 * 회원은 기술블로그에 댓글에 답글을 작성할 수 있다.
 * 익명회원은 답글을 작성할 수 없다.

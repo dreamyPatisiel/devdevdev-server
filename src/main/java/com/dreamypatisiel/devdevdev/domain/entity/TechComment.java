@@ -50,6 +50,21 @@ public class TechComment extends BasicTime {
     )
     private Count recommendTotalCount;
 
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "reply_total_count", columnDefinition = "bigint default 0")
+    )
+    private Count replyTotalCount;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    private TechComment parent;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "origin_parent_id", referencedColumnName = "id")
+    private TechComment originParent;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
     private Member createdBy;
@@ -65,23 +80,42 @@ public class TechComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @Builder
-    private TechComment(Long id, CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
-                        Member createdBy, TechArticle techArticle) {
-        this.id = id;
+    private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
+                       TechComment parent, TechComment originParent, Member createdBy, Member deletedBy,
+                       TechArticle techArticle, LocalDateTime deletedAt) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
+        this.replyTotalCount = replyTotalCount;
+        this.parent = parent;
+        this.originParent = originParent;
         this.createdBy = createdBy;
+        this.deletedBy = deletedBy;
         this.techArticle = techArticle;
+        this.deletedAt = deletedAt;
     }
 
-    public static TechComment create(CommentContents contents, Member createdBy, TechArticle techArticle) {
+    public static TechComment createMainTechComment(CommentContents contents, Member createdBy, TechArticle techArticle) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
                 .techArticle(techArticle)
                 .blameTotalCount(Count.defaultCount())
                 .recommendTotalCount(Count.defaultCount())
+                .replyTotalCount(Count.defaultCount())
+                .build();
+    }
+
+    public static TechComment createRepliedTechComment(CommentContents contents, Member createdBy, TechArticle techArticle, TechComment originParent, TechComment parent) {
+        return TechComment.builder()
+                .contents(contents)
+                .createdBy(createdBy)
+                .techArticle(techArticle)
+                .blameTotalCount(Count.defaultCount())
+                .recommendTotalCount(Count.defaultCount())
+                .replyTotalCount(Count.defaultCount())
+                .originParent(originParent)
+                .parent(parent)
                 .build();
     }
 
@@ -97,4 +131,15 @@ public class TechComment extends BasicTime {
     public boolean isDeleted() {
         return deletedAt != null;
     }
-}
+
+    public void plusOneReplyTotalCount() {
+        this.replyTotalCount = Count.plusOne(this.replyTotalCount);
+    }
+
+    public void minusOneReplyTotalCount() {
+        this.replyTotalCount = Count.minusOne(this.replyTotalCount);
+    }
+
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
+    }}
