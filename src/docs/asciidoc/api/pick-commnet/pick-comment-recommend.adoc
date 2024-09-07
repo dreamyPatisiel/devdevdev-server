@@ -1,0 +1,40 @@
+[[Pick-Comment-Recommend]]
+== 픽픽픽 댓글/답글 추천 API(POST: /picks/{pickId}/comments/{pickCommentId}/recommends)
+
+* 픽픽픽 댓글/답글을 추천한다.
+* 회원만 픽픽픽 추천 할 수 있다.
+* 이미 추천한 경우 추천이 취소 된다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/recommend-pick-comment/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/recommend-pick-comment/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/recommend-pick-comment/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/recommend-pick-comment/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/recommend-pick-comment/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `픽픽픽 댓글이 없습니다.`: 픽픽픽 댓글/답글이 존재하지 않는 경우
+* `승인 상태가 아닌 픽픽픽에는 댓글을 추천할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
+* `삭제된 픽픽픽 댓글에는 추천할 수 없습니다.`: 픽픽픽 댓글/답글이 삭제된 경우
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+
+include::{snippets}/recommend-pick-comment-exception/response-body.adoc[]
