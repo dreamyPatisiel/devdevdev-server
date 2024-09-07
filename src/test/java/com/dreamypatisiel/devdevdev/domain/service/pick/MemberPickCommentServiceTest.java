@@ -2681,12 +2681,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // then
-        assertThat(response.getRecommendStatus()).isTrue();
-
-        // 픽픽픽 댓글 추천 갯수 검증
-        PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
-        assertThat(findPickComment.getRecommendTotalCount().getCount()).isGreaterThan(
-                pickComment.getRecommendTotalCount().getCount());
+        assertAll(
+                () -> assertThat(response.getRecommendStatus()).isTrue(),
+                () -> assertThat(response.getRecommendTotalCount()).isEqualTo(1L)
+        );
     }
 
     @Test
@@ -2728,12 +2726,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // then
-        assertThat(response.getRecommendStatus()).isFalse();
-
-        // 픽픽픽 댓글 추천 갯수 검증
-        PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
-        assertThat(findPickComment.getRecommendTotalCount().getCount()).isLessThan(
-                pickComment.getRecommendTotalCount().getCount());
+        assertAll(
+                () -> assertThat(response.getRecommendStatus()).isFalse(),
+                () -> assertThat(response.getRecommendTotalCount()).isEqualTo(0L)
+        );
     }
 
     @Test

@@ -373,7 +373,7 @@ public class MemberPickCommentService {
             // 총 추천 갯수 감소
             pickComment.decrementRecommendTotalCount();
 
-            return new PickCommentRecommendResponse(false);
+            return new PickCommentRecommendResponse(false, pickComment.getRecommendTotalCount().getCount());
         }
 
         // 추천
@@ -383,7 +383,7 @@ public class MemberPickCommentService {
         // 총 추천 갯수 증가
         pickComment.incrementRecommendTotalCount();
 
-        return new PickCommentRecommendResponse(true);
+        return new PickCommentRecommendResponse(true, pickComment.getRecommendTotalCount().getCount());
     }
 
     /**
