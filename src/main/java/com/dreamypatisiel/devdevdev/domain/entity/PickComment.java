@@ -173,8 +173,16 @@ public class PickComment extends BasicTime {
         return this.id.equals(id);
     }
 
-    public void plusOneReplyTotalCount() {
+    public void incrementReplyTotalCount() {
         this.replyTotalCount = Count.plusOne(this.replyTotalCount);
+    }
+
+    public void incrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.plusOne(this.recommendTotalCount);
+    }
+
+    public void decrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.minusOne(this.recommendTotalCount);
     }
 
     public boolean isVotePrivate() {

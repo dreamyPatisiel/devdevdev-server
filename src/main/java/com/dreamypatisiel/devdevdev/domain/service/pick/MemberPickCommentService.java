@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
@@ -11,16 +12,19 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickReply;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickReplyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickRepliedCommentsResponse;
@@ -37,6 +41,7 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepl
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +60,7 @@ public class MemberPickCommentService {
     public static final String MODIFY = "수정";
     public static final String REGISTER = "작성";
     public static final String DELETE = "삭제";
+    public static final String RECOMMEND = "추천";
 
     private final TimeProvider timeProvider;
     private final MemberProvider memberProvider;
@@ -62,6 +68,7 @@ public class MemberPickCommentService {
     private final PickVoteRepository pickVoteRepository;
     private final PickCommentRepository pickCommentRepository;
     private final PickReplyRepository pickReplyRepository;
+    private final PickCommentRecommendRepository pickCommentRecommendRepository;
 
     /**
      * @Note: 픽픽픽 메인 댓글을 작성한다.
@@ -142,7 +149,7 @@ public class MemberPickCommentService {
         PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
                 pickCommentOriginParentId, findParentPickComment);
         // 픽픽픽 최초 댓글의 답글 갯수 증가
-        findOriginParentPickComment.plusOneReplyTotalCount();
+        findOriginParentPickComment.incrementReplyTotalCount();
 
         // 픽픽픽 서브 댓글(답글) 생성
         PickComment pickRepliedComment = PickComment.createRepliedComment(new CommentContents(contents),
@@ -323,6 +330,60 @@ public class MemberPickCommentService {
                 .sorted((reply1, reply2) -> reply2.getCreatedAt().compareTo(reply1.getCreatedAt())) // 시간 내림차순으로
                 .map(PickRepliedCommentsResponse::from)
                 .toList();
+    }
+
+    /**
+     * @Note: 회원이 픽픽픽 댓글/답글에 추천한다.
+     * @Author: 장세웅
+     * @Since: 2024.09.07
+     */
+    @Transactional
+    public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
+                                                             Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 픽픽픽 댓글/답글 조회
+        PickComment findPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickCommendId, pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+
+        // 픽픽픽 검증
+        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE,
+                RECOMMEND);
+
+        // 픽픽픽 댓글/답글 검증
+        validateIsDeletedPickComment(findPickComment, INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE, RECOMMEND);
+
+        return togglePickCommentRecommend(findPickComment, findMember);
+    }
+
+    private PickCommentRecommendResponse togglePickCommentRecommend(PickComment pickComment,
+                                                                    Member member) {
+
+        // 픽픽픽 댓글/답글 추천 조회
+        Optional<PickCommentRecommend> optionalPickCommentRecommend = pickCommentRecommendRepository.findByPickCommentIdAndMemberId(
+                pickComment.getId(), member.getId());
+
+        // 댓글/답글에 추천이 존재하면
+        if (optionalPickCommentRecommend.isPresent()) {
+            // 추천 취소
+            PickCommentRecommend pickCommentRecommend = optionalPickCommentRecommend.get();
+            pickCommentRecommendRepository.delete(pickCommentRecommend);
+
+            // 총 추천 갯수 감소
+            pickComment.decrementRecommendTotalCount();
+
+            return new PickCommentRecommendResponse(false);
+        }
+
+        // 추천
+        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.create(pickComment, member);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        // 총 추천 갯수 증가
+        pickComment.incrementRecommendTotalCount();
+
+        return new PickCommentRecommendResponse(true);
     }
 
     /**
