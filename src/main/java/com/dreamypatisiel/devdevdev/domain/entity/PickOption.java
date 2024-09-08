@@ -5,7 +5,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.global.utils.BigDecimalUtils;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;

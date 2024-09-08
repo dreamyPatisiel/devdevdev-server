@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.service.response.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

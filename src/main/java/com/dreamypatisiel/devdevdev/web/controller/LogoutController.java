@@ -5,15 +5,12 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
-import com.dreamypatisiel.devdevdev.global.utils.UriUtils;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;

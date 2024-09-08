@@ -7,7 +7,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.limiter.TokenBucketResolver;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;

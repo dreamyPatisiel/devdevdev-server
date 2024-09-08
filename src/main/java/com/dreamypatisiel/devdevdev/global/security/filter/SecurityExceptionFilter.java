@@ -4,7 +4,7 @@ import com.dreamypatisiel.devdevdev.exception.JwtAccessDeniedException;
 import com.dreamypatisiel.devdevdev.exception.JwtAuthenticationException;
 import com.dreamypatisiel.devdevdev.exception.OAuth2LoginException;
 import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;

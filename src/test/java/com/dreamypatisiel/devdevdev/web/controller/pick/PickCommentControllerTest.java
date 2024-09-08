@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
-import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -36,10 +36,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepliedCommentRequest;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

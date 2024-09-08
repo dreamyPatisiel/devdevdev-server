@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.limiter.filter;
 import com.dreamypatisiel.devdevdev.limiter.LimiterPlan;
 import com.dreamypatisiel.devdevdev.limiter.TokenBucketResolver;
 import com.dreamypatisiel.devdevdev.limiter.exception.LimiterException;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

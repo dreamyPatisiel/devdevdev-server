@@ -16,9 +16,9 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
