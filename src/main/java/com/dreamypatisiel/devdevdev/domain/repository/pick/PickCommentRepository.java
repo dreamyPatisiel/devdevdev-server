@@ -1,11 +1,14 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.custom.PickCommentRepositoryCustom;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PickCommentRepository extends JpaRepository<PickComment, Long> {
+public interface PickCommentRepository extends JpaRepository<PickComment, Long>, PickCommentRepositoryCustom {
 
     @EntityGraph(attributePaths = {"pick"})
     Optional<PickComment> findWithPickByIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long pickId,
@@ -15,4 +18,8 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long> 
 
     @EntityGraph(attributePaths = {"pick"})
     Optional<PickComment> findWithPickByIdAndPickId(Long id, Long pickId);
+
+    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "pick", "pick.member"})
+    List<PickComment> findWithMemberWithPickWithPickVoteByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+            Set<Long> originParentIds);
 }

@@ -3,6 +3,8 @@ package com.dreamypatisiel.devdevdev.web.docs.format;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
@@ -67,5 +69,21 @@ public interface ApiDocsFormatGenerator {
                 .collect(Collectors.joining(COMMA));
 
         return key(FORMAT).value(contentStatusType);
+    }
+
+    static Attributes.Attribute pickCommentSortType() {
+        String pickCommentSortType = Arrays.stream(PickCommentSort.values())
+                .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
+                .collect(Collectors.joining(COMMA));
+
+        return key(FORMAT).value(pickCommentSortType);
+    }
+
+    static Attributes.Attribute pickOptionTypeType() {
+        String pickOptionTypeType = Arrays.stream(PickOptionType.values())
+                .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
+                .collect(Collectors.joining(COMMA));
+
+        return key(FORMAT).value(pickOptionTypeType + " | null");
     }
 }

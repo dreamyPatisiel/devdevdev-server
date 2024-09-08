@@ -174,6 +174,10 @@ public class Pick extends BasicTime {
         this.voteTotalCount = Count.plusOne(this.voteTotalCount);
     }
 
+    public void plusOneCommentTotalCount() {
+        this.commentTotalCount = Count.plusOne(this.commentTotalCount);
+    }
+
     public void minusVoteTotalCount() {
         this.voteTotalCount = Count.minusOne(this.voteTotalCount);
     }

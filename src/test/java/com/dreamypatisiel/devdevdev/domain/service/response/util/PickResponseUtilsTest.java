@@ -14,7 +14,7 @@ class PickResponseUtilsTest {
     @DisplayName("이메일 도메인을 제거하고 아이디를 마스킹 처리한다.")
     void sliceAndMaskEmail(String email, String expected) {
         // given // when
-        String result = PickResponseUtils.sliceAndMaskEmail(email);
+        String result = CommonResponseUtil.sliceAndMaskEmail(email);
 
         // then
         assertThat(result).isEqualTo(expected);

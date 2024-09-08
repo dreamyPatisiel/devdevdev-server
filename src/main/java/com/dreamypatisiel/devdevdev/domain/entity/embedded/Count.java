@@ -38,10 +38,17 @@ public class Count {
     }
 
     public static Count plusOne(Count count) {
+        if (count == null) {
+            count = Count.defaultCount();
+        }
         return new Count(count.getCount() + 1L);
     }
 
     public static Count minusOne(Count count) {
+        if (count == null) {
+            count = Count.defaultCount();
+        }
+        
         long result = count.getCount() - 1L;
         // 음수이면
         if (result < MIN_COUNT) {

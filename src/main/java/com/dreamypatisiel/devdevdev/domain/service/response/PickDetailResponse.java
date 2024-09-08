@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.service.response.util.CommonResponseUtil;
 import com.dreamypatisiel.devdevdev.domain.service.response.util.PickResponseUtils;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -43,7 +44,7 @@ public class PickDetailResponse {
     public static PickDetailResponse of(Pick pick, Member pickMember, Member member,
                                         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions) {
         return PickDetailResponse.builder()
-                .userId(PickResponseUtils.sliceAndMaskEmail(pickMember.getEmail().getEmail()))
+                .userId(CommonResponseUtil.sliceAndMaskEmail(pickMember.getEmail().getEmail()))
                 .nickname(pickMember.getNickname().getNickname())
                 .pickCreatedAt(pick.getCreatedAt())
                 .pickTitle(pick.getTitle().getTitle())
@@ -60,7 +61,7 @@ public class PickDetailResponse {
                 .isAuthor(false)
                 .pickCreatedAt(pick.getCreatedAt())
                 .nickname(pickMember.getNickname().getNickname())
-                .userId(PickResponseUtils.sliceAndMaskEmail(pickMember.getEmail().getEmail()))
+                .userId(CommonResponseUtil.sliceAndMaskEmail(pickMember.getEmail().getEmail()))
                 .pickTitle(pick.getTitle().getTitle())
                 .pickOptions(pickDetailOptions)
                 .isVoted(PickResponseUtils.isVotedAnonymousMember(pick, anonymousMember))

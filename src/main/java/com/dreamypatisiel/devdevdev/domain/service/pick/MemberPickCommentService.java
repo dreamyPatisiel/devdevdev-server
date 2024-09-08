@@ -15,12 +15,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickReply;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickReplyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentsResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.SliceCustom;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -29,10 +34,18 @@ import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyR
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -69,6 +82,8 @@ public class MemberPickCommentService {
         // 픽픽픽 조회
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+        // 댓글 갯수 증가
+        findPick.plusOneCommentTotalCount();
 
         // 픽픽픽 게시글의 승인 상태 검증
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
@@ -120,6 +135,8 @@ public class MemberPickCommentService {
         Pick findPick = findParentPickComment.getPick();
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
                 REGISTER);
+        // 댓글 총 갯수 증가
+        findPick.plusOneCommentTotalCount();
 
         // 픽픽픽 최초 댓글 검증 및 반환
         PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
@@ -128,11 +145,11 @@ public class MemberPickCommentService {
         findOriginParentPickComment.plusOneReplyTotalCount();
 
         // 픽픽픽 서브 댓글(답글) 생성
-        PickComment pickSubComment = PickComment.createRepliedComment(new CommentContents(contents),
+        PickComment pickRepliedComment = PickComment.createRepliedComment(new CommentContents(contents),
                 findParentPickComment, findOriginParentPickComment, findMember, findPick);
-        pickCommentRepository.save(pickSubComment);
+        pickCommentRepository.save(pickRepliedComment);
 
-        return new PickCommentResponse(pickSubComment.getId());
+        return new PickCommentResponse(pickRepliedComment.getId());
     }
 
     private PickComment getAndValidateOriginParentPickComment(Long pickCommentOriginParentId,
@@ -230,6 +247,82 @@ public class MemberPickCommentService {
         findPickComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
 
         return new PickCommentResponse(findPickComment.getId());
+    }
+
+
+    /**
+     * @Note: 정렬 조건에 따라서 커서 방식으로 픽픽픽 댓글/답글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2024.08.25
+     */
+    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                              Long pickCommentId, PickCommentSort pickCommentSort,
+                                                              PickOptionType pickOptionType) {
+
+        // 픽픽픽 최상위 댓글 조회
+        Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
+                pageable, pickId, pickCommentId, pickCommentSort, pickOptionType);
+
+        // 최상위 댓글 아이디 추출
+        List<PickComment> originParentPickComments = findOriginParentPickComments.getContent();
+        Set<Long> originParentIds = originParentPickComments.stream()
+                .map(PickComment::getId)
+                .collect(Collectors.toSet());
+
+        // 픽픽픽 최상위 댓글의 답글 조회(최상위 댓글의 아이디가 key)
+        Map<Long, List<PickComment>> pickCommentReplies = pickCommentRepository
+                .findWithMemberWithPickWithPickVoteByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+                        originParentIds).stream()
+                .collect(Collectors.groupingBy(pickCommentReply -> pickCommentReply.getOriginParent().getId()));
+
+        // 픽픽픽 댓글/답글 응답 생성
+        List<PickCommentsResponse> pickCommentsResponse = originParentPickComments.stream()
+                .map(originPickComment -> getPickCommentsResponse(originPickComment, pickCommentReplies))
+                .toList();
+
+        // 픽픽픽 최상위 댓글 추출
+        PickComment originParentPickComment = findOriginParentPickComments.getContent().stream()
+                .findFirst()
+                .orElseGet(() -> null);
+
+        // 댓글이 하나도 없으면
+        if (ObjectUtils.isEmpty(originParentPickComment)) {
+            return new SliceCustom<>(pickCommentsResponse, pageable, false, 0L);
+        }
+
+        // 픽픽픽 전체 댓글/답글 갯수 추출
+        long originParentPickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
+
+        return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
+                originParentPickCommentTotalCount);
+    }
+
+    private PickCommentsResponse getPickCommentsResponse(PickComment originPickComment,
+                                                         Map<Long, List<PickComment>> pickCommentReplies) {
+
+        // 최상위 댓글 아이디 추출
+        Long originPickCommentId = originPickComment.getId();
+
+        // 답글의 최상위 댓글이 존재하면
+        if (pickCommentReplies.containsKey(originPickCommentId)) {
+            // 답글 만들기
+            List<PickRepliedCommentsResponse> pickRepliedComments = getPickRepliedComments(
+                    pickCommentReplies, originPickCommentId);
+
+            // 답글이 존재하는 댓글 응답 생성
+            return PickCommentsResponse.from(originPickComment, pickRepliedComments);
+        }
+
+        // 답글이 없는 댓글 응답 생성
+        return PickCommentsResponse.from(originPickComment, Collections.emptyList());
+    }
+
+    private List<PickRepliedCommentsResponse> getPickRepliedComments(Map<Long, List<PickComment>> pickCommentReplies,
+                                                                     Long originPickCommentId) {
+        return pickCommentReplies.get(originPickCommentId).stream()
+                .sorted((reply1, reply2) -> reply2.getCreatedAt().compareTo(reply1.getCreatedAt())) // 시간 내림차순으로
+                .map(PickRepliedCommentsResponse::from)
+                .toList();
     }
 
     /**
