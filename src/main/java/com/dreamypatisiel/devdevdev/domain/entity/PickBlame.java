@@ -33,10 +33,6 @@ public class PickBlame extends BasicTime {
     private PickComment pickComment;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_reply_id", nullable = false)
-    private PickReply pickReply;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pick_id", nullable = false)
     private Pick pick;
 
