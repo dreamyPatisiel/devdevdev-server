@@ -1958,6 +1958,7 @@ class MemberPickCommentServiceTest {
         return PickCommentRecommend.builder()
                 .pickComment(pickComment)
                 .member(member)
+                .recommendedStatus(true)
                 .build();
     }
 
