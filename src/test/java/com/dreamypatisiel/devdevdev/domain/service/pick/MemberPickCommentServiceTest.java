@@ -43,18 +43,12 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageReposi
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
-import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
@@ -62,6 +56,12 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequ
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
@@ -1301,7 +1301,7 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
@@ -1382,7 +1382,7 @@ class MemberPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -1418,7 +1418,7 @@ class MemberPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -1540,7 +1540,7 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
@@ -1582,7 +1582,7 @@ class MemberPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -1618,7 +1618,7 @@ class MemberPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -1725,7 +1725,7 @@ class MemberPickCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeletedByAdmin")
+                        "isDeleted")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedBy().getId(),

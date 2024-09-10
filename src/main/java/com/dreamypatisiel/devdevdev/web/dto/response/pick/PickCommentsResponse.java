@@ -4,9 +4,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import java.time.LocalDateTime;
@@ -31,14 +31,14 @@ public class PickCommentsResponse {
     private String contents;
     private Long replyTotalCount;
     private Long likeTotalCount;
-    private Boolean isDeletedByAdmin;
+    private Boolean isDeleted;
     private List<PickRepliedCommentsResponse> replies;
 
     @Builder
     public PickCommentsResponse(Long pickCommentId, LocalDateTime createdAt, Long memberId, String author,
                                 Boolean isPickAuthor, String maskedEmail, PickOptionType votedPickOption,
                                 String votedPickOptionTitle, String contents, Long replyTotalCount,
-                                Long likeTotalCount, Boolean isDeletedByAdmin,
+                                Long likeTotalCount, Boolean isDeleted,
                                 List<PickRepliedCommentsResponse> replies) {
         this.pickCommentId = pickCommentId;
         this.createdAt = createdAt;
@@ -51,7 +51,7 @@ public class PickCommentsResponse {
         this.contents = contents;
         this.replyTotalCount = replyTotalCount;
         this.likeTotalCount = likeTotalCount;
-        this.isDeletedByAdmin = isDeletedByAdmin;
+        this.isDeleted = isDeleted;
         this.replies = replies;
     }
 
@@ -71,7 +71,7 @@ public class PickCommentsResponse {
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())
                 .likeTotalCount(originParentPickComment.getRecommendTotalCount().getCount())
-                .isDeletedByAdmin(CommentResponseUtil.isDeletedByAdmin(originParentPickComment))
+                .isDeleted(originParentPickComment.isDeleted())
                 .replies(replies);
 
         // 회원이 픽픽픽 투표를 안했거나, 투표 비공개일 경우

@@ -2,7 +2,6 @@ package com.dreamypatisiel.devdevdev.web.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.util.List;
 import lombok.Data;
 
@@ -44,8 +43,8 @@ public class BasicResponse<T> {
         return new BasicResponse<>(ResultType.SUCCESS, data);
     }
 
-    public static <T> BasicResponse<T> success(List<T> data) {
-        return new BasicResponse<>(ResultType.SUCCESS, data);
+    public static <T> BasicResponse<T> success(List<T> datas) {
+        return new BasicResponse<>(ResultType.SUCCESS, datas);
     }
 
     public static <T> BasicResponse<T> fail(String message, int errorCode) {

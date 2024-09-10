@@ -2,9 +2,9 @@ package com.dreamypatisiel.devdevdev.web.dto.response.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import java.time.LocalDateTime;
@@ -26,13 +26,13 @@ public class PickRepliedCommentsResponse {
     private String maskedEmail;
     private String contents;
     private Long likeTotalCount;
-    private Boolean isDeletedByAdmin;
+    private Boolean isDeleted;
 
     @Builder
     public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long pickCommentParentId,
                                        Long pickCommentOriginParentId, LocalDateTime createdAt, Boolean isPickAuthor,
                                        String author, String maskedEmail, String contents, Long likeTotalCount,
-                                       Boolean isDeletedByAdmin) {
+                                       Boolean isDeleted) {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
         this.pickCommentParentId = pickCommentParentId;
@@ -43,7 +43,7 @@ public class PickRepliedCommentsResponse {
         this.maskedEmail = maskedEmail;
         this.contents = contents;
         this.likeTotalCount = likeTotalCount;
-        this.isDeletedByAdmin = isDeletedByAdmin;
+        this.isDeleted = isDeleted;
     }
 
     public static PickRepliedCommentsResponse from(PickComment repliedPickComment) {
@@ -61,7 +61,7 @@ public class PickRepliedCommentsResponse {
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
                 .likeTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
-                .isDeletedByAdmin(CommentResponseUtil.isDeletedByAdmin(repliedPickComment))
+                .isDeleted(repliedPickComment.isDeleted())
                 .build();
     }
 }
