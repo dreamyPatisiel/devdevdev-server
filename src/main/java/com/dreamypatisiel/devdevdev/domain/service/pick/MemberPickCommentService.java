@@ -90,7 +90,7 @@ public class MemberPickCommentService {
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
         // 댓글 갯수 증가
-        findPick.plusOneCommentTotalCount();
+        findPick.incrementCommentTotalCount();
 
         // 픽픽픽 게시글의 승인 상태 검증
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
@@ -143,7 +143,7 @@ public class MemberPickCommentService {
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
                 REGISTER);
         // 댓글 총 갯수 증가
-        findPick.plusOneCommentTotalCount();
+        findPick.incrementCommentTotalCount();
 
         // 픽픽픽 최초 댓글 검증 및 반환
         PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
@@ -333,7 +333,7 @@ public class MemberPickCommentService {
     }
 
     /**
-     * @Note: 회원이 픽픽픽 댓글/답글에 추천한다.
+     * @Note: 회원이 픽픽픽 댓글/답글에 추천한다. 이미 추천 상태이면 취소한다.(소프트 삭제)
      * @Author: 장세웅
      * @Since: 2024.09.07
      */
@@ -368,12 +368,13 @@ public class MemberPickCommentService {
         if (optionalPickCommentRecommend.isPresent()) {
             // 추천 취소
             PickCommentRecommend pickCommentRecommend = optionalPickCommentRecommend.get();
-            pickCommentRecommendRepository.delete(pickCommentRecommend);
+            pickCommentRecommend.cancelRecommend();
 
             // 총 추천 갯수 감소
             pickComment.decrementRecommendTotalCount();
 
-            return new PickCommentRecommendResponse(false, pickComment.getRecommendTotalCount().getCount());
+            return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
+                    pickComment.getRecommendTotalCount().getCount());
         }
 
         // 추천
@@ -383,7 +384,8 @@ public class MemberPickCommentService {
         // 총 추천 갯수 증가
         pickComment.incrementRecommendTotalCount();
 
-        return new PickCommentRecommendResponse(true, pickComment.getRecommendTotalCount().getCount());
+        return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
+                pickComment.getRecommendTotalCount().getCount());
     }
 
     /**

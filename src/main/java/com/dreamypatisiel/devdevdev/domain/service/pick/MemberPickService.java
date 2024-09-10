@@ -355,7 +355,7 @@ public class MemberPickService extends PickCommonService implements PickService 
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 픽픽픽 전체 득표수 증가
-        findPick.plusOneVoteTotalCount();
+        findPick.incrementVoteTotalCount();
 
         // 데이터 가공 및 로직 수행
         List<VotePickOptionResponse> votePickOptionResponses = findPick.getPickOptions().stream()

@@ -117,7 +117,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 추천", description = "회원은 픽픽픽 댓글/답글에 추천을 할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글/답글 추천/추천 취소", description = "회원은 픽픽픽 댓글/답글에 추천을 할 수 있습니다.(이미 추천한 경우 추천 취소)")
     @PostMapping("/picks/{pickId}/comments/{pickCommentId}/recommends")
     public ResponseEntity<BasicResponse<PickCommentRecommendResponse>> recommendPickComment(
             @PathVariable Long pickId,
