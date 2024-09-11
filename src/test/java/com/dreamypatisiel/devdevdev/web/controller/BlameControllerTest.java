@@ -24,7 +24,6 @@ public class BlameControllerTest extends SupportControllerTest {
     @Autowired
     BlameRepository blameRepository;
 
-
     @Test
     @DisplayName("회원이 신고사유를 조회한다.")
     void getBlames() throws Exception {
