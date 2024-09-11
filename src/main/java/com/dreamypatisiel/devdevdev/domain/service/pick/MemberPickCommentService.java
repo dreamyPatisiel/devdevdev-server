@@ -18,6 +18,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
@@ -64,6 +65,8 @@ public class MemberPickCommentService {
 
     private final TimeProvider timeProvider;
     private final MemberProvider memberProvider;
+    private final PickPopularScorePolicy pickPopularScorePolicy;
+
     private final PickRepository pickRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickCommentRepository pickCommentRepository;
@@ -89,8 +92,9 @@ public class MemberPickCommentService {
         // 픽픽픽 조회
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
-        // 댓글 갯수 증가
+        // 댓글 갯수 증가 및 인기점수 반영
         findPick.incrementCommentTotalCount();
+        findPick.changePopularScore(pickPopularScorePolicy);
 
         // 픽픽픽 게시글의 승인 상태 검증
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
@@ -142,8 +146,9 @@ public class MemberPickCommentService {
         Pick findPick = findParentPickComment.getPick();
         validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
                 REGISTER);
-        // 댓글 총 갯수 증가
+        // 댓글 총 갯수 증가 및 인기점수 반영
         findPick.incrementCommentTotalCount();
+        findPick.changePopularScore(pickPopularScorePolicy);
 
         // 픽픽픽 최초 댓글 검증 및 반환
         PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
