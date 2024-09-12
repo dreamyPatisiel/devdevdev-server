@@ -97,7 +97,8 @@ class PickCommentControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), new Count(0L), new Count(0L), new Count(0L), new Count(0L),
+                ContentStatus.APPROVAL, member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -252,7 +253,8 @@ class PickCommentControllerTest extends SupportControllerTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), new Count(0L), new Count(0L), new Count(0L), new Count(0L),
+                ContentStatus.APPROVAL, author);
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -947,6 +949,19 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,
+                            Count poplarScore, ContentStatus contentStatus, Member member) {
+        return Pick.builder()
+                .title(title)
+                .viewTotalCount(viewTotalCount)
+                .voteTotalCount(voteTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(poplarScore)
+                .contentStatus(contentStatus)
+                .member(member)
+                .build();
     }
 
     private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count recommendTotalCount,
