@@ -150,7 +150,8 @@ class MemberPickCommentServiceTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), author);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -217,7 +218,8 @@ class MemberPickCommentServiceTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), author);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -333,7 +335,8 @@ class MemberPickCommentServiceTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, new Count(0L), new Count(0L), new Count(0L),
+                new Count(0L), author);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -377,7 +380,8 @@ class MemberPickCommentServiceTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), author);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -422,7 +426,8 @@ class MemberPickCommentServiceTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), author);
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -566,7 +571,8 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), member);
         pickRepository.save(pick);
 
         // 삭제상태의 픽픽픽 댓글 생성
@@ -601,7 +607,8 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), member);
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -1937,6 +1944,19 @@ class MemberPickCommentServiceTest {
                 () -> memberPickCommentService.recommendPickComment(pick.getId(), pickComment.getId(), authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE, RECOMMEND);
+    }
+
+    private Pick createPick(Title title, ContentStatus contentStatus, Count viewTotalCount, Count voteTotalCount,
+                            Count commentTotalCount, Count popularScore, Member member) {
+        return Pick.builder()
+                .title(title)
+                .contentStatus(contentStatus)
+                .viewTotalCount(viewTotalCount)
+                .voteTotalCount(voteTotalCount)
+                .commentTotalCount(commentTotalCount)
+                .popularScore(popularScore)
+                .member(member)
+                .build();
     }
 
     private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count recommendTotalCount,
