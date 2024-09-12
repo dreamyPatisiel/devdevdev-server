@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.controller.pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService;
+import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
@@ -114,6 +115,20 @@ public class PickCommentController {
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
+    }
+
+    @Operation(summary = "픽픽픽 댓글/답글 추천/추천 취소", description = "회원은 픽픽픽 댓글/답글에 추천을 할 수 있습니다.(이미 추천한 경우 추천 취소)")
+    @PostMapping("/picks/{pickId}/comments/{pickCommentId}/recommends")
+    public ResponseEntity<BasicResponse<PickCommentRecommendResponse>> recommendPickComment(
+            @PathVariable Long pickId,
+            @PathVariable Long pickCommentId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickCommentRecommendResponse pickCommentRecommendResponse = memberPickCommentService.recommendPickComment(
+                pickId, pickCommentId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickCommentRecommendResponse));
     }
 
     @Deprecated

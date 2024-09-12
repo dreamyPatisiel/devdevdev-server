@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickCommentSortType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionTypeType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
@@ -80,6 +81,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.junit.jupiter.params.provider.NullSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -125,7 +127,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), new Count(0L), new Count(0L), new Count(0L), new Count(0L),
+                ContentStatus.APPROVAL, member);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -265,7 +268,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(author);
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), new Count(0L), new Count(0L), new Count(0L), new Count(0L),
+                ContentStatus.APPROVAL, author);
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -1128,6 +1132,120 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
                 )
         ));
+    }
+
+    @Test
+    @DisplayName("픽픽픽 댓글/답글을 추천한다.")
+    void recommendPickComment() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("픽픽픽 댓글"), true, new Count(0), member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/recommends",
+                                pick.getId(), pickComment.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("recommend-pick-comment",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentId").description("픽픽픽 댓글/답글 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터").attributes(authenticationType()),
+                        fieldWithPath("data.recommendStatus").type(BOOLEAN).description("픽픽픽 댓글/답글 추천 상태")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.recommendTotalCount").type(NUMBER).description("픽픽픽 댓글/답글 추천 총 갯수")
+                                .attributes(authenticationType())
+                )
+        ));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ContentStatus.class, names = {"APPROVAL"}, mode = Mode.EXCLUDE)
+    @DisplayName("픽픽픽 댓글을 추천할 때 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
+    void recommendPickCommentPickIsNotApproval(ContentStatus contentStatus) throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("픽픽픽 댓글"), true, new Count(0), member, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/recommends",
+                                pick.getId(), pickComment.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+
+        // docs
+        actions.andDo(document("recommend-pick-comment-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디"),
+                        parameterWithName("pickCommentId").description("픽픽픽 댓글/답글 아이디")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count recommendTotalCount,
+                                          Member member, Pick pick) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .createdBy(member)
+                .recommendTotalCount(recommendTotalCount)
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
     }
 
     private PickOption createPickOption(Title title, Count voteTotalCount, Pick pick, PickOptionType pickOptionType) {

@@ -170,15 +170,15 @@ public class Pick extends BasicTime {
         this.viewTotalCount = Count.plusOne(this.viewTotalCount);
     }
 
-    public void plusOneVoteTotalCount() {
+    public void incrementVoteTotalCount() {
         this.voteTotalCount = Count.plusOne(this.voteTotalCount);
     }
 
-    public void plusOneCommentTotalCount() {
+    public void incrementCommentTotalCount() {
         this.commentTotalCount = Count.plusOne(this.commentTotalCount);
     }
 
-    public void minusVoteTotalCount() {
+    public void decrementVoteTotalCount() {
         this.voteTotalCount = Count.minusOne(this.voteTotalCount);
     }
 
