@@ -6,9 +6,9 @@ import static com.dreamypatisiel.devdevdev.openai.constant.OpenAIConstant.DOMAIN
 import static com.dreamypatisiel.devdevdev.openai.constant.OpenAIConstant.V1_EMBEDDINGS;
 
 import com.dreamypatisiel.devdevdev.global.utils.UriUtils;
-import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
-import com.dreamypatisiel.devdevdev.openai.response.Embedding;
-import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.openai.data.request.EmbeddingRequest;
+import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;

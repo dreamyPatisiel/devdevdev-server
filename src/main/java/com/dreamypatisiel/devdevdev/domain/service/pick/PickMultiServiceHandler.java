@@ -1,12 +1,12 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.openai.response.Embedding;
-import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;

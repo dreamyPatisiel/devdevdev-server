@@ -1,7 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticKeywordService;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;

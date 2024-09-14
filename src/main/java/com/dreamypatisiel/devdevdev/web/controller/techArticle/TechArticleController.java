@@ -1,13 +1,13 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

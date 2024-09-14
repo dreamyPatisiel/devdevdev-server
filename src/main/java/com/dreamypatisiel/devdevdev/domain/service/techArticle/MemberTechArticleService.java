@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import static com.dreamypatisiel.devdevdev.domain.service.response.util.TechArticleResponseUtils.hasNextPage;
+import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.hasNextPage;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -9,12 +9,12 @@ import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.CompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticSlice;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
@@ -71,8 +71,8 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         // 데이터 가공
         List<TechArticleMainResponse> techArticlesResponse = getTechArticlesResponse(elasticTechArticles, member);
 
-        return new ElasticSlice<>(techArticlesResponse, pageable, elasticTechArticleSearchHits.getTotalHits(),
-                hasNextPage(techArticlesResponse, pageable));
+        return new SliceCustom<>(techArticlesResponse, pageable, hasNextPage(techArticlesResponse, pageable),
+                elasticTechArticleSearchHits.getTotalHits());
     }
 
     @Override

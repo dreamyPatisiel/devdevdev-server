@@ -3,18 +3,15 @@ package com.dreamypatisiel.devdevdev.web.controller.pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentRecommendResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickCommentsResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickReplyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepliedCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -129,54 +126,5 @@ public class PickCommentController {
                 pickId, pickCommentId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentRecommendResponse));
-    }
-
-    @Deprecated
-    @Operation(summary = "픽픽픽 답글 작성", description = "회원은 픽픽픽 댓글에 답글을 작성할 수 있습니다.")
-    @PostMapping("/picks/{pickId}/comments/{pickCommentId}/replies")
-    public ResponseEntity<BasicResponse<PickReplyResponse>> registerPickReply(
-            @PathVariable Long pickId,
-            @PathVariable Long pickCommentId,
-            @RequestBody @Validated RegisterPickReplyRequest registerPickReplyRequest) {
-
-        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-
-        PickReplyResponse pickReplyResponse = memberPickCommentService.registerPickReply(pickCommentId, pickId,
-                registerPickReplyRequest, authentication);
-
-        return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
-    }
-
-    @Deprecated
-    @Operation(summary = "픽픽픽 답글 수정", description = "회원은 자신이 작성한 픽픽픽 답글을 수정할 수 있습니다.")
-    @PatchMapping("/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}")
-    public ResponseEntity<BasicResponse<PickReplyResponse>> modifyPickReply(
-            @PathVariable Long pickId,
-            @PathVariable Long pickCommentId,
-            @PathVariable Long pickReplyId,
-            @RequestBody @Validated ModifyPickReplyRequest modifyPickReplyRequest) {
-
-        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-
-        PickReplyResponse pickReplyResponse = memberPickCommentService.modifyPickReply(
-                pickReplyId, pickCommentId, pickId, modifyPickReplyRequest, authentication);
-
-        return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
-    }
-
-    @Deprecated
-    @Operation(summary = "픽픽픽 답글 삭제", description = "회원은 자신이 작성한 픽픽픽 답글을 삭제할 수 있습니다.(어드민은 모든 답글 삭제 가능)")
-    @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}")
-    public ResponseEntity<BasicResponse<PickReplyResponse>> deletePickReply(
-            @PathVariable Long pickId,
-            @PathVariable Long pickCommentId,
-            @PathVariable Long pickReplyId) {
-
-        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-
-        PickReplyResponse pickReplyResponse = memberPickCommentService.deletePickReply(
-                pickReplyId, pickCommentId, pickId, authentication);
-
-        return ResponseEntity.ok(BasicResponse.success(pickReplyResponse));
     }
 }

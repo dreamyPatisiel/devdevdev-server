@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.elastic.domain.service;
 
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
+import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
 import java.util.List;
 import org.springframework.data.elasticsearch.core.SearchHits;
 

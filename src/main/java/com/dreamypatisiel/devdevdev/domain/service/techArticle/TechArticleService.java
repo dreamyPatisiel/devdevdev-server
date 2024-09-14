@@ -1,9 +1,9 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;

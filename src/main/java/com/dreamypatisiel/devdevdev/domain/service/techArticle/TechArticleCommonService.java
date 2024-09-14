@@ -6,7 +6,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.elastic.data.domain.ElasticResponse;
+import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
