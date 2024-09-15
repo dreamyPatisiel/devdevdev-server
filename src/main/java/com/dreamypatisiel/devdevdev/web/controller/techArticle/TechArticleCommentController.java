@@ -1,6 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.response.SliceCustom;
 import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
@@ -9,16 +12,12 @@ import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "기술블로그 댓글 API", description = "기술블로그 댓글 작성/수정/삭제, 답글 작성/수정/삭제 API")
 @RestController
@@ -83,6 +82,21 @@ public class TechArticleCommentController {
 
         TechCommentResponse response = memberTechCommentService.deleteTechComment(techArticleId, techCommentId,
                 authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 댓글/답글 조회")
+    @GetMapping("/articles/{techArticleId}/comments")
+    public ResponseEntity<BasicResponse<SliceCustom<TechCommentsResponse>>> getTechComments(
+            @PageableDefault(size = 5) Pageable pageable,
+            @PathVariable Long techArticleId,
+            @RequestParam(required = false) TechCommentSort techCommentSort,
+            @RequestParam(required = false) Long techCommentId
+    ) {
+
+        SliceCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId, techCommentId,
+                techCommentSort, pageable);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
