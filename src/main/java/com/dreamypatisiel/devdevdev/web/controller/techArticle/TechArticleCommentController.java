@@ -103,7 +103,7 @@ public class TechArticleCommentController {
     }
 
     @Operation(summary = "기술블로그 댓글/답글 추천/추천취소")
-    @GetMapping("/articles/{techArticleId}/comments/{techCommentId}")
+    @PostMapping("/articles/{techArticleId}/comments/{techCommentId}/recommends")
     public ResponseEntity<BasicResponse<TechCommentRecommendResponse>> recommendTechComment(
             @PathVariable Long techArticleId,
             @PathVariable Long techCommentId
