@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
-import static com.dreamypatisiel.devdevdev.web.response.ResultType.SUCCESS;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -15,7 +15,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
-import com.dreamypatisiel.devdevdev.domain.entity.PickReply;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -32,18 +31,15 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickReplyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.ModifyPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickRepliedCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.pick.request.RegisterPickReplyRequest;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -77,8 +73,6 @@ class PickCommentControllerTest extends SupportControllerTest {
     PickVoteRepository pickVoteRepository;
     @Autowired
     PickCommentRepository pickCommentRepository;
-    @Autowired
-    PickReplyRepository pickReplyRepository;
     @Autowired
     PickCommentRecommendRepository pickCommentRecommendRepository;
     @Autowired
@@ -479,274 +473,6 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
-    @Test
-    @DisplayName("회원은 승인 상태의 픽픽픽의 삭제 상태가 아닌 댓글에 답글을 작성할 수 있다.")
-    void registerPickReply() throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
-        pickRepository.save(pick);
-
-        // 픽픽픽 옵션 생성
-        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1 타이틀"),
-                new PickOptionContents("픽픽픽 옵션1 컨텐츠"), PickOptionType.firstPickOption);
-        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2 타이틀"),
-                new PickOptionContents("픽픽픽 옵션2 컨텐츠"), PickOptionType.secondPickOption);
-        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
-
-        // 픽픽픽 이미지 생성
-        PickOptionImage firstPickOptionImage = createPickOptionImage("firstPickOptionImage", firstPickOption);
-        PickOptionImage secondPickOptionImage = createPickOptionImage("secondPickOptionImage", firstPickOption);
-        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
-
-        // 픽픽픽 투표 생성
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
-        pickVoteRepository.save(pickVote);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        RegisterPickReplyRequest request = new RegisterPickReplyRequest("안녕하세웅 답글");
-
-        // when // then
-        mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies",
-                        pick.getId(), pickComment.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.pickReplyId").isNumber());
-    }
-
-    @ParameterizedTest
-    @EmptySource
-    @DisplayName("픽픽픽 답글을 작성할 때 내용이 공백이면 예외가 발생한다.")
-    void registerPickReplyBindException(String contents) throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        RegisterPickReplyRequest request = new RegisterPickReplyRequest(contents);
-
-        // when // then
-        mockMvc.perform(post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies",
-                        pick.getId(), pickComment.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
-    }
-
-    @Test
-    @DisplayName("승인 상태의 픽픽픽 게시글의 댓글에 회원 본인이 작성한 답글을 수정한다.")
-    void modifyPickReply() throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                "꿈빛맛티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
-        pickCommentRepository.save(pickComment);
-
-        // 픽픽픽 답글 생성
-        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
-        pickReplyRepository.save(pickReply);
-
-        em.flush();
-        em.clear();
-
-        ModifyPickReplyRequest request = new ModifyPickReplyRequest("안녕하세웅 수정 답글");
-
-        // when // then
-        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}",
-                        pick.getId(), pickComment.getId(), pickReply.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.pickReplyId").isNumber());
-    }
-
-    @ParameterizedTest
-    @EmptySource
-    @DisplayName("픽픽픽 답글을 수정할 때 내용이 공백이면 예외가 발생한다.")
-    void modifyPickReplyBindException(String contents) throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                "꿈빛맛티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
-        pickCommentRepository.save(pickComment);
-
-        // 픽픽픽 답글 생성
-        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
-        pickReplyRepository.save(pickReply);
-
-        em.flush();
-        em.clear();
-
-        ModifyPickReplyRequest request = new ModifyPickReplyRequest(contents);
-
-        // when // then
-        mockMvc.perform(patch("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}",
-                        pick.getId(), pickComment.getId(), pickReply.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .content(om.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
-    }
-
-    @Test
-    @DisplayName("회원이 승인 상태의 픽픽픽 댓글의 본인이 작성한 삭제되지 않은 답글을 삭제한다.")
-    void deletePickReply() throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                "꿈빛맛티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
-        pickCommentRepository.save(pickComment);
-
-        // 픽픽픽 답글 생성
-        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), member, pickComment);
-        pickReplyRepository.save(pickReply);
-
-        // when // then
-        mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}",
-                        pick.getId(), pickComment.getId(), pickReply.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.pickReplyId").isNumber());
-    }
-
-    @Test
-    @DisplayName("픽픽픽 답글을 삭제할 때 본인이 작성한 답글이 아니면 예외가 발생한다.")
-    void deletePickReplyNotFoundException() throws Exception {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                "꿈빛맛티시엘", password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅 댓글"), false, member, pick);
-        pickCommentRepository.save(pickComment);
-
-        // 픽픽픽 답글 생성
-        PickReply pickReply = createPickReply(new CommentContents("안녕하세웅 답글"), author, pickComment);
-        pickReplyRepository.save(pickReply);
-
-        // when // then
-        mockMvc.perform(delete("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId}/replies/{pickReplyId}",
-                        pick.getId(), pickComment.getId(), pickReply.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8))
-                .andDo(print())
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
-                .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
-    }
-
     @ParameterizedTest
     @EnumSource(PickCommentSort.class)
     @DisplayName("픽픽픽 댓글/답글을 정렬 조건에 따라서 조회한다.")
@@ -847,7 +573,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].contents").isString())
                 .andExpect(jsonPath("$.data.content.[0].replyTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].likeTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].isDeletedByAdmin").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].pickCommentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].pickCommentParentId").isNumber())
@@ -858,7 +584,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].likeTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeletedByAdmin").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
                 .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
                 .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
@@ -1049,14 +775,6 @@ class PickCommentControllerTest extends SupportControllerTest {
         pickComment.changePick(pick);
 
         return pickComment;
-    }
-
-    private PickReply createPickReply(CommentContents commentContents, Member member, PickComment pickComment) {
-        return PickReply.builder()
-                .contents(commentContents)
-                .createdBy(member)
-                .pickComment(pickComment)
-                .build();
     }
 
     private PickComment createPickComment(CommentContents contents, Boolean isPublic, Member member, Pick pick) {

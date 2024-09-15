@@ -6,11 +6,11 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.exception.InternalServerException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.openai.response.PickWithSimilarityDto;
+import com.dreamypatisiel.devdevdev.openai.data.response.PickWithSimilarityDto;
 import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

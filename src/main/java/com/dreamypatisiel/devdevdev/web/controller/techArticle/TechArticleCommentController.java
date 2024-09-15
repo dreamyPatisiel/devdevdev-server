@@ -1,14 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
-import com.dreamypatisiel.devdevdev.domain.service.response.SliceCustom;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.ModifyTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.controller.techArticle.request.RegisterTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

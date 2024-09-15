@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev;
 
+import com.dreamypatisiel.devdevdev.domain.entity.BlameType;
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -21,6 +22,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.WordType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
@@ -79,6 +81,7 @@ public class LocalInitData {
     private final ElasticTechArticleRepository elasticTechArticleRepository;
     private final CompanyRepository companyRepository;
     private final MemberNicknameDictionaryRepository memberNicknameDictionaryRepository;
+    private final BlameTypeRepository blameTypeRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {
@@ -112,6 +115,9 @@ public class LocalInitData {
 
         List<MemberNicknameDictionary> nicknameDictionaryWords = createNicknameDictionaryWords();
         memberNicknameDictionaryRepository.saveAll(nicknameDictionaryWords);
+
+        List<BlameType> blameTypes = createBlameTypes();
+        blameTypeRepository.saveAll(blameTypes);
     }
 
     private List<MemberNicknameDictionary> createNicknameDictionaryWords() {
@@ -332,5 +338,18 @@ public class LocalInitData {
         pickOption.changePickOptionImages(pickOptionImages);
 
         return pickOption;
+    }
+
+    private List<BlameType> createBlameTypes() {
+        BlameType blameType1 = createBlameType("욕설1", 0);
+        BlameType blameType2 = createBlameType("욕설2", 1);
+        BlameType blameType3 = createBlameType("욕설3", 2);
+        BlameType blameType4 = createBlameType("욕설4", 3);
+
+        return List.of(blameType1, blameType2, blameType3, blameType4);
+    }
+
+    private BlameType createBlameType(String reason, int sortOrder) {
+        return new BlameType(reason, sortOrder);
     }
 }
