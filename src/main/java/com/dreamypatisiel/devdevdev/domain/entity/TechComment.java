@@ -140,6 +140,14 @@ public class TechComment extends BasicTime {
         this.replyTotalCount = Count.minusOne(this.replyTotalCount);
     }
 
+    public void incrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.plusOne(this.recommendTotalCount);
+    }
+
+    public void decrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.minusOne(this.recommendTotalCount);
+    }
+
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
     }}

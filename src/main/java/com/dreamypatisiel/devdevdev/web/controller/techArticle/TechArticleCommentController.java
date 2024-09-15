@@ -7,6 +7,7 @@ import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -97,6 +98,21 @@ public class TechArticleCommentController {
 
         SliceCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId, techCommentId,
                 techCommentSort, pageable);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 댓글/답글 추천/추천취소")
+    @GetMapping("/articles/{techArticleId}/comments/{techCommentId}")
+    public ResponseEntity<BasicResponse<TechCommentRecommendResponse>> recommendTechComment(
+            @PathVariable Long techArticleId,
+            @PathVariable Long techCommentId
+    ) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        TechCommentRecommendResponse response = memberTechCommentService.recommendTechComment(techArticleId, techCommentId,
+                authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
