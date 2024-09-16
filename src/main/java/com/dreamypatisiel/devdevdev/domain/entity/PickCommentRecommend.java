@@ -49,7 +49,15 @@ public class PickCommentRecommend extends BasicTime {
         return pickCommentRecommend;
     }
 
+    public boolean isRecommended() {
+        return this.recommendedStatus.equals(true);
+    }
+
     public void cancelRecommend() {
         this.recommendedStatus = false;
+    }
+
+    public void recommend() {
+        this.recommendedStatus = true;
     }
 }

@@ -347,23 +347,43 @@ public class MemberPickCommentService {
         // 픽픽픽 댓글/답글 검증
         validateIsDeletedPickComment(findPickComment, INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE, RECOMMEND);
 
-        return togglePickCommentRecommend(findPickComment, findMember);
+        return toggleOrCreatePickCommentRecommend(findPickComment, findMember);
     }
 
-    private PickCommentRecommendResponse togglePickCommentRecommend(PickComment pickComment,
-                                                                    Member member) {
+    private PickCommentRecommendResponse toggleOrCreatePickCommentRecommend(PickComment pickComment, Member member) {
 
         // 픽픽픽 댓글/답글 추천 조회
         Optional<PickCommentRecommend> optionalPickCommentRecommend = pickCommentRecommendRepository.findByPickCommentIdAndMemberId(
                 pickComment.getId(), member.getId());
 
-        // 댓글/답글에 추천이 존재하면
+        // 댓글/답글에 추천이 존재하면 toggle
         if (optionalPickCommentRecommend.isPresent()) {
-            // 추천 취소
             PickCommentRecommend pickCommentRecommend = optionalPickCommentRecommend.get();
-            pickCommentRecommend.cancelRecommend();
+            return togglePickCommentRecommend(pickComment, pickCommentRecommend);
+        }
 
-            // 총 추천 갯수 감소
+        return createPickCommentRecommend(pickComment, member);
+    }
+
+    private PickCommentRecommendResponse createPickCommentRecommend(PickComment pickComment, Member member) {
+        // 추천
+        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.create(pickComment, member);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        // 총 추천 갯수 증가
+        pickComment.incrementRecommendTotalCount();
+
+        return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
+                pickComment.getRecommendTotalCount().getCount());
+    }
+
+    private PickCommentRecommendResponse togglePickCommentRecommend(PickComment pickComment,
+                                                                    PickCommentRecommend pickCommentRecommend) {
+
+        // 추천 상태이면
+        if (pickCommentRecommend.isRecommended()) {
+            // 추천 취소
+            pickCommentRecommend.cancelRecommend();
             pickComment.decrementRecommendTotalCount();
 
             return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
@@ -371,10 +391,7 @@ public class MemberPickCommentService {
         }
 
         // 추천
-        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.create(pickComment, member);
-        pickCommentRecommendRepository.save(pickCommentRecommend);
-
-        // 총 추천 갯수 증가
+        pickCommentRecommend.recommend();
         pickComment.incrementRecommendTotalCount();
 
         return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),

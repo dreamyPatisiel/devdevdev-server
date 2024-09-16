@@ -1820,7 +1820,7 @@ class MemberPickCommentServiceTest {
         pickCommentRepository.save(pickComment);
 
         // 픽픽픽 댓글 추천 생성
-        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(pickComment, member);
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(pickComment, member, true);
         pickCommentRecommendRepository.save(pickCommentRecommend);
 
         em.flush();
@@ -1837,6 +1837,51 @@ class MemberPickCommentServiceTest {
         assertAll(
                 () -> assertThat(response.getRecommendStatus()).isFalse(),
                 () -> assertThat(response.getRecommendTotalCount()).isEqualTo(0L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 이미 픽픽픽 댓글/답글을 추천 취소 상태일 때 추천하게 되면 추천한다.")
+    void recommendPickCommentIsTrueAlreadyFalse() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("픽픽픽 댓글"), true, new Count(0), member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 댓글 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(pickComment, member, false);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickCommentRecommendResponse response = memberPickCommentService.recommendPickComment(
+                pick.getId(), pickComment.getId(), authentication);
+
+        em.flush();
+        em.clear();
+
+        // then
+        assertAll(
+                () -> assertThat(response.getRecommendStatus()).isTrue(),
+                () -> assertThat(response.getRecommendTotalCount()).isEqualTo(1L)
         );
     }
 
@@ -1974,11 +2019,12 @@ class MemberPickCommentServiceTest {
         return pickComment;
     }
 
-    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member) {
+    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
+                                                            Boolean recommendedStatus) {
         return PickCommentRecommend.builder()
                 .pickComment(pickComment)
                 .member(member)
-                .recommendedStatus(true)
+                .recommendedStatus(recommendedStatus)
                 .build();
     }
 
