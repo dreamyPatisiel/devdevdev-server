@@ -1284,7 +1284,7 @@ class MemberPickCommentServiceTest {
         pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
-        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
 
         em.flush();
         em.clear();
@@ -1523,7 +1523,7 @@ class MemberPickCommentServiceTest {
                 originParentPickComment1, pickReply1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
-        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
 
         em.flush();
         em.clear();

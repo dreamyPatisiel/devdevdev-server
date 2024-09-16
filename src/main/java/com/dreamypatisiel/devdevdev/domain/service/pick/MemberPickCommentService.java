@@ -35,6 +35,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -320,7 +321,7 @@ public class MemberPickCommentService {
     private List<PickRepliedCommentsResponse> getPickRepliedComments(Map<Long, List<PickComment>> pickCommentReplies,
                                                                      Long originPickCommentId) {
         return pickCommentReplies.get(originPickCommentId).stream()
-                .sorted((reply1, reply2) -> reply2.getCreatedAt().compareTo(reply1.getCreatedAt())) // 시간 내림차순으로
+                .sorted(Comparator.comparing(PickComment::getCreatedAt)) // 오름차순
                 .map(PickRepliedCommentsResponse::from)
                 .toList();
     }
