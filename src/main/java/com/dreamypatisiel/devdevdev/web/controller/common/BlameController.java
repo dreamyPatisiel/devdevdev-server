@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.common;
 
 import com.dreamypatisiel.devdevdev.domain.service.common.MemberBlameService;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
@@ -24,7 +24,6 @@ public class BlameController {
     @GetMapping("/blames")
     public ResponseEntity<BasicResponse<BlameTypeResponse>> getBlames() {
         List<BlameTypeResponse> response = memberBlameService.findBlameType();
-        
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 }

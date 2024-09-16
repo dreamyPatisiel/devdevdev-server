@@ -49,27 +49,33 @@ public class Pick extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "vote_total_count")
+            column = @Column(name = "vote_total_count", columnDefinition = "bigint default 0")
     )
     private Count voteTotalCount;
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "view_total_count")
+            column = @Column(name = "view_total_count", columnDefinition = "bigint default 0")
     )
     private Count viewTotalCount;
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "comment_total_count")
+            column = @Column(name = "comment_total_count", columnDefinition = "bigint default 0")
     )
     private Count commentTotalCount;
 
     @Embedded
     @AttributeOverride(name = "count",
-            column = @Column(name = "popular_score")
+            column = @Column(name = "popular_score", columnDefinition = "bigint default 0")
     )
     private Count popularScore;
+
+    @Embedded
+    @AttributeOverride(name = "count",
+            column = @Column(name = "blame_total_count", columnDefinition = "bigint default 0")
+    )
+    private Count blameTotalCount;
 
     private String thumbnailUrl;
     private String author;
@@ -113,10 +119,11 @@ public class Pick extends BasicTime {
     public static Pick create(Title title, String author, Member member) {
         Pick pick = new Pick();
         pick.title = title;
-        pick.voteTotalCount = new Count(0);
-        pick.viewTotalCount = new Count(0);
-        pick.commentTotalCount = new Count(0);
-        pick.popularScore = new Count(0);
+        pick.voteTotalCount = Count.defaultCount();
+        pick.viewTotalCount = Count.defaultCount();
+        pick.commentTotalCount = Count.defaultCount();
+        pick.popularScore = Count.defaultCount();
+        pick.blameTotalCount = Count.defaultCount();
         pick.author = author;
         pick.contentStatus = getDefaultContentStatusByMemberRole(member);
         pick.member = member;
@@ -176,6 +183,10 @@ public class Pick extends BasicTime {
 
     public void incrementCommentTotalCount() {
         this.commentTotalCount = Count.plusOne(this.commentTotalCount);
+    }
+
+    public void incrementBlameTotalCount() {
+        this.blameTotalCount = Count.plusOne(this.blameTotalCount);
     }
 
     public void decrementVoteTotalCount() {

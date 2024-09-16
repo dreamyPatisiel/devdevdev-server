@@ -181,6 +181,10 @@ public class PickComment extends BasicTime {
         this.recommendTotalCount = Count.plusOne(this.recommendTotalCount);
     }
 
+    public void incrementBlameTotalCount() {
+        this.blameTotalCount = Count.plusOne(this.blameTotalCount);
+    }
+
     public void decrementRecommendTotalCount() {
         this.recommendTotalCount = Count.minusOne(this.recommendTotalCount);
     }

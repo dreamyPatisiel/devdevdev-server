@@ -7,6 +7,8 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService.validateIsApprovalPickContentStatus;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService.validateIsDeletedPickComment;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
@@ -14,7 +16,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
@@ -22,17 +23,17 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -177,12 +178,6 @@ public class MemberPickCommentService {
                 REGISTER);
 
         return findOriginParentPickComment;
-    }
-
-    private void validateIsDeletedPickComment(PickComment pickComment, String message, String messageArgs) {
-        if (pickComment.isDeleted()) {
-            throw new IllegalArgumentException(String.format(message, messageArgs));
-        }
     }
 
     /**
@@ -384,12 +379,5 @@ public class MemberPickCommentService {
 
         return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
                 pickComment.getRecommendTotalCount().getCount());
-    }
-
-    // 픽픽픽 게시글의 승인 상태 검증
-    private void validateIsApprovalPickContentStatus(Pick pick, String message, String messageArgs) {
-        if (!pick.isTrueContentStatus(ContentStatus.APPROVAL)) {
-            throw new IllegalArgumentException(String.format(message, messageArgs));
-        }
     }
 }

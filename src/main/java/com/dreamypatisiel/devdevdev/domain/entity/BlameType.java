@@ -28,4 +28,8 @@ public class BlameType extends BasicTime {
         this.reason = reason;
         this.sortOrder = sortOrder;
     }
+
+    public boolean isEqualsReason(String reason) {
+        return reason.equals(this.reason);
+    }
 }
