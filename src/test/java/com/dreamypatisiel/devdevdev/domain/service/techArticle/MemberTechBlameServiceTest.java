@@ -19,9 +19,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BlameRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
@@ -181,7 +181,7 @@ class MemberTechBlameServiceTest {
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
-        // 기술블록 회사 생성
+        // 기술블로그 회사 생성
         Company company = createCompany("기업1");
         companyRepository.save(company);
 
@@ -207,7 +207,7 @@ class MemberTechBlameServiceTest {
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
-        // 기술블록 회사 생성
+        // 기술블로그 회사 생성
         Company company = createCompany("기업1");
         companyRepository.save(company);
 

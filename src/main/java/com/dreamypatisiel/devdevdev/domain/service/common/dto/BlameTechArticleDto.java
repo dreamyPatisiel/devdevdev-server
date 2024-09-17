@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.common.dto;
 
+import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameRequest;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,12 +19,12 @@ public class BlameTechArticleDto {
         this.customReason = customReason;
     }
 
-    public static BlameTechArticleDto create(BlameDto blameDto) {
+    public static BlameTechArticleDto create(BlameRequest blameRequest) {
         return BlameTechArticleDto.builder()
-                .techArticleId(blameDto.getTechArticleId())
-                .techArticleCommentId(blameDto.getTechArticleCommentId())
-                .blameTypeId(blameDto.getBlameTypeId())
-                .customReason(blameDto.getCustomReason())
+                .techArticleId(blameRequest.getTechArticleId())
+                .techArticleCommentId(blameRequest.getTechArticleCommentId())
+                .blameTypeId(blameRequest.getBlameTypeId())
+                .customReason(blameRequest.getCustomReason())
                 .build();
     }
 }

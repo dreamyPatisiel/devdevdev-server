@@ -45,7 +45,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
@@ -125,8 +124,6 @@ class MemberPickCommentServiceTest {
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
     String author = "운영자";
-    @Autowired
-    private TimeProvider timeProvider;
 
     @Test
     @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성한다.")

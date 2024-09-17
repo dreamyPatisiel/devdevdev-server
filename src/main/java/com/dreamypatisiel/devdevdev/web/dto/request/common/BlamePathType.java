@@ -7,14 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum BlamePathType {
     PICK {
-        
-    },
-    PICK_COMMENT {
 
     },
     TECH_ARTICLE {
 
     },
-    TECH_ARTICLE_COMMENT {
-    };
 }

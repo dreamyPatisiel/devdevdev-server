@@ -17,8 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.BlameType;
-import com.dreamypatisiel.devdevdev.domain.repository.BlameRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.DisplayName;
