@@ -25,7 +25,8 @@ public class BlameDto {
         this.techCommentId = techCommentId;
     }
 
-    public static BlameDto of(Long memberId, BlameRequest blameRequest) {
+    public static BlameDto of(Long memberId,
+                              BlameRequest blameRequest) {
         BlameDto blameDto = new BlameDto(memberId);
         blameDto.pickId = blameRequest.getPickId();
         blameDto.pickCommentId = blameRequest.getPickCommentId();

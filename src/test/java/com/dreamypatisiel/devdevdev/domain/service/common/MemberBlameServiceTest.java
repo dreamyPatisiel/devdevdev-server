@@ -36,7 +36,6 @@ import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameTypeResponse;
@@ -73,10 +72,6 @@ class MemberBlameServiceTest {
     TechCommentRepository techCommentRepository;
     @Autowired
     TechArticleRepository techArticleRepository;
-//    @MockBean
-//    MemberPickBlameService memberPickBlameService;
-//    @MockBean
-//    MemberTechBlameService memberTechBlameService;
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -127,7 +122,7 @@ class MemberBlameServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberBlameService.blame(null, authentication))
+        assertThatThrownBy(() -> memberBlameService.blame(null, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -159,10 +154,10 @@ class MemberBlameServiceTest {
         Blame blame = createBlame(pick, null, null, null, blameType, member);
         blameRepository.save(blame);
 
-        BlameRequest blameRequest = createBlameRequestBy(pick.getId(), null, null, null, null, null);
+        BlameRequest blameRequest = createBlameRequestBy(pick.getId(), null, null, null, null);
 
         // when // then
-        assertThatThrownBy(() -> memberBlameService.blame(blameRequest, authentication))
+        assertThatThrownBy(() -> memberBlameService.blame(null, blameRequest, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_ALREADY_EXIST_BLAME);
     }
@@ -198,10 +193,10 @@ class MemberBlameServiceTest {
         Blame blame = createBlame(pick, pickComment, null, null, blameType, member);
         blameRepository.save(blame);
 
-        BlameRequest blameRequest = createBlameRequestBy(pick.getId(), pickComment.getId(), null, null, null, null);
+        BlameRequest blameRequest = createBlameRequestBy(pick.getId(), pickComment.getId(), null, null, null);
 
         // when // then
-        assertThatThrownBy(() -> memberBlameService.blame(blameRequest, authentication))
+        assertThatThrownBy(() -> memberBlameService.blame(null, blameRequest, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_ALREADY_EXIST_BLAME);
     }
@@ -241,11 +236,10 @@ class MemberBlameServiceTest {
         Blame blame = createBlame(null, null, techArticle, techComment, blameType, member);
         blameRepository.save(blame);
 
-        BlameRequest blameRequest = createBlameRequestBy(null, null, techArticle.getId(), techComment.getId(), null,
-                null);
+        BlameRequest blameRequest = createBlameRequestBy(null, null, techArticle.getId(), techComment.getId(), null);
 
         // when // then
-        assertThatThrownBy(() -> memberBlameService.blame(blameRequest, authentication))
+        assertThatThrownBy(() -> memberBlameService.blame(null, blameRequest, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_ALREADY_EXIST_BLAME);
     }
@@ -273,10 +267,10 @@ class MemberBlameServiceTest {
         BlameType blameType = new BlameType("욕설1", 0);
         blameTypeRepository.save(blameType);
 
-        BlameRequest blameRequest = createBlameRequestBy(pick.getId(), null, null, null, blameType.getId(), PICK);
+        BlameRequest blameRequest = createBlameRequestBy(pick.getId(), null, null, null, blameType.getId());
 
         // when
-        BlameResponse blameResponse = memberBlameService.blame(blameRequest, authentication);
+        BlameResponse blameResponse = memberBlameService.blame(PICK, blameRequest, authentication);
 
         // then
         assertThat(blameResponse.getBlameId()).isNotNull();
@@ -326,10 +320,10 @@ class MemberBlameServiceTest {
         blameTypeRepository.save(blameType);
 
         BlameRequest blameRequest = createBlameRequestBy(pick.getId(), pickComment.getId(), null, null,
-                blameType.getId(), PICK);
+                blameType.getId());
 
         // when
-        BlameResponse blameResponse = memberBlameService.blame(blameRequest, authentication);
+        BlameResponse blameResponse = memberBlameService.blame(PICK, blameRequest, authentication);
 
         // then
         assertThat(blameResponse.getBlameId()).isNotNull();
@@ -382,10 +376,10 @@ class MemberBlameServiceTest {
         blameTypeRepository.save(blameType);
 
         BlameRequest blameRequest = createBlameRequestBy(null, null, techArticle.getId(), techComment.getId(),
-                blameType.getId(), TECH_ARTICLE);
+                blameType.getId());
 
         // when
-        BlameResponse blameResponse = memberBlameService.blame(blameRequest, authentication);
+        BlameResponse blameResponse = memberBlameService.blame(TECH_ARTICLE, blameRequest, authentication);
 
         // then
         assertThat(blameResponse.getBlameId()).isNotNull();
@@ -447,15 +441,13 @@ class MemberBlameServiceTest {
     }
 
     private BlameRequest createBlameRequestBy(Long pickId, Long pickCommentId, Long techArticleId,
-                                              Long techArticleCommentId, Long blameTypeId,
-                                              BlamePathType blamePathType) {
+                                              Long techArticleCommentId, Long blameTypeId) {
         return BlameRequest.builder()
                 .pickId(pickId)
                 .pickCommentId(pickCommentId)
                 .techArticleId(techArticleId)
                 .techArticleCommentId(techArticleCommentId)
                 .blameTypeId(blameTypeId)
-                .blamePathType(blamePathType)
                 .build();
     }
 

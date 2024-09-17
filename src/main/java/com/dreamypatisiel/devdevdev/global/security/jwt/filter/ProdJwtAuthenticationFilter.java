@@ -37,10 +37,10 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        log.info("DevJwtAuthenticationFilter 시작");
+        log.info("ProdJwtAuthenticationFilter 시작");
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
-// 센트리 회원
+        // 센트리 회원
         User sentryUser = new User();
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅

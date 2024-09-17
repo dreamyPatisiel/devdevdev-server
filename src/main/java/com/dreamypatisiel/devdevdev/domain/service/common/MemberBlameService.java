@@ -6,7 +6,6 @@ import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessa
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
-import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameDto;
 import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameTechArticleDto;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickBlameService;
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +52,7 @@ public class MemberBlameService {
      * @Since: 2024.09.12
      */
     @Transactional
-    public BlameResponse blame(BlameRequest blameRequest, Authentication authentication) {
+    public BlameResponse blame(BlamePathType blamePathType, BlameRequest blameRequest, Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -63,12 +61,12 @@ public class MemberBlameService {
         validateBlame(blameRequest, findMember);
 
         // 픽픽픽 신고 서비스
-        if (blameRequest.isEqualBlamePathType(BlamePathType.PICK)) {
+        if (blamePathType.equals(BlamePathType.PICK)) {
             // 픽픽픽 전용 dto 생성
             BlamePickDto blamePickDto = BlamePickDto.create(blameRequest);
 
             // 댓글 아이디가 없으면
-            if (ObjectUtils.isEmpty(blamePickDto.getPickCommentId())) {
+            if (blamePickDto.isNullPickCommentId()) {
                 // 픽픽픽 신고 수행
                 return memberPickBlameService.blamePick(blamePickDto, findMember);
             }
@@ -78,7 +76,7 @@ public class MemberBlameService {
         }
 
         // 기술 블로그 댓글 신고 서비스
-        if (blameRequest.isEqualBlamePathType(BlamePathType.TECH_ARTICLE)) {
+        if (blamePathType.equals(BlamePathType.TECH_ARTICLE)) {
             // 기술블로그 전용 dto 생성
             BlameTechArticleDto blameTechArticleDto = BlameTechArticleDto.create(blameRequest);
             return memberTechBlameService.blameTechArticleComment(blameTechArticleDto, findMember);
@@ -89,7 +87,8 @@ public class MemberBlameService {
 
     private void validateBlame(BlameRequest blameRequest, Member findMember) {
         // 픽픽픽 신고 이력 조회
-        BlameDto blameDto = BlameDto.of(findMember.getId(), blameRequest);
+        com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameDto blameDto = com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameDto.of(
+                findMember.getId(), blameRequest);
         Boolean existsBlame = blameRepository.existsBlameByBlameDto(blameDto);
 
         // 신고 이력이 존재하면

@@ -27,4 +27,8 @@ public class BlamePickDto {
                 .customReason(blameRequest.getCustomReason())
                 .build();
     }
+
+    public boolean isNullPickCommentId() {
+        return this.pickCommentId == null;
+    }
 }
