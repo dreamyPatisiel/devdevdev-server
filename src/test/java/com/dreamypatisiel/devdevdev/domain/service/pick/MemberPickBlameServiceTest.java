@@ -30,7 +30,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameResponse;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
@@ -57,6 +57,8 @@ class MemberPickBlameServiceTest {
     MemberRepository memberRepository;
     @Autowired
     PickRepository pickRepository;
+    @Autowired
+    PickCommentRepository pickCommentRepository;
 
     @Autowired
     EntityManager em;
@@ -69,8 +71,6 @@ class MemberPickBlameServiceTest {
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
     String author = "운영자";
-    @Autowired
-    private PickCommentRepository pickCommentRepository;
 
     @Test
     @DisplayName("회원이 승인 상태의 픽픽픽에 신고를 한다.")

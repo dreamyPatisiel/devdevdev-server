@@ -80,9 +80,10 @@ public class TechComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @Builder
-    private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
-                       TechComment parent, TechComment originParent, Member createdBy, Member deletedBy,
-                       TechArticle techArticle, LocalDateTime deletedAt) {
+    private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
+                        Count replyTotalCount,
+                        TechComment parent, TechComment originParent, Member createdBy, Member deletedBy,
+                        TechArticle techArticle, LocalDateTime deletedAt) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
@@ -95,7 +96,8 @@ public class TechComment extends BasicTime {
         this.deletedAt = deletedAt;
     }
 
-    public static TechComment createMainTechComment(CommentContents contents, Member createdBy, TechArticle techArticle) {
+    public static TechComment createMainTechComment(CommentContents contents, Member createdBy,
+                                                    TechArticle techArticle) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
@@ -106,7 +108,9 @@ public class TechComment extends BasicTime {
                 .build();
     }
 
-    public static TechComment createRepliedTechComment(CommentContents contents, Member createdBy, TechArticle techArticle, TechComment originParent, TechComment parent) {
+    public static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
+                                                       TechArticle techArticle, TechComment originParent,
+                                                       TechComment parent) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
@@ -140,6 +144,11 @@ public class TechComment extends BasicTime {
         this.replyTotalCount = Count.minusOne(this.replyTotalCount);
     }
 
+    public void incrementBlameTotalCount() {
+        this.blameTotalCount = Count.plusOne(this.blameTotalCount);
+    }
+
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
-    }}
+    }
+}

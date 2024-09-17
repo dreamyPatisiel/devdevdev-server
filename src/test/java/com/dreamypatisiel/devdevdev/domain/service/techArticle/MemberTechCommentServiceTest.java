@@ -1,5 +1,13 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -14,7 +22,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -22,6 +29,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,12 +40,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Transactional
@@ -554,7 +556,8 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+                techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
 
@@ -568,7 +571,8 @@ public class MemberTechCommentServiceTest {
         // then
         assertThat(techCommentResponse.getTechCommentId()).isNotNull();
 
-        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId()).get();
+        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
 
         assertAll(
                 // 답글 생성 확인
@@ -580,9 +584,11 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findRepliedTechComment.getParent().getId()).isEqualTo(parentTechCommentId),
                 () -> assertThat(findRepliedTechComment.getOriginParent().getId()).isEqualTo(parentTechCommentId),
                 // 최상단 댓글의 답글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L),
+                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(
+                        1L),
                 // 기술블로그 댓글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(2L)
+                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
+                        2L)
         );
     }
 
@@ -608,7 +614,8 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+                techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
@@ -621,13 +628,15 @@ public class MemberTechCommentServiceTest {
 
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.registerRepliedTechComment(
-                techArticleId, originParentTechCommentId, parentTechCommentId, registerRepliedTechComment, authentication);
+                techArticleId, originParentTechCommentId, parentTechCommentId, registerRepliedTechComment,
+                authentication);
         em.flush();
 
         // then
         assertThat(techCommentResponse.getTechCommentId()).isNotNull();
 
-        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId()).get();
+        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
 
         assertAll(
                 () -> assertThat(findRepliedTechComment.getContents().getCommentContents()).isEqualTo("답글입니다."),
@@ -638,9 +647,11 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findRepliedTechComment.getParent().getId()).isEqualTo(parentTechCommentId),
                 () -> assertThat(findRepliedTechComment.getOriginParent().getId()).isEqualTo(originParentTechCommentId),
                 // 최상단 댓글의 답글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L),
+                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(
+                        1L),
                 // 기술블로그 댓글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(3L)
+                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
+                        3L)
         );
     }
 
@@ -717,7 +728,7 @@ public class MemberTechCommentServiceTest {
                 () -> memberTechCommentService.registerRepliedTechComment(techArticleId, techCommentId, techCommentId,
                         registerRepliedTechComment, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
+                .hasMessage(INVALID_CAN_NOT_REPLY_TECH_COMMENT_MESSAGE);
     }
 
     @Test

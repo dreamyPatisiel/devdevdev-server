@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.dto.request.common;
+package com.dreamypatisiel.devdevdev.web.dto.response.common;
 
 import lombok.Data;
 

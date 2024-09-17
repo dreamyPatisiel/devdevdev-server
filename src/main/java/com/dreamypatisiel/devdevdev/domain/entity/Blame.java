@@ -114,10 +114,21 @@ public class Blame extends BasicTime {
         return blame;
     }
 
-    public static Blame createWithCustomReason(PickComment pickComment, TechComment techComment, Pick pick,
-                                               TechArticle techArticle, Member member, BlameType blameType,
-                                               String customReason) {
-        Blame blame = create(pickComment, techComment, pick, techArticle, member, blameType);
+    public static Blame createBlameTechComment(TechArticle techArticle, TechComment techComment, Member member,
+                                               BlameType blameType) {
+        Blame blame = new Blame();
+        blame.techArticle = techArticle;
+        blame.techComment = techComment;
+        blame.member = member;
+        blame.blameType = blameType;
+
+        return blame;
+    }
+
+    public static Blame createBlameTechCommentWithCustomReason(TechArticle techArticle, TechComment techComment,
+                                                               Member member, BlameType blameType,
+                                                               String customReason) {
+        Blame blame = createBlameTechComment(techArticle, techComment, member, blameType);
         blame.customReason = customReason;
 
         return blame;

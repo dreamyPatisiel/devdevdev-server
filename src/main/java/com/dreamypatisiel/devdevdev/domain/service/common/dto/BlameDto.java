@@ -9,7 +9,7 @@ public class BlameDto {
     private Long pickId;
     private Long pickCommentId;
     private Long techArticleId;
-    private Long techCommentId;
+    private Long techArticleCommentId;
     private final Long blameTypeId;
     private String customReason;
 

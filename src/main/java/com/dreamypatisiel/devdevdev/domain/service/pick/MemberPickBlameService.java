@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.entity.Blame.createBlamePickComment;
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_NOT_FOUND_BLAME_TYPE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
@@ -20,7 +21,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,18 +69,14 @@ public class MemberPickBlameService {
                                                     Pick pick, Member member) {
         // 픽픽픽 신고 종류가 기타 이면
         if (blameType.isEqualsReason(BLAME_TYPE_ETC)) {
-            // 픽픽픽 신고 생성
-            Blame blamePickWithCustomReason = Blame.createBlamePickWithCustomReason(
-                    pick, member, blameType, customReason);
-            blameRepository.save(blamePickWithCustomReason);
-
-            // 픽픽픽 신고 횟수 증가
-            pick.incrementBlameTotalCount();
-
-            return new BlameResponse(blamePickWithCustomReason.getId());
+            return createAndSaveBlamePickWithCustomReason(blameType, pick, member, customReason);
         }
 
         // 픽픽픽 신고 종류가 기타가 아니면
+        return createAndSaveBlamePick(blameType, pick, member);
+    }
+
+    private BlameResponse createAndSaveBlamePick(BlameType blameType, Pick pick, Member member) {
         // 픽픽픽 신고 생성
         Blame blamePick = Blame.createBlamePick(pick, member, blameType);
         blameRepository.save(blamePick);
@@ -88,6 +85,18 @@ public class MemberPickBlameService {
         pick.incrementBlameTotalCount();
 
         return new BlameResponse(blamePick.getId());
+    }
+
+    private BlameResponse createAndSaveBlamePickWithCustomReason(BlameType blameType, Pick pick, Member member,
+                                                                 String customReason) {
+        // 픽픽픽 신고 생성
+        Blame blamePickWithCustomReason = Blame.createBlamePickWithCustomReason(pick, member, blameType, customReason);
+        blameRepository.save(blamePickWithCustomReason);
+
+        // 픽픽픽 신고 횟수 증가
+        pick.incrementBlameTotalCount();
+
+        return new BlameResponse(blamePickWithCustomReason.getId());
     }
 
     /**
@@ -129,19 +138,15 @@ public class MemberPickBlameService {
                                                     String customReason) {
         // 픽픽픽 신고 종류가 기타 이면
         if (blameType.isEqualsReason(BLAME_TYPE_ETC)) {
-            // 픽픽픽 댓글 신고
-            Blame blamePickCommentWithCustomReason = Blame.createBlamePickCommentWithCustomReason(
-                    pickComment.getPick(), pickComment, member, blameType, customReason);
-            blameRepository.save(blamePickCommentWithCustomReason);
-
-            // 픽픽픽 댓글 신고 횟수 증가
-            pickComment.incrementBlameTotalCount();
-
-            return new BlameResponse(blamePickCommentWithCustomReason.getId());
+            return createAndSaveBlamePickCommentWithCustomReason(member, blameType, pickComment, customReason);
         }
 
+        return createAndSaveBlamePickComment(member, blameType, pickComment);
+    }
+
+    private BlameResponse createAndSaveBlamePickComment(Member member, BlameType blameType, PickComment pickComment) {
         // 픽픽픽 댓글 신고
-        Blame blamePickComment = Blame.createBlamePickComment(pickComment.getPick(), pickComment, member,
+        Blame blamePickComment = createBlamePickComment(pickComment.getPick(), pickComment, member,
                 blameType);
         blameRepository.save(blamePickComment);
 
@@ -149,5 +154,18 @@ public class MemberPickBlameService {
         pickComment.incrementBlameTotalCount();
 
         return new BlameResponse(blamePickComment.getId());
+    }
+
+    private BlameResponse createAndSaveBlamePickCommentWithCustomReason(Member member, BlameType blameType,
+                                                                        PickComment pickComment, String customReason) {
+        // 픽픽픽 댓글 신고
+        Blame blamePickCommentWithCustomReason = Blame.createBlamePickCommentWithCustomReason(
+                pickComment.getPick(), pickComment, member, blameType, customReason);
+        blameRepository.save(blamePickCommentWithCustomReason);
+
+        // 픽픽픽 댓글 신고 횟수 증가
+        pickComment.incrementBlameTotalCount();
+
+        return new BlameResponse(blamePickCommentWithCustomReason.getId());
     }
 }

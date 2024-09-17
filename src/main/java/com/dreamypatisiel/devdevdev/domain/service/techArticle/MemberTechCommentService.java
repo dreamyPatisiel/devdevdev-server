@@ -1,7 +1,8 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -9,12 +10,12 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -38,8 +39,8 @@ public class MemberTechCommentService {
      */
     @Transactional
     public TechCommentResponse registerMainTechComment(Long techArticleId,
-                                                   RegisterTechCommentRequest registerTechCommentRequest,
-                                                   Authentication authentication) {
+                                                       RegisterTechCommentRequest registerTechCommentRequest,
+                                                       Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
@@ -48,7 +49,8 @@ public class MemberTechCommentService {
 
         // 댓글 엔티티 생성 및 저장
         String contents = registerTechCommentRequest.getContents();
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents(contents), findMember, techArticle);
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents(contents), findMember,
+                techArticle);
         techCommentRepository.save(techComment);
 
         // 기술블로그 댓글수 증가
@@ -74,11 +76,12 @@ public class MemberTechCommentService {
 
         // 답글 대상의 기술블로그 댓글 조회
         TechComment findParentTechComment = techCommentRepository.findWithTechArticleByIdAndTechArticleId(
-                parentTechCommentId, techArticleId)
+                        parentTechCommentId, techArticleId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
         // 답글 엔티티 생성 및 저장
-        TechComment findOriginParentTechComment = getAndValidateOriginParentTechComment(originParentTechCommentId, findParentTechComment);
+        TechComment findOriginParentTechComment = getAndValidateOriginParentTechComment(originParentTechCommentId,
+                findParentTechComment);
         TechArticle findTechArticle = findParentTechComment.getTechArticle();
 
         String contents = registerRepliedTechCommentRequest.getContents();
@@ -98,18 +101,16 @@ public class MemberTechCommentService {
     }
 
     /**
-     * @Note: 답글 대상의 댓글을 조회하고, 답글 대상의 댓글이 최초 댓글이면 답글 대상으로 반환한다.
      * @param originParentTechCommentId
      * @param parentTechComment
      * @return
+     * @Note: 답글 대상의 댓글을 조회하고, 답글 대상의 댓글이 최초 댓글이면 답글 대상으로 반환한다.
      */
     private TechComment getAndValidateOriginParentTechComment(Long originParentTechCommentId,
                                                               TechComment parentTechComment) {
 
         // 삭제된 댓글에는 답글 작성 불가
-        if (parentTechComment.isDeleted()) {
-            throw new IllegalArgumentException(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
-        }
+        validateIsDeletedTechComment(parentTechComment, INVALID_CAN_NOT_REPLY_TECH_COMMENT_MESSAGE, null);
 
         // 답글 대상의 댓글이 최초 댓글이면 답글 대상으로 반환
         if (parentTechComment.isEqualsId(originParentTechCommentId)) {
@@ -120,10 +121,8 @@ public class MemberTechCommentService {
         TechComment findOriginParentTechComment = techCommentRepository.findById(originParentTechCommentId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
-        // 픽픽픽 최초 댓글이 삭제 상태이면 답글 작성 불가
-        if (findOriginParentTechComment.isDeleted()) {
-            throw new IllegalArgumentException(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
-        }
+        // 최초 댓글이 삭제 상태이면 답글 작성 불가
+        validateIsDeletedTechComment(findOriginParentTechComment, INVALID_CAN_NOT_REPLY_TECH_COMMENT_MESSAGE, null);
 
         return findOriginParentTechComment;
     }
