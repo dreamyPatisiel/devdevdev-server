@@ -275,6 +275,7 @@ public class MemberTechCommentService {
      * @Author: 유소영
      * @Since: 2024.09.13
      */
+    @Transactional
     public TechCommentRecommendResponse recommendTechComment(Long techArticleId, Long techCommentId, Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
