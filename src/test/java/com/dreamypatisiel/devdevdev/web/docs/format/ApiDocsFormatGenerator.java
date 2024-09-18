@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
+import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.restdocs.snippet.Attributes;
@@ -79,11 +80,19 @@ public interface ApiDocsFormatGenerator {
         return key(FORMAT).value(pickCommentSortType);
     }
 
-    static Attributes.Attribute pickOptionTypeType() {
+    static Attributes.Attribute pickOptionType() {
         String pickOptionTypeType = Arrays.stream(PickOptionType.values())
                 .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
                 .collect(Collectors.joining(COMMA));
 
         return key(FORMAT).value(pickOptionTypeType + " | null");
+    }
+
+    static Attributes.Attribute blamePathType() {
+        String blamePathType = Arrays.stream(BlamePathType.values())
+                .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
+                .collect(Collectors.joining(COMMA));
+
+        return key(FORMAT).value(blamePathType);
     }
 }

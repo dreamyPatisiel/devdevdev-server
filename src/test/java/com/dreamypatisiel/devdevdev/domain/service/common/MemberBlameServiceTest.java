@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.common;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_ALREADY_EXIST_BLAME;
+import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_BLAME_PATH_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType.PICK;
 import static com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType.TECH_ARTICLE;
@@ -40,8 +41,11 @@ import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameTypeResponse;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
@@ -348,6 +352,7 @@ class MemberBlameServiceTest {
     @Test
     @DisplayName("기술 블로그 댓글에 신고한다.")
     void blameTechComment() {
+        // given
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -359,11 +364,11 @@ class MemberBlameServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 기술블록 회사 생성
+        // 기술 블로그 회사 생성
         Company company = createCompany("기업1");
         companyRepository.save(company);
 
-        // 기술블로그 생성
+        // 기술 블로그 생성
         TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
 
@@ -399,6 +404,49 @@ class MemberBlameServiceTest {
         // 기술 블로그 댓글 신고 횟수 검증
         TechComment findTechComment = techCommentRepository.findById(techComment.getId()).get();
         assertThat(findTechComment.getBlameTotalCount().getCount()).isEqualTo(1L);
+    }
+
+    @Disabled
+    @ParameterizedTest
+    @ValueSource(strings = {"pick", "tech_article"})
+    @DisplayName("유효하지 않은 BlamePathType로 신고할 경우 예외가 발생한다.")
+    void test(String invalidBlamePathType) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 기술 블로그 회사 생성
+        Company company = createCompany("기업1");
+        companyRepository.save(company);
+
+        // 기술 블로그 생성
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+
+        // 기술블로그 댓글 생성
+        TechComment techComment = createTechComment(new Count(0), techArticle, member);
+        techCommentRepository.save(techComment);
+
+        // 신고 종류 생성
+        BlameType blameType = new BlameType("욕설1", 0);
+        blameTypeRepository.save(blameType);
+
+        BlameRequest blameRequest = createBlameRequestBy(null, null, techArticle.getId(), techComment.getId(),
+                blameType.getId());
+
+        // when // then
+        assertThatThrownBy(() -> memberBlameService.blame(null, blameRequest,
+                authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_BLAME_PATH_MESSAGE);
     }
 
     private BlamePickDto createBlameDto(BlameRequest blameRequest) {

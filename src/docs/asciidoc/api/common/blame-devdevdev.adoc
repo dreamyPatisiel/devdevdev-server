@@ -1,0 +1,51 @@
+[[Blames-Devdevdev]]
+== 신고 API(GET: /devdevdev/api/v1/blames/{blamePahtType})
+
+* 회원이 신고 사유를 이용해서 신고하고 싶은 댑댑댑 서비스에 신고 한다.
+** 신고 가능한 댑댑댑 서비스
+*** 픽픽픽, 픽픽픽 댓글, 기술블로그 댓글
+* 익명 사용자는 이용할 수 없다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/blame-pick/http-request.adoc[]
+include::{snippets}/blame-pick-comment/request-body.adoc[]
+include::{snippets}/blame-tech-article-comment/request-body.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/blame-pick/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/blame-pick/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/blame-pick/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/blame-pick/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+* `존재하지 않는 신고 종류 입니다.`: 신고 종류가 존재하지 않는 경우
+* `신고 사유 종류 아이디는 필수 입니다.`: 신고 사유 종류 아이디를 요청 값으로 보내지 않은 경우
+* `이미 신고 했습니다.`: 이미 신고한 이력이 있는 경우
+* `유효하지 않은 신고 경로입니다.`: 잘못된 URL 접근인 경우
+* `픽픽픽 게시글이 없습니다.`: 픽픽픽이 존재하지 않는 경우
+* `픽픽픽 댓글이 없습니다.`: 픽픽픽 댓글이 존재하지 않는 경우
+* `승인 상태가 아닌 픽픽픽에는 댓글을 삭제할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
+* `잘못된 형식의 픽픽픽 서비스 접근 입니다.`: 픽픽픽 신고인데, 픽픽픽 댓글 신고를 호출한 경우
+* `삭제된 픽픽픽 댓글에는 신고할 수 없습니다.`: 픽픽픽 댓글이 삭제 상태인 경우
+* `존재하지 않는 기술블로그 댓글입니다.`: 기술 블로그가 존재하지 않은 경우
+* `삭제된 기술 블로그 댓글에는 신고할 수 없습니다.`: 기술 블로그 댓글이 삭제 된 경우
+
+include::{snippets}/blame-bind-exception/response-body.adoc[]

@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum BlamePathType {
-    PICK,
-    TECH_ARTICLE
+    PICK("픽픽픽"),
+    TECH_ARTICLE("기술 블로그");
+
+    private final String description;
 }

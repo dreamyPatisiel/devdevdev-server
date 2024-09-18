@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.web.docs;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickCommentSortType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionTypeType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -687,7 +687,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("pickCommentSort").optional().description("픽픽픽 댓글 정렬 조건")
                                 .attributes(pickCommentSortType()),
                         parameterWithName("pickOptionType").optional().description("픽픽픽 댓글 필터링 옵션 타입(체크박스)")
-                                .attributes(pickOptionTypeType())
+                                .attributes(pickOptionType())
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
@@ -701,7 +701,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].isPickAuthor").type(BOOLEAN).description("픽픽픽 게시글 작성자 여부"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].votedPickOption").optional().type(STRING)
-                                .description("픽픽픽 투표 선택 타입").attributes(pickOptionTypeType()),
+                                .description("픽픽픽 투표 선택 타입").attributes(pickOptionType()),
                         fieldWithPath("data.content[].votedPickOptionTitle").optional().type(STRING)
                                 .description("픽픽픽 투표 선택 타입 제목").attributes(stringOrNull()),
                         fieldWithPath("data.content[].contents").type(STRING).description("픽픽픽 댓글 내용"),
