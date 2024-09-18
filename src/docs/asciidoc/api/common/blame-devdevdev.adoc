@@ -1,5 +1,5 @@
 [[Blames-Devdevdev]]
-== 신고 API(GET: /devdevdev/api/v1/blames/{blamePahtType})
+== 신고 API(POST: /devdevdev/api/v1/blames/{blamePahtType})
 
 * 회원이 신고 사유를 이용해서 신고하고 싶은 댑댑댑 서비스에 신고 한다.
 ** 신고 가능한 댑댑댑 서비스
