@@ -130,7 +130,7 @@ public class MemberTechCommentService {
         TechComment findOriginParentTechComment = techCommentRepository.findById(originParentTechCommentId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
-        // 픽픽픽 최초 댓글이 삭제 상태이면 답글 작성 불가
+        // 기술블로그 최초 댓글이 삭제 상태이면 답글 작성 불가
         if (findOriginParentTechComment.isDeleted()) {
             throw new IllegalArgumentException(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
         }
@@ -280,7 +280,7 @@ public class MemberTechCommentService {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 픽픽픽 댓글/답글 조회
+        // 기술블로그 댓글/답글 조회
         TechComment findTechComment = techCommentRepository.findWithTechArticleByIdAndTechArticleId(techCommentId, techArticleId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
