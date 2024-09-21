@@ -127,7 +127,7 @@ public class TechArticle extends BasicTime {
         this.company = company;
     }
 
-    public void plusOneViewTotalCount() {
+    public void incrementViewTotalCount() {
         this.viewTotalCount = Count.plusOne(this.viewTotalCount);
     }
 
@@ -135,11 +135,11 @@ public class TechArticle extends BasicTime {
         return policy.calculatePopularScore(this);
     }
 
-    public void plusOneCommentCount() {
+    public void incrementCommentCount() {
         this.commentTotalCount = Count.plusOne(this.commentTotalCount);
     }
 
-    public void minusOneCommentCount() {
+    public void decrementCommentCount() {
         this.commentTotalCount = Count.minusOne(this.commentTotalCount);
     }
 }
