@@ -1,14 +1,13 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.entity.BasicTime;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
@@ -28,8 +27,7 @@ import org.springframework.util.ObjectUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,6 +36,7 @@ public class MemberTechCommentService {
 
     private final TechArticleCommonService techArticleCommonService;
     private final TechCommentRepository techCommentRepository;
+    private final TechCommentRecommendRepository techCommentRecommendRepository;
     private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
     private final MemberProvider memberProvider;
     private final TimeProvider timeProvider;
@@ -131,7 +130,7 @@ public class MemberTechCommentService {
         TechComment findOriginParentTechComment = techCommentRepository.findById(originParentTechCommentId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
-        // 픽픽픽 최초 댓글이 삭제 상태이면 답글 작성 불가
+        // 기술블로그 최초 댓글이 삭제 상태이면 답글 작성 불가
         if (findOriginParentTechComment.isDeleted()) {
             throw new IllegalArgumentException(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
         }
@@ -269,5 +268,65 @@ public class MemberTechCommentService {
                 .map(TechRepliedCommentsResponse::from)
                 .toList();
 
+    }
+
+    /**
+     * @Note: 기술블로그 댓글을 추천하거나 추천을 취소한다.
+     * @Author: 유소영
+     * @Since: 2024.09.13
+     */
+    @Transactional
+    public TechCommentRecommendResponse recommendTechComment(Long techArticleId, Long techCommentId, Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 기술블로그 댓글/답글 조회
+        TechComment findTechComment = techCommentRepository.findWithTechArticleByIdAndTechArticleId(techCommentId, techArticleId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 삭제된 댓글에는 답글 작성 불가
+        if (findTechComment.isDeleted()) {
+            throw new IllegalArgumentException(INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE);
+        }
+
+        return toggleTechCommentRecommend(findTechComment, findMember);
+    }
+
+    private TechCommentRecommendResponse toggleTechCommentRecommend(TechComment techComment, Member member) {
+
+        // 기술블로그 댓글/답글 추천 조회
+        Optional<TechCommentRecommend> optionalTechCommentRecommend = techCommentRecommendRepository
+                .findByTechCommentIdAndMemberId(techComment.getId(), member.getId());
+
+        // 댓글/답글에 추천이 존재하면 toggle
+        if (optionalTechCommentRecommend.isPresent()) {
+            // 추천 취소
+            TechCommentRecommend techCommentRecommend = optionalTechCommentRecommend.get();
+
+            // 추천 상태이면 취소
+            if(techCommentRecommend.isRecommended()) {
+                techCommentRecommend.cancelRecommend();
+                techComment.decrementRecommendTotalCount();
+
+                return new TechCommentRecommendResponse(techCommentRecommend.getRecommendedStatus(),
+                        techComment.getRecommendTotalCount().getCount());
+            }
+
+            techCommentRecommend.recommend();
+            techComment.incrementRecommendTotalCount();
+
+            return new TechCommentRecommendResponse(techCommentRecommend.getRecommendedStatus(),
+                    techComment.getRecommendTotalCount().getCount());
+        }
+
+        // 추천 생성
+        TechCommentRecommend techCommentRecommend = TechCommentRecommend.create(techComment, member);
+        techCommentRecommendRepository.save(techCommentRecommend);
+
+        // 총 추천 갯수 증가
+        techComment.incrementRecommendTotalCount();
+
+        return new TechCommentRecommendResponse(techCommentRecommend.getRecommendedStatus(),
+                techComment.getRecommendTotalCount().getCount());
     }
 }

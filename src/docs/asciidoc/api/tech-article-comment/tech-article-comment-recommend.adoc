@@ -1,0 +1,36 @@
+[[Tech-Comment-Recommend]]
+== 기술블로그 댓글/답글 추천 API(POST: /articles/{techArticleId}/comments/{techCommentId}/recommends)
+
+* 회원은 기술블로그 댓글/답글을 추천할 수 있다.
+* 이미 추천한 경우 추천이 취소된다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/recommend-tech-comment/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/recommend-tech-comment/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/recommend-tech-comment/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/recommend-tech-comment/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/recommend-tech-comment/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `존재하지 않는 기술블로그입니다.`: 기술블로그가 존재하지 않는 경우
+* `존재하지 않는 기술블로그 댓글입니다`: 기술블로그 댓글이 존재하지 않거나, 삭제된 댓글이거나, 본인이 작성한 댓글이 아닐 경우
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우

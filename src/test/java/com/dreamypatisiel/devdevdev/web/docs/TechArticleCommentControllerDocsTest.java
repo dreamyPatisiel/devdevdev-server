@@ -36,7 +36,9 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techCommentSortType;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -884,6 +886,60 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         ));
     }
 
+    @Test
+    @DisplayName("기술블로그 댓글/답글을 추천한다.")
+    void recommendTechComment() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/recommends",
+                        techArticle.getId(), techComment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.recommendStatus").isBoolean())
+                .andExpect(jsonPath("$.data.recommendTotalCount").isNumber());
+
+        // docs
+        actions.andDo(document("recommend-tech-comment",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디"),
+                        parameterWithName("techCommentId").description("기술블로그 댓글/답글 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터").attributes(authenticationType()),
+                        fieldWithPath("data.recommendStatus").type(BOOLEAN).description("기술블로그 댓글/답글 추천 상태")
+                                .attributes(authenticationType()),
+                        fieldWithPath("data.recommendTotalCount").type(NUMBER).description("기술블로그 댓글/답글 추천 총 갯수")
+                                .attributes(authenticationType())
+                )
+        ));
+    }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
                                             String socialType, String role) {

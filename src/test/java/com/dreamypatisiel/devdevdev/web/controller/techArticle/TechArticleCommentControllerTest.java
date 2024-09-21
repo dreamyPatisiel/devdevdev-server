@@ -1,14 +1,17 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
@@ -25,7 +28,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -629,6 +631,43 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
                 .andExpect(jsonPath("$.data.numberOfElements").isNumber())
                 .andExpect(jsonPath("$.data.empty").isBoolean());
+    }
+
+    @Test
+    @DisplayName("기술블로그 댓글/답글을 추천한다.")
+    void recommendTechComment() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/recommends",
+                        techArticle.getId(), techComment.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.recommendStatus").isBoolean())
+                .andExpect(jsonPath("$.data.recommendTotalCount").isNumber());
     }
 
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,

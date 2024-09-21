@@ -1,9 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -13,6 +10,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
@@ -23,6 +21,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
@@ -67,6 +66,9 @@ public class MemberTechCommentServiceTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    TechCommentRecommendRepository techCommentRecommendRepository;
 
     @Autowired
     TimeProvider timeProvider;
@@ -1550,6 +1552,176 @@ public class MemberTechCommentServiceTest {
         TechCommentsResponse techCommentsResponse5 = response.getContent().get(4);
         List<TechRepliedCommentsResponse> replies5 = techCommentsResponse5.getReplies();
         assertThat(replies5).hasSize(0);
+    }
+
+    @Test
+    @DisplayName("회원은 기술블로그 댓글의 답글을 추천할 수 있다.")
+    void recommendTechComment() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(2L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        // when
+        TechCommentRecommendResponse techCommentRecommendResponse = memberTechCommentService.recommendTechComment(
+                techArticleId, techComment.getId(), authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(techCommentRecommendResponse.getRecommendStatus()).isTrue(),
+                () -> assertThat(techCommentRecommendResponse.getRecommendTotalCount()).isEqualTo(1L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원은 기술블로그 댓글의 답글을 추천할 수 있다. 이때 이미 추천 상태라면 취소된다.")
+    void recommendTechCommentCancel() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(2L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        TechCommentRecommend techCommentRecommend = TechCommentRecommend.create(techComment, member);
+        techCommentRecommendRepository.save(techCommentRecommend);
+
+        // when
+        TechCommentRecommendResponse techCommentRecommendResponse = memberTechCommentService.recommendTechComment(
+                techArticleId, techComment.getId(), authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(techCommentRecommendResponse.getRecommendStatus()).isFalse(),
+                () -> assertThat(techCommentRecommendResponse.getRecommendTotalCount()).isEqualTo(0L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글의 답글을 추천할 때 존재하지 않는 댓글을 추천하면 예외가 발생한다.")
+    void recommendTechCommentNotFoundTechCommentException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId() + 1;
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.recommendTechComment(techArticleId, techCommentId, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글의 답글을 추천할 때 삭제된 댓글을 추천하면 예외가 발생한다.")
+    void recommendTechCommentDeletedTechCommentException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.recommendTechComment(techArticleId, techCommentId, authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 댓글의 답글을 추천할 때 회원이 없으면 예외가 발생한다.")
+    void recommendTechCommentNotFoundMemberException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        em.flush();
+        em.clear();
+
+        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberTechCommentService.recommendTechComment(0L, 0L, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
 
