@@ -10,9 +10,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/**
+ * @Note: 픽픽픽, 기술블로그 서비스에 신고를 담당하는 엔티티
+ * @Author: 장세웅
+ * @Since: 2024.09.16
+ */
 @Entity
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Blame extends BasicTime {
 
@@ -62,20 +69,66 @@ public class Blame extends BasicTime {
     public static Blame create(PickComment pickComment, TechComment techComment, Pick pick, TechArticle techArticle,
                                Member member, BlameType blameType) {
         Blame blame = new Blame();
-        blame.pickComment = pickComment;
-        blame.techComment = techComment;
         blame.pick = pick;
+        blame.pickComment = pickComment;
         blame.techArticle = techArticle;
+        blame.techComment = techComment;
         blame.member = member;
         blame.blameType = blameType;
 
         return blame;
     }
 
-    public static Blame createWithCustomReason(PickComment pickComment, TechComment techComment, Pick pick,
-                                               TechArticle techArticle,
-                                               Member member, BlameType blameType, String customReason) {
-        Blame blame = create(pickComment, techComment, pick, techArticle, member, blameType);
+    public static Blame createBlamePick(Pick pick, Member member, BlameType blameType) {
+        Blame blame = new Blame();
+        blame.pick = pick;
+        blame.member = member;
+        blame.blameType = blameType;
+
+        return blame;
+    }
+
+    public static Blame createBlamePickWithCustomReason(Pick pick, Member member, BlameType blameType,
+                                                        String customReason) {
+        Blame blame = createBlamePick(pick, member, blameType);
+        blame.customReason = customReason;
+
+        return blame;
+    }
+
+    public static Blame createBlamePickComment(Pick pick, PickComment pickComment, Member member, BlameType blameType) {
+        Blame blame = new Blame();
+        blame.pick = pick;
+        blame.pickComment = pickComment;
+        blame.member = member;
+        blame.blameType = blameType;
+
+        return blame;
+    }
+
+    public static Blame createBlamePickCommentWithCustomReason(Pick pick, PickComment pickComment, Member member,
+                                                               BlameType blameType, String customReason) {
+        Blame blame = createBlamePickComment(pick, pickComment, member, blameType);
+        blame.customReason = customReason;
+
+        return blame;
+    }
+
+    public static Blame createBlameTechComment(TechArticle techArticle, TechComment techComment, Member member,
+                                               BlameType blameType) {
+        Blame blame = new Blame();
+        blame.techArticle = techArticle;
+        blame.techComment = techComment;
+        blame.member = member;
+        blame.blameType = blameType;
+
+        return blame;
+    }
+
+    public static Blame createBlameTechCommentWithCustomReason(TechArticle techArticle, TechComment techComment,
+                                                               Member member, BlameType blameType,
+                                                               String customReason) {
+        Blame blame = createBlameTechComment(techArticle, techComment, member, blameType);
         blame.customReason = customReason;
 
         return blame;

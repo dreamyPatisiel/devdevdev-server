@@ -5,6 +5,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -14,6 +15,7 @@ import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -78,5 +80,12 @@ public class TechArticleCommonService {
         return elasticTechArticlesResponse.stream()
                 .map(elasticResponse -> elasticResponse.content().getId())
                 .toList();
+    }
+
+    public static void validateIsDeletedTechComment(TechComment techComment, String message,
+                                                    @Nullable String messageArgs) {
+        if (techComment.isDeleted()) {
+            throw new IllegalArgumentException(String.format(message, messageArgs));
+        }
     }
 }

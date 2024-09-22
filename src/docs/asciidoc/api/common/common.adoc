@@ -1,3 +1,4 @@
 = 댑댑댑 공통
 
 include::blame-get.adoc[]
+include::blame-devdevdev.adoc[]

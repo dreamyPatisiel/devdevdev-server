@@ -1,13 +1,13 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
+
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
 
 @Getter
 @RequiredArgsConstructor
@@ -24,7 +24,6 @@ public enum TechCommentSort {
             return techComment.id.gt(findTechComment.getId());
         }
     },
-
     LATEST("최신순") {
         @Override
         public OrderSpecifier<?> getOrderSpecifierByTechCommentSort() {

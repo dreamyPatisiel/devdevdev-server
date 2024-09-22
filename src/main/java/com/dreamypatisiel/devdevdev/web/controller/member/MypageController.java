@@ -1,16 +1,16 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.member;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
-import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;

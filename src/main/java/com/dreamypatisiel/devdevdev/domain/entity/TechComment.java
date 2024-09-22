@@ -95,7 +95,8 @@ public class TechComment extends BasicTime {
         this.deletedAt = deletedAt;
     }
 
-    public static TechComment createMainTechComment(CommentContents contents, Member createdBy, TechArticle techArticle) {
+    public static TechComment createMainTechComment(CommentContents contents, Member createdBy,
+                                                    TechArticle techArticle) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
@@ -106,7 +107,9 @@ public class TechComment extends BasicTime {
                 .build();
     }
 
-    public static TechComment createRepliedTechComment(CommentContents contents, Member createdBy, TechArticle techArticle, TechComment originParent, TechComment parent) {
+    public static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
+                                                       TechArticle techArticle, TechComment originParent,
+                                                       TechComment parent) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
@@ -148,6 +151,11 @@ public class TechComment extends BasicTime {
         this.recommendTotalCount = Count.minusOne(this.recommendTotalCount);
     }
 
+    public void incrementBlameTotalCount() {
+        this.blameTotalCount = Count.plusOne(this.blameTotalCount);
+    }
+
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
-    }}
+    }
+}

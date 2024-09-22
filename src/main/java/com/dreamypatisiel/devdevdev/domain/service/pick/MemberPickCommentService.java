@@ -7,6 +7,8 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService.validateIsApprovalPickContentStatus;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService.validateIsDeletedPickComment;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
@@ -14,7 +16,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
@@ -22,18 +23,19 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -179,12 +181,6 @@ public class MemberPickCommentService {
         return findOriginParentPickComment;
     }
 
-    private void validateIsDeletedPickComment(PickComment pickComment, String message, String messageArgs) {
-        if (pickComment.isDeleted()) {
-            throw new IllegalArgumentException(String.format(message, messageArgs));
-        }
-    }
-
     /**
      * @Note: 회원 자신이 작성한 픽픽픽 댓글/답글을 수정한다. 픽픽픽 공개 여부는 수정할 수 없다.
      * @Author: 장세웅
@@ -325,7 +321,7 @@ public class MemberPickCommentService {
     private List<PickRepliedCommentsResponse> getPickRepliedComments(Map<Long, List<PickComment>> pickCommentReplies,
                                                                      Long originPickCommentId) {
         return pickCommentReplies.get(originPickCommentId).stream()
-                .sorted((reply1, reply2) -> reply2.getCreatedAt().compareTo(reply1.getCreatedAt())) // 시간 내림차순으로
+                .sorted(Comparator.comparing(PickComment::getCreatedAt)) // 오름차순
                 .map(PickRepliedCommentsResponse::from)
                 .toList();
     }
@@ -352,29 +348,25 @@ public class MemberPickCommentService {
         // 픽픽픽 댓글/답글 검증
         validateIsDeletedPickComment(findPickComment, INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE, RECOMMEND);
 
-        return togglePickCommentRecommend(findPickComment, findMember);
+        return toggleOrCreatePickCommentRecommend(findPickComment, findMember);
     }
 
-    private PickCommentRecommendResponse togglePickCommentRecommend(PickComment pickComment,
-                                                                    Member member) {
+    private PickCommentRecommendResponse toggleOrCreatePickCommentRecommend(PickComment pickComment, Member member) {
 
         // 픽픽픽 댓글/답글 추천 조회
         Optional<PickCommentRecommend> optionalPickCommentRecommend = pickCommentRecommendRepository.findByPickCommentIdAndMemberId(
                 pickComment.getId(), member.getId());
 
-        // 댓글/답글에 추천이 존재하면
+        // 댓글/답글에 추천이 존재하면 toggle
         if (optionalPickCommentRecommend.isPresent()) {
-            // 추천 취소
             PickCommentRecommend pickCommentRecommend = optionalPickCommentRecommend.get();
-            pickCommentRecommend.cancelRecommend();
-
-            // 총 추천 갯수 감소
-            pickComment.decrementRecommendTotalCount();
-
-            return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
-                    pickComment.getRecommendTotalCount().getCount());
+            return togglePickCommentRecommend(pickComment, pickCommentRecommend);
         }
 
+        return createPickCommentRecommend(pickComment, member);
+    }
+
+    private PickCommentRecommendResponse createPickCommentRecommend(PickComment pickComment, Member member) {
         // 추천
         PickCommentRecommend pickCommentRecommend = PickCommentRecommend.create(pickComment, member);
         pickCommentRecommendRepository.save(pickCommentRecommend);
@@ -386,10 +378,24 @@ public class MemberPickCommentService {
                 pickComment.getRecommendTotalCount().getCount());
     }
 
-    // 픽픽픽 게시글의 승인 상태 검증
-    private void validateIsApprovalPickContentStatus(Pick pick, String message, String messageArgs) {
-        if (!pick.isTrueContentStatus(ContentStatus.APPROVAL)) {
-            throw new IllegalArgumentException(String.format(message, messageArgs));
+    private PickCommentRecommendResponse togglePickCommentRecommend(PickComment pickComment,
+                                                                    PickCommentRecommend pickCommentRecommend) {
+
+        // 추천 상태이면
+        if (pickCommentRecommend.isRecommended()) {
+            // 추천 취소
+            pickCommentRecommend.cancelRecommend();
+            pickComment.decrementRecommendTotalCount();
+
+            return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
+                    pickComment.getRecommendTotalCount().getCount());
         }
+
+        // 추천
+        pickCommentRecommend.recommend();
+        pickComment.incrementRecommendTotalCount();
+
+        return new PickCommentRecommendResponse(pickCommentRecommend.getRecommendedStatus(),
+                pickComment.getRecommendTotalCount().getCount());
     }
 }

@@ -45,7 +45,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
@@ -125,8 +124,6 @@ class MemberPickCommentServiceTest {
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
     String author = "운영자";
-    @Autowired
-    private TimeProvider timeProvider;
 
     @Test
     @DisplayName("승인상태의 픽픽픽에 선택지 투표 공개 댓글을 작성한다.")
@@ -1284,7 +1281,7 @@ class MemberPickCommentServiceTest {
         pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
-        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
 
         em.flush();
         em.clear();
@@ -1523,7 +1520,7 @@ class MemberPickCommentServiceTest {
                 originParentPickComment1, pickReply1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
-        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
 
         em.flush();
         em.clear();
@@ -1820,7 +1817,7 @@ class MemberPickCommentServiceTest {
         pickCommentRepository.save(pickComment);
 
         // 픽픽픽 댓글 추천 생성
-        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(pickComment, member);
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(pickComment, member, true);
         pickCommentRecommendRepository.save(pickCommentRecommend);
 
         em.flush();
@@ -1837,6 +1834,51 @@ class MemberPickCommentServiceTest {
         assertAll(
                 () -> assertThat(response.getRecommendStatus()).isFalse(),
                 () -> assertThat(response.getRecommendTotalCount()).isEqualTo(0L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 이미 픽픽픽 댓글/답글을 추천 취소 상태일 때 추천하게 되면 추천한다.")
+    void recommendPickCommentIsTrueAlreadyFalse() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("픽픽픽 댓글"), true, new Count(0), member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 댓글 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(pickComment, member, false);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickCommentRecommendResponse response = memberPickCommentService.recommendPickComment(
+                pick.getId(), pickComment.getId(), authentication);
+
+        em.flush();
+        em.clear();
+
+        // then
+        assertAll(
+                () -> assertThat(response.getRecommendStatus()).isTrue(),
+                () -> assertThat(response.getRecommendTotalCount()).isEqualTo(1L)
         );
     }
 
@@ -1974,11 +2016,12 @@ class MemberPickCommentServiceTest {
         return pickComment;
     }
 
-    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member) {
+    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
+                                                            Boolean recommendedStatus) {
         return PickCommentRecommend.builder()
                 .pickComment(pickComment)
                 .member(member)
-                .recommendedStatus(true)
+                .recommendedStatus(recommendedStatus)
                 .build();
     }
 

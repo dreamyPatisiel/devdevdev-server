@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.exception;
 
 public class PickExceptionMessage {
+    public static final String INVALID_SERVICE_PATH_ACCESS = "잘못된 형식의 픽픽픽 서비스 접근 입니다.";
     public static final String INVALID_PICK_OPTION_IMAGE_NAME_MESSAGE = "픽픽픽 이미지에 알맞지 않은 형식의 이름 입니다.";
     public static final String INVALID_NOT_FOUND_PICK_OPTION_IMAGE_MESSAGE = "픽픽픽 선택지 이미지가 존재하지 않습니다.";
     public static final String INVALID_PICK_OPTION_IMAGE_SIZE_MESSAGE = "이미지 파일은 최대 %d개 까지 업로드 할 수 있습니다.";
