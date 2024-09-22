@@ -10,6 +10,5 @@ public class TechArticleExceptionMessage {
     public static final String INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE = "존재하지 않는 기술블로그 댓글입니다.";
     public static final String INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE = "삭제된 기술블로그 댓글에는 답글을 작성할 수 없습니다.";
     public static final String INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE = "삭제된 기술블로그 댓글은 추천할 수 없습니다.";
-    public static final String INVALID_CAN_NOT_REPLY_TECH_COMMENT_MESSAGE = "삭제된 기술블로그 댓글에는 답글을 삭제할 수 없습니다.";
     public static final String INVALID_CAN_NOT_ACTION_DELETED_TECH_COMMENT_MESSAGE = "삭제된 기술블로그 댓글에는 %s할 수 없습니다.";
 }

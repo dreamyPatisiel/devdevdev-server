@@ -1,9 +1,19 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -13,31 +23,36 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
+import java.util.List;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Transactional
@@ -557,7 +572,8 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+                techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
 
@@ -571,7 +587,8 @@ public class MemberTechCommentServiceTest {
         // then
         assertThat(techCommentResponse.getTechCommentId()).isNotNull();
 
-        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId()).get();
+        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
 
         assertAll(
                 // 답글 생성 확인
@@ -583,9 +600,11 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findRepliedTechComment.getParent().getId()).isEqualTo(parentTechCommentId),
                 () -> assertThat(findRepliedTechComment.getOriginParent().getId()).isEqualTo(parentTechCommentId),
                 // 최상단 댓글의 답글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L),
+                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(
+                        1L),
                 // 기술블로그 댓글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(2L)
+                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
+                        2L)
         );
     }
 
@@ -611,7 +630,8 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+                techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
@@ -624,13 +644,15 @@ public class MemberTechCommentServiceTest {
 
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.registerRepliedTechComment(
-                techArticleId, originParentTechCommentId, parentTechCommentId, registerRepliedTechComment, authentication);
+                techArticleId, originParentTechCommentId, parentTechCommentId, registerRepliedTechComment,
+                authentication);
         em.flush();
 
         // then
         assertThat(techCommentResponse.getTechCommentId()).isNotNull();
 
-        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId()).get();
+        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
 
         assertAll(
                 () -> assertThat(findRepliedTechComment.getContents().getCommentContents()).isEqualTo("답글입니다."),
@@ -641,9 +663,11 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findRepliedTechComment.getParent().getId()).isEqualTo(parentTechCommentId),
                 () -> assertThat(findRepliedTechComment.getOriginParent().getId()).isEqualTo(originParentTechCommentId),
                 // 최상단 댓글의 답글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L),
+                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(
+                        1L),
                 // 기술블로그 댓글 수 증가 확인
-                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(3L)
+                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
+                        3L)
         );
     }
 
@@ -771,21 +795,36 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member, techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member, techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
 
-        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member, techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member, techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-
+        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
+                techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member,
+                techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
@@ -862,7 +901,6 @@ public class MemberTechCommentServiceTest {
                                 false
                         )
                 );
-
 
         TechCommentsResponse techCommentsResponse1 = response.getContent().get(0);
         List<TechRepliedCommentsResponse> replies1 = techCommentsResponse1.getReplies();
@@ -977,21 +1015,36 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member, techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member, techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
 
-        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member, techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member, techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-
+        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
+                techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member,
+                techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
@@ -1114,20 +1167,36 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle, new Count(0L), new Count(0L), new Count(4L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle, new Count(0L), new Count(0L), new Count(2L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(4L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(2L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글4의 답글1"), member, techArticle, originParentTechComment4, originParentTechComment4, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글4의 답글2"), member, techArticle, originParentTechComment4, originParentTechComment4, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글4의 답글1"), member,
+                techArticle, originParentTechComment4, originParentTechComment4, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글4의 답글2"), member,
+                techArticle, originParentTechComment4, originParentTechComment4, new Count(0L), new Count(0L),
+                new Count(0L));
 
-        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1의 답글"), member, techArticle, originParentTechComment2, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2의 답글"), member, techArticle, originParentTechComment2, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1의 답글"), member,
+                techArticle, originParentTechComment2, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2의 답글"), member,
+                techArticle, originParentTechComment2, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
@@ -1204,7 +1273,6 @@ public class MemberTechCommentServiceTest {
                                 false
                         )
                 );
-
 
         TechCommentsResponse techCommentsResponse1 = response.getContent().get(0);
         List<TechRepliedCommentsResponse> replies1 = techCommentsResponse1.getReplies();
@@ -1319,12 +1387,18 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member, techArticle, new Count(0L), new Count(3L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle, new Count(0L), new Count(1L), new Count(0L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle, new Count(0L), new Count(5L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle, new Count(0L), new Count(4L), new Count(0L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle, new Count(0L), new Count(2L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle, new Count(0L), new Count(6L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
+                techArticle, new Count(0L), new Count(3L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+                techArticle, new Count(0L), new Count(1L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
+                techArticle, new Count(0L), new Count(5L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
+                techArticle, new Count(0L), new Count(4L), new Count(0L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
+                techArticle, new Count(0L), new Count(2L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+                techArticle, new Count(0L), new Count(6L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
@@ -1443,12 +1517,18 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
@@ -1715,6 +1795,36 @@ public class MemberTechCommentServiceTest {
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
+    private static TechComment createMainTechComment(CommentContents contents, Member createdBy,
+                                                     TechArticle techArticle,
+                                                     Count blameTotalCount, Count recommendTotalCount,
+                                                     Count replyTotalCount) {
+        return TechComment.builder()
+                .contents(contents)
+                .createdBy(createdBy)
+                .techArticle(techArticle)
+                .blameTotalCount(blameTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .replyTotalCount(replyTotalCount)
+                .build();
+    }
+
+    private static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
+                                                        TechArticle techArticle,
+                                                        TechComment originParent, TechComment parent,
+                                                        Count blameTotalCount, Count recommendTotalCount,
+                                                        Count replyTotalCount) {
+        return TechComment.builder()
+                .contents(contents)
+                .createdBy(createdBy)
+                .techArticle(techArticle)
+                .blameTotalCount(blameTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .replyTotalCount(replyTotalCount)
+                .originParent(originParent)
+                .parent(parent)
+                .build();
+    }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
                                             String socialType, String role) {

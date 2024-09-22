@@ -8,7 +8,9 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
+import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.restdocs.snippet.Attributes;
@@ -78,8 +80,7 @@ public interface ApiDocsFormatGenerator {
 
         return key(FORMAT).value(pickCommentSortType);
     }
-
-
+    
     static Attributes.Attribute techCommentSortType() {
         String techCommentSortType = Arrays.stream(TechCommentSort.values())
                 .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
