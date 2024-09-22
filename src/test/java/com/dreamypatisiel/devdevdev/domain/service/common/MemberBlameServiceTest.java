@@ -33,7 +33,8 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
+import com.dreamypatisiel.devdevdev.domain.service.blame.MemberBlameService;
+import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;

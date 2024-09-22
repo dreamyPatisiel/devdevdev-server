@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.common;
+package com.dreamypatisiel.devdevdev.domain.service.blame;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_ALREADY_EXIST_BLAME;
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_BLAME_PATH_MESSAGE;
@@ -6,10 +6,9 @@ import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessa
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
-import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
-import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameTechArticleDto;
-import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickBlameService;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechBlameService;
+import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlameDto;
+import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlamePickDto;
+import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlameTechArticleDto;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameRequest;
@@ -86,9 +85,8 @@ public class MemberBlameService {
     }
 
     private void validateBlame(BlameRequest blameRequest, Member findMember) {
-        // 픽픽픽 신고 이력 조회
-        com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameDto blameDto = com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameDto.of(
-                findMember.getId(), blameRequest);
+        // 신고 이력 조회
+        BlameDto blameDto = BlameDto.of(findMember.getId(), blameRequest);
         Boolean existsBlame = blameRepository.existsBlameByBlameDto(blameDto);
 
         // 신고 이력이 존재하면

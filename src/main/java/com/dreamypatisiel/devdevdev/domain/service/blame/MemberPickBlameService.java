@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.pick;
+package com.dreamypatisiel.devdevdev.domain.service.blame;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.Blame.createBlamePickComment;
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_NOT_FOUND_BLAME_TYPE_MESSAGE;
@@ -6,7 +6,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_SERVICE_PATH_ACCESS;
-import static com.dreamypatisiel.devdevdev.domain.service.common.MemberBlameService.BLAME_TYPE_ETC;
+import static com.dreamypatisiel.devdevdev.domain.service.blame.MemberBlameService.BLAME_TYPE_ETC;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService.validateIsApprovalPickContentStatus;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommonService.validateIsDeletedPickComment;
 
@@ -19,7 +19,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlamePickDto;
+import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.web.dto.response.common.BlameResponse;
 import lombok.RequiredArgsConstructor;

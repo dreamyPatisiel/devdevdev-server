@@ -2,7 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.repository.blame.custom;
 
 import static com.dreamypatisiel.devdevdev.domain.entity.QBlame.blame;
 
-import com.dreamypatisiel.devdevdev.domain.service.common.dto.BlameDto;
+import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlameDto;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;

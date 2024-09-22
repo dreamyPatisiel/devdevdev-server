@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.common;
 
-import com.dreamypatisiel.devdevdev.domain.service.common.MemberBlameService;
+import com.dreamypatisiel.devdevdev.domain.service.blame.MemberBlameService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameRequest;

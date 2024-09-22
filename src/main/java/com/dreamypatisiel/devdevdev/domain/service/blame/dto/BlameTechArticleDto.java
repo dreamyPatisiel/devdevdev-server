@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.common.dto;
+package com.dreamypatisiel.devdevdev.domain.service.blame.dto;
 
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlameRequest;
 import lombok.Builder;
