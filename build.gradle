@@ -3,13 +3,13 @@ plugins {
     id 'org.springframework.boot' version '3.2.1'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'org.asciidoctor.jvm.convert' version '3.3.2'
-    id 'org.jetbrains.kotlin.jvm'
 }
 
 group = 'com.dreamypatisiel'
 version = '0.0.1-SNAPSHOT'
 
 java {
+    sourceCompatibility = '21'
 }
 
 configurations {
@@ -101,7 +101,6 @@ dependencies {
     testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
     testImplementation 'org.springframework.security:spring-security-test'
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 test {
@@ -131,7 +130,4 @@ bootJar {
     from("${asciidoctor.outputDir}") {
         into "static/docs"
     }
-}
-kotlin {
-    jvmToolchain(21)
 }

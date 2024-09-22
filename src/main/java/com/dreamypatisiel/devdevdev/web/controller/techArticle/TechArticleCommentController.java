@@ -1,24 +1,24 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "기술블로그 댓글 API", description = "기술블로그 댓글 작성/수정/삭제, 답글 작성/수정/삭제 API")
 @RestController
@@ -82,6 +82,36 @@ public class TechArticleCommentController {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         TechCommentResponse response = memberTechCommentService.deleteTechComment(techArticleId, techCommentId,
+                authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 댓글/답글 조회")
+    @GetMapping("/articles/{techArticleId}/comments")
+    public ResponseEntity<BasicResponse<SliceCustom<TechCommentsResponse>>> getTechComments(
+            @PageableDefault(size = 5) Pageable pageable,
+            @PathVariable Long techArticleId,
+            @RequestParam(required = false) TechCommentSort techCommentSort,
+            @RequestParam(required = false) Long techCommentId
+    ) {
+
+        SliceCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId, techCommentId,
+                techCommentSort, pageable);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 댓글/답글 추천/추천취소")
+    @PostMapping("/articles/{techArticleId}/comments/{techCommentId}/recommends")
+    public ResponseEntity<BasicResponse<TechCommentRecommendResponse>> recommendTechComment(
+            @PathVariable Long techArticleId,
+            @PathVariable Long techCommentId
+    ) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        TechCommentRecommendResponse response = memberTechCommentService.recommendTechComment(techArticleId, techCommentId,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));

@@ -80,8 +80,7 @@ public class TechComment extends BasicTime {
     private LocalDateTime deletedAt;
 
     @Builder
-    private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
-                        Count replyTotalCount,
+    private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
                         TechComment parent, TechComment originParent, Member createdBy, Member deletedBy,
                         TechArticle techArticle, LocalDateTime deletedAt) {
         this.contents = contents;
@@ -136,12 +135,20 @@ public class TechComment extends BasicTime {
         return deletedAt != null;
     }
 
-    public void plusOneReplyTotalCount() {
+    public void incrementReplyTotalCount() {
         this.replyTotalCount = Count.plusOne(this.replyTotalCount);
     }
 
-    public void minusOneReplyTotalCount() {
+    public void decrementReplyTotalCount() {
         this.replyTotalCount = Count.minusOne(this.replyTotalCount);
+    }
+
+    public void incrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.plusOne(this.recommendTotalCount);
+    }
+
+    public void decrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.minusOne(this.recommendTotalCount);
     }
 
     public void incrementBlameTotalCount() {

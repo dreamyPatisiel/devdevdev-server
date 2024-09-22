@@ -78,7 +78,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
 
         // 조회수 증가
-        techArticle.plusOneViewTotalCount();
+        techArticle.incrementViewTotalCount();
         techArticle.changePopularScore(techArticlePopularScorePolicy);
 
         // 데이터 가공
