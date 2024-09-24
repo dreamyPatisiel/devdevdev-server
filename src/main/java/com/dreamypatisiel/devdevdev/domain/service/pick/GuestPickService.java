@@ -68,6 +68,7 @@ public class GuestPickService extends PickCommonService implements PickService {
         this.anonymousMemberRepository = anonymousMemberRepository;
     }
 
+    @Transactional
     @Override
     public Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
                                                  String anonymousMemberId, Authentication authentication) {
