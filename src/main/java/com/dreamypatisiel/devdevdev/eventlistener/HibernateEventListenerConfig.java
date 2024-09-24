@@ -1,14 +1,14 @@
 package com.dreamypatisiel.devdevdev.eventlistener;
 
 import jakarta.persistence.EntityManagerFactory;
+import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.event.service.spi.EventListenerRegistry;
 import org.hibernate.event.spi.EventType;
 import org.hibernate.internal.SessionFactoryImpl;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
-
+@Deprecated
 @Configuration
 @RequiredArgsConstructor
 public class HibernateEventListenerConfig {
