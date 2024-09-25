@@ -19,6 +19,7 @@ public class TechArticleMainResponse {
     public final Long id;
     public final String elasticId;
     public final String thumbnailUrl;
+    public final Boolean isLogoImage;
     public final String techArticleUrl;
     public final String title;
     public final String contents;
@@ -33,7 +34,7 @@ public class TechArticleMainResponse {
     public final Float score;
 
     @Builder
-    private TechArticleMainResponse(Long id, String elasticId, String thumbnailUrl, String techArticleUrl, String title,
+    private TechArticleMainResponse(Long id, String elasticId, String thumbnailUrl, Boolean isLogoImage, String techArticleUrl, String title,
                                     String contents,
                                     CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
                                     Long recommendTotalCount, Long commentTotalCount, Long popularScore,
@@ -41,6 +42,7 @@ public class TechArticleMainResponse {
         this.id = id;
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
+        this.isLogoImage = isLogoImage;
         this.techArticleUrl = techArticleUrl;
         this.title = title;
         this.contents = contents;
@@ -66,6 +68,7 @@ public class TechArticleMainResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
+                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
@@ -88,6 +91,7 @@ public class TechArticleMainResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
+                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .company(companyResponse)
@@ -110,6 +114,7 @@ public class TechArticleMainResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
+                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
@@ -134,6 +139,7 @@ public class TechArticleMainResponse {
                 .popularScore(techArticle.getPopularScore().getCount())
                 .elasticId(elasticTechArticle.getId())
                 .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
+                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
                 .techArticleUrl(elasticTechArticle.getTechArticleUrl())
                 .title(elasticTechArticle.getTitle())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
