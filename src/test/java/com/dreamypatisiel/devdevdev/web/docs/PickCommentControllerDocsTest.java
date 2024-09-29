@@ -698,7 +698,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].createdAt").type(STRING).description("픽픽픽 댓글 작성일시"),
                         fieldWithPath("data.content[].memberId").type(NUMBER).description("픽픽픽 댓글 작성자 아이디"),
                         fieldWithPath("data.content[].author").type(STRING).description("픽픽픽 댓글 작성자 닉네임"),
-                        fieldWithPath("data.content[].isPickAuthor").type(BOOLEAN).description("픽픽픽 게시글 작성자 여부"),
+                        fieldWithPath("data.content[].isPickAuthor").type(BOOLEAN).description("댓글 작성자가 픽픽픽 작성자인지 여부"),
+                        fieldWithPath("data.content[].isCommentPickAuthor").type(BOOLEAN)
+                                .description("로그인한 회원이 댓글 작성자인지 여부"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].votedPickOption").optional().type(STRING)
                                 .description("픽픽픽 투표 선택 타입").attributes(pickOptionType()),

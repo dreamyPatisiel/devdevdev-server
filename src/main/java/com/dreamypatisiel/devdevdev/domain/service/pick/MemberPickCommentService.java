@@ -52,7 +52,7 @@ import org.springframework.util.ObjectUtils;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class MemberPickCommentService {
+public class MemberPickCommentService implements PickCommentService {
 
     public static final String MODIFY = "수정";
     public static final String REGISTER = "작성";
@@ -258,7 +258,11 @@ public class MemberPickCommentService {
      */
     public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
                                                               Long pickCommentId, PickCommentSort pickCommentSort,
-                                                              PickOptionType pickOptionType) {
+                                                              PickOptionType pickOptionType,
+                                                              Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 최상위 댓글 조회
         Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
@@ -278,7 +282,7 @@ public class MemberPickCommentService {
 
         // 픽픽픽 댓글/답글 응답 생성
         List<PickCommentsResponse> pickCommentsResponse = originParentPickComments.stream()
-                .map(originPickComment -> getPickCommentsResponse(originPickComment, pickCommentReplies))
+                .map(originPickComment -> getPickCommentsResponse(findMember, originPickComment, pickCommentReplies))
                 .toList();
 
         // 픽픽픽 최상위 댓글 추출
@@ -298,7 +302,7 @@ public class MemberPickCommentService {
                 originParentPickCommentTotalCount);
     }
 
-    private PickCommentsResponse getPickCommentsResponse(PickComment originPickComment,
+    private PickCommentsResponse getPickCommentsResponse(Member member, PickComment originPickComment,
                                                          Map<Long, List<PickComment>> pickCommentReplies) {
 
         // 최상위 댓글 아이디 추출
@@ -307,22 +311,23 @@ public class MemberPickCommentService {
         // 답글의 최상위 댓글이 존재하면
         if (pickCommentReplies.containsKey(originPickCommentId)) {
             // 답글 만들기
-            List<PickRepliedCommentsResponse> pickRepliedComments = getPickRepliedComments(
-                    pickCommentReplies, originPickCommentId);
+            List<PickRepliedCommentsResponse> pickRepliedComments = getPickRepliedComments(member, pickCommentReplies,
+                    originPickCommentId);
 
             // 답글이 존재하는 댓글 응답 생성
-            return PickCommentsResponse.from(originPickComment, pickRepliedComments);
+            return PickCommentsResponse.of(member, originPickComment, pickRepliedComments);
         }
 
         // 답글이 없는 댓글 응답 생성
-        return PickCommentsResponse.from(originPickComment, Collections.emptyList());
+        return PickCommentsResponse.of(member, originPickComment, Collections.emptyList());
     }
 
-    private List<PickRepliedCommentsResponse> getPickRepliedComments(Map<Long, List<PickComment>> pickCommentReplies,
+    private List<PickRepliedCommentsResponse> getPickRepliedComments(Member member,
+                                                                     Map<Long, List<PickComment>> pickCommentReplies,
                                                                      Long originPickCommentId) {
         return pickCommentReplies.get(originPickCommentId).stream()
                 .sorted(Comparator.comparing(PickComment::getCreatedAt)) // 오름차순
-                .map(PickRepliedCommentsResponse::from)
+                .map(repliedPickComment -> PickRepliedCommentsResponse.of(member, repliedPickComment))
                 .toList();
     }
 
