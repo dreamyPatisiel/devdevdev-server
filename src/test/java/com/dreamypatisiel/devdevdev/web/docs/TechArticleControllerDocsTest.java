@@ -183,6 +183,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                 .description("기술블로그 Url"),
                         fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 썸네일 이미지"),
+                        fieldWithPath("data.content.[].isLogoImage").type(JsonFieldType.BOOLEAN)
+                                .description("썸네일 이미지의 회사 로고 여부"),
                         fieldWithPath("data.content.[].title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.content.[].contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
                         fieldWithPath("data.content.[].company").type(JsonFieldType.OBJECT).description("기술블로그 회사"),
