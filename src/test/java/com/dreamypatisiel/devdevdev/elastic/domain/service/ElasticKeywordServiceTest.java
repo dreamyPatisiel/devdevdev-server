@@ -32,11 +32,11 @@ class ElasticKeywordServiceTest {
     @DisplayName("검색어와 prefix가 일치하는 키워드를 조회한다.")
     void autocompleteKeyword() throws IOException {
         // given
-        ElasticKeyword keyword1 = ElasticKeyword.create(List.of("자바", "Java"));
-        ElasticKeyword keyword2 = ElasticKeyword.create(List.of("자바스크립트", "JavaScript"));
-        ElasticKeyword keyword3 = ElasticKeyword.create(List.of("스프링", "Spring"));
-        ElasticKeyword keyword4 = ElasticKeyword.create(List.of("스프링부트", "SpringBoot"));
-        ElasticKeyword keyword5 = ElasticKeyword.create(List.of("챗지피티", "ChatGPT"));
+        ElasticKeyword keyword1 = ElasticKeyword.create("자바");
+        ElasticKeyword keyword2 = ElasticKeyword.create("자바스크립트");
+        ElasticKeyword keyword3 = ElasticKeyword.create("스프링");
+        ElasticKeyword keyword4 = ElasticKeyword.create("스프링부트");
+        ElasticKeyword keyword5 = ElasticKeyword.create("챗지피티");
         List<ElasticKeyword> elasticKeywords = List.of(keyword1, keyword2, keyword3, keyword4, keyword5);
         elasticKeywordRepository.saveAll(elasticKeywords);
 
@@ -51,15 +51,61 @@ class ElasticKeywordServiceTest {
                 .contains("자바", "자바스크립트");
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"ㅈ", "자", "잡", "ㅈㅏ", "ㅈㅏㅂ", "ㅈㅏㅂㅏ"})
+    @DisplayName("한글 검색어의 경우 자음, 모음을 분리하여 검색할 수 있다.")
+    void autocompleteKoreanKeywordBySeparatingConsonantsAndVowels(String prefix) throws IOException {
+        // given
+        ElasticKeyword keyword1 = ElasticKeyword.create("자바");
+        ElasticKeyword keyword2 = ElasticKeyword.create("자바스크립트");
+        ElasticKeyword keyword3 = ElasticKeyword.create("스프링");
+        ElasticKeyword keyword4 = ElasticKeyword.create("스프링부트");
+        ElasticKeyword keyword5 = ElasticKeyword.create("챗지피티");
+        List<ElasticKeyword> elasticKeywords = List.of(keyword1, keyword2, keyword3, keyword4, keyword5);
+        elasticKeywordRepository.saveAll(elasticKeywords);
+
+        // when
+        List<String> keywords = elasticKeywordService.autocompleteKeyword(prefix);
+
+        // then
+        assertThat(keywords)
+                .hasSize(2)
+                .contains("자바", "자바스크립트");
+    }
+
+    @Test
+    @DisplayName("한글 검색어의 경우 초성검색을 할 수 있다.")
+    void autocompleteKoreanKeywordByChosung() throws IOException {
+        // given
+        ElasticKeyword keyword1 = ElasticKeyword.create("자바");
+        ElasticKeyword keyword2 = ElasticKeyword.create("자바스크립트");
+        ElasticKeyword keyword3 = ElasticKeyword.create("스프링");
+        ElasticKeyword keyword4 = ElasticKeyword.create("스프링부트");
+        ElasticKeyword keyword5 = ElasticKeyword.create("챗지피티");
+        List<ElasticKeyword> elasticKeywords = List.of(keyword1, keyword2, keyword3, keyword4, keyword5);
+        elasticKeywordRepository.saveAll(elasticKeywords);
+
+        String prefix = "ㅅㅍㄹ";
+
+        // when
+        List<String> keywords = elasticKeywordService.autocompleteKeyword(prefix);
+
+        // then
+        assertThat(keywords)
+                .hasSize(2)
+                .contains("스프링", "스프링부트");
+    }
+
+
     @Test
     @DisplayName("영어 대소문자 상관없이 키워드를 조회한다.")
     void autocompleteKeywordRegardlessOfAlphaCase() throws IOException {
         // given
-        ElasticKeyword keyword1 = ElasticKeyword.create(List.of("자바", "Java"));
-        ElasticKeyword keyword2 = ElasticKeyword.create(List.of("자바스크립트", "JavaScript"));
-        ElasticKeyword keyword3 = ElasticKeyword.create(List.of("스프링", "Spring"));
-        ElasticKeyword keyword4 = ElasticKeyword.create(List.of("스프링부트", "SpringBoot"));
-        ElasticKeyword keyword5 = ElasticKeyword.create(List.of("챗지피티", "ChatGPT"));
+        ElasticKeyword keyword1 = ElasticKeyword.create("JAVA");
+        ElasticKeyword keyword2 = ElasticKeyword.create("JavaScript");
+        ElasticKeyword keyword3 = ElasticKeyword.create("Spring");
+        ElasticKeyword keyword4 = ElasticKeyword.create("SpringBoot");
+        ElasticKeyword keyword5 = ElasticKeyword.create("ChatGPT");
         List<ElasticKeyword> elasticKeywords = List.of(keyword1, keyword2, keyword3, keyword4, keyword5);
         elasticKeywordRepository.saveAll(elasticKeywords);
 
@@ -78,11 +124,11 @@ class ElasticKeywordServiceTest {
     @DisplayName("일치하는 키워드가 없을 경우 빈 리스트를 반환한다.")
     void autocompleteKeywordNotFound() throws IOException {
         // given
-        ElasticKeyword keyword1 = ElasticKeyword.create(List.of("자바", "Java"));
-        ElasticKeyword keyword2 = ElasticKeyword.create(List.of("자바스크립트", "JavaScript"));
-        ElasticKeyword keyword3 = ElasticKeyword.create(List.of("스프링", "Spring"));
-        ElasticKeyword keyword4 = ElasticKeyword.create(List.of("스프링부트", "SpringBoot"));
-        ElasticKeyword keyword5 = ElasticKeyword.create(List.of("챗지피티", "ChatGPT"));
+        ElasticKeyword keyword1 = ElasticKeyword.create("자바");
+        ElasticKeyword keyword2 = ElasticKeyword.create("자바스크립트");
+        ElasticKeyword keyword3 = ElasticKeyword.create("스프링");
+        ElasticKeyword keyword4 = ElasticKeyword.create("스프링부트");
+        ElasticKeyword keyword5 = ElasticKeyword.create("챗지피티");
         List<ElasticKeyword> elasticKeywords = List.of(keyword1, keyword2, keyword3, keyword4, keyword5);
         elasticKeywordRepository.saveAll(elasticKeywords);
 
@@ -102,7 +148,7 @@ class ElasticKeywordServiceTest {
         // given
         List<ElasticKeyword> elasticKeywords = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            elasticKeywords.add(ElasticKeyword.create(List.of("키워드" + i)));
+            elasticKeywords.add(ElasticKeyword.create("키워드" + i));
         }
         elasticKeywordRepository.saveAll(elasticKeywords);
 
