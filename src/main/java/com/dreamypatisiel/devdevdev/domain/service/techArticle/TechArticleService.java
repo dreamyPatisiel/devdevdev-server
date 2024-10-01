@@ -17,5 +17,5 @@ public interface TechArticleService {
 
     TechArticleDetailResponse getTechArticle(Long techArticleId, Authentication authentication);
 
-    BookmarkResponse updateBookmark(Long techArticleId, boolean status, Authentication authentication);
+    BookmarkResponse updateBookmark(Long techArticleId, Authentication authentication);
 }

@@ -9,16 +9,16 @@ import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -96,24 +96,34 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     @Override
     @Transactional
-    public BookmarkResponse updateBookmark(Long techArticleId, boolean status, Authentication authentication) {
+    public BookmarkResponse updateBookmark(Long techArticleId, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
-        // 회원의 해당 개시글 북마크 조회
+        // 회원의 해당 기술블로그 아티클 북마크 조회
         TechArticle techArticle = findTechArticle(techArticleId);
-        Optional<Bookmark> findBookmark = bookmarkRepository.findByTechArticleAndMember(techArticle, member);
+        Optional<Bookmark> optionalBookmark = bookmarkRepository.findByTechArticleAndMember(techArticle, member);
 
-        // 북마크 존재하면 갱신, 없으면 생성
-        findBookmark.ifPresentOrElse(
-                bookmark -> bookmark.changeStatus(status),
-                () -> {
-                    Bookmark bookmark = Bookmark.create(member, techArticle, status);
-                    bookmarkRepository.save(bookmark);
-                }
-        );
+        // 북마크가 존재하면 toggle
+        if (optionalBookmark.isPresent()) {
+            Bookmark bookmark = optionalBookmark.get();
 
-        return new BookmarkResponse(techArticle.getId(), status);
+            // 북마크 상태라면 북마크 취소
+            if (bookmark.isBookmarked()) {
+                bookmark.cancelBookmark();
+                return new BookmarkResponse(techArticle.getId(), bookmark.isBookmarked());
+            }
+
+            // 북마크 상태가 아니라면 북마크
+            bookmark.registerBookmark();
+            return new BookmarkResponse(techArticle.getId(), bookmark.isBookmarked());
+        }
+
+        // 북마크 생성
+        Bookmark bookmark = Bookmark.create(member, techArticle);
+        bookmarkRepository.save(bookmark);
+
+        return new BookmarkResponse(techArticle.getId(), bookmark.isBookmarked());
     }
 
     /**

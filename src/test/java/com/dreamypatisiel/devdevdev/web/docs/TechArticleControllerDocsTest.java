@@ -183,6 +183,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                 .description("기술블로그 Url"),
                         fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 썸네일 이미지"),
+                        fieldWithPath("data.content.[].isLogoImage").type(JsonFieldType.BOOLEAN)
+                                .description("썸네일 이미지의 회사 로고 여부"),
                         fieldWithPath("data.content.[].title").type(JsonFieldType.STRING).description("기술블로그 제목"),
                         fieldWithPath("data.content.[].contents").type(JsonFieldType.STRING).description("기술블로그 내용"),
                         fieldWithPath("data.content.[].company").type(JsonFieldType.OBJECT).description("기술블로그 회사"),
@@ -518,7 +520,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/bookmark", id)
-                        .queryParam("status", String.valueOf(true))
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -530,9 +531,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
-                ),
-                queryParameters(
-                        parameterWithName("status").description("북마크 상태")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")

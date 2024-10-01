@@ -14,13 +14,13 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -227,10 +227,9 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         Long id = firstTechArticle.getId();
-        Boolean status = true;
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, status, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
