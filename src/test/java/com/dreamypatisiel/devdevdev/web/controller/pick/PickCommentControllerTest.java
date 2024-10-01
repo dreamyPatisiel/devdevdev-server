@@ -491,13 +491,16 @@ class PickCommentControllerTest extends SupportControllerTest {
                 socialType, role);
         SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", password, "user6@gmail.com",
                 socialType, role);
+        SocialMemberDto socialMemberDto7 = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
         Member member1 = Member.createMemberBy(socialMemberDto1);
         Member member2 = Member.createMemberBy(socialMemberDto2);
         Member member3 = Member.createMemberBy(socialMemberDto3);
         Member member4 = Member.createMemberBy(socialMemberDto4);
         Member member5 = Member.createMemberBy(socialMemberDto5);
         Member member6 = Member.createMemberBy(socialMemberDto6);
-        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
+        Member member7 = Member.createMemberBy(socialMemberDto7);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
 
         // 픽픽픽 생성
         Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(6), member1);
@@ -566,7 +569,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].createdAt").isString())
                 .andExpect(jsonPath("$.data.content.[0].memberId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].author").isString())
-                .andExpect(jsonPath("$.data.content.[0].isPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isCommentAuthor").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].maskedEmail").isString())
                 .andExpect(jsonPath("$.data.content.[0].votedPickOption").isString())
                 .andExpect(jsonPath("$.data.content.[0].votedPickOptionTitle").isString())
@@ -579,7 +583,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].pickCommentParentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].pickCommentOriginParentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].createdAt").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].isPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isCommentAuthor").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())

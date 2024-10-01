@@ -24,8 +24,8 @@ public class PickCommentsResponse {
 
     private Long memberId;
     private String author;
-    private Boolean isPickAuthor;
-    private Boolean isPickCommentAuthor;
+    private Boolean isCommentOfPickAuthor;
+    private Boolean isCommentAuthor;
     private String maskedEmail;
     private PickOptionType votedPickOption;
     private String votedPickOptionTitle;
@@ -37,7 +37,7 @@ public class PickCommentsResponse {
 
     @Builder
     public PickCommentsResponse(Long pickCommentId, LocalDateTime createdAt, Long memberId, String author,
-                                Boolean isPickAuthor, Boolean isPickCommentAuthor, String maskedEmail,
+                                Boolean isCommentOfPickAuthor, Boolean isCommentAuthor, String maskedEmail,
                                 PickOptionType votedPickOption, String votedPickOptionTitle, String contents,
                                 Long replyTotalCount, Long likeTotalCount, Boolean isDeleted,
                                 List<PickRepliedCommentsResponse> replies) {
@@ -45,8 +45,8 @@ public class PickCommentsResponse {
         this.createdAt = createdAt;
         this.memberId = memberId;
         this.author = author;
-        this.isPickAuthor = isPickAuthor;
-        this.isPickCommentAuthor = isPickCommentAuthor;
+        this.isCommentOfPickAuthor = isCommentOfPickAuthor;
+        this.isCommentAuthor = isCommentAuthor;
         this.maskedEmail = maskedEmail;
         this.votedPickOption = votedPickOption;
         this.votedPickOptionTitle = votedPickOptionTitle;
@@ -68,8 +68,8 @@ public class PickCommentsResponse {
                 .createdAt(originParentPickComment.getCreatedAt())
                 .memberId(createdBy.getId())
                 .author(createdBy.getNickname().getNickname())
-                .isPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, originParentPickComment.getPick()))
-                .isPickCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, originParentPickComment))
+                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, originParentPickComment.getPick()))
+                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, originParentPickComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())

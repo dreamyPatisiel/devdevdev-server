@@ -599,13 +599,16 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 socialType, Role.ROLE_ADMIN.name());
         SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", "1234", "user6@gmail.com",
                 socialType, role);
+        SocialMemberDto socialMemberDto7 = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
         Member member1 = Member.createMemberBy(socialMemberDto1);
         Member member2 = Member.createMemberBy(socialMemberDto2);
         Member member3 = Member.createMemberBy(socialMemberDto3);
         Member member4 = Member.createMemberBy(socialMemberDto4);
         Member member5 = Member.createMemberBy(socialMemberDto5);
         Member member6 = Member.createMemberBy(socialMemberDto6);
-        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
+        Member member7 = Member.createMemberBy(socialMemberDto7);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
 
         // 픽픽픽 생성
         Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(6), member1);
@@ -698,8 +701,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].createdAt").type(STRING).description("픽픽픽 댓글 작성일시"),
                         fieldWithPath("data.content[].memberId").type(NUMBER).description("픽픽픽 댓글 작성자 아이디"),
                         fieldWithPath("data.content[].author").type(STRING).description("픽픽픽 댓글 작성자 닉네임"),
-                        fieldWithPath("data.content[].isPickAuthor").type(BOOLEAN).description("댓글 작성자가 픽픽픽 작성자인지 여부"),
-                        fieldWithPath("data.content[].isCommentPickAuthor").type(BOOLEAN)
+                        fieldWithPath("data.content[].isCommentOfPickAuthor").type(BOOLEAN)
+                                .description("댓글 작성자가 픽픽픽 작성자인지 여부"),
+                        fieldWithPath("data.content[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 댓글 작성자인지 여부"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].votedPickOption").optional().type(STRING)
@@ -722,8 +726,10 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].replies[].pickCommentOriginParentId").type(NUMBER)
                                 .description("픽픽픽 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("픽픽픽 답글 작성일시"),
-                        fieldWithPath("data.content[].replies[].isPickAuthor").type(BOOLEAN)
-                                .description("픽픽픽 게시글 작성자 여부"),
+                        fieldWithPath("data.content[].replies[].isCommentOfPickAuthor").type(BOOLEAN)
+                                .description("답글 작성자가 픽픽픽 작성자인지 여부"),
+                        fieldWithPath("data.content[].replies[].isCommentAuthor").type(BOOLEAN)
+                                .description("로그인한 회원이 답글 작성자인지 여부"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("픽픽픽 답글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
                                 .description("픽픽픽 답글 작성자 이메일"),
