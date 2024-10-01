@@ -318,7 +318,6 @@ public class MemberTechCommentService {
 
         // 댓글/답글에 추천이 존재하면 toggle
         if (optionalTechCommentRecommend.isPresent()) {
-            // 추천 취소
             TechCommentRecommend techCommentRecommend = optionalTechCommentRecommend.get();
 
             // 추천 상태이면 취소
@@ -330,6 +329,7 @@ public class MemberTechCommentService {
                         techComment.getRecommendTotalCount().getCount());
             }
 
+            // 추천 상태가 아니라면 추천
             techCommentRecommend.recommend();
             techComment.incrementRecommendTotalCount();
 

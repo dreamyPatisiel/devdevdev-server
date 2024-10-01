@@ -483,7 +483,6 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
-                        .queryParam("status", String.valueOf(true))
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -515,7 +514,6 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
-                        .queryParam("status", String.valueOf(true))
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -534,7 +532,6 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
-                        .queryParam("status", String.valueOf(true))
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))

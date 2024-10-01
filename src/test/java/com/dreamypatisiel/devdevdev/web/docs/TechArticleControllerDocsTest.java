@@ -520,7 +520,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/bookmark", id)
-                        .queryParam("status", String.valueOf(true))
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
@@ -532,9 +531,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
-                ),
-                queryParameters(
-                        parameterWithName("status").description("북마크 상태")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")
