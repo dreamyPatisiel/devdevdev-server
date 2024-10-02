@@ -209,7 +209,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                 MODIFY);
 
         // 댓글 수정
-        findPickComment.changeCommentContents(new CommentContents(contents));
+        findPickComment.modifyCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
 
         return new PickCommentResponse(findPickComment.getId());
     }

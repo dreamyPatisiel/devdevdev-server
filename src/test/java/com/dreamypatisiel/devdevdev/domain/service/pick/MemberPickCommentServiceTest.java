@@ -709,7 +709,8 @@ class MemberPickCommentServiceTest {
         PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
         assertAll(
                 () -> assertThat(response.getPickCommentId()).isEqualTo(pickComment.getId()),
-                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo(request.getContents())
+                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo(request.getContents()),
+                () -> assertThat(findPickComment.getLastModifiedContentsAt()).isNotNull()
         );
     }
 
