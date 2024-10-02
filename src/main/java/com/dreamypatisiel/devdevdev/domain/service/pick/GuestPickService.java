@@ -13,10 +13,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
+import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
@@ -26,12 +33,6 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageRespons
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
-import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +60,11 @@ public class GuestPickService extends PickCommonService implements PickService {
     private final AnonymousMemberRepository anonymousMemberRepository;
 
     public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
+                            PickCommentRepository pickCommentRepository,
                             PickPopularScorePolicy pickPopularScorePolicy,
                             PickVoteRepository pickVoteRepository,
                             AnonymousMemberRepository anonymousMemberRepository) {
-        super(pickRepository, embeddingsService);
+        super(embeddingsService, pickRepository, pickCommentRepository);
         this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickVoteRepository = pickVoteRepository;
         this.anonymousMemberRepository = anonymousMemberRepository;

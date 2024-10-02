@@ -24,21 +24,13 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
 import com.dreamypatisiel.devdevdev.exception.ImageFileException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
@@ -49,6 +41,15 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -82,13 +83,13 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final PickVoteRepository pickVoteRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
 
-    public MemberPickService(PickRepository pickRepository,
-                             EmbeddingsService embeddingsService,
+    public MemberPickService(EmbeddingsService embeddingsService, PickRepository pickRepository,
                              AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
                              MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
                              PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
+                             PickCommentRepository pickCommentRepository,
                              PickPopularScorePolicy pickPopularScorePolicy) {
-        super(pickRepository, embeddingsService);
+        super(embeddingsService, pickRepository, pickCommentRepository);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
         this.memberProvider = memberProvider;
