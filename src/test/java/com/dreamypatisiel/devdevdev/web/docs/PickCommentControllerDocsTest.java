@@ -716,7 +716,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].isDeleted").type(BOOLEAN)
-                                .description("픽픽픽 댓글 관리자 삭제 여부"),
+                                .description("픽픽픽 댓글 삭제 여부"),
+                        fieldWithPath("data.content[].isModified").type(BOOLEAN)
+                                .description("픽픽픽 댓글 수정 여부"),
 
                         fieldWithPath("data.content[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("data.content[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
@@ -737,7 +739,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].replies[].likeTotalCount").type(NUMBER)
                                 .description("픽픽픽 답글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].replies[].isDeleted").type(BOOLEAN)
-                                .description("픽픽픽 답글 관리자 삭제 여부"),
+                                .description("픽픽픽 답글 삭제 여부"),
+                        fieldWithPath("data.content[].replies[].isModified").type(BOOLEAN)
+                                .description("픽픽픽 답글 수정 여부"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),

@@ -32,6 +32,7 @@ public class PickCommentsResponse {
     private String contents;
     private Long replyTotalCount;
     private Long likeTotalCount;
+    private Boolean isModified;
     private Boolean isDeleted;
     private List<PickRepliedCommentsResponse> replies;
 
@@ -39,7 +40,7 @@ public class PickCommentsResponse {
     public PickCommentsResponse(Long pickCommentId, LocalDateTime createdAt, Long memberId, String author,
                                 Boolean isCommentOfPickAuthor, Boolean isCommentAuthor, String maskedEmail,
                                 PickOptionType votedPickOption, String votedPickOptionTitle, String contents,
-                                Long replyTotalCount, Long likeTotalCount, Boolean isDeleted,
+                                Long replyTotalCount, Long likeTotalCount, Boolean isModified, Boolean isDeleted,
                                 List<PickRepliedCommentsResponse> replies) {
         this.pickCommentId = pickCommentId;
         this.createdAt = createdAt;
@@ -53,6 +54,7 @@ public class PickCommentsResponse {
         this.contents = contents;
         this.replyTotalCount = replyTotalCount;
         this.likeTotalCount = likeTotalCount;
+        this.isModified = isModified;
         this.isDeleted = isDeleted;
         this.replies = replies;
     }
@@ -74,6 +76,7 @@ public class PickCommentsResponse {
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())
                 .likeTotalCount(originParentPickComment.getRecommendTotalCount().getCount())
+                .isModified(originParentPickComment.isModified())
                 .isDeleted(originParentPickComment.isDeleted())
                 .replies(replies);
 

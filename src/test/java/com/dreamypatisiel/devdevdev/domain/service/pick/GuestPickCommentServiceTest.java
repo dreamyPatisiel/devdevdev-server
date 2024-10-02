@@ -136,6 +136,7 @@ class GuestPickCommentServiceTest {
         // 픽픽픽 최초 댓글 생성
         PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
                 new Count(2), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("댓글1 수정"), LocalDateTime.now());
         PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
                 new Count(1), member2, pick, member2PickVote);
         PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
@@ -186,7 +187,8 @@ class GuestPickCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
@@ -200,7 +202,8 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment1.getContents().getCommentContents(),
                                 originParentPickComment1.getReplyTotalCount().getCount(),
                                 originParentPickComment1.getRecommendTotalCount().getCount(),
-                                false),
+                                false,
+                                true),
 
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedBy().getId(),
@@ -214,6 +217,7 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
                                 originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(originParentPickComment3.getId(),
@@ -228,6 +232,7 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment3.getContents().getCommentContents(),
                                 originParentPickComment3.getReplyTotalCount().getCount(),
                                 originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(originParentPickComment4.getId(),
@@ -242,6 +247,7 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment4.getContents().getCommentContents(),
                                 originParentPickComment4.getReplyTotalCount().getCount(),
                                 originParentPickComment4.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(originParentPickComment5.getId(),
@@ -256,6 +262,7 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment5.getContents().getCommentContents(),
                                 originParentPickComment5.getReplyTotalCount().getCount(),
                                 originParentPickComment5.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -273,7 +280,8 @@ class GuestPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -284,6 +292,7 @@ class GuestPickCommentServiceTest {
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
                                 pickReply1.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
@@ -295,7 +304,8 @@ class GuestPickCommentServiceTest {
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
                                 CommentResponseUtil.getCommentByPickCommentStatus(pickReply2),
                                 pickReply2.getRecommendTotalCount().getCount(),
-                                true)
+                                true,
+                                false)
                 );
 
         // 두 번째 최상위 댓글의 답글 검증
@@ -312,7 +322,8 @@ class GuestPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -324,6 +335,7 @@ class GuestPickCommentServiceTest {
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
                                 pickReply3.getContents().getCommentContents(),
                                 pickReply3.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -390,6 +402,7 @@ class GuestPickCommentServiceTest {
         // 픽픽픽 최초 댓글 생성
         PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
                 new Count(2), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("댓글1 수정"), LocalDateTime.now());
         PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
                 new Count(1), member2, pick, member2PickVote);
         PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
@@ -439,7 +452,8 @@ class GuestPickCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
@@ -453,7 +467,8 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment1.getContents().getCommentContents(),
                                 originParentPickComment1.getReplyTotalCount().getCount(),
                                 originParentPickComment1.getRecommendTotalCount().getCount(),
-                                false),
+                                false,
+                                true),
 
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedBy().getId(),
@@ -467,6 +482,7 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
                                 originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -484,7 +500,8 @@ class GuestPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -495,6 +512,7 @@ class GuestPickCommentServiceTest {
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
                                 pickReply1.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
@@ -506,6 +524,7 @@ class GuestPickCommentServiceTest {
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
                                 pickReply2.getContents().getCommentContents(),
                                 pickReply2.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -523,7 +542,8 @@ class GuestPickCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -535,6 +555,7 @@ class GuestPickCommentServiceTest {
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
                                 pickReply3.getContents().getCommentContents(),
                                 pickReply3.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
     }
@@ -635,7 +656,8 @@ class GuestPickCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedBy().getId(),
@@ -649,6 +671,7 @@ class GuestPickCommentServiceTest {
                                 originParentPickComment3.getContents().getCommentContents(),
                                 originParentPickComment3.getReplyTotalCount().getCount(),
                                 originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
