@@ -64,6 +64,7 @@ public class PickComment extends BasicTime {
     private Boolean isPublic; // true: 투표 선택지 공개, false: 투표 선택지 비공개/답글
 
     private LocalDateTime deletedAt;
+    private LocalDateTime contentsLastModifiedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
@@ -161,8 +162,14 @@ public class PickComment extends BasicTime {
         this.deletedBy = deletedBy;
     }
 
-    public void changeCommentContents(CommentContents contents) {
+    // 댓글 수정
+    public void modifyCommentContents(CommentContents contents, LocalDateTime lastModifiedContentsAt) {
         this.contents = contents;
+        this.contentsLastModifiedAt = lastModifiedContentsAt;
+    }
+
+    public boolean isModified() {
+        return contentsLastModifiedAt != null;
     }
 
     public boolean isDeleted() {

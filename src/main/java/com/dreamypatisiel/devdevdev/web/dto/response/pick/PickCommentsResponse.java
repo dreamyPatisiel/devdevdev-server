@@ -24,39 +24,43 @@ public class PickCommentsResponse {
 
     private Long memberId;
     private String author;
-    private Boolean isPickAuthor;
+    private Boolean isCommentOfPickAuthor;
+    private Boolean isCommentAuthor;
     private String maskedEmail;
     private PickOptionType votedPickOption;
     private String votedPickOptionTitle;
     private String contents;
     private Long replyTotalCount;
     private Long likeTotalCount;
+    private Boolean isModified;
     private Boolean isDeleted;
     private List<PickRepliedCommentsResponse> replies;
 
     @Builder
     public PickCommentsResponse(Long pickCommentId, LocalDateTime createdAt, Long memberId, String author,
-                                Boolean isPickAuthor, String maskedEmail, PickOptionType votedPickOption,
-                                String votedPickOptionTitle, String contents, Long replyTotalCount,
-                                Long likeTotalCount, Boolean isDeleted,
+                                Boolean isCommentOfPickAuthor, Boolean isCommentAuthor, String maskedEmail,
+                                PickOptionType votedPickOption, String votedPickOptionTitle, String contents,
+                                Long replyTotalCount, Long likeTotalCount, Boolean isModified, Boolean isDeleted,
                                 List<PickRepliedCommentsResponse> replies) {
         this.pickCommentId = pickCommentId;
         this.createdAt = createdAt;
         this.memberId = memberId;
         this.author = author;
-        this.isPickAuthor = isPickAuthor;
+        this.isCommentOfPickAuthor = isCommentOfPickAuthor;
+        this.isCommentAuthor = isCommentAuthor;
         this.maskedEmail = maskedEmail;
         this.votedPickOption = votedPickOption;
         this.votedPickOptionTitle = votedPickOptionTitle;
         this.contents = contents;
         this.replyTotalCount = replyTotalCount;
         this.likeTotalCount = likeTotalCount;
+        this.isModified = isModified;
         this.isDeleted = isDeleted;
         this.replies = replies;
     }
 
-    public static PickCommentsResponse from(PickComment originParentPickComment,
-                                            List<PickRepliedCommentsResponse> replies) {
+    public static PickCommentsResponse of(Member member, PickComment originParentPickComment,
+                                          List<PickRepliedCommentsResponse> replies) {
 
         Member createdBy = originParentPickComment.getCreatedBy();
         PickVote pickVote = originParentPickComment.getPickVote();
@@ -66,11 +70,13 @@ public class PickCommentsResponse {
                 .createdAt(originParentPickComment.getCreatedAt())
                 .memberId(createdBy.getId())
                 .author(createdBy.getNickname().getNickname())
-                .isPickAuthor(originParentPickComment.getPick().getMember().isEqualId(createdBy.getId()))
+                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, originParentPickComment.getPick()))
+                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, originParentPickComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())
                 .likeTotalCount(originParentPickComment.getRecommendTotalCount().getCount())
+                .isModified(originParentPickComment.isModified())
                 .isDeleted(originParentPickComment.isDeleted())
                 .replies(replies);
 

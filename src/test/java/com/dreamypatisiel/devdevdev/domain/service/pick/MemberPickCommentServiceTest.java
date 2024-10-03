@@ -709,7 +709,8 @@ class MemberPickCommentServiceTest {
         PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
         assertAll(
                 () -> assertThat(response.getPickCommentId()).isEqualTo(pickComment.getId()),
-                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo(request.getContents())
+                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo(request.getContents()),
+                () -> assertThat(findPickComment.getContentsLastModifiedAt()).isNotNull()
         );
     }
 
@@ -1238,6 +1239,12 @@ class MemberPickCommentServiceTest {
         Member member6 = Member.createMemberBy(socialMemberDto6);
         memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
 
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member1);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         // 픽픽픽 생성
         Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
         pickRepository.save(pick);
@@ -1259,6 +1266,7 @@ class MemberPickCommentServiceTest {
         // 픽픽픽 최초 댓글 생성
         PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
                 new Count(2), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("수정된 댓글1"), LocalDateTime.now());
         PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
                 new Count(1), member2, pick, member2PickVote);
         PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
@@ -1289,7 +1297,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, null);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -1298,18 +1306,21 @@ class MemberPickCommentServiceTest {
                         "pickCommentId",
                         "memberId",
                         "author",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "maskedEmail",
                         "votedPickOption",
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
                                 originParentPickComment1.getCreatedBy().getNickname().getNickname(),
+                                true,
                                 true,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment1.getCreatedBy().getEmail().getEmail()),
@@ -1318,11 +1329,13 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment1.getContents().getCommentContents(),
                                 originParentPickComment1.getReplyTotalCount().getCount(),
                                 originParentPickComment1.getRecommendTotalCount().getCount(),
-                                false),
+                                false,
+                                true),
 
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedBy().getId(),
                                 originParentPickComment2.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment2.getCreatedBy().getEmail().getEmail()),
@@ -1331,11 +1344,13 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
                                 originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedBy().getId(),
                                 originParentPickComment3.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment3.getCreatedBy().getEmail().getEmail()),
@@ -1344,11 +1359,13 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment3.getContents().getCommentContents(),
                                 originParentPickComment3.getReplyTotalCount().getCount(),
                                 originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(originParentPickComment4.getId(),
                                 originParentPickComment4.getCreatedBy().getId(),
                                 originParentPickComment4.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment4.getCreatedBy().getEmail().getEmail()),
@@ -1357,11 +1374,13 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment4.getContents().getCommentContents(),
                                 originParentPickComment4.getReplyTotalCount().getCount(),
                                 originParentPickComment4.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(originParentPickComment5.getId(),
                                 originParentPickComment5.getCreatedBy().getId(),
                                 originParentPickComment5.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment5.getCreatedBy().getEmail().getEmail()),
@@ -1370,6 +1389,7 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment5.getContents().getCommentContents(),
                                 originParentPickComment5.getReplyTotalCount().getCount(),
                                 originParentPickComment5.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -1381,32 +1401,38 @@ class MemberPickCommentServiceTest {
                         "memberId",
                         "pickCommentParentId",
                         "pickCommentOriginParentId",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "author",
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
                                 pickReply1.getOriginParent().getId(),
                                 true,
+                                true,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
                                 pickReply1.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
                                 pickReply2.getOriginParent().getId(),
                                 false,
+                                false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
                                 CommentResponseUtil.getCommentByPickCommentStatus(pickReply2),
                                 pickReply2.getRecommendTotalCount().getCount(),
-                                true)
+                                true,
+                                false)
                 );
 
         // 두 번째 최상위 댓글의 답글 검증
@@ -1417,22 +1443,26 @@ class MemberPickCommentServiceTest {
                         "memberId",
                         "pickCommentParentId",
                         "pickCommentOriginParentId",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "author",
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
                                 pickReply3.getParent().getId(),
                                 pickReply3.getOriginParent().getId(),
                                 false,
+                                false,
                                 pickReply3.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
                                 pickReply3.getContents().getCommentContents(),
                                 pickReply3.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -1478,6 +1508,12 @@ class MemberPickCommentServiceTest {
         Member member6 = Member.createMemberBy(socialMemberDto6);
         memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
 
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member1);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         // 픽픽픽 생성
         Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
         pickRepository.save(pick);
@@ -1499,6 +1535,7 @@ class MemberPickCommentServiceTest {
         // 픽픽픽 최초 댓글 생성
         PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
                 new Count(2), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("수정된 댓글1"), LocalDateTime.now());
         PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
                 new Count(1), member2, pick, member2PickVote);
         PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
@@ -1528,7 +1565,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.firstPickOption);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.firstPickOption, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -1537,18 +1574,21 @@ class MemberPickCommentServiceTest {
                         "pickCommentId",
                         "memberId",
                         "author",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "maskedEmail",
                         "votedPickOption",
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
                                 originParentPickComment1.getCreatedBy().getNickname().getNickname(),
+                                true,
                                 true,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment1.getCreatedBy().getEmail().getEmail()),
@@ -1557,11 +1597,13 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment1.getContents().getCommentContents(),
                                 originParentPickComment1.getReplyTotalCount().getCount(),
                                 originParentPickComment1.getRecommendTotalCount().getCount(),
-                                false),
+                                false,
+                                true),
 
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedBy().getId(),
                                 originParentPickComment2.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment2.getCreatedBy().getEmail().getEmail()),
@@ -1570,6 +1612,7 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
                                 originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -1581,31 +1624,37 @@ class MemberPickCommentServiceTest {
                         "memberId",
                         "pickCommentParentId",
                         "pickCommentOriginParentId",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "author",
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
                                 pickReply1.getOriginParent().getId(),
                                 true,
+                                true,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
                                 pickReply1.getRecommendTotalCount().getCount(),
+                                false,
                                 false),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
                                 pickReply2.getOriginParent().getId(),
                                 false,
+                                false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
                                 pickReply2.getContents().getCommentContents(),
                                 pickReply2.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 
@@ -1617,22 +1666,26 @@ class MemberPickCommentServiceTest {
                         "memberId",
                         "pickCommentParentId",
                         "pickCommentOriginParentId",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "author",
                         "maskedEmail",
                         "contents",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
                                 pickReply3.getParent().getId(),
                                 pickReply3.getOriginParent().getId(),
                                 false,
+                                false,
                                 pickReply3.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
                                 pickReply3.getContents().getCommentContents(),
                                 pickReply3.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
     }
@@ -1663,6 +1716,12 @@ class MemberPickCommentServiceTest {
         Member member6 = Member.createMemberBy(socialMemberDto6);
         memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
 
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member1);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         // 픽픽픽 생성
         Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
         pickRepository.save(pick);
@@ -1684,6 +1743,7 @@ class MemberPickCommentServiceTest {
         // 픽픽픽 최초 댓글 생성
         PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
                 new Count(2), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("수정된 댓글1"), LocalDateTime.now());
         PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
                 new Count(1), member2, pick, member2PickVote);
         PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
@@ -1713,7 +1773,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -1722,18 +1782,21 @@ class MemberPickCommentServiceTest {
                         "pickCommentId",
                         "memberId",
                         "author",
-                        "isPickAuthor",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
                         "maskedEmail",
                         "votedPickOption",
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
                         "likeTotalCount",
-                        "isDeleted")
+                        "isDeleted",
+                        "isModified")
                 .containsExactly(
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedBy().getId(),
                                 originParentPickComment3.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment3.getCreatedBy().getEmail().getEmail()),
@@ -1742,6 +1805,7 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment3.getContents().getCommentContents(),
                                 originParentPickComment3.getReplyTotalCount().getCount(),
                                 originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false,
                                 false)
                 );
 

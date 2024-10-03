@@ -2,16 +2,17 @@ package com.dreamypatisiel.devdevdev.web.controller.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
-import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickCommentService;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentService;
+import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/devdevdev/api/v1")
 public class PickCommentController {
 
-    private final MemberPickCommentService memberPickCommentService;
+    private final PickServiceStrategy pickServiceStrategy;
 
     @Operation(summary = "픽픽픽 댓글 작성", description = "회원은 픽픽픽 댓글을 작성할 수 있습니다.")
     @PostMapping("/picks/{pickId}/comments")
@@ -47,7 +48,8 @@ public class PickCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pickId,
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        PickCommentResponse pickCommentResponse = pickCommentService.registerPickComment(pickId,
                 registerPickCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
@@ -63,7 +65,8 @@ public class PickCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickRepliedComment(
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        PickCommentResponse pickCommentResponse = pickCommentService.registerPickRepliedComment(
                 pickCommentParentId, pickCommentOriginParentId, pickId, registerPickRepliedCommentRequest,
                 authentication);
 
@@ -79,7 +82,8 @@ public class PickCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentResponse pickCommentResponse = memberPickCommentService.modifyPickComment(pickCommentId, pickId,
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        PickCommentResponse pickCommentResponse = pickCommentService.modifyPickComment(pickCommentId, pickId,
                 modifyPickCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
@@ -94,8 +98,11 @@ public class PickCommentController {
             @RequestParam(required = false) PickCommentSort pickCommentSort,
             @RequestParam(required = false) PickOptionType pickOptionType) {
 
-        SliceCustom<PickCommentsResponse> pickCommentsResponse = memberPickCommentService.findPickComments(pageable,
-                pickId, pickCommentId, pickCommentSort, pickOptionType);
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        SliceCustom<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickComments(pageable,
+                pickId, pickCommentId, pickCommentSort, pickOptionType, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }
@@ -108,7 +115,8 @@ public class PickCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentResponse pickCommentResponse = memberPickCommentService.deletePickComment(pickCommentId, pickId,
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        PickCommentResponse pickCommentResponse = pickCommentService.deletePickComment(pickCommentId, pickId,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
@@ -122,7 +130,8 @@ public class PickCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickCommentRecommendResponse pickCommentRecommendResponse = memberPickCommentService.recommendPickComment(
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        PickCommentRecommendResponse pickCommentRecommendResponse = pickCommentService.recommendPickComment(
                 pickId, pickCommentId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentRecommendResponse));
