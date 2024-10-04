@@ -24,16 +24,17 @@ public class TechCommentsResponse {
     private Long likeTotalCount;
     private Boolean isDeleted;
     private Boolean isCommentAuthor;
+    private Boolean isModified;
+    private List<TechRepliedCommentsResponse> replies;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
 
-    private List<TechRepliedCommentsResponse> replies;
 
     @Builder
     public TechCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail, String contents,
                                 Long replyTotalCount, Long likeTotalCount, Boolean isDeleted, LocalDateTime createdAt,
-                                Boolean isCommentAuthor, List<TechRepliedCommentsResponse> replies) {
+                                Boolean isCommentAuthor, Boolean isModified, List<TechRepliedCommentsResponse> replies) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
         this.author = author;
@@ -43,6 +44,7 @@ public class TechCommentsResponse {
         this.isCommentAuthor = isCommentAuthor;
         this.likeTotalCount = likeTotalCount;
         this.isDeleted = isDeleted;
+        this.isModified = isModified;
         this.createdAt = createdAt;
         this.replies = replies;
     }
@@ -61,6 +63,7 @@ public class TechCommentsResponse {
                 .replyTotalCount(originParentTechComment.getReplyTotalCount().getCount())
                 .likeTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(originParentTechComment.isDeleted())
+                .isModified(originParentTechComment.isModified())
                 .createdAt(originParentTechComment.getCreatedAt())
                 .isCommentAuthor(CommentResponseUtil.isTechCommentAuthor(member, originParentTechComment))
                 .replies(replies)

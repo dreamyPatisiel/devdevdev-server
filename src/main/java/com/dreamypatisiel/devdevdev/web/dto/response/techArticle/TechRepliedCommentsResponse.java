@@ -22,6 +22,7 @@ public class TechRepliedCommentsResponse {
     private String contents;
     private Long likeTotalCount;
     private Boolean isDeleted;
+    private Boolean isModified;
 
     private Long techCommentParentId;
     private Long techCommentOriginParentId;
@@ -34,7 +35,8 @@ public class TechRepliedCommentsResponse {
     @Builder
     public TechRepliedCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail,
                                        String contents, Long likeTotalCount, Boolean isDeleted, Long techCommentParentId,
-                                       Long techCommentOriginParentId, LocalDateTime createdAt, Boolean isCommentAuthor) {
+                                       Long techCommentOriginParentId, LocalDateTime createdAt, Boolean isCommentAuthor,
+                                       Boolean isModified) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
         this.author = author;
@@ -46,6 +48,7 @@ public class TechRepliedCommentsResponse {
         this.techCommentOriginParentId = techCommentOriginParentId;
         this.createdAt = createdAt;
         this.isCommentAuthor = isCommentAuthor;
+        this.isModified = isModified;
     }
 
     public static TechRepliedCommentsResponse of(@Nullable Member member, TechComment repliedTechComment) {
@@ -64,6 +67,7 @@ public class TechRepliedCommentsResponse {
                 .contents(CommentResponseUtil.getCommentByTechCommentStatus(repliedTechComment))
                 .likeTotalCount(repliedTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(repliedTechComment.isDeleted())
+                .isModified(repliedTechComment.isModified())
                 .build();
     }
 }

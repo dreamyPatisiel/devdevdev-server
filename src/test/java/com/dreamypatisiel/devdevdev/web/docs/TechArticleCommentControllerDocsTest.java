@@ -840,6 +840,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 댓글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].isDeleted").type(BOOLEAN)
                                 .description("기술블로그 댓글 삭제 여부"),
+                        fieldWithPath("data.content[].isModified").type(BOOLEAN)
+                                .description("기술블로그 댓글 편집 여부"),
 
                         fieldWithPath("data.content[].replies").type(ARRAY).description("기술블로그 답글 배열"),
                         fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER).description("기술블로그 답글 아이디"),
@@ -858,6 +860,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 답글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].replies[].isDeleted").type(BOOLEAN)
                                 .description("기술블로그 댓글 삭제 여부"),
+                        fieldWithPath("data.content[].replies[].isModified").type(BOOLEAN)
+                                .description("기술블로그 댓글 편집 여부"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("기술블로그 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
