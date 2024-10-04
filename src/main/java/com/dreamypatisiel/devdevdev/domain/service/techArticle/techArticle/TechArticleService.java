@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.techArticle;
+package com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;

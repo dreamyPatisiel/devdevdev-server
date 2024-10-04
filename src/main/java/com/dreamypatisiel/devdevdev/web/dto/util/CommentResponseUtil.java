@@ -51,4 +51,12 @@ public class CommentResponseUtil {
         }
         return pickComment.getCreatedBy().isEqualId(member.getId());
     }
+
+    public static boolean isTechCommentAuthor(Member member, TechComment techComment) {
+        // member 가 null 인 경우 익명회원이 조회한 것
+        if (member == null) {
+            return false;
+        }
+        return techComment.getCreatedBy().isEqualId(member.getId());
+    }
 }

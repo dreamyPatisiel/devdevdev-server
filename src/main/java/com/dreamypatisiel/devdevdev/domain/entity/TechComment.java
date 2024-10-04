@@ -56,6 +56,8 @@ public class TechComment extends BasicTime {
     )
     private Count replyTotalCount;
 
+    private LocalDateTime deletedAt;
+    private LocalDateTime contentsLastModifiedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
@@ -76,8 +78,6 @@ public class TechComment extends BasicTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tech_article_id", nullable = false)
     private TechArticle techArticle;
-
-    private LocalDateTime deletedAt;
 
     @Builder
     private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
@@ -127,8 +127,13 @@ public class TechComment extends BasicTime {
         this.deletedBy = deletedBy;
     }
 
-    public void changeCommentContents(CommentContents contents) {
+    public void changeCommentContents(CommentContents contents, LocalDateTime lastModifiedContentsAt) {
         this.contents = contents;
+        this.contentsLastModifiedAt = lastModifiedContentsAt;
+    }
+
+    public boolean isModified() {
+        return contentsLastModifiedAt != null;
     }
 
     public boolean isDeleted() {

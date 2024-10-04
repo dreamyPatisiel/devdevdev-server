@@ -1,9 +1,9 @@
-package com.dreamypatisiel.devdevdev.domain.service.techArticle;
+package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
 
 import com.dreamypatisiel.devdevdev.domain.entity.BasicTime;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -42,8 +43,7 @@ import org.springframework.util.ObjectUtils;
 
 @Service
 @Transactional(readOnly = true)
-@RequiredArgsConstructor
-public class MemberTechCommentService {
+public class MemberTechCommentService extends TechCommentCommonService implements TechCommentService {
 
     private final TechArticleCommonService techArticleCommonService;
     private final MemberProvider memberProvider;
@@ -52,6 +52,16 @@ public class MemberTechCommentService {
 
     private final TechCommentRepository techCommentRepository;
     private final TechCommentRecommendRepository techCommentRecommendRepository;
+
+    public MemberTechCommentService(TechCommentRepository techCommentRepository, TechArticleCommonService techArticleCommonService, MemberProvider memberProvider, TimeProvider timeProvider, TechArticlePopularScorePolicy techArticlePopularScorePolicy, TechCommentRepository techCommentRepository1, TechCommentRecommendRepository techCommentRecommendRepository) {
+        super(techCommentRepository);
+        this.techArticleCommonService = techArticleCommonService;
+        this.memberProvider = memberProvider;
+        this.timeProvider = timeProvider;
+        this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
+        this.techCommentRepository = techCommentRepository1;
+        this.techCommentRecommendRepository = techCommentRecommendRepository;
+    }
 
     /**
      * @Note: 기술블로그에 댓글을 작성한다.
@@ -122,10 +132,9 @@ public class MemberTechCommentService {
     }
 
     /**
-     * @param originParentTechCommentId
-     * @param parentTechComment
-     * @return
      * @Note: 답글 대상의 댓글을 조회하고, 답글 대상의 댓글이 최초 댓글이면 답글 대상으로 반환한다.
+     * @Author: 유소영
+     * @Since: 2024.09.06
      */
     private TechComment getAndValidateOriginParentTechComment(Long originParentTechCommentId,
                                                               TechComment parentTechComment) {
@@ -168,7 +177,7 @@ public class MemberTechCommentService {
 
         // 댓글 수정
         String contents = modifyTechCommentRequest.getContents();
-        findTechComment.changeCommentContents(new CommentContents(contents));
+        findTechComment.changeCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
 
         // 데이터 가공
         return new TechCommentResponse(findTechComment.getId());
@@ -218,72 +227,13 @@ public class MemberTechCommentService {
      * @Since: 2024.09.05
      */
     public SliceCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
-                                                             TechCommentSort techCommentSort, Pageable pageable) {
-        // 기술블로그 최상위 댓글 조회
-        Slice<TechComment> findOriginParentTechComments = techCommentRepository.findOriginParentTechCommentsByCursor(
-                techArticleId, techCommentId, techCommentSort, pageable);
+                                                             TechCommentSort techCommentSort, Pageable pageable,
+                                                             Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 최상위 댓글 아이디 추출
-        List<TechComment> originParentTechComments = findOriginParentTechComments.getContent();
-        Set<Long> originParentIds = originParentTechComments.stream()
-                .map(TechComment::getId)
-                .collect(Collectors.toSet());
-
-        // 최상위 댓글 아이디들의 댓글 답글 조회(최상위 댓글의 아이디가 key)
-        Map<Long, List<TechComment>> techCommentReplies = techCommentRepository
-                .findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
-                        originParentIds).stream()
-                .collect(Collectors.groupingBy(techCommentReply -> techCommentReply.getOriginParent().getId()));
-
-        // 기술블로그 댓글/답글 응답 생성
-        List<TechCommentsResponse> techCommentsResponse = originParentTechComments.stream()
-                .map(originParentTechComment -> getTechCommentsResponse(originParentTechComment, techCommentReplies))
-                .toList();
-
-        // 기술블로그 최상위 댓글 추출하여 댓글 유무 확인
-        TechComment firstTechComment = findOriginParentTechComments.getContent().stream()
-                .findFirst()
-                .orElse(null);
-
-        // 댓글이 하나도 없으면 빈 응답 리턴
-        if (ObjectUtils.isEmpty(firstTechComment)) {
-            return new SliceCustom<>(techCommentsResponse, pageable, false, 0L);
-        }
-
-        // 기술블로그 전체 댓글/답글 개수 추출
-        long originTechCommentTotalCount = firstTechComment.getTechArticle().getCommentTotalCount().getCount();
-
-        // 데이터 가공
-        return new SliceCustom<>(techCommentsResponse, pageable, findOriginParentTechComments.hasNext(),
-                originTechCommentTotalCount);
-
-    }
-
-    private TechCommentsResponse getTechCommentsResponse(TechComment originParentTechComment,
-                                                         Map<Long, List<TechComment>> techCommentReplies) {
-        // 최상위 댓글의 아이디 추출
-        Long originParentTechCommentId = originParentTechComment.getId();
-
-        // 최상위 댓글의 답글 리스트 추출
-        List<TechComment> replies = techCommentReplies.get(originParentTechCommentId);
-
-        if (ObjectUtils.isEmpty(replies)) {
-            return TechCommentsResponse.from(originParentTechComment, Collections.emptyList());
-        }
-
-        // 답글 응답 만들기
-        List<TechRepliedCommentsResponse> techRepliedComments = getTechRepliedComments(replies,
-                originParentTechCommentId);
-        return TechCommentsResponse.from(originParentTechComment, techRepliedComments);
-    }
-
-    private List<TechRepliedCommentsResponse> getTechRepliedComments(List<TechComment> replies,
-                                                                     Long originParentTechCommentId) {
-        return replies.stream()
-                .sorted(Comparator.comparing(BasicTime::getCreatedAt))
-                .map(TechRepliedCommentsResponse::from)
-                .toList();
-
+        // 기술블로그 댓글/답글 조회
+        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, findMember);
     }
 
     /**

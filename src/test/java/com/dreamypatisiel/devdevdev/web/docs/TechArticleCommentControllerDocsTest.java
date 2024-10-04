@@ -100,7 +100,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.METHOD_NOT_ALLOWED.value()));
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.FORBIDDEN.value()));
 
         // Docs
         actions.andDo(document("tech-article-comments-anonymous-exception",
@@ -833,6 +833,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content[].author").type(STRING).description("기술블로그 댓글 작성자 닉네임"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("기술블로그 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].contents").type(STRING).description("기술블로그 댓글 내용"),
+                        fieldWithPath("data.content[].isCommentAuthor").type(BOOLEAN).description("회원의 기술블로그 댓글 작성자 여부"),
                         fieldWithPath("data.content[].replyTotalCount").type(NUMBER)
                                 .description("기술블로그 댓글의 답글 총 갯수"),
                         fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
@@ -849,6 +850,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("기술블로그 답글 작성일시"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("기술블로그 답글 작성자 닉네임"),
+                        fieldWithPath("data.content[].replies[].isCommentAuthor").type(BOOLEAN).description("회원의 기술블로그 답글 작성자 여부"),
                         fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
                                 .description("기술블로그 답글 작성자 이메일"),
                         fieldWithPath("data.content[].replies[].contents").type(STRING).description("기술블로그 답글 내용"),

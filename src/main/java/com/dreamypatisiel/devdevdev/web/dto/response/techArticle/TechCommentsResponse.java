@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class TechCommentsResponse {
     private Long replyTotalCount;
     private Long likeTotalCount;
     private Boolean isDeleted;
+    private Boolean isCommentAuthor;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
@@ -31,21 +33,23 @@ public class TechCommentsResponse {
     @Builder
     public TechCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail, String contents,
                                 Long replyTotalCount, Long likeTotalCount, Boolean isDeleted, LocalDateTime createdAt,
-                                List<TechRepliedCommentsResponse> replies) {
+                                Boolean isCommentAuthor, List<TechRepliedCommentsResponse> replies) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
         this.author = author;
         this.maskedEmail = maskedEmail;
         this.contents = contents;
         this.replyTotalCount = replyTotalCount;
+        this.isCommentAuthor = isCommentAuthor;
         this.likeTotalCount = likeTotalCount;
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.replies = replies;
     }
 
-    public static TechCommentsResponse from(TechComment originParentTechComment,
-                                            List<TechRepliedCommentsResponse> replies) {
+    public static TechCommentsResponse of(@Nullable Member member,
+                                          TechComment originParentTechComment,
+                                          List<TechRepliedCommentsResponse> replies) {
         Member createdBy = originParentTechComment.getCreatedBy();
 
         return TechCommentsResponse.builder()
@@ -58,6 +62,7 @@ public class TechCommentsResponse {
                 .likeTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(originParentTechComment.isDeleted())
                 .createdAt(originParentTechComment.getCreatedAt())
+                .isCommentAuthor(CommentResponseUtil.isTechCommentAuthor(member, originParentTechComment))
                 .replies(replies)
                 .build();
     }

@@ -1,7 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.MemberTechCommentService;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.MemberTechCommentService;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.TechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
@@ -26,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class TechArticleCommentController {
 
-    private final MemberTechCommentService memberTechCommentService;
+    private final TechArticleServiceStrategy techArticleServiceStrategy;
 
     @Operation(summary = "기술블로그 댓글 작성")
     @PostMapping("/articles/{techArticleId}/comments")
@@ -36,7 +38,8 @@ public class TechArticleCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        TechCommentResponse response = memberTechCommentService.registerMainTechComment(techArticleId,
+        TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
+        TechCommentResponse response = techCommentService.registerMainTechComment(techArticleId,
                 registerTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -52,7 +55,8 @@ public class TechArticleCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        TechCommentResponse response = memberTechCommentService.registerRepliedTechComment(techArticleId, originParentTechCommentId,
+        TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
+        TechCommentResponse response = techCommentService.registerRepliedTechComment(techArticleId, originParentTechCommentId,
                 parentTechCommentId, registerRepliedTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -67,7 +71,8 @@ public class TechArticleCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        TechCommentResponse response = memberTechCommentService.modifyTechComment(techArticleId, techCommentId,
+        TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
+        TechCommentResponse response = techCommentService.modifyTechComment(techArticleId, techCommentId,
                 modifyTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -81,7 +86,8 @@ public class TechArticleCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        TechCommentResponse response = memberTechCommentService.deleteTechComment(techArticleId, techCommentId,
+        TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
+        TechCommentResponse response = techCommentService.deleteTechComment(techArticleId, techCommentId,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -96,8 +102,11 @@ public class TechArticleCommentController {
             @RequestParam(required = false) Long techCommentId
     ) {
 
-        SliceCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId, techCommentId,
-                techCommentSort, pageable);
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
+        SliceCustom<TechCommentsResponse> response = techCommentService.getTechComments(techArticleId, techCommentId,
+                techCommentSort, pageable, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -111,7 +120,8 @@ public class TechArticleCommentController {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        TechCommentRecommendResponse response = memberTechCommentService.recommendTechComment(techArticleId, techCommentId,
+        TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
+        TechCommentRecommendResponse response = techCommentService.recommendTechComment(techArticleId, techCommentId,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));

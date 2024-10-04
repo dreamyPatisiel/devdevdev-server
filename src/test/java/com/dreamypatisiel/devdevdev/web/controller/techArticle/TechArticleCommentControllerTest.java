@@ -88,7 +88,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.METHOD_NOT_ALLOWED.value()));
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test

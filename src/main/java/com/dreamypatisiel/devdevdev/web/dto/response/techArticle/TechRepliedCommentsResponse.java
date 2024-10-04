@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import lombok.Builder;
 import lombok.Data;
 
+import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 
 @Data
@@ -25,13 +26,15 @@ public class TechRepliedCommentsResponse {
     private Long techCommentParentId;
     private Long techCommentOriginParentId;
 
+    private Boolean isCommentAuthor;
+
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
 
     @Builder
     public TechRepliedCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail,
                                        String contents, Long likeTotalCount, Boolean isDeleted, Long techCommentParentId,
-                                       Long techCommentOriginParentId, LocalDateTime createdAt) {
+                                       Long techCommentOriginParentId, LocalDateTime createdAt, Boolean isCommentAuthor) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
         this.author = author;
@@ -42,9 +45,10 @@ public class TechRepliedCommentsResponse {
         this.techCommentParentId = techCommentParentId;
         this.techCommentOriginParentId = techCommentOriginParentId;
         this.createdAt = createdAt;
+        this.isCommentAuthor = isCommentAuthor;
     }
 
-    public static TechRepliedCommentsResponse from(TechComment repliedTechComment) {
+    public static TechRepliedCommentsResponse of(@Nullable Member member, TechComment repliedTechComment) {
 
         Member createdBy = repliedTechComment.getCreatedBy();
 
@@ -55,6 +59,7 @@ public class TechRepliedCommentsResponse {
                 .techCommentParentId(repliedTechComment.getParent().getId())
                 .techCommentOriginParentId(repliedTechComment.getOriginParent().getId())
                 .createdAt(repliedTechComment.getCreatedAt())
+                .isCommentAuthor(CommentResponseUtil.isTechCommentAuthor(member, repliedTechComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByTechCommentStatus(repliedTechComment))
                 .likeTotalCount(repliedTechComment.getRecommendTotalCount().getCount())
