@@ -705,6 +705,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("댓글 작성자가 픽픽픽 작성자인지 여부"),
                         fieldWithPath("data.content[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 댓글 작성자인지 여부"),
+                        fieldWithPath("data.content[].isRecommended").type(BOOLEAN)
+                                .description("로그인한 회원이 댓글 추천 여부"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].votedPickOption").optional().type(STRING)
                                 .description("픽픽픽 투표 선택 타입").attributes(pickOptionType()),
@@ -732,6 +734,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("답글 작성자가 픽픽픽 작성자인지 여부"),
                         fieldWithPath("data.content[].replies[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 답글 작성자인지 여부"),
+                        fieldWithPath("data.content[].replies[].isRecommended").type(BOOLEAN)
+                                .description("로그인한 회원이 답글 추천 여부"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("픽픽픽 답글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
                                 .description("픽픽픽 답글 작성자 이메일"),

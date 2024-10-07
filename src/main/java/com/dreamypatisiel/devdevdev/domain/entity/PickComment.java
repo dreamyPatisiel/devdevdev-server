@@ -13,8 +13,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -90,10 +93,14 @@ public class PickComment extends BasicTime {
     @JoinColumn(name = "pick_vote_id")
     private PickVote pickVote;
 
+    @OneToMany(mappedBy = "pickComment")
+    private List<PickCommentRecommend> pickCommentRecommends = new ArrayList<>();
+
     @Builder
     private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,
                         Count replyTotalCount, Boolean isPublic, PickComment parent, PickComment originParent,
-                        Member createdBy, Pick pick, PickVote pickVote) {
+                        Member createdBy, Pick pick, PickVote pickVote,
+                        List<PickCommentRecommend> pickCommentRecommends) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
@@ -104,6 +111,7 @@ public class PickComment extends BasicTime {
         this.createdBy = createdBy;
         this.pick = pick;
         this.pickVote = pickVote;
+        this.pickCommentRecommends = pickCommentRecommends;
     }
 
     public static PickComment createPrivateVoteComment(CommentContents content, Member createdBy, Pick pick) {

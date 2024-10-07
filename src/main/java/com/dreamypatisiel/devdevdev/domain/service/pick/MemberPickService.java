@@ -24,6 +24,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
@@ -88,8 +89,9 @@ public class MemberPickService extends PickCommonService implements PickService 
                              MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
                              PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
                              PickCommentRepository pickCommentRepository,
+                             PickCommentRecommendRepository pickCommentRecommendRepository,
                              PickPopularScorePolicy pickPopularScorePolicy) {
-        super(embeddingsService, pickRepository, pickCommentRepository);
+        super(embeddingsService, pickRepository, pickCommentRepository, pickCommentRecommendRepository);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
         this.memberProvider = memberProvider;

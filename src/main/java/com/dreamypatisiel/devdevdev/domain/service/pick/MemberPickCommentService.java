@@ -54,21 +54,19 @@ public class MemberPickCommentService extends PickCommonService implements PickC
     private final PickRepository pickRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickCommentRepository pickCommentRepository;
-    private final PickCommentRecommendRepository pickCommentRecommendRepository;
 
     public MemberPickCommentService(TimeProvider timeProvider, MemberProvider memberProvider,
                                     EmbeddingsService embeddingsService, PickPopularScorePolicy pickPopularScorePolicy,
                                     PickRepository pickRepository, PickVoteRepository pickVoteRepository,
                                     PickCommentRepository pickCommentRepository,
                                     PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickRepository, pickCommentRepository);
+        super(embeddingsService, pickRepository, pickCommentRepository, pickCommentRecommendRepository);
         this.timeProvider = timeProvider;
         this.memberProvider = memberProvider;
         this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickRepository = pickRepository;
         this.pickVoteRepository = pickVoteRepository;
         this.pickCommentRepository = pickCommentRepository;
-        this.pickCommentRecommendRepository = pickCommentRecommendRepository;
     }
 
     /**

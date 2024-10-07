@@ -26,6 +26,7 @@ public class PickCommentsResponse {
     private String author;
     private Boolean isCommentOfPickAuthor;
     private Boolean isCommentAuthor;
+    private Boolean isRecommended;
     private String maskedEmail;
     private PickOptionType votedPickOption;
     private String votedPickOptionTitle;
@@ -41,13 +42,14 @@ public class PickCommentsResponse {
                                 Boolean isCommentOfPickAuthor, Boolean isCommentAuthor, String maskedEmail,
                                 PickOptionType votedPickOption, String votedPickOptionTitle, String contents,
                                 Long replyTotalCount, Long likeTotalCount, Boolean isModified, Boolean isDeleted,
-                                List<PickRepliedCommentsResponse> replies) {
+                                Boolean isRecommended, List<PickRepliedCommentsResponse> replies) {
         this.pickCommentId = pickCommentId;
         this.createdAt = createdAt;
         this.memberId = memberId;
         this.author = author;
         this.isCommentOfPickAuthor = isCommentOfPickAuthor;
         this.isCommentAuthor = isCommentAuthor;
+        this.isRecommended = isRecommended;
         this.maskedEmail = maskedEmail;
         this.votedPickOption = votedPickOption;
         this.votedPickOptionTitle = votedPickOptionTitle;
@@ -72,6 +74,8 @@ public class PickCommentsResponse {
                 .author(createdBy.getNickname().getNickname())
                 .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, originParentPickComment.getPick()))
                 .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, originParentPickComment))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member,
+                        originParentPickComment.getPickCommentRecommends()))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())

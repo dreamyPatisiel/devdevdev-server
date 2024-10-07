@@ -1291,6 +1291,10 @@ class MemberPickCommentServiceTest {
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
 
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
         em.flush();
         em.clear();
 
@@ -1308,6 +1312,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isRecommended",
                         "maskedEmail",
                         "votedPickOption",
                         "votedPickOptionTitle",
@@ -1320,6 +1325,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
                                 originParentPickComment1.getCreatedBy().getNickname().getNickname(),
+                                true,
                                 true,
                                 true,
                                 CommonResponseUtil.sliceAndMaskEmail(
@@ -1337,6 +1343,7 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment2.getCreatedBy().getNickname().getNickname(),
                                 false,
                                 false,
+                                false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment2.getCreatedBy().getEmail().getEmail()),
                                 originParentPickComment2.getPickVote().getPickOption().getPickOptionType(),
@@ -1350,6 +1357,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedBy().getId(),
                                 originParentPickComment3.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
@@ -1367,6 +1375,7 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment4.getCreatedBy().getNickname().getNickname(),
                                 false,
                                 false,
+                                false,
                                 CommonResponseUtil.sliceAndMaskEmail(
                                         originParentPickComment4.getCreatedBy().getEmail().getEmail()),
                                 null,
@@ -1380,6 +1389,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(originParentPickComment5.getId(),
                                 originParentPickComment5.getCreatedBy().getId(),
                                 originParentPickComment5.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
@@ -1403,6 +1413,7 @@ class MemberPickCommentServiceTest {
                         "pickCommentOriginParentId",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isRecommended",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1415,6 +1426,7 @@ class MemberPickCommentServiceTest {
                                 pickReply1.getOriginParent().getId(),
                                 true,
                                 true,
+                                false,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
@@ -1425,6 +1437,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
                                 pickReply2.getOriginParent().getId(),
+                                false,
                                 false,
                                 false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
@@ -1445,6 +1458,7 @@ class MemberPickCommentServiceTest {
                         "pickCommentOriginParentId",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isRecommended",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1456,6 +1470,7 @@ class MemberPickCommentServiceTest {
                                 pickReply3.getCreatedBy().getId(),
                                 pickReply3.getParent().getId(),
                                 pickReply3.getOriginParent().getId(),
+                                false,
                                 false,
                                 false,
                                 pickReply3.getCreatedBy().getNickname().getNickname(),
@@ -1559,6 +1574,10 @@ class MemberPickCommentServiceTest {
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
 
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
         em.flush();
         em.clear();
 
@@ -1576,6 +1595,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isCommentAuthor",
                         "maskedEmail",
                         "votedPickOption",
                         "votedPickOptionTitle",
@@ -1588,6 +1608,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(originParentPickComment1.getId(),
                                 originParentPickComment1.getCreatedBy().getId(),
                                 originParentPickComment1.getCreatedBy().getNickname().getNickname(),
+                                true,
                                 true,
                                 true,
                                 CommonResponseUtil.sliceAndMaskEmail(
@@ -1603,6 +1624,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(originParentPickComment2.getId(),
                                 originParentPickComment2.getCreatedBy().getId(),
                                 originParentPickComment2.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
@@ -1626,6 +1648,7 @@ class MemberPickCommentServiceTest {
                         "pickCommentOriginParentId",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isRecommended",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1638,6 +1661,7 @@ class MemberPickCommentServiceTest {
                                 pickReply1.getOriginParent().getId(),
                                 true,
                                 true,
+                                false,
                                 pickReply1.getCreatedBy().getNickname().getNickname(),
                                 CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
                                 pickReply1.getContents().getCommentContents(),
@@ -1648,6 +1672,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
                                 pickReply2.getOriginParent().getId(),
+                                false,
                                 false,
                                 false,
                                 pickReply2.getCreatedBy().getNickname().getNickname(),
@@ -1668,6 +1693,7 @@ class MemberPickCommentServiceTest {
                         "pickCommentOriginParentId",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isRecommended",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1679,6 +1705,7 @@ class MemberPickCommentServiceTest {
                                 pickReply3.getCreatedBy().getId(),
                                 pickReply3.getParent().getId(),
                                 pickReply3.getOriginParent().getId(),
+                                false,
                                 false,
                                 false,
                                 pickReply3.getCreatedBy().getNickname().getNickname(),
@@ -1767,6 +1794,10 @@ class MemberPickCommentServiceTest {
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
 
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
         em.flush();
         em.clear();
 
@@ -1784,6 +1815,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
+                        "isRecommended",
                         "maskedEmail",
                         "votedPickOption",
                         "votedPickOptionTitle",
@@ -1796,6 +1828,7 @@ class MemberPickCommentServiceTest {
                         Tuple.tuple(originParentPickComment3.getId(),
                                 originParentPickComment3.getCreatedBy().getId(),
                                 originParentPickComment3.getCreatedBy().getNickname().getNickname(),
+                                false,
                                 false,
                                 false,
                                 CommonResponseUtil.sliceAndMaskEmail(
