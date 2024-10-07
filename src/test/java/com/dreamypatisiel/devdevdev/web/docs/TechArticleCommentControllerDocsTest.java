@@ -1,9 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -13,6 +10,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
@@ -21,6 +19,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,12 +35,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techCommentSortType;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -49,13 +42,14 @@ import java.util.List;
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techCommentSortType;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.JsonFieldType.*;
-import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -75,6 +69,12 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
 
     @Autowired
     TechCommentRepository techCommentRepository;
+
+    @Autowired
+    TechCommentRecommendRepository techCommentRecommendRepository;
+
+    @Autowired
+    EntityManager em;
 
     @Test
     @DisplayName("익명 사용자는 기술블로그 댓글을 작성할 수 없다.")
@@ -740,16 +740,23 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
         TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member, techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member, techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-
+        TechComment techComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member, techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member, techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
                 originParentTechComment4, originParentTechComment5, originParentTechComment6,
                 parentTechComment1, parentTechComment2, parentTechComment3, parentTechComment4,
-                techcomment1, techcomment2
+                techComment1, techComment2
         ));
+
+        TechCommentRecommend techCommentRecommend1 = TechCommentRecommend.create(originParentTechComment2, member);
+        TechCommentRecommend techCommentRecommend2 = TechCommentRecommend.create(parentTechComment3, member);
+
+        techCommentRecommendRepository.saveAll(List.of(techCommentRecommend1, techCommentRecommend2));
+
+        em.flush();
+        em.clear();
 
         Pageable pageable = PageRequest.of(0, 5);
 
@@ -775,6 +782,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .andExpect(jsonPath("$.data.content.[0].replyTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].likeTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentParentId").isNumber())
@@ -785,6 +793,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].likeTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
                 .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
                 .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
@@ -842,6 +851,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 댓글 삭제 여부"),
                         fieldWithPath("data.content[].isModified").type(BOOLEAN)
                                 .description("기술블로그 댓글 편집 여부"),
+                        fieldWithPath("data.content[].isRecommended").type(BOOLEAN)
+                                .description("기술블로그 댓글 좋아요 여부"),
 
                         fieldWithPath("data.content[].replies").type(ARRAY).description("기술블로그 답글 배열"),
                         fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER).description("기술블로그 답글 아이디"),
@@ -862,6 +873,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 댓글 삭제 여부"),
                         fieldWithPath("data.content[].replies[].isModified").type(BOOLEAN)
                                 .description("기술블로그 댓글 편집 여부"),
+                        fieldWithPath("data.content[].replies[].isRecommended").type(BOOLEAN)
+                                .description("기술블로그 댓글 좋아요 여부"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("기술블로그 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),

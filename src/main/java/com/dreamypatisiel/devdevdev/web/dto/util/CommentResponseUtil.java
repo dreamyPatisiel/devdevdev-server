@@ -1,9 +1,9 @@
 package com.dreamypatisiel.devdevdev.web.dto.util;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
-import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class CommentResponseUtil {
     public static String getCommentByPickCommentStatus(PickComment pickComment) {
@@ -58,5 +58,18 @@ public class CommentResponseUtil {
             return false;
         }
         return techComment.getCreatedBy().isEqualId(member.getId());
+    }
+
+    public static boolean isTechCommentRecommendedByMember(@Nullable Member member, TechComment techComment) {
+        // member가 null 인 경우 익명회원이 조회한 것
+        if (member == null) {
+            return false;
+        }
+
+        Optional<TechCommentRecommend> recommends = techComment.getRecommends().stream()
+                .filter(recommend -> recommend.getMember().isEqualId(member.getId()))
+                .findAny();
+
+        return recommends.map(TechCommentRecommend::isRecommended).orElse(false);
     }
 }

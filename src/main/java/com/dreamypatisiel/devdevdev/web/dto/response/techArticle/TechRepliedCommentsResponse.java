@@ -28,6 +28,7 @@ public class TechRepliedCommentsResponse {
     private Long techCommentOriginParentId;
 
     private Boolean isCommentAuthor;
+    private Boolean isRecommended;
 
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
@@ -36,7 +37,7 @@ public class TechRepliedCommentsResponse {
     public TechRepliedCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail,
                                        String contents, Long likeTotalCount, Boolean isDeleted, Long techCommentParentId,
                                        Long techCommentOriginParentId, LocalDateTime createdAt, Boolean isCommentAuthor,
-                                       Boolean isModified) {
+                                       Boolean isModified, Boolean isRecommended) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
         this.author = author;
@@ -47,6 +48,7 @@ public class TechRepliedCommentsResponse {
         this.techCommentParentId = techCommentParentId;
         this.techCommentOriginParentId = techCommentOriginParentId;
         this.createdAt = createdAt;
+        this.isRecommended = isRecommended;
         this.isCommentAuthor = isCommentAuthor;
         this.isModified = isModified;
     }
@@ -65,6 +67,7 @@ public class TechRepliedCommentsResponse {
                 .isCommentAuthor(CommentResponseUtil.isTechCommentAuthor(member, repliedTechComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByTechCommentStatus(repliedTechComment))
+                .isRecommended(CommentResponseUtil.isTechCommentRecommendedByMember(member, repliedTechComment))
                 .likeTotalCount(repliedTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(repliedTechComment.isDeleted())
                 .isModified(repliedTechComment.isModified())
