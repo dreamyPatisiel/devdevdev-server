@@ -127,9 +127,9 @@ public class TechComment extends BasicTime {
         this.deletedBy = deletedBy;
     }
 
-    public void changeCommentContents(CommentContents contents, LocalDateTime lastModifiedContentsAt) {
+    public void modifyCommentContents(CommentContents contents, LocalDateTime contentsLastModifiedAt) {
         this.contents = contents;
-        this.contentsLastModifiedAt = lastModifiedContentsAt;
+        this.contentsLastModifiedAt = contentsLastModifiedAt;
     }
 
     public boolean isModified() {

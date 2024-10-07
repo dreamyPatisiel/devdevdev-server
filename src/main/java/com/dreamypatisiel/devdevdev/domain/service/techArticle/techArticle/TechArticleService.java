@@ -9,7 +9,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-@Service
 public interface TechArticleService {
     Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort,
                                                    String keyword, Long companyId, Float score,

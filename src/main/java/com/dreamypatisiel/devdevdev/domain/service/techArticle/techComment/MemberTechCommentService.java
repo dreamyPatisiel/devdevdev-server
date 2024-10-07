@@ -5,7 +5,6 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
 
-import com.dreamypatisiel.devdevdev.domain.entity.BasicTime;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
@@ -25,21 +24,13 @@ import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechComm
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 @Service
 @Transactional(readOnly = true)
@@ -177,7 +168,7 @@ public class MemberTechCommentService extends TechCommentCommonService implement
 
         // 댓글 수정
         String contents = modifyTechCommentRequest.getContents();
-        findTechComment.changeCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
+        findTechComment.modifyCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
 
         // 데이터 가공
         return new TechCommentResponse(findTechComment.getId());
