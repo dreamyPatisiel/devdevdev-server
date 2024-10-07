@@ -24,6 +24,7 @@ public class PickRepliedCommentsResponse {
 
     private Boolean isCommentOfPickAuthor; // 댓글 작성자가 픽픽픽 작성자인지 여부
     private Boolean isCommentAuthor; // 로그인한 회원이 댓글 작성자인지 여부
+    private Boolean isRecommended; // 로그인한 회원이 댓글 추천을 했는지 여부
     private String author;
     private String maskedEmail;
     private String contents;
@@ -34,9 +35,10 @@ public class PickRepliedCommentsResponse {
     @Builder
     public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long pickCommentParentId,
                                        Long pickCommentOriginParentId, LocalDateTime createdAt,
-                                       Boolean isCommentOfPickAuthor, Boolean isCommentAuthor, String author,
-                                       String maskedEmail, String contents, Long likeTotalCount, Boolean isModified,
-                                       Boolean isDeleted) {
+                                       Boolean isCommentOfPickAuthor, Boolean isCommentAuthor,
+                                       Boolean isRecommended,
+                                       String author, String maskedEmail, String contents, Long likeTotalCount,
+                                       Boolean isModified, Boolean isDeleted) {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
         this.pickCommentParentId = pickCommentParentId;
@@ -44,6 +46,7 @@ public class PickRepliedCommentsResponse {
         this.createdAt = createdAt;
         this.isCommentOfPickAuthor = isCommentOfPickAuthor;
         this.isCommentAuthor = isCommentAuthor;
+        this.isRecommended = isRecommended;
         this.author = author;
         this.maskedEmail = maskedEmail;
         this.contents = contents;
@@ -66,6 +69,8 @@ public class PickRepliedCommentsResponse {
                 .createdAt(repliedPickComment.getCreatedAt())
                 .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, repliedPickComment.getPick()))
                 .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, repliedPickComment))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member,
+                        repliedPickComment.getPickCommentRecommends()))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
                 .likeTotalCount(repliedPickComment.getRecommendTotalCount().getCount())

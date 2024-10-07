@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -19,15 +20,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class GuestPickCommentService extends PickCommonService implements PickCommentService {
 
 
     public GuestPickCommentService(EmbeddingsService embeddingsService,
                                    PickRepository pickRepository,
-                                   PickCommentRepository pickCommentRepository) {
-        super(embeddingsService, pickRepository, pickCommentRepository);
+                                   PickCommentRepository pickCommentRepository,
+                                   PickCommentRecommendRepository pickCommentRecommendRepository) {
+        super(embeddingsService, pickRepository, pickCommentRepository, pickCommentRecommendRepository);
     }
 
     @Override
