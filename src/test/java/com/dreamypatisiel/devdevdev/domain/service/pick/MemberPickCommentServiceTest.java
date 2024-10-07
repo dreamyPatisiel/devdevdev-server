@@ -2115,11 +2115,14 @@ class MemberPickCommentServiceTest {
 
     private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
                                                             Boolean recommendedStatus) {
-        return PickCommentRecommend.builder()
-                .pickComment(pickComment)
+        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.builder()
                 .member(member)
                 .recommendedStatus(recommendedStatus)
                 .build();
+
+        pickCommentRecommend.changePickComment(pickComment);
+
+        return pickCommentRecommend;
     }
 
     private Pick createPick(Title title, ContentStatus contentStatus, Count commentTotalCount, Member member) {

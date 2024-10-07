@@ -55,9 +55,9 @@ public class PickCommentRecommend extends BasicTime {
     }
 
     // 연관관계 편의 메소드
-    public void setPickComment(PickComment pickComment) {
-        pickComment.getPickCommentRecommends().add(this);
+    public void changePickComment(PickComment pickComment) {
         this.pickComment = pickComment;
+        pickComment.getPickCommentRecommends().add(this);
     }
 
     public boolean isRecommended() {
