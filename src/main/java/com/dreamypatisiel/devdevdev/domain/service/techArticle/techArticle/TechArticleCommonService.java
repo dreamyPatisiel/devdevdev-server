@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.techArticle;
+package com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
@@ -40,7 +40,7 @@ public class TechArticleCommonService {
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE));
     }
 
-    protected TechArticle findTechArticle(Long techArticleId) {
+    public TechArticle findTechArticle(Long techArticleId) {
         return techArticleRepository.findById(techArticleId)
                 .orElseThrow(() -> new NotFoundException(NOT_FOUND_TECH_ARTICLE_MESSAGE));
     }

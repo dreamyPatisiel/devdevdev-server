@@ -4,7 +4,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessa
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.blame.MemberBlameService.BLAME_TYPE_ETC;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Blame;
 import com.dreamypatisiel.devdevdev.domain.entity.BlameType;

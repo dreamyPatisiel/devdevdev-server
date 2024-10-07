@@ -9,8 +9,6 @@ include::{snippets}/tech-article-bookmark/http-request.adoc[]
 include::{snippets}/tech-article-bookmark/request-headers.adoc[]
 ==== HTTP Request Path Parameters Fields
 include::{snippets}/tech-article-bookmark/path-parameters.adoc[]
-==== HTTP Request Query Parameters Fields
-include::{snippets}/tech-article-bookmark/query-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/tech-article-bookmark/http-response.adoc[]
