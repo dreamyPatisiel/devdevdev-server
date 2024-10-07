@@ -8,6 +8,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -41,12 +42,15 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsRes
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -77,7 +81,7 @@ public class MemberTechCommentServiceTest {
     @Autowired
     TechCommentRecommendRepository techCommentRecommendRepository;
 
-    @Autowired
+    @MockBean
     TimeProvider timeProvider;
 
     @Autowired
@@ -198,7 +202,7 @@ public class MemberTechCommentServiceTest {
     }
 
     @Test
-    @DisplayName("회원은 본인이 작성한 삭제되지 않은 댓글을 수정할 수 있다.")
+    @DisplayName("회원은 본인이 작성한 삭제되지 않은 댓글을 수정할 수 있다. 수정시 편집된 시각이 갱신된다.")
     void modifyTechComment() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -225,6 +229,9 @@ public class MemberTechCommentServiceTest {
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정입니다.");
 
+        LocalDateTime modifiedDateTime = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(modifiedDateTime);
+
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.modifyTechComment(
                 techArticleId, techCommentId, modifyTechCommentRequest, authentication);
@@ -242,7 +249,8 @@ public class MemberTechCommentServiceTest {
                 () -> assertThat(findTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
                 () -> assertThat(findTechComment.getCreatedBy().getId()).isEqualTo(member.getId()),
                 () -> assertThat(findTechComment.getTechArticle().getId()).isEqualTo(techArticleId),
-                () -> assertThat(findTechComment.getId()).isEqualTo(techCommentId)
+                () -> assertThat(findTechComment.getId()).isEqualTo(techCommentId),
+                () -> assertThat(findTechComment.getContentsLastModifiedAt()).isEqualTo(modifiedDateTime)
         );
     }
 
@@ -328,7 +336,8 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        techComment.changeDeletedAt(deletedAt, member);
         em.flush();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
@@ -367,6 +376,9 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(deletedAt);
+
         em.flush();
 
         // when
@@ -377,7 +389,8 @@ public class MemberTechCommentServiceTest {
 
         assertAll(
                 () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
-                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(member.getId())
+                () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(member.getId()),
+                () -> assertThat(findTechComment.getDeletedAt()).isEqualTo(deletedAt)
         );
     }
 
@@ -408,7 +421,8 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        techComment.changeDeletedAt(deletedAt, member);
         em.flush();
 
         // when // then
@@ -479,6 +493,9 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(deletedAt);
+
         em.flush();
 
         // when
@@ -489,6 +506,7 @@ public class MemberTechCommentServiceTest {
 
         assertAll(
                 () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
+                () -> assertThat(findTechComment.getDeletedAt()).isEqualTo(deletedAt),
                 () -> assertThat(findTechComment.getDeletedBy().getId()).isEqualTo(admin.getId())
         );
     }
@@ -733,7 +751,9 @@ public class MemberTechCommentServiceTest {
         TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        techComment.changeDeletedAt(deletedAt, member);
 
         em.flush();
         em.clear();
@@ -1759,7 +1779,9 @@ public class MemberTechCommentServiceTest {
         TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
-        techComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), member);
+
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        techComment.changeDeletedAt(deletedAt, member);
 
         em.flush();
         em.clear();
