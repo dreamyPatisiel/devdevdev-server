@@ -6,9 +6,9 @@ import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
-import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
@@ -43,6 +43,7 @@ public class PickCommonService {
     private static final int SIMILARITY_PICK_MAX_COUNT = 3;
 
     private final EmbeddingsService embeddingsService;
+    private final PickBestCommentsPolicy pickBestCommentsPolicy;
 
     protected final PickRepository pickRepository;
     protected final PickCommentRepository pickCommentRepository;
@@ -96,9 +97,10 @@ public class PickCommonService {
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
-    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
-                                                              Long pickCommentId, PickCommentSort pickCommentSort,
-                                                              PickOptionType pickOptionType, @Nullable Member member) {
+    protected SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                                 Long pickCommentId, PickCommentSort pickCommentSort,
+                                                                 PickOptionType pickOptionType,
+                                                                 @Nullable Member member) {
 
         // 픽픽픽 최상위 댓글 조회
         Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
@@ -167,19 +169,36 @@ public class PickCommonService {
                 .sorted(Comparator.comparing(PickComment::getCreatedAt)) // 오름차순
                 .map(repliedPickComment -> PickRepliedCommentsResponse.of(member, repliedPickComment))
                 .toList();
-
     }
 
-    private Map<Long, List<PickCommentRecommend>> getPickCommentRecommends(Member member, Set<Long> pickCommentIds) {
-        // 회원이 존재하지 않으면
-        if (ObjectUtils.isEmpty(member)) {
-            return Collections.emptyMap();
-        }
+    /**
+     * @Note: 픽픽픽 베스트 댓글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2024.10.09
+     */
+    protected List<PickCommentsResponse> findPickBestComments(int size, Long pickId, @Nullable Member member) {
 
-        // 회원이 추천한 댓글 목록 조회
-        return pickCommentRecommendRepository.findByMemberIdAndPickCommentIdIn(
-                        member.getId(), pickCommentIds).stream()
-                .collect(Collectors.groupingBy(
-                        pickCommentRecommend -> pickCommentRecommend.getPickComment().getId()));
+        // 베스트 댓글 offset 정책 적용
+        int offset = pickBestCommentsPolicy.applySize(size);
+
+        // 베스트 댓글 조회
+        List<PickComment> findOriginPickBestComments = pickCommentRepository.findOriginParentPickBestCommentsByPickIdAndOffset(
+                pickId, offset);
+        // 베스트 댓글 아이디 추출
+        Set<Long> originParentIds = findOriginPickBestComments.stream()
+                .map(PickComment::getId)
+                .collect(Collectors.toSet());
+
+        // 픽픽픽 최상위 댓글의 답글 조회(최상위 댓글의 아이디가 key)
+        Map<Long, List<PickComment>> pickBestCommentReplies = pickCommentRepository
+                .findWithMemberWithPickWithPickVoteWithPickCommentRecommendsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+                        originParentIds).stream()
+                .collect(Collectors.groupingBy(pickCommentReply -> pickCommentReply.getOriginParent().getId()));
+
+        // 픽픽픽 댓글/답글 응답 생성
+        return findOriginPickBestComments.stream()
+                .map(originParentPickComment -> getPickCommentsResponse(member, originParentPickComment,
+                        pickBestCommentReplies))
+                .toList();
     }
 }

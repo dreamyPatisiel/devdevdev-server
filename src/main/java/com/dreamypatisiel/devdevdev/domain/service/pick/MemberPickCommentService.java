@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
@@ -32,6 +33,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -57,10 +59,12 @@ public class MemberPickCommentService extends PickCommonService implements PickC
 
     public MemberPickCommentService(TimeProvider timeProvider, MemberProvider memberProvider,
                                     EmbeddingsService embeddingsService, PickPopularScorePolicy pickPopularScorePolicy,
+                                    PickBestCommentsPolicy pickBestCommentsPolicy,
                                     PickRepository pickRepository, PickVoteRepository pickVoteRepository,
                                     PickCommentRepository pickCommentRepository,
                                     PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickRepository, pickCommentRepository, pickCommentRecommendRepository);
+        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+                pickCommentRecommendRepository);
         this.timeProvider = timeProvider;
         this.memberProvider = memberProvider;
         this.pickPopularScorePolicy = pickPopularScorePolicy;
@@ -292,6 +296,20 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         validateIsDeletedPickComment(findPickComment, INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE, RECOMMEND);
 
         return toggleOrCreatePickCommentRecommend(findPickComment, findMember);
+    }
+
+    /**
+     * @Note: 회원이 픽픽픽 베스트 댓글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2024.10.09
+     */
+    @Override
+    public List<PickCommentsResponse> findPickBestComments(int offset, Long pickId, Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        return super.findPickBestComments(offset, pickId, findMember);
     }
 
     private PickCommentRecommendResponse toggleOrCreatePickCommentRecommend(PickComment pickComment, Member member) {

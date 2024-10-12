@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
@@ -16,6 +17,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -28,10 +30,12 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
 
 
     public GuestPickCommentService(EmbeddingsService embeddingsService,
+                                   PickBestCommentsPolicy pickBestCommentsPolicy,
                                    PickRepository pickRepository,
                                    PickCommentRepository pickCommentRepository,
                                    PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickRepository, pickCommentRepository, pickCommentRecommendRepository);
+        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+                pickCommentRecommendRepository);
     }
 
     @Override
@@ -86,5 +90,19 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
                                                              Authentication authentication) {
 
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    /**
+     * @Note: 익명회윈이 픽픽픽 베스트 댓글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2024.10.09
+     */
+    @Override
+    public List<PickCommentsResponse> findPickBestComments(int offset, Long pickId,
+                                                           Authentication authentication) {
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        return super.findPickBestComments(offset, pickId, null);
     }
 }
