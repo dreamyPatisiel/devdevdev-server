@@ -594,6 +594,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].likeTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].parentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].parentCommentAuthor").isString())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
                 .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
                 .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
