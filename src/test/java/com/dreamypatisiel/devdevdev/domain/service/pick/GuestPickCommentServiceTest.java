@@ -938,7 +938,9 @@ class GuestPickCommentServiceTest {
                         "contents",
                         "likeTotalCount",
                         "isDeleted",
-                        "isModified")
+                        "isModified",
+                        "parentCommentMemberId",
+                        "parentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -951,7 +953,9 @@ class GuestPickCommentServiceTest {
                                 pickReply1.getContents().getCommentContents(),
                                 pickReply1.getRecommendTotalCount().getCount(),
                                 false,
-                                false),
+                                false,
+                                pickReply1.getParent().getCreatedBy().getId(),
+                                pickReply1.getParent().getCreatedBy().getNicknameAsString()),
 
                         Tuple.tuple(pickReply2.getId(), pickReply2.getCreatedBy().getId(),
                                 pickReply2.getParent().getId(),
@@ -964,7 +968,9 @@ class GuestPickCommentServiceTest {
                                 CommentResponseUtil.getCommentByPickCommentStatus(pickReply2),
                                 pickReply2.getRecommendTotalCount().getCount(),
                                 true,
-                                false)
+                                false,
+                                pickReply1.getParent().getCreatedBy().getId(),
+                                pickReply1.getParent().getCreatedBy().getNicknameAsString())
                 );
 
         // 두 번째 최상위 댓글의 답글 검증
@@ -983,7 +989,9 @@ class GuestPickCommentServiceTest {
                         "contents",
                         "likeTotalCount",
                         "isDeleted",
-                        "isModified")
+                        "isModified",
+                        "parentCommentMemberId",
+                        "parentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -997,7 +1005,9 @@ class GuestPickCommentServiceTest {
                                 pickReply3.getContents().getCommentContents(),
                                 pickReply3.getRecommendTotalCount().getCount(),
                                 false,
-                                false)
+                                false,
+                                pickReply3.getParent().getCreatedBy().getId(),
+                                pickReply3.getParent().getCreatedBy().getNicknameAsString())
                 );
 
         // 세 번째 최상위 댓글의 답글 검증
