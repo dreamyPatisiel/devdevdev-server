@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -135,5 +136,20 @@ public class PickCommentController {
                 pickId, pickCommentId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentRecommendResponse));
+    }
+
+    @Operation(summary = "픽픽픽 베스트 댓글 조회", description = "회원은 픽픽픽 베스트 댓글을 조회할 수 있습니다.")
+    @GetMapping("/picks/{pickId}/comments/best")
+    public ResponseEntity<BasicResponse<PickCommentsResponse>> getPickBestComments(
+            @RequestParam(defaultValue = "3") int size,
+            @PathVariable Long pickId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        List<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickBestComments(size, pickId,
+                authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }
 }

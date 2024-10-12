@@ -38,5 +38,5 @@ public interface PickCommentService {
     PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
                                                       Authentication authentication);
 
-    List<PickCommentsResponse> findPickBestComments(int offset, Long pickId, Authentication authentication);
+    List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication);
 }

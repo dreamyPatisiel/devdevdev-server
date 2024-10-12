@@ -304,12 +304,12 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int offset, Long pickId, Authentication authentication) {
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        return super.findPickBestComments(offset, pickId, findMember);
+        return super.findPickBestComments(size, pickId, findMember);
     }
 
     private PickCommentRecommendResponse toggleOrCreatePickCommentRecommend(PickComment pickComment, Member member) {

@@ -13,6 +13,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -42,6 +43,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -686,6 +688,269 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 베스트 댓글을 조회한다.")
+    void findPickBestComments() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", password, "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", password, "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", password, "mmj9908@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "유소영", password, "merooongg@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", "user5", "장세웅", password, "howisitgoing@kakao.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", password, "user6@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto7 = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        Member member7 = Member.createMemberBy(socialMemberDto7);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("픽픽픽 옵션1"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("픽픽픽 옵션2"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("여기가 꿈파?"), true, new Count(2),
+                new Count(3), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("행복한~"), LocalDateTime.now());
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("꿈빛!"), true, new Count(1),
+                new Count(2), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("파티시엘~!"), true, new Count(0),
+                new Count(1), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("진짜 너무 좋아"), member1, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("너무 행복하다"), member6, pick,
+                originParentPickComment1, pickReply1);
+        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("사랑해요~"), member6, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
+
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/comments/best",
+                        pick.getId())
+                        .queryParam("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.datas").isNotEmpty())
+                .andExpect(jsonPath("$.datas").isArray())
+                .andExpect(jsonPath("$.datas.[0].pickCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].votedPickOption").isString())
+                .andExpect(jsonPath("$.datas.[0].votedPickOptionTitle").isString())
+                .andExpect(jsonPath("$.datas.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replyTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].likeTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickCommentParentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickCommentOriginParentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].likeTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentAuthor").isString());
+    }
+
+    @Test
+    @DisplayName("익명 회원이 픽픽픽 베스트 댓글을 조회한다.")
+    void findPickBestCommentsAnonymous() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", password, "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", password, "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", password, "mmj9908@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "유소영", password, "merooongg@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", "user5", "장세웅", password, "howisitgoing@kakao.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", password, "user6@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto7 = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        Member member7 = Member.createMemberBy(socialMemberDto7);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("픽픽픽 옵션1"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("픽픽픽 옵션2"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("여기가 꿈파?"), true, new Count(2),
+                new Count(3), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("행복한~"), LocalDateTime.now());
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("꿈빛!"), true, new Count(1),
+                new Count(2), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("파티시엘~!"), true, new Count(0),
+                new Count(1), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("진짜 너무 좋아"), member1, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("너무 행복하다"), member6, pick,
+                originParentPickComment1, pickReply1);
+        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("사랑해요~"), member6, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
+
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/comments/best",
+                        pick.getId())
+                        .queryParam("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.datas").isNotEmpty())
+                .andExpect(jsonPath("$.datas").isArray())
+                .andExpect(jsonPath("$.datas.[0].pickCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].votedPickOption").isString())
+                .andExpect(jsonPath("$.datas.[0].votedPickOptionTitle").isString())
+                .andExpect(jsonPath("$.datas.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replyTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].likeTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickCommentParentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickCommentOriginParentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].likeTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentAuthor").isString());
+    }
+
+    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
+                                                            Boolean recommendedStatus) {
+        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.builder()
+                .member(member)
+                .recommendedStatus(recommendedStatus)
+                .build();
+
+        pickCommentRecommend.changePickComment(pickComment);
+
+        return pickCommentRecommend;
     }
 
     private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,

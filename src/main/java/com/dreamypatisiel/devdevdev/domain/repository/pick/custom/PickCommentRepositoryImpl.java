@@ -62,6 +62,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                         pick.contentStatus.eq(ContentStatus.APPROVAL)
                                 .and(pickComment.parent.isNull())
                                 .and(pickComment.originParent.isNull())
+                                .and(pickComment.deletedAt.isNull())
                 )
                 .orderBy(pickCommentSort(PickCommentSort.MOST_LIKED), pickComment.id.desc())
                 .limit(size)

@@ -98,11 +98,11 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int offset, Long pickId,
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId,
                                                            Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        return super.findPickBestComments(offset, pickId, null);
+        return super.findPickBestComments(size, pickId, null);
     }
 }
