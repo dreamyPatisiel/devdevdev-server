@@ -19,7 +19,8 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long>,
     @EntityGraph(attributePaths = {"pick"})
     Optional<PickComment> findWithPickByIdAndPickId(Long id, Long pickId);
 
-    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "pick", "pick.member"})
-    List<PickComment> findWithMemberWithPickWithPickVoteByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "pickVote", "pick", "pick.member",
+            "pickCommentRecommends"})
+    List<PickComment> findWithMemberWithPickWithPickVoteWithPickCommentRecommendsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
             Set<Long> originParentIds);
 }
