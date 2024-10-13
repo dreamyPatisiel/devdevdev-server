@@ -17,8 +17,8 @@ public class PickRepliedCommentsResponse {
     private Long pickCommentId;
     private Long memberId;
     private Long parentCommentMemberId; // 부모 댓글의 작성자 회원 아이디
-    private Long pickCommentParentId;
-    private Long pickCommentOriginParentId;
+    private Long pickParentCommentId;
+    private Long pickOriginParentCommentId;
 
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
@@ -36,7 +36,7 @@ public class PickRepliedCommentsResponse {
 
     @Builder
     public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long parentCommentMemberId,
-                                       Long pickCommentParentId, Long pickCommentOriginParentId,
+                                       Long pickParentCommentId, Long pickOriginParentCommentId,
                                        LocalDateTime createdAt, Boolean isCommentOfPickAuthor, Boolean isCommentAuthor,
                                        Boolean isRecommended, String parentCommentAuthor, String author,
                                        String maskedEmail, String contents, Long likeTotalCount,
@@ -44,8 +44,8 @@ public class PickRepliedCommentsResponse {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
         this.parentCommentMemberId = parentCommentMemberId;
-        this.pickCommentParentId = pickCommentParentId;
-        this.pickCommentOriginParentId = pickCommentOriginParentId;
+        this.pickParentCommentId = pickParentCommentId;
+        this.pickOriginParentCommentId = pickOriginParentCommentId;
         this.createdAt = createdAt;
         this.isCommentOfPickAuthor = isCommentOfPickAuthor;
         this.isCommentAuthor = isCommentAuthor;
@@ -71,8 +71,8 @@ public class PickRepliedCommentsResponse {
                 .parentCommentMemberId(parentPickComment.getCreatedBy().getId())
                 .author(createdBy.getNickname().getNickname())
                 .parentCommentAuthor(parentPickComment.getCreatedBy().getNicknameAsString())
-                .pickCommentParentId(parentPickComment.getId())
-                .pickCommentOriginParentId(repliedPickComment.getOriginParent().getId())
+                .pickParentCommentId(parentPickComment.getId())
+                .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
                 .createdAt(repliedPickComment.getCreatedAt())
                 .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, repliedPickComment.getPick()))
                 .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, repliedPickComment))
