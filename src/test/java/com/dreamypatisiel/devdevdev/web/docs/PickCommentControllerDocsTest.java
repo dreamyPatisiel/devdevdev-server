@@ -280,7 +280,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         // when // then
         ResultActions actions = mockMvc.perform(
                         post(
-                                "/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                                "/devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}",
                                 pick.getId(), pickComment.getId(), replidPickComment.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -298,8 +298,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
-                        parameterWithName("pickCommentOriginParentId").description("픽픽픽 최상단 댓글 아이디"),
-                        parameterWithName("pickCommentParentId").description("픽픽픽 답글 대상의 댓글 아이디")
+                        parameterWithName("pickOriginParentCommentId").description("픽픽픽 최상단 댓글 아이디"),
+                        parameterWithName("pickParentCommentId").description("픽픽픽 답글 대상의 댓글 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
@@ -346,7 +346,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}",
                                 pick.getId(), pickComment.getId(), replidPickComment.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -364,8 +364,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
-                        parameterWithName("pickCommentOriginParentId").description("픽픽픽 최상단 댓글 아이디"),
-                        parameterWithName("pickCommentParentId").description("픽픽픽 답글 대상의 댓글 아이디")
+                        parameterWithName("pickOriginParentCommentId").description("픽픽픽 최상단 댓글 아이디"),
+                        parameterWithName("pickParentCommentId").description("픽픽픽 답글 대상의 댓글 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
@@ -725,9 +725,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("data.content[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
                         fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
-                        fieldWithPath("data.content[].replies[].pickCommentParentId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].pickParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 부모 댓글 아이디"),
-                        fieldWithPath("data.content[].replies[].pickCommentOriginParentId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].pickOriginParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("픽픽픽 답글 작성일시"),
                         fieldWithPath("data.content[].replies[].isCommentOfPickAuthor").type(BOOLEAN)
