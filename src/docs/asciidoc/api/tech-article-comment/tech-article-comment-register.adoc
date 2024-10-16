@@ -3,6 +3,7 @@
 
 * 회원은 기술블로그에 댓글을 작성할 수 있다.
 * 익명회원은 댓글을 작성할 수 없다.
+* 최초 댓글에 대한 답글을 작성할 경우 techCommentOriginParentId 값과 techCommentParentId 값이 동일하다.
 
 === 정상 요청/응답
 

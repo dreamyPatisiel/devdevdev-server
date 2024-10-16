@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.techArticle;
+package com.dreamypatisiel.devdevdev.domain.service.blame;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_NOT_FOUND_BLAME_TYPE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_TECH_COMMENT_MESSAGE;
@@ -25,7 +25,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.domain.service.blame.MemberTechBlameService;
 import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlameTechArticleDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
