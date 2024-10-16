@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
@@ -56,18 +57,18 @@ public class PickCommentController {
     }
 
     @Operation(summary = "픽픽픽 답글 작성", description = "회원은 픽픽픽 댓글에 답글을 작성할 수 있습니다.")
-    @PostMapping("/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}")
+    @PostMapping("/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickRepliedComment(
             @PathVariable Long pickId,
-            @PathVariable Long pickCommentOriginParentId,
-            @PathVariable Long pickCommentParentId,
+            @PathVariable Long pickOriginParentCommentId,
+            @PathVariable Long pickParentCommentId,
             @RequestBody @Validated RegisterPickRepliedCommentRequest registerPickRepliedCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.registerPickRepliedComment(
-                pickCommentParentId, pickCommentOriginParentId, pickId, registerPickRepliedCommentRequest,
+                pickParentCommentId, pickOriginParentCommentId, pickId, registerPickRepliedCommentRequest,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
@@ -135,5 +136,20 @@ public class PickCommentController {
                 pickId, pickCommentId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentRecommendResponse));
+    }
+
+    @Operation(summary = "픽픽픽 베스트 댓글 조회", description = "회원은 픽픽픽 베스트 댓글을 조회할 수 있습니다.")
+    @GetMapping("/picks/{pickId}/comments/best")
+    public ResponseEntity<BasicResponse<PickCommentsResponse>> getPickBestComments(
+            @RequestParam(defaultValue = "3") int size,
+            @PathVariable Long pickId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
+        List<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickBestComments(size, pickId,
+                authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }
 }

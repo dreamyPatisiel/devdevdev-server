@@ -8,6 +8,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -41,9 +43,11 @@ public class PickCommonService {
     private static final int SIMILARITY_PICK_MAX_COUNT = 3;
 
     private final EmbeddingsService embeddingsService;
+    private final PickBestCommentsPolicy pickBestCommentsPolicy;
 
     protected final PickRepository pickRepository;
     protected final PickCommentRepository pickCommentRepository;
+    protected final PickCommentRecommendRepository pickCommentRecommendRepository;
 
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
 
@@ -93,9 +97,10 @@ public class PickCommonService {
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
-    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
-                                                              Long pickCommentId, PickCommentSort pickCommentSort,
-                                                              PickOptionType pickOptionType, @Nullable Member member) {
+    protected SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                                 Long pickCommentId, PickCommentSort pickCommentSort,
+                                                                 PickOptionType pickOptionType,
+                                                                 @Nullable Member member) {
 
         // 픽픽픽 최상위 댓글 조회
         Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
@@ -109,13 +114,14 @@ public class PickCommonService {
 
         // 픽픽픽 최상위 댓글의 답글 조회(최상위 댓글의 아이디가 key)
         Map<Long, List<PickComment>> pickCommentReplies = pickCommentRepository
-                .findWithMemberWithPickWithPickVoteByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+                .findWithMemberWithPickWithPickVoteWithPickCommentRecommendsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
                         originParentIds).stream()
                 .collect(Collectors.groupingBy(pickCommentReply -> pickCommentReply.getOriginParent().getId()));
 
         // 픽픽픽 댓글/답글 응답 생성
         List<PickCommentsResponse> pickCommentsResponse = originParentPickComments.stream()
-                .map(originPickComment -> getPickCommentsResponse(member, originPickComment, pickCommentReplies))
+                .map(originParentPickComment -> getPickCommentsResponse(member, originParentPickComment,
+                        pickCommentReplies))
                 .toList();
 
         // 픽픽픽 최상위 댓글 추출
@@ -158,9 +164,41 @@ public class PickCommonService {
     private List<PickRepliedCommentsResponse> getPickRepliedComments(Member member,
                                                                      Map<Long, List<PickComment>> pickCommentReplies,
                                                                      Long originPickCommentId) {
+
         return pickCommentReplies.get(originPickCommentId).stream()
                 .sorted(Comparator.comparing(PickComment::getCreatedAt)) // 오름차순
                 .map(repliedPickComment -> PickRepliedCommentsResponse.of(member, repliedPickComment))
+                .toList();
+    }
+
+    /**
+     * @Note: 픽픽픽 베스트 댓글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2024.10.09
+     */
+    protected List<PickCommentsResponse> findPickBestComments(int size, Long pickId, @Nullable Member member) {
+
+        // 베스트 댓글 offset 정책 적용
+        int offset = pickBestCommentsPolicy.applySize(size);
+
+        // 베스트 댓글 조회
+        List<PickComment> findOriginPickBestComments = pickCommentRepository.findOriginParentPickBestCommentsByPickIdAndOffset(
+                pickId, offset);
+        // 베스트 댓글 아이디 추출
+        Set<Long> originParentIds = findOriginPickBestComments.stream()
+                .map(PickComment::getId)
+                .collect(Collectors.toSet());
+
+        // 픽픽픽 최상위 댓글의 답글 조회(최상위 댓글의 아이디가 key)
+        Map<Long, List<PickComment>> pickBestCommentReplies = pickCommentRepository
+                .findWithMemberWithPickWithPickVoteWithPickCommentRecommendsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+                        originParentIds).stream()
+                .collect(Collectors.groupingBy(pickCommentReply -> pickCommentReply.getOriginParent().getId()));
+
+        // 픽픽픽 댓글/답글 응답 생성
+        return findOriginPickBestComments.stream()
+                .map(originParentPickComment -> getPickCommentsResponse(member, originParentPickComment,
+                        pickBestCommentReplies))
                 .toList();
     }
 }
