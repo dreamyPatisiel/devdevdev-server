@@ -27,6 +27,9 @@ public class TechRepliedCommentsResponse {
     private Long techCommentParentId;
     private Long techCommentOriginParentId;
 
+    private Long techCommentParentMemberId;
+    private String techCommentParentAuthor;
+
     private Boolean isCommentAuthor;
     private Boolean isRecommended;
 
@@ -37,6 +40,7 @@ public class TechRepliedCommentsResponse {
     public TechRepliedCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail,
                                        String contents, Long likeTotalCount, Boolean isDeleted, Long techCommentParentId,
                                        Long techCommentOriginParentId, LocalDateTime createdAt, Boolean isCommentAuthor,
+                                       Long techCommentParentMemberId, String techCommentParentAuthor,
                                        Boolean isModified, Boolean isRecommended) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
@@ -49,6 +53,8 @@ public class TechRepliedCommentsResponse {
         this.techCommentOriginParentId = techCommentOriginParentId;
         this.createdAt = createdAt;
         this.isRecommended = isRecommended;
+        this.techCommentParentMemberId = techCommentParentMemberId;
+        this.techCommentParentAuthor = techCommentParentAuthor;
         this.isCommentAuthor = isCommentAuthor;
         this.isModified = isModified;
     }
@@ -56,6 +62,7 @@ public class TechRepliedCommentsResponse {
     public static TechRepliedCommentsResponse of(@Nullable Member member, TechComment repliedTechComment) {
 
         Member createdBy = repliedTechComment.getCreatedBy();
+        TechComment parentComment = repliedTechComment.getParent();
 
         return TechRepliedCommentsResponse.builder()
                 .techCommentId(repliedTechComment.getId())
@@ -71,6 +78,8 @@ public class TechRepliedCommentsResponse {
                 .likeTotalCount(repliedTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(repliedTechComment.isDeleted())
                 .isModified(repliedTechComment.isModified())
+                .techCommentParentMemberId(parentComment.getCreatedBy().getId())
+                .techCommentParentAuthor(parentComment.getCreatedBy().getNicknameAsString())
                 .build();
     }
 }

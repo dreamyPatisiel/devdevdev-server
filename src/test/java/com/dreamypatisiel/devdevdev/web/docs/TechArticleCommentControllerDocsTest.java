@@ -875,6 +875,10 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 댓글 편집 여부"),
                         fieldWithPath("data.content[].replies[].isRecommended").type(BOOLEAN)
                                 .description("기술블로그 댓글 좋아요 여부"),
+                        fieldWithPath("data.content[].replies[].techCommentParentMemberId").type(NUMBER)
+                                .description("멘션된 기술블로그 댓글 작성자 id"),
+                        fieldWithPath("data.content[].replies[].techCommentParentAuthor").type(STRING)
+                                .description("멘션된 기술블로그 댓글 작성자 닉네임"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("기술블로그 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
