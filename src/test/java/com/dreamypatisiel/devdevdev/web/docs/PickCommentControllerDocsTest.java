@@ -1024,9 +1024,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("datas.[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("datas.[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
                         fieldWithPath("datas.[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
-                        fieldWithPath("datas.[].replies[].pickCommentParentId").type(NUMBER)
+                        fieldWithPath("datas.[].replies[].pickParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 부모 댓글 아이디"),
-                        fieldWithPath("datas.[].replies[].pickCommentOriginParentId").type(NUMBER)
+                        fieldWithPath("datas.[].replies[].pickOriginParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("datas.[].replies[].createdAt").type(STRING).description("픽픽픽 답글 작성일시"),
                         fieldWithPath("datas.[].replies[].isCommentOfPickAuthor").type(BOOLEAN)

@@ -2267,8 +2267,8 @@ class MemberPickCommentServiceTest {
         assertThat(replies1).hasSize(2)
                 .extracting("pickCommentId",
                         "memberId",
-                        "pickCommentParentId",
-                        "pickCommentOriginParentId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
                         "isRecommended",
@@ -2318,8 +2318,8 @@ class MemberPickCommentServiceTest {
         assertThat(replies2).hasSize(1)
                 .extracting("pickCommentId",
                         "memberId",
-                        "pickCommentParentId",
-                        "pickCommentOriginParentId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
                         "isCommentOfPickAuthor",
                         "isCommentAuthor",
                         "isRecommended",
