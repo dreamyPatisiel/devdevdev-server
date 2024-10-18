@@ -50,6 +50,25 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
+    @Override
+    public List<PickComment> findOriginParentPickBestCommentsByPickIdAndOffset(Long pickId, int size) {
+
+        return query.selectFrom(pickComment)
+                .innerJoin(pickComment.pick, pick).on(pick.id.eq(pickId))
+                .innerJoin(pickComment.createdBy, member).fetchJoin()
+                .leftJoin(pickComment.pickVote, pickVote).fetchJoin()
+                .leftJoin(pickVote.pickOption, pickOption).fetchJoin()
+                .where(
+                        pick.contentStatus.eq(ContentStatus.APPROVAL)
+                                .and(pickComment.parent.isNull())
+                                .and(pickComment.originParent.isNull())
+                                .and(pickComment.deletedAt.isNull())
+                )
+                .orderBy(pickCommentSort(PickCommentSort.MOST_LIKED), pickComment.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
     private BooleanExpression getCursorCondition(PickCommentSort pickCommentSort, Long pickCommentId) {
         if (ObjectUtils.isEmpty(pickCommentId)) {
             return null;
