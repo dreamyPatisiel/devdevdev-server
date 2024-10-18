@@ -1,5 +1,5 @@
 [[Pick-Reply-Register]]
-== 픽픽픽 답글 작성 API(POST: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId})
+== 픽픽픽 답글 작성 API(POST: /devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId})
 
 * 픽픽픽 답글을 작성한다.
 * 회원만 픽픽픽 답글을 작성 할 수 있다.
