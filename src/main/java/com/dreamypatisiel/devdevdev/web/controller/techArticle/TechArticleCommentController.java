@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "기술블로그 댓글 API", description = "기술블로그 댓글 작성/수정/삭제, 답글 작성/수정/삭제 API")
 @RestController
-@RequestMapping("/devdevdev/api/v1/articles")
+@RequestMapping("/devdevdev/api/v1")
 @RequiredArgsConstructor
 public class TechArticleCommentController {
 
     private final MemberTechCommentService memberTechCommentService;
 
     @Operation(summary = "기술블로그 댓글 작성")
-    @PostMapping("/{techArticleId}/comments")
+    @PostMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerMainTechComment(
             @PathVariable Long techArticleId,
             @RequestBody @Validated RegisterTechCommentRequest registerTechCommentRequest) {
@@ -43,7 +43,7 @@ public class TechArticleCommentController {
     }
 
     @Operation(summary = "기술블로그 답글 작성")
-    @PostMapping("/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}")
+    @PostMapping("/articles/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerRepliedTechComment(
             @PathVariable Long techArticleId,
             @PathVariable Long originParentTechCommentId,
@@ -59,7 +59,7 @@ public class TechArticleCommentController {
     }
 
     @Operation(summary = "기술블로그 댓글/답글 수정")
-    @PatchMapping("/{techArticleId}/comments/{techCommentId}")
+    @PatchMapping("/articles/{techArticleId}/comments/{techCommentId}")
     public ResponseEntity<BasicResponse<TechCommentResponse>> modifyTechComment(
             @PathVariable Long techArticleId,
             @PathVariable Long techCommentId,
@@ -88,7 +88,7 @@ public class TechArticleCommentController {
     }
 
     @Operation(summary = "기술블로그 댓글/답글 조회")
-    @GetMapping("/{techArticleId}/comments")
+    @GetMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<SliceCustom<TechCommentsResponse>>> getTechComments(
             @PageableDefault(size = 5) Pageable pageable,
             @PathVariable Long techArticleId,
@@ -103,7 +103,7 @@ public class TechArticleCommentController {
     }
 
     @Operation(summary = "기술블로그 댓글/답글 추천/추천취소")
-    @PostMapping("/{techArticleId}/comments/{techCommentId}/recommends")
+    @PostMapping("/articles/{techArticleId}/comments/{techCommentId}/recommends")
     public ResponseEntity<BasicResponse<TechCommentRecommendResponse>> recommendTechComment(
             @PathVariable Long techArticleId,
             @PathVariable Long techCommentId

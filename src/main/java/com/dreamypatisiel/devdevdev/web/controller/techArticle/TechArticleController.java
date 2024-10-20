@@ -25,14 +25,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "기술블로그 API", description = "기술블로그 메인, 상세 API")
 @RestController
-@RequestMapping("/devdevdev/api/v1/articles")
+@RequestMapping("/devdevdev/api/v1")
 @RequiredArgsConstructor
 public class TechArticleController {
 
     private final TechArticleServiceStrategy techArticleServiceStrategy;
 
     @Operation(summary = "기술블로그 메인 조회 및 검색")
-    @GetMapping("/")
+    @GetMapping("/articles")
     public ResponseEntity<BasicResponse<Slice<TechArticleMainResponse>>> getTechArticles(
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) TechArticleSort techArticleSort,
@@ -50,7 +50,7 @@ public class TechArticleController {
     }
 
     @Operation(summary = "기술블로그 상세 조회")
-    @GetMapping("/{techArticleId}")
+    @GetMapping("/articles/{techArticleId}")
     public ResponseEntity<BasicResponse<TechArticleDetailResponse>> getTechArticle(@PathVariable Long techArticleId) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
@@ -61,7 +61,7 @@ public class TechArticleController {
     }
 
     @Operation(summary = "기술블로그 북마크")
-    @PostMapping("/{techArticleId}/bookmark")
+    @PostMapping("/articles/{techArticleId}/bookmark")
     public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark(@PathVariable Long techArticleId) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
