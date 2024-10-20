@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "검색어 자동완성 API", description = "검색어 자동완성, 검색어 추가 API")
 @Slf4j
 @RestController
-@RequestMapping("/devdevdev/api/v1")
+@RequestMapping("/devdevdev/api/v1/keywords")
 @RequiredArgsConstructor
 public class KeywordController {
 
     private final ElasticKeywordService elasticKeywordService;
 
     @Operation(summary = "기술블로그 검색어 자동완성")
-    @GetMapping("/keywords/auto-complete")
+    @GetMapping("/auto-complete")
     public ResponseEntity<BasicResponse<String>> autocompleteKeyword(@RequestParam String prefix)
             throws IOException {
 
