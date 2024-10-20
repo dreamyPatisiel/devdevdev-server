@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
@@ -17,23 +18,25 @@ public interface PickCommentService {
                                             RegisterPickCommentRequest pickMainCommentRequest,
                                             Authentication authentication);
 
-    public PickCommentResponse registerPickRepliedComment(Long pickCommentParentId,
-                                                          Long pickCommentOriginParentId,
-                                                          Long pickId,
-                                                          RegisterPickRepliedCommentRequest pickSubCommentRequest,
-                                                          Authentication authentication);
+    PickCommentResponse registerPickRepliedComment(Long pickCommentParentId,
+                                                   Long pickCommentOriginParentId,
+                                                   Long pickId,
+                                                   RegisterPickRepliedCommentRequest pickSubCommentRequest,
+                                                   Authentication authentication);
 
-    public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
-                                                 ModifyPickCommentRequest modifyPickCommentRequest,
-                                                 Authentication authentication);
+    PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
+                                          ModifyPickCommentRequest modifyPickCommentRequest,
+                                          Authentication authentication);
 
-    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication);
+    PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication);
 
-    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
-                                                              Long pickCommentId, PickCommentSort pickCommentSort,
-                                                              PickOptionType pickOptionType,
-                                                              Authentication authentication);
+    SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                       Long pickCommentId, PickCommentSort pickCommentSort,
+                                                       PickOptionType pickOptionType,
+                                                       Authentication authentication);
 
-    public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
-                                                             Authentication authentication);
+    PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
+                                                      Authentication authentication);
+
+    List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication);
 }

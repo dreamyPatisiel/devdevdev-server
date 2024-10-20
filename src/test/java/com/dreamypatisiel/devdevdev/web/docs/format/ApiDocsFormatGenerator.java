@@ -80,7 +80,7 @@ public interface ApiDocsFormatGenerator {
 
         return key(FORMAT).value(pickCommentSortType);
     }
-    
+
     static Attributes.Attribute techCommentSortType() {
         String techCommentSortType = Arrays.stream(TechCommentSort.values())
                 .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
@@ -94,7 +94,7 @@ public interface ApiDocsFormatGenerator {
                 .map(sort -> sort.name() + "(" + sort.getDescription() + ")")
                 .collect(Collectors.joining(COMMA));
 
-        return key(FORMAT).value(pickOptionTypeType + " | null");
+        return key(FORMAT).value(pickOptionTypeType);
     }
 
     static Attributes.Attribute blamePathType() {

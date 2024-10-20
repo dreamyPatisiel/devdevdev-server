@@ -11,8 +11,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
@@ -60,11 +62,14 @@ public class GuestPickService extends PickCommonService implements PickService {
     private final AnonymousMemberRepository anonymousMemberRepository;
 
     public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
+                            PickBestCommentsPolicy pickBestCommentsPolicy,
                             PickCommentRepository pickCommentRepository,
+                            PickCommentRecommendRepository pickCommentRecommendRepository,
                             PickPopularScorePolicy pickPopularScorePolicy,
                             PickVoteRepository pickVoteRepository,
                             AnonymousMemberRepository anonymousMemberRepository) {
-        super(embeddingsService, pickRepository, pickCommentRepository);
+        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+                pickCommentRecommendRepository);
         this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickVoteRepository = pickVoteRepository;
         this.anonymousMemberRepository = anonymousMemberRepository;
