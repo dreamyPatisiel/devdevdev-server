@@ -43,16 +43,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionImageResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
-import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
@@ -63,6 +53,16 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionImageResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.HashMap;
@@ -1257,7 +1257,7 @@ class MemberPickServiceTest {
         VotePickOptionResponse votePickOptionResponseIndex1 = votePickResponse.getVotePickOptions().get(0);
         assertAll(
                 () -> assertThat(votePickOptionResponseIndex1.getPickOptionId()).isEqualTo(firstPickOption.getId()),
-                () -> assertThat(votePickOptionResponseIndex1.getPickVoteId()).isNull(),
+                () -> assertThat(votePickOptionResponseIndex1.getPickVoteId()).isNotNull(),
                 () -> assertThat(votePickOptionResponseIndex1.getPercent()).isEqualTo(0),
                 () -> assertThat(votePickOptionResponseIndex1.getVoteTotalCount()).isEqualTo(0),
                 () -> assertThat(votePickOptionResponseIndex1.getIsPicked()).isEqualTo(false)
