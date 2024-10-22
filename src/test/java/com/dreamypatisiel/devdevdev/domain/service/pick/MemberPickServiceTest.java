@@ -23,9 +23,12 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -36,6 +39,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
@@ -110,6 +114,8 @@ class MemberPickServiceTest {
     PickPopularScorePolicy pickPopularScorePolicy;
     @Autowired
     PickCommentRepository pickCommentRepository;
+    @Autowired
+    PickCommentRecommendRepository pickCommentRecommendRepository;
     @PersistenceContext
     EntityManager em;
     @Autowired
@@ -1209,7 +1215,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("픽픽픽 옵션에 투표한 이력이 있는 회원이 다른 픽옵션에 투표 할 경우 기존 투표 이력은 삭제되고, 새로운 투표 이력이 생성된다.")
+    @DisplayName("픽픽픽 옵션에 투표한 이력이 있는 회원이 다른 픽옵션에 투표 할 경우 기존 투표 이력은 소프트 삭제되고, 새로운 투표 이력이 생성된다.")
     void votePickOptionDeleteAndCreateNew() {
         // given
         // 회원 생성
@@ -1248,6 +1254,9 @@ class MemberPickServiceTest {
         // when
         VotePickResponse votePickResponse = memberPickService.votePickOption(dto, authentication);
 
+        em.flush();
+        em.clear();
+
         // then
         assertAll(
                 () -> assertThat(votePickResponse.getPickId()).isEqualTo(pick.getId()),
@@ -1257,11 +1266,14 @@ class MemberPickServiceTest {
         VotePickOptionResponse votePickOptionResponseIndex1 = votePickResponse.getVotePickOptions().get(0);
         assertAll(
                 () -> assertThat(votePickOptionResponseIndex1.getPickOptionId()).isEqualTo(firstPickOption.getId()),
-                () -> assertThat(votePickOptionResponseIndex1.getPickVoteId()).isNotNull(),
+                () -> assertThat(votePickOptionResponseIndex1.getPickVoteId()).isNull(),
                 () -> assertThat(votePickOptionResponseIndex1.getPercent()).isEqualTo(0),
                 () -> assertThat(votePickOptionResponseIndex1.getVoteTotalCount()).isEqualTo(0),
                 () -> assertThat(votePickOptionResponseIndex1.getIsPicked()).isEqualTo(false)
         );
+
+        // 기존 투표 소프트 삭제 확인
+        assertThat(pickVote.isDeleted()).isTrue();
 
         VotePickOptionResponse votePickOptionResponseIndex2 = votePickResponse.getVotePickOptions().get(1);
         assertAll(
@@ -1376,6 +1388,15 @@ class MemberPickServiceTest {
         PickVote pickVote = createPickVote(member, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
+        // 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, Count.defaultCount(),
+                Count.defaultCount(), member, pick, pickVote);
+        pickCommentRepository.save(originParentPickComment1);
+
+        // 댓글 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
         em.flush();
         em.clear();
 
@@ -1391,7 +1412,9 @@ class MemberPickServiceTest {
                         pickOptionRepository.findById(secondPickOption.getId()),
                         pickOptionImageRepository.findById(firstPickOptionImage.getId()),
                         pickOptionImageRepository.findById(secondPickOptionImage.getId()),
-                        pickVoteRepository.findById(pickVote.getId())
+                        pickVoteRepository.findById(pickVote.getId()),
+                        pickCommentRepository.findById(originParentPickComment1.getId()),
+                        pickCommentRecommendRepository.findById(pickCommentRecommend.getId())
                 )
                 .map(Optional::isEmpty)
                 .forEach(Assertions::assertTrue);
@@ -1445,6 +1468,35 @@ class MemberPickServiceTest {
         assertThatThrownBy(() -> memberPickService.deletePick(pick.getId(), authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
+    }
+
+    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
+                                                            Boolean recommendedStatus) {
+        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.builder()
+                .member(member)
+                .recommendedStatus(recommendedStatus)
+                .build();
+
+        pickCommentRecommend.changePickComment(pickComment);
+
+        return pickCommentRecommend;
+    }
+
+    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count replyTotalCount,
+                                          Count recommendTotalCount, Member member, Pick pick, PickVote pickVote) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .createdBy(member)
+                .replyTotalCount(replyTotalCount)
+                .recommendTotalCount(recommendTotalCount)
+                .pick(pick)
+                .pickVote(pickVote)
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
     }
 
     private Pick createPick(Title title, ContentStatus contentStatus, Member member) {

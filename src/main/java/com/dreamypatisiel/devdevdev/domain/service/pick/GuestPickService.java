@@ -174,8 +174,7 @@ public class GuestPickService extends PickCommonService implements PickService {
         AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
 
         Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndAnonymousMemberAndDeletedAtIsNull(
-                pickId,
-                anonymousMember);
+                pickId, anonymousMember);
 
         return pickVoteOptional
                 // 픽픽픽 투표 이력이 있는 경우

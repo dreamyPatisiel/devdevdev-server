@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -417,7 +418,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         // 득표율 계산
         BigDecimal percent = PickOption.calculatePercentBy(findPick, findPickOption);
 
-        return VotePickOptionResponse.of(findPickOption, pickVote.getId(), percent, false);
+        return VotePickOptionResponse.of(findPickOption, null, percent, false);
     }
 
     /**
@@ -437,7 +438,13 @@ public class MemberPickService extends PickCommonService implements PickService 
         List<Long> findPickPickOptionIds = findPick.getPickOptions().stream()
                 .map(PickOption::getId).toList();
 
+        List<Long> findPickCommentIds = findPick.getPickComments().stream()
+                .map(PickComment::getId)
+                .toList();
+
         // 존재하면 픽픽픽과 연관되어 있는 엔티티 삭제
+        pickCommentRecommendRepository.deleteAllByPickCommentIdIn(findPickCommentIds);
+        pickCommentRepository.deleteAllByPickId(pickId);
         pickVoteRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
         pickOptionImageRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
         pickOptionRepository.deleteAllByPickOptionIdIn(findPickPickOptionIds);
