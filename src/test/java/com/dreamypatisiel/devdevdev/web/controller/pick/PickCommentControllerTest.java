@@ -596,8 +596,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].likeTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].parentCommentMemberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].parentCommentAuthor").isString())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickParentCommentAuthor").isString())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
                 .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
                 .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
@@ -812,8 +812,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].replies.[0].likeTotalCount").isNumber())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentMemberId").isNumber())
-                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentAuthor").isString());
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAuthor").isString());
     }
 
     @Test
@@ -937,8 +937,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].replies.[0].likeTotalCount").isNumber())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentMemberId").isNumber())
-                .andExpect(jsonPath("$.datas.[0].replies.[0].parentCommentAuthor").isString());
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAuthor").isString());
     }
 
     private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,

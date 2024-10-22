@@ -750,9 +750,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 답글 삭제 여부"),
                         fieldWithPath("data.content[].replies[].isModified").type(BOOLEAN)
                                 .description("픽픽픽 답글 수정 여부"),
-                        fieldWithPath("data.content[].replies[].parentCommentMemberId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].pickParentCommentMemberId").type(NUMBER)
                                 .description("픽픽픽 부모 댓글 작성자 아이디"),
-                        fieldWithPath("data.content[].replies[].parentCommentAuthor").type(STRING)
+                        fieldWithPath("data.content[].replies[].pickParentCommentAuthor").type(STRING)
                                 .description("픽픽픽 부모 댓글 작성자 닉네임"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
@@ -1045,9 +1045,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 답글 삭제 여부"),
                         fieldWithPath("datas.[].replies[].isModified").type(BOOLEAN)
                                 .description("픽픽픽 답글 수정 여부"),
-                        fieldWithPath("datas.[].replies[].parentCommentMemberId").type(NUMBER)
+                        fieldWithPath("datas.[].replies[].pickParentCommentMemberId").type(NUMBER)
                                 .description("픽픽픽 부모 댓글 작성자 아이디"),
-                        fieldWithPath("datas.[].replies[].parentCommentAuthor").type(STRING)
+                        fieldWithPath("datas.[].replies[].pickParentCommentAuthor").type(STRING)
                                 .description("픽픽픽 부모 댓글 작성자 닉네임")
                 )
         ));

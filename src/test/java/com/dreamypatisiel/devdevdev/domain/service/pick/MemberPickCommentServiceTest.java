@@ -1420,8 +1420,8 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeleted",
                         "isModified",
-                        "parentCommentMemberId",
-                        "parentCommentAuthor")
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -1471,8 +1471,8 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeleted",
                         "isModified",
-                        "parentCommentMemberId",
-                        "parentCommentAuthor")
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -1665,8 +1665,8 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeleted",
                         "isModified",
-                        "parentCommentMemberId",
-                        "parentCommentAuthor")
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -1716,8 +1716,8 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeleted",
                         "isModified",
-                        "parentCommentMemberId",
-                        "parentCommentAuthor")
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),
@@ -2278,8 +2278,8 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeleted",
                         "isModified",
-                        "parentCommentMemberId",
-                        "parentCommentAuthor")
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply1.getId(), pickReply1.getCreatedBy().getId(),
                                 pickReply1.getParent().getId(),
@@ -2329,8 +2329,8 @@ class MemberPickCommentServiceTest {
                         "likeTotalCount",
                         "isDeleted",
                         "isModified",
-                        "parentCommentMemberId",
-                        "parentCommentAuthor")
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAuthor")
                 .containsExactly(
                         Tuple.tuple(pickReply3.getId(),
                                 pickReply3.getCreatedBy().getId(),

@@ -74,8 +74,7 @@ public class PickCommentsResponse {
                 .author(createdBy.getNickname().getNickname())
                 .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, originParentPickComment.getPick()))
                 .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, originParentPickComment))
-                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member,
-                        originParentPickComment.getPickCommentRecommends()))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, originParentPickComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(originParentPickComment))
                 .replyTotalCount((long) replies.size())
