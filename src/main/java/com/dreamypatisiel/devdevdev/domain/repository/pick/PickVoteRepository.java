@@ -13,11 +13,11 @@ import org.springframework.data.jpa.repository.Query;
 public interface PickVoteRepository extends JpaRepository<PickVote, Long> {
 
     @EntityGraph(attributePaths = {"pick", "pickOption"})
-    Optional<PickVote> findWithPickAndPickOptionByPickIdAndMember(Long pickId, Member member);
+    Optional<PickVote> findWithPickAndPickOptionByPickIdAndMemberAndDeletedAtIsNull(Long pickId, Member member);
 
     @EntityGraph(attributePaths = {"pick", "pickOption"})
-    Optional<PickVote> findWithPickAndPickOptionByPickIdAndAnonymousMember(Long pickId,
-                                                                           AnonymousMember anonymousMember);
+    Optional<PickVote> findWithPickAndPickOptionByPickIdAndAnonymousMemberAndDeletedAtIsNull(Long pickId,
+                                                                                             AnonymousMember anonymousMember);
 
     @Modifying
     @Query("delete from PickVote pv where pv.pickOption.id in :pickOptionIds")

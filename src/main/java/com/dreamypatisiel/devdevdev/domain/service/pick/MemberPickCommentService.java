@@ -102,7 +102,8 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         // 픽픽픽 선택지 투표 공개인 경우
         if (isPickVotePublic) {
             // 회원이 투표한 픽픽픽 투표 조회
-            PickVote findPickVote = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMember(pickId, findMember)
+            PickVote findPickVote = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMemberAndDeletedAtIsNull(
+                            pickId, findMember)
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
