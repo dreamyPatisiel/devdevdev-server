@@ -171,7 +171,7 @@ public class Member extends BasicTime {
         return nickname.getNickname();
     }
 
-    public boolean isEqualId(Long id) {
+    public boolean isEqualsId(Long id) {
         return this.id.equals(id);
     }
 

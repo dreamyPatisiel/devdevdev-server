@@ -188,7 +188,7 @@ class GuestPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -287,7 +287,7 @@ class GuestPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -338,7 +338,7 @@ class GuestPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -474,7 +474,7 @@ class GuestPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -525,7 +525,7 @@ class GuestPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -576,7 +576,7 @@ class GuestPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -697,7 +697,7 @@ class GuestPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -869,7 +869,7 @@ class GuestPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -936,7 +936,7 @@ class GuestPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -987,7 +987,7 @@ class GuestPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",

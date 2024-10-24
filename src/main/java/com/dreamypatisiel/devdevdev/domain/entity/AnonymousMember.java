@@ -39,7 +39,7 @@ public class AnonymousMember extends BasicTime {
         return anonymousMember;
     }
 
-    public boolean isEqualAnonymousMember(Long id) {
+    public boolean isEqualAnonymousMemberId(Long id) {
         return this.id.equals(id);
     }
 }

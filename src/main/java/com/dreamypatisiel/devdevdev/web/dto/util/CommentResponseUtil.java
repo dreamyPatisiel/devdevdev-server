@@ -10,7 +10,7 @@ public class CommentResponseUtil {
     public static String getCommentByPickCommentStatus(PickComment pickComment) {
         if (pickComment.isDeleted()) {
             // 댓글 작성자에 의해 삭제된 경우
-            if (pickComment.getDeletedBy().isEqualId(pickComment.getCreatedBy().getId())) {
+            if (pickComment.getDeletedBy().isEqualsId(pickComment.getCreatedBy().getId())) {
                 return "댓글 작성자에 의해 삭제된 댓글입니다.";
             }
             return "커뮤니티 정책을 위반하여 삭제된 댓글입니다.";
@@ -22,7 +22,7 @@ public class CommentResponseUtil {
     public static String getCommentByTechCommentStatus(TechComment techComment) {
         if (techComment.isDeleted()) {
             // 댓글 작성자에 의해 삭제된 경우
-            if (techComment.getDeletedBy().isEqualId(techComment.getCreatedBy().getId())) {
+            if (techComment.getDeletedBy().isEqualsId(techComment.getCreatedBy().getId())) {
                 return "댓글 작성자에 의해 삭제된 댓글입니다.";
             }
             return "커뮤니티 정책을 위반하여 삭제된 댓글입니다.";
@@ -42,7 +42,7 @@ public class CommentResponseUtil {
         if (member == null) {
             return false;
         }
-        return pick.getMember().isEqualId(member.getId());
+        return pick.getMember().isEqualsId(member.getId());
     }
 
     public static boolean isPickCommentAuthor(@Nullable Member member, PickComment pickComment) {
@@ -50,7 +50,7 @@ public class CommentResponseUtil {
         if (member == null) {
             return false;
         }
-        return pickComment.getCreatedBy().isEqualId(member.getId());
+        return pickComment.getCreatedBy().isEqualsId(member.getId());
     }
 
     public static boolean isPickCommentRecommended(@Nullable Member member,
@@ -61,6 +61,6 @@ public class CommentResponseUtil {
         }
 
         return pickComment.getPickCommentRecommends().stream()
-                .anyMatch(pickCommentRecommend -> pickCommentRecommend.getMember().isEqualId(member.getId()));
+                .anyMatch(pickCommentRecommend -> pickCommentRecommend.getMember().isEqualsId(member.getId()));
     }
 }

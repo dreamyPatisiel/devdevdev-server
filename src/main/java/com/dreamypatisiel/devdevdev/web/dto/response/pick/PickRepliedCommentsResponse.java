@@ -30,7 +30,7 @@ public class PickRepliedCommentsResponse {
     private String author;
     private String maskedEmail;
     private String contents;
-    private Long likeTotalCount;
+    private Long recommendTotalCount;
     private Boolean isModified;
     private Boolean isDeleted;
 
@@ -39,7 +39,7 @@ public class PickRepliedCommentsResponse {
                                        Long pickParentCommentId, Long pickOriginParentCommentId,
                                        LocalDateTime createdAt, Boolean isCommentOfPickAuthor, Boolean isCommentAuthor,
                                        Boolean isRecommended, String pickParentCommentAuthor, String author,
-                                       String maskedEmail, String contents, Long likeTotalCount,
+                                       String maskedEmail, String contents, Long recommendTotalCount,
                                        Boolean isModified, Boolean isDeleted) {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
@@ -54,7 +54,7 @@ public class PickRepliedCommentsResponse {
         this.author = author;
         this.maskedEmail = maskedEmail;
         this.contents = contents;
-        this.likeTotalCount = likeTotalCount;
+        this.recommendTotalCount = recommendTotalCount;
         this.isModified = isModified;
         this.isDeleted = isDeleted;
     }
@@ -79,7 +79,7 @@ public class PickRepliedCommentsResponse {
                 .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, repliedPickComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
-                .likeTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
+                .recommendTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
                 .isModified(repliedPickComment.isModified())
                 .isDeleted(repliedPickComment.isDeleted())
                 .build();
