@@ -6,11 +6,10 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Builder;
-import lombok.Data;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 public class TechCommentsResponse {
@@ -20,7 +19,7 @@ public class TechCommentsResponse {
     private String maskedEmail;
     private String contents;
     private Long replyTotalCount;
-    private Long likeTotalCount;
+    private Long recommendTotalCount;
     private Boolean isDeleted;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
@@ -30,7 +29,8 @@ public class TechCommentsResponse {
 
     @Builder
     public TechCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail, String contents,
-                                Long replyTotalCount, Long likeTotalCount, Boolean isDeleted, LocalDateTime createdAt,
+                                Long replyTotalCount, Long recommendTotalCount, Boolean isDeleted,
+                                LocalDateTime createdAt,
                                 List<TechRepliedCommentsResponse> replies) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
@@ -38,7 +38,7 @@ public class TechCommentsResponse {
         this.maskedEmail = maskedEmail;
         this.contents = contents;
         this.replyTotalCount = replyTotalCount;
-        this.likeTotalCount = likeTotalCount;
+        this.recommendTotalCount = recommendTotalCount;
         this.isDeleted = isDeleted;
         this.createdAt = createdAt;
         this.replies = replies;
@@ -55,7 +55,7 @@ public class TechCommentsResponse {
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByTechCommentStatus(originParentTechComment))
                 .replyTotalCount(originParentTechComment.getReplyTotalCount().getCount())
-                .likeTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
+                .recommendTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(originParentTechComment.isDeleted())
                 .createdAt(originParentTechComment.getCreatedAt())
                 .replies(replies)

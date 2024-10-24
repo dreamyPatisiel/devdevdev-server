@@ -256,6 +256,7 @@ public class MemberPickService extends PickCommonService implements PickService 
     @Transactional
     @Override
     public PickDetailResponse findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication) {
+
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 

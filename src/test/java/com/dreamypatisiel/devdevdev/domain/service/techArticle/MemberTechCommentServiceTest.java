@@ -851,7 +851,7 @@ public class MemberTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -911,7 +911,7 @@ public class MemberTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -958,7 +958,7 @@ public class MemberTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1071,7 +1071,7 @@ public class MemberTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1223,7 +1223,7 @@ public class MemberTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1283,7 +1283,7 @@ public class MemberTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1330,7 +1330,7 @@ public class MemberTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1423,7 +1423,7 @@ public class MemberTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1553,7 +1553,7 @@ public class MemberTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1656,7 +1656,7 @@ public class MemberTechCommentServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(techCommentRecommendResponse.getRecommendStatus()).isTrue(),
+                () -> assertThat(techCommentRecommendResponse.getIsRecommended()).isTrue(),
                 () -> assertThat(techCommentRecommendResponse.getRecommendTotalCount()).isEqualTo(1L)
         );
     }
@@ -1695,7 +1695,7 @@ public class MemberTechCommentServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(techCommentRecommendResponse.getRecommendStatus()).isFalse(),
+                () -> assertThat(techCommentRecommendResponse.getIsRecommended()).isFalse(),
                 () -> assertThat(techCommentRecommendResponse.getRecommendTotalCount()).isEqualTo(0L)
         );
     }

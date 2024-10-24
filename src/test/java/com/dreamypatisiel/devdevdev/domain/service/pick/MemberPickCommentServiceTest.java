@@ -1318,7 +1318,7 @@ class MemberPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -1417,7 +1417,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -1468,7 +1468,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -1611,7 +1611,7 @@ class MemberPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -1662,7 +1662,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -1713,7 +1713,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -1841,7 +1841,7 @@ class MemberPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -1904,7 +1904,7 @@ class MemberPickCommentServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(response.getRecommendStatus()).isTrue(),
+                () -> assertThat(response.getIsRecommended()).isTrue(),
                 () -> assertThat(response.getRecommendTotalCount()).isEqualTo(1L)
         );
     }
@@ -1949,7 +1949,7 @@ class MemberPickCommentServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(response.getRecommendStatus()).isFalse(),
+                () -> assertThat(response.getIsRecommended()).isFalse(),
                 () -> assertThat(response.getRecommendTotalCount()).isEqualTo(0L)
         );
     }
@@ -1994,7 +1994,7 @@ class MemberPickCommentServiceTest {
 
         // then
         assertAll(
-                () -> assertThat(response.getRecommendStatus()).isTrue(),
+                () -> assertThat(response.getIsRecommended()).isTrue(),
                 () -> assertThat(response.getRecommendTotalCount()).isEqualTo(1L)
         );
     }
@@ -2208,7 +2208,7 @@ class MemberPickCommentServiceTest {
                         "votedPickOptionTitle",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified")
                 .containsExactly(
@@ -2275,7 +2275,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",
@@ -2326,7 +2326,7 @@ class MemberPickCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted",
                         "isModified",
                         "pickParentCommentMemberId",

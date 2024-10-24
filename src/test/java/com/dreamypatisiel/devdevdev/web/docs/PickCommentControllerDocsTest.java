@@ -719,7 +719,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].contents").type(STRING).description("픽픽픽 댓글 내용"),
                         fieldWithPath("data.content[].replyTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글의 답글 총 갯수"),
-                        fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("data.content[].recommendTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].isDeleted").type(BOOLEAN)
                                 .description("픽픽픽 댓글 삭제 여부"),
@@ -744,7 +744,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
                                 .description("픽픽픽 답글 작성자 이메일"),
                         fieldWithPath("data.content[].replies[].contents").type(STRING).description("픽픽픽 답글 내용"),
-                        fieldWithPath("data.content[].replies[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].recommendTotalCount").type(NUMBER)
                                 .description("픽픽픽 답글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].replies[].isDeleted").type(BOOLEAN)
                                 .description("픽픽픽 답글 삭제 여부"),
@@ -829,7 +829,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
                         fieldWithPath("data").type(OBJECT).description("응답 데이터").attributes(authenticationType()),
-                        fieldWithPath("data.recommendStatus").type(BOOLEAN).description("픽픽픽 댓글/답글 추천 상태")
+                        fieldWithPath("data.isRecommended").type(BOOLEAN).description("로그인한 회원의 픽픽픽 댓글/답글 추천 여부")
                                 .attributes(authenticationType()),
                         fieldWithPath("data.recommendTotalCount").type(NUMBER).description("픽픽픽 댓글/답글 추천 총 갯수")
                                 .attributes(authenticationType())
@@ -1014,7 +1014,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("datas.[].contents").type(STRING).description("픽픽픽 댓글 내용"),
                         fieldWithPath("datas.[].replyTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글의 답글 총 갯수"),
-                        fieldWithPath("datas.[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("datas.[].recommendTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글 좋아요 총 갯수"),
                         fieldWithPath("datas.[].isDeleted").type(BOOLEAN)
                                 .description("픽픽픽 댓글 삭제 여부"),
@@ -1039,7 +1039,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("datas.[].replies[].maskedEmail").type(STRING)
                                 .description("픽픽픽 답글 작성자 이메일"),
                         fieldWithPath("datas.[].replies[].contents").type(STRING).description("픽픽픽 답글 내용"),
-                        fieldWithPath("datas.[].replies[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("datas.[].replies[].recommendTotalCount").type(NUMBER)
                                 .description("픽픽픽 답글 좋아요 총 갯수"),
                         fieldWithPath("datas.[].replies[].isDeleted").type(BOOLEAN)
                                 .description("픽픽픽 답글 삭제 여부"),
