@@ -12,7 +12,7 @@ public class TechArticleResponseUtils {
 
     public static boolean isBookmarkedByMember(TechArticle techArticle, Member member) {
         Optional<Bookmark> bookmarks = techArticle.getBookmarks().stream()
-                .filter(bookmark -> bookmark.getMember().isEqualId(member.getId()))
+                .filter(bookmark -> bookmark.getMember().isEqualsId(member.getId()))
                 .findAny();
 
         return bookmarks.map(Bookmark::isBookmarked).orElse(false);

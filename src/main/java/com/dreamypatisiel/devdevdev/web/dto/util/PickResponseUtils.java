@@ -9,14 +9,19 @@ public class PickResponseUtils {
 
     public static boolean isVotedMember(Pick pick, Member member) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsId(pick.getId()) && pickVote.isMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getMember().isEqualId(member.getId()));
+                .filter(pickVote -> pickVote.getPick().isEqualsId(pick.getId())
+                        && pickVote.isMemberNotNull())
+                .filter(pickVote -> !pickVote.isDeleted())
+                .anyMatch(pickVote -> !pickVote.isDeleted()
+                        && pickVote.getMember().isEqualsId(member.getId()));
     }
 
     public static boolean isVotedAnonymousMember(Pick pick, AnonymousMember anonymousMember) {
         return pick.getPickVotes().stream()
-                .filter(pickVote -> pickVote.getPick().isEqualsId(pick.getId()) && pickVote.isAnonymousMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember.getId()));
+                .filter(pickVote -> pickVote.getPick().isEqualsId(pick.getId())
+                        && pickVote.isAnonymousMemberNotNull())
+                .anyMatch(pickVote -> !pickVote.isDeleted()
+                        && pickVote.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()));
     }
 
     public static boolean isPickedPickOptionByMember(Pick pick, PickOption pickOption,
@@ -24,7 +29,8 @@ public class PickResponseUtils {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOption.getId())
                         && pickVote.isMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getMember().isEqualId(member.getId()));
+                .anyMatch(pickVote -> !pickVote.isDeleted()
+                        && pickVote.getMember().isEqualsId(member.getId()));
     }
 
     public static boolean isPickedPickOptionByAnonymousMember(Pick pick, PickOption pickOption,
@@ -32,6 +38,7 @@ public class PickResponseUtils {
         return pick.getPickVotes().stream()
                 .filter(pickVote -> pickVote.getPickOption().isEqualsId(pickOption.getId())
                         && pickVote.isAnonymousMemberNotNull())
-                .anyMatch(pickVote -> pickVote.getAnonymousMember().isEqualAnonymousMember(anonymousMember.getId()));
+                .anyMatch(pickVote -> !pickVote.isDeleted()
+                        && pickVote.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()));
     }
 }

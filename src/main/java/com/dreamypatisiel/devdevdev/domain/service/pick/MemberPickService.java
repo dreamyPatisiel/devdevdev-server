@@ -275,8 +275,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
                 .collect(Collectors.toMap(PickOption::getPickOptionType,
-                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, findMember))
-                );
+                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, findMember)));
 
         // 픽픽픽 상세
         return PickDetailResponse.of(findPick, findPick.getMember(), findMember, pickDetailOptions);
