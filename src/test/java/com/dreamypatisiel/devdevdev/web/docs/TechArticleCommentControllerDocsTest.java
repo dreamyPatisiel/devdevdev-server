@@ -1,6 +1,40 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techCommentSortType;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
+import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
+import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
+import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
+import static org.springframework.restdocs.payload.JsonFieldType.STRING;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -20,6 +54,8 @@ import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommen
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.persistence.EntityManager;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -599,11 +635,13 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+                techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member, techArticle);
+        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member,
+                techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
 
@@ -666,11 +704,13 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long techArticleId = savedTechArticle.getId();
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+                techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member, techArticle);
+        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member,
+                techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
 
@@ -728,20 +768,38 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+                techArticle, new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member, techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member, techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member, techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
+        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
+                new Count(0L));
 
         TechComment techComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member, techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
         TechComment techComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member, techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
+                techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member,
+                techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
@@ -761,13 +819,14 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         Pageable pageable = PageRequest.of(0, 5);
 
         // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}/comments", techArticleId)
-                        .queryParam("techCommentId", originParentTechComment1.getId().toString())
-                        .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("techCommentSort", TechCommentSort.OLDEST.name())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8))
+        ResultActions actions = mockMvc.perform(
+                        get("/devdevdev/api/v1/articles/{techArticleId}/comments", techArticleId)
+                                .queryParam("techCommentId", originParentTechComment1.getId().toString())
+                                .queryParam("size", String.valueOf(pageable.getPageSize()))
+                                .queryParam("techCommentSort", TechCommentSort.OLDEST.name())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
@@ -780,7 +839,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .andExpect(jsonPath("$.data.content.[0].maskedEmail").isString())
                 .andExpect(jsonPath("$.data.content.[0].contents").isString())
                 .andExpect(jsonPath("$.data.content.[0].replyTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].likeTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentId").isNumber())
@@ -791,7 +850,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].likeTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
@@ -845,7 +904,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content[].isCommentAuthor").type(BOOLEAN).description("회원의 기술블로그 댓글 작성자 여부"),
                         fieldWithPath("data.content[].replyTotalCount").type(NUMBER)
                                 .description("기술블로그 댓글의 답글 총 갯수"),
-                        fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("data.content[].recommendTotalCount").type(NUMBER)
                                 .description("기술블로그 댓글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].isDeleted").type(BOOLEAN)
                                 .description("기술블로그 댓글 삭제 여부"),
@@ -855,7 +914,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 댓글 좋아요 여부"),
 
                         fieldWithPath("data.content[].replies").type(ARRAY).description("기술블로그 답글 배열"),
-                        fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER).description("기술블로그 답글 아이디"),
+                        fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER)
+                                .description("기술블로그 답글 아이디"),
                         fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("기술블로그 답글 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].techCommentParentId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 아이디"),
@@ -867,7 +927,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
                                 .description("기술블로그 답글 작성자 이메일"),
                         fieldWithPath("data.content[].replies[].contents").type(STRING).description("기술블로그 답글 내용"),
-                        fieldWithPath("data.content[].replies[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].recommendTotalCount").type(NUMBER)
                                 .description("기술블로그 답글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].replies[].isDeleted").type(BOOLEAN)
                                 .description("기술블로그 댓글 삭제 여부"),
@@ -926,16 +986,17 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techCommentRepository.save(techComment);
 
         // when // then
-        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/recommends",
-                        techArticle.getId(), techComment.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8))
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/recommends",
+                                techArticle.getId(), techComment.getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.recommendStatus").isBoolean())
+                .andExpect(jsonPath("$.data.isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.recommendTotalCount").isNumber());
 
         // docs
@@ -952,7 +1013,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
                         fieldWithPath("data").type(OBJECT).description("응답 데이터").attributes(authenticationType()),
-                        fieldWithPath("data.recommendStatus").type(BOOLEAN).description("기술블로그 댓글/답글 추천 상태")
+                        fieldWithPath("data.isRecommended").type(BOOLEAN).description("로그인한 회원의 기술블로그 댓글/답글 추천 여부")
                                 .attributes(authenticationType()),
                         fieldWithPath("data.recommendTotalCount").type(NUMBER).description("기술블로그 댓글/답글 추천 총 갯수")
                                 .attributes(authenticationType())
@@ -983,8 +1044,10 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .build();
     }
 
-    private static TechComment createMainTechComment(CommentContents contents, Member createdBy, TechArticle techArticle,
-                                                     Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount) {
+    private static TechComment createMainTechComment(CommentContents contents, Member createdBy,
+                                                     TechArticle techArticle,
+                                                     Count blameTotalCount, Count recommendTotalCount,
+                                                     Count replyTotalCount) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
@@ -995,9 +1058,11 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .build();
     }
 
-    private static TechComment createRepliedTechComment(CommentContents contents, Member createdBy, TechArticle techArticle,
+    private static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
+                                                        TechArticle techArticle,
                                                         TechComment originParent, TechComment parent,
-                                                        Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount) {
+                                                        Count blameTotalCount, Count recommendTotalCount,
+                                                        Count replyTotalCount) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)

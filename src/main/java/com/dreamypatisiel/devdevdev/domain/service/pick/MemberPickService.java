@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.aws.s3.properties.AwsS3Properties;
 import com.dreamypatisiel.devdevdev.aws.s3.properties.S3;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -23,7 +24,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
@@ -36,6 +39,7 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
@@ -82,14 +86,18 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
+    private final TimeProvider timeProvider;
 
     public MemberPickService(EmbeddingsService embeddingsService, PickRepository pickRepository,
                              AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
                              MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
                              PickOptionImageRepository pickOptionImageRepository, PickVoteRepository pickVoteRepository,
                              PickCommentRepository pickCommentRepository,
-                             PickPopularScorePolicy pickPopularScorePolicy) {
-        super(embeddingsService, pickRepository, pickCommentRepository);
+                             PickCommentRecommendRepository pickCommentRecommendRepository,
+                             PickPopularScorePolicy pickPopularScorePolicy,
+                             PickBestCommentsPolicy pickBestCommentsPolicy, TimeProvider timeProvider) {
+        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+                pickCommentRecommendRepository);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
         this.memberProvider = memberProvider;
@@ -97,6 +105,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         this.pickOptionImageRepository = pickOptionImageRepository;
         this.pickVoteRepository = pickVoteRepository;
         this.pickPopularScorePolicy = pickPopularScorePolicy;
+        this.timeProvider = timeProvider;
     }
 
     /**
@@ -247,6 +256,7 @@ public class MemberPickService extends PickCommonService implements PickService 
     @Transactional
     @Override
     public PickDetailResponse findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication) {
+
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
@@ -265,8 +275,7 @@ public class MemberPickService extends PickCommonService implements PickService 
         // 픽픽픽 옵션 가공
         Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
                 .collect(Collectors.toMap(PickOption::getPickOptionType,
-                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, findMember))
-                );
+                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, findMember)));
 
         // 픽픽픽 상세
         return PickDetailResponse.of(findPick, findPick.getMember(), findMember, pickDetailOptions);
@@ -289,8 +298,9 @@ public class MemberPickService extends PickCommonService implements PickService 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 픽픽픽 투표 조회
-        Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMember(pickId,
+        // 회원이 투표한 픽픽픽 투표 조회
+        Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndMemberAndDeletedAtIsNull(
+                pickId,
                 findMember);
 
         return pickVoteOptional
@@ -306,29 +316,31 @@ public class MemberPickService extends PickCommonService implements PickService 
 
     // 픽픽픽 투표 이력이 있는 경우
     private VotePickResponse getVotePickResponseAndHandlePickVoteAndPickOptionExistingPickVoteOnPickOption(
-            PickVote pickVote, Long pickOptionId, Long pickId, Member member) {
+            PickVote currentPickVote, Long requestPickOptionId, Long pickId, Member member) {
 
-        PickOption pickOption = pickVote.getPickOption();
+        // 회원이 투표한 픽 옵션
+        PickOption currentPickOption = currentPickVote.getPickOption();
 
         // 같은 픽픽픽 옵션에 투표 했을 경우(예외 발생)
-        if (pickOption.isEqualsId(pickOptionId)) {
+        if (currentPickOption.isEqualsId(requestPickOptionId)) {
             throw new VotePickOptionException(INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE);
         }
 
         // 다른 픽픽픽 옵션에 투표 했을 경우
+        // 픽픽픽 조회
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 데이터 가공 및 로직 수행
         List<VotePickOptionResponse> votePickOptionsResponse = findPick.getPickOptions().stream()
                 .map(findPickOption -> {
-                    // 투표하고자 하는 픽 옵션이면 투표를 생성
-                    if (findPickOption.isEqualsId(pickOptionId)) {
+                    // 투표하고자 하는 픽 옵션이면
+                    if (findPickOption.isEqualsId(requestPickOptionId)) {
                         return getVotePickOptionResponseAndCreatePickVote(findPickOption, findPick, member);
                     }
-                    // 기존 투표의 픽 옵션의 아이디와 일치하는 경우 투표 삭제
-                    else if (findPickOption.isEqualsId(pickVote.getPickOption().getId())) {
-                        return getVotePickOptionResponseAndDeletePickVote(pickOption, findPick, pickVote);
+                    // 기존 투표의 픽 옵션의 아이디와 일치하는 경우
+                    else if (findPickOption.isEqualsId(currentPickVote.getPickOption().getId())) {
+                        return getVotePickOptionResponseAndDeletePickVote(currentPickOption, findPick, currentPickVote);
                     }
                     // 그외 투표 패스(현재 픽 옵션이 2개로 고정되어 있는데 2+N 개로 늘어 날 수 있음. 그 경우에 대해서는 아래와 같은 응답을 준다.)
                     return getDefaultVotePickOptionResponse(findPickOption, findPick);
@@ -400,8 +412,8 @@ public class MemberPickService extends PickCommonService implements PickService 
         // 기존 픽픽픽 옵션 투표수 감소
         findPickOption.minusVoteTotalCount();
 
-        // 투표 삭제
-        pickVoteRepository.delete(pickVote);
+        // 투표 소프트 삭제
+        pickVote.delete(timeProvider.getLocalDateTimeNow());
 
         // 득표율 계산
         BigDecimal percent = PickOption.calculatePercentBy(findPick, findPickOption);
@@ -426,7 +438,13 @@ public class MemberPickService extends PickCommonService implements PickService 
         List<Long> findPickPickOptionIds = findPick.getPickOptions().stream()
                 .map(PickOption::getId).toList();
 
+        List<Long> findPickCommentIds = findPick.getPickComments().stream()
+                .map(PickComment::getId)
+                .toList();
+
         // 존재하면 픽픽픽과 연관되어 있는 엔티티 삭제
+        pickCommentRecommendRepository.deleteAllByPickCommentIdIn(findPickCommentIds);
+        pickCommentRepository.deleteAllByPickId(pickId);
         pickVoteRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
         pickOptionImageRepository.deleteAllByPickOptionIn(findPickPickOptionIds);
         pickOptionRepository.deleteAllByPickOptionIdIn(findPickPickOptionIds);

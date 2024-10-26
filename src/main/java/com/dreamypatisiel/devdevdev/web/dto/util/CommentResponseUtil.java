@@ -9,7 +9,7 @@ public class CommentResponseUtil {
     public static String getCommentByPickCommentStatus(PickComment pickComment) {
         if (pickComment.isDeleted()) {
             // 댓글 작성자에 의해 삭제된 경우
-            if (pickComment.getDeletedBy().isEqualId(pickComment.getCreatedBy().getId())) {
+            if (pickComment.getDeletedBy().isEqualsId(pickComment.getCreatedBy().getId())) {
                 return "댓글 작성자에 의해 삭제된 댓글입니다.";
             }
             return "커뮤니티 정책을 위반하여 삭제된 댓글입니다.";
@@ -21,7 +21,7 @@ public class CommentResponseUtil {
     public static String getCommentByTechCommentStatus(TechComment techComment) {
         if (techComment.isDeleted()) {
             // 댓글 작성자에 의해 삭제된 경우
-            if (techComment.getDeletedBy().isEqualId(techComment.getCreatedBy().getId())) {
+            if (techComment.getDeletedBy().isEqualsId(techComment.getCreatedBy().getId())) {
                 return "댓글 작성자에 의해 삭제된 댓글입니다.";
             }
             return "커뮤니티 정책을 위반하여 삭제된 댓글입니다.";
@@ -37,14 +37,14 @@ public class CommentResponseUtil {
         return false;
     }
 
-    public static boolean isPickAuthor(Member member, Pick pick) {
+    public static boolean isPickAuthor(@Nullable Member member, Pick pick) {
         if (member == null) {
             return false;
         }
-        return pick.getMember().isEqualId(member.getId());
+        return pick.getMember().isEqualsId(member.getId());
     }
 
-    public static boolean isPickCommentAuthor(Member member, PickComment pickComment) {
+    public static boolean isPickCommentAuthor(@Nullable Member member, PickComment pickComment) {
         // member 가 null 인 경우 익명회원이 조회한 것
         if (member == null) {
             return false;

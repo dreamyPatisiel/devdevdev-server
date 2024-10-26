@@ -4,11 +4,11 @@ import lombok.Data;
 
 @Data
 public class TechCommentRecommendResponse {
-    private final Boolean recommendStatus;
+    private final Boolean isRecommended;
     private final Long recommendTotalCount;
 
-    public TechCommentRecommendResponse(Boolean recommendStatus, Long recommendTotalCount) {
-        this.recommendStatus = recommendStatus;
+    public TechCommentRecommendResponse(Boolean isRecommended, Long recommendTotalCount) {
+        this.isRecommended = isRecommended;
         this.recommendTotalCount = recommendTotalCount;
     }
 }

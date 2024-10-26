@@ -16,38 +16,45 @@ import lombok.Data;
 public class PickRepliedCommentsResponse {
     private Long pickCommentId;
     private Long memberId;
-    private Long pickCommentParentId;
-    private Long pickCommentOriginParentId;
+    private Long pickParentCommentMemberId; // 부모 댓글의 작성자 회원 아이디
+    private Long pickParentCommentId;
+    private Long pickOriginParentCommentId;
 
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
 
     private Boolean isCommentOfPickAuthor; // 댓글 작성자가 픽픽픽 작성자인지 여부
     private Boolean isCommentAuthor; // 로그인한 회원이 댓글 작성자인지 여부
+    private Boolean isRecommended; // 로그인한 회원이 댓글 추천을 했는지 여부
+    private String pickParentCommentAuthor; // 부모 댓글의 작성자 닉네임
     private String author;
     private String maskedEmail;
     private String contents;
-    private Long likeTotalCount;
+    private Long recommendTotalCount;
     private Boolean isModified;
     private Boolean isDeleted;
 
     @Builder
-    public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long pickCommentParentId,
-                                       Long pickCommentOriginParentId, LocalDateTime createdAt,
-                                       Boolean isCommentOfPickAuthor, Boolean isCommentAuthor, String author,
-                                       String maskedEmail, String contents, Long likeTotalCount, Boolean isModified,
-                                       Boolean isDeleted) {
+    public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long pickParentCommentMemberId,
+                                       Long pickParentCommentId, Long pickOriginParentCommentId,
+                                       LocalDateTime createdAt, Boolean isCommentOfPickAuthor, Boolean isCommentAuthor,
+                                       Boolean isRecommended, String pickParentCommentAuthor, String author,
+                                       String maskedEmail, String contents, Long recommendTotalCount,
+                                       Boolean isModified, Boolean isDeleted) {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
-        this.pickCommentParentId = pickCommentParentId;
-        this.pickCommentOriginParentId = pickCommentOriginParentId;
+        this.pickParentCommentMemberId = pickParentCommentMemberId;
+        this.pickParentCommentId = pickParentCommentId;
+        this.pickOriginParentCommentId = pickOriginParentCommentId;
         this.createdAt = createdAt;
         this.isCommentOfPickAuthor = isCommentOfPickAuthor;
         this.isCommentAuthor = isCommentAuthor;
+        this.isRecommended = isRecommended;
+        this.pickParentCommentAuthor = pickParentCommentAuthor;
         this.author = author;
         this.maskedEmail = maskedEmail;
         this.contents = contents;
-        this.likeTotalCount = likeTotalCount;
+        this.recommendTotalCount = recommendTotalCount;
         this.isModified = isModified;
         this.isDeleted = isDeleted;
     }
@@ -56,19 +63,23 @@ public class PickRepliedCommentsResponse {
     public static PickRepliedCommentsResponse of(@Nullable Member member, PickComment repliedPickComment) {
 
         Member createdBy = repliedPickComment.getCreatedBy();
+        PickComment parentPickComment = repliedPickComment.getParent();
 
         return PickRepliedCommentsResponse.builder()
                 .pickCommentId(repliedPickComment.getId())
                 .memberId(createdBy.getId())
+                .pickParentCommentMemberId(parentPickComment.getCreatedBy().getId())
                 .author(createdBy.getNickname().getNickname())
-                .pickCommentParentId(repliedPickComment.getParent().getId())
-                .pickCommentOriginParentId(repliedPickComment.getOriginParent().getId())
+                .pickParentCommentAuthor(parentPickComment.getCreatedBy().getNicknameAsString())
+                .pickParentCommentId(parentPickComment.getId())
+                .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
                 .createdAt(repliedPickComment.getCreatedAt())
                 .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, repliedPickComment.getPick()))
                 .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, repliedPickComment))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, repliedPickComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
-                .likeTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
+                .recommendTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
                 .isModified(repliedPickComment.isModified())
                 .isDeleted(repliedPickComment.isDeleted())
                 .build();

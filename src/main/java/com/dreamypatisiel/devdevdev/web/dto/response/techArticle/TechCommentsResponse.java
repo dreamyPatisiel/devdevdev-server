@@ -12,6 +12,8 @@ import lombok.Data;
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 public class TechCommentsResponse {
@@ -21,7 +23,7 @@ public class TechCommentsResponse {
     private String maskedEmail;
     private String contents;
     private Long replyTotalCount;
-    private Long likeTotalCount;
+    private Long recommendTotalCount;
     private Boolean isDeleted;
     private Boolean isCommentAuthor;
     private Boolean isModified;
@@ -34,6 +36,8 @@ public class TechCommentsResponse {
 
     @Builder
     public TechCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail, String contents,
+                                Long replyTotalCount, Long recommendTotalCount, Boolean isDeleted,
+                                LocalDateTime createdAt,
                                 Long replyTotalCount, Long likeTotalCount, Boolean isDeleted, LocalDateTime createdAt,
                                 Boolean isCommentAuthor, Boolean isModified, Boolean isRecommended,
                                 List<TechRepliedCommentsResponse> replies) {
@@ -45,6 +49,7 @@ public class TechCommentsResponse {
         this.replyTotalCount = replyTotalCount;
         this.isCommentAuthor = isCommentAuthor;
         this.likeTotalCount = likeTotalCount;
+        this.recommendTotalCount = recommendTotalCount;
         this.isDeleted = isDeleted;
         this.isModified = isModified;
         this.createdAt = createdAt;
@@ -64,7 +69,7 @@ public class TechCommentsResponse {
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
                 .contents(CommentResponseUtil.getCommentByTechCommentStatus(originParentTechComment))
                 .replyTotalCount(originParentTechComment.getReplyTotalCount().getCount())
-                .likeTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
+                .recommendTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(originParentTechComment.isDeleted())
                 .isModified(originParentTechComment.isModified())
                 .isRecommended(CommentResponseUtil.isTechCommentRecommendedByMember(member, originParentTechComment))

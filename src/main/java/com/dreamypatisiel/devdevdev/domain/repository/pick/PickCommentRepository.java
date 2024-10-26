@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 public interface PickCommentRepository extends JpaRepository<PickComment, Long>, PickCommentRepositoryCustom {
 
@@ -19,7 +21,12 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long>,
     @EntityGraph(attributePaths = {"pick"})
     Optional<PickComment> findWithPickByIdAndPickId(Long id, Long pickId);
 
-    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "pick", "pick.member"})
-    List<PickComment> findWithMemberWithPickWithPickVoteByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "pickVote", "pick", "pick.member",
+            "pickCommentRecommends"})
+    List<PickComment> findWithMemberWithPickWithPickVoteWithPickCommentRecommendsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
             Set<Long> originParentIds);
+
+    @Modifying
+    @Query("delete from PickComment pc where pc.pick.id =:pickId")
+    void deleteAllByPickId(Long pickId);
 }

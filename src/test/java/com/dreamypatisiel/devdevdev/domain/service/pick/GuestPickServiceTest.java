@@ -635,7 +635,7 @@ class GuestPickServiceTest {
     }
 
     @Test
-    @DisplayName("픽픽픽 옵션에 투표한 이력이 있는 익명 회원이 다른 픽옵션에 투표 할 경우 기존 투표 이력은 삭제되고, 새로운 투표 이력이 생성된다.")
+    @DisplayName("픽픽픽 옵션에 투표한 이력이 있는 익명 회원이 다른 픽옵션에 투표 할 경우 기존 투표 이력은 소프트 삭제되고, 새로운 투표 이력이 생성된다.")
     void votePickOptionDeleteAndCreateNew() {
         // given
         // 회원 생성
@@ -647,8 +647,14 @@ class GuestPickServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+        AnonymousMember anonymousMember = AnonymousMember.builder()
+                .anonymousMemberId(anonymousMemberId)
+                .build();
+        anonymousMemberRepository.save(anonymousMember);
+
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(0), new Count(0), member,
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(1), new Count(0), member,
                 ContentStatus.APPROVAL);
         pickRepository.save(pick);
 
@@ -660,11 +666,10 @@ class GuestPickServiceTest {
         pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
 
         // 첫 번째 픽픽픽 옵션에 투표이력 생성
-        PickVote pickVote = createPickVote(member, firstPickOption, pick);
+        PickVote pickVote = createPickVote(anonymousMember, firstPickOption, pick);
         pickVoteRepository.save(pickVote);
 
         // 두 번째 픽픽픽 옵션에 투표
-        String anonymousMemberId = "GA1.1.276672604.1715872960";
         VotePickOptionDto dto = VotePickOptionDto.builder()
                 .pickId(pick.getId())
                 .pickOptionId(secondPickOption.getId())
@@ -673,6 +678,9 @@ class GuestPickServiceTest {
 
         // when
         VotePickResponse votePickResponse = guestPickService.votePickOption(dto, authentication);
+
+        em.flush();
+        em.clear();
 
         // then
         assertAll(
@@ -688,6 +696,9 @@ class GuestPickServiceTest {
                 () -> assertThat(votePickOptionResponseIndex1.getVoteTotalCount()).isEqualTo(0),
                 () -> assertThat(votePickOptionResponseIndex1.getIsPicked()).isEqualTo(false)
         );
+
+        // 기존 투표 이력 소프트 삭제 검증
+        assertThat(pickVote.isDeleted()).isTrue();
 
         VotePickOptionResponse votePickOptionResponseIndex2 = votePickResponse.getVotePickOptions().get(1);
         assertAll(

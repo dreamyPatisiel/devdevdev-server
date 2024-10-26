@@ -13,8 +13,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -89,6 +92,9 @@ public class PickComment extends BasicTime {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pick_vote_id")
     private PickVote pickVote;
+
+    @OneToMany(mappedBy = "pickComment")
+    private List<PickCommentRecommend> pickCommentRecommends = new ArrayList<>();
 
     @Builder
     private PickComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount,

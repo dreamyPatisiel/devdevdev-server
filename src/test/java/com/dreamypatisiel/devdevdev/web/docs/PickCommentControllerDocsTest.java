@@ -37,6 +37,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -50,6 +51,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
@@ -105,6 +107,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
     PickVoteRepository pickVoteRepository;
     @Autowired
     PickCommentRepository pickCommentRepository;
+    @Autowired
+    PickCommentRecommendRepository pickCommentRecommendRepository;
     @Autowired
     EntityManager em;
     @MockBean
@@ -280,7 +284,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
         // when // then
         ResultActions actions = mockMvc.perform(
                         post(
-                                "/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                                "/devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}",
                                 pick.getId(), pickComment.getId(), replidPickComment.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -298,8 +302,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
-                        parameterWithName("pickCommentOriginParentId").description("픽픽픽 최상단 댓글 아이디"),
-                        parameterWithName("pickCommentParentId").description("픽픽픽 답글 대상의 댓글 아이디")
+                        parameterWithName("pickOriginParentCommentId").description("픽픽픽 최상단 댓글 아이디"),
+                        parameterWithName("pickParentCommentId").description("픽픽픽 답글 대상의 댓글 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
@@ -346,7 +350,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
 
         // when // then
         ResultActions actions = mockMvc.perform(
-                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}",
                                 pick.getId(), pickComment.getId(), replidPickComment.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -364,8 +368,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
-                        parameterWithName("pickCommentOriginParentId").description("픽픽픽 최상단 댓글 아이디"),
-                        parameterWithName("pickCommentParentId").description("픽픽픽 답글 대상의 댓글 아이디")
+                        parameterWithName("pickOriginParentCommentId").description("픽픽픽 최상단 댓글 아이디"),
+                        parameterWithName("pickParentCommentId").description("픽픽픽 답글 대상의 댓글 아이디")
                 ),
                 requestFields(
                         fieldWithPath("contents").type(STRING).description("픽픽픽 댓글 내용(최소 1자 이상 최대 1,000자 이하)")
@@ -705,6 +709,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("댓글 작성자가 픽픽픽 작성자인지 여부"),
                         fieldWithPath("data.content[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 댓글 작성자인지 여부"),
+                        fieldWithPath("data.content[].isRecommended").type(BOOLEAN)
+                                .description("로그인한 회원이 댓글 추천 여부"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].votedPickOption").optional().type(STRING)
                                 .description("픽픽픽 투표 선택 타입").attributes(pickOptionType()),
@@ -713,7 +719,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].contents").type(STRING).description("픽픽픽 댓글 내용"),
                         fieldWithPath("data.content[].replyTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글의 답글 총 갯수"),
-                        fieldWithPath("data.content[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("data.content[].recommendTotalCount").type(NUMBER)
                                 .description("픽픽픽 댓글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].isDeleted").type(BOOLEAN)
                                 .description("픽픽픽 댓글 삭제 여부"),
@@ -723,25 +729,31 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("data.content[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
                         fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
-                        fieldWithPath("data.content[].replies[].pickCommentParentId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].pickParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 부모 댓글 아이디"),
-                        fieldWithPath("data.content[].replies[].pickCommentOriginParentId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].pickOriginParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("픽픽픽 답글 작성일시"),
                         fieldWithPath("data.content[].replies[].isCommentOfPickAuthor").type(BOOLEAN)
                                 .description("답글 작성자가 픽픽픽 작성자인지 여부"),
                         fieldWithPath("data.content[].replies[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 답글 작성자인지 여부"),
+                        fieldWithPath("data.content[].replies[].isRecommended").type(BOOLEAN)
+                                .description("로그인한 회원이 답글 추천 여부"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("픽픽픽 답글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
                                 .description("픽픽픽 답글 작성자 이메일"),
                         fieldWithPath("data.content[].replies[].contents").type(STRING).description("픽픽픽 답글 내용"),
-                        fieldWithPath("data.content[].replies[].likeTotalCount").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].recommendTotalCount").type(NUMBER)
                                 .description("픽픽픽 답글 좋아요 총 갯수"),
                         fieldWithPath("data.content[].replies[].isDeleted").type(BOOLEAN)
                                 .description("픽픽픽 답글 삭제 여부"),
                         fieldWithPath("data.content[].replies[].isModified").type(BOOLEAN)
                                 .description("픽픽픽 답글 수정 여부"),
+                        fieldWithPath("data.content[].replies[].pickParentCommentMemberId").type(NUMBER)
+                                .description("픽픽픽 부모 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].pickParentCommentAuthor").type(STRING)
+                                .description("픽픽픽 부모 댓글 작성자 닉네임"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
@@ -817,7 +829,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
                         fieldWithPath("data").type(OBJECT).description("응답 데이터").attributes(authenticationType()),
-                        fieldWithPath("data.recommendStatus").type(BOOLEAN).description("픽픽픽 댓글/답글 추천 상태")
+                        fieldWithPath("data.isRecommended").type(BOOLEAN).description("로그인한 회원의 픽픽픽 댓글/답글 추천 여부")
                                 .attributes(authenticationType()),
                         fieldWithPath("data.recommendTotalCount").type(NUMBER).description("픽픽픽 댓글/답글 추천 총 갯수")
                                 .attributes(authenticationType())
@@ -870,6 +882,187 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 베스트 댓글을 조회한다.")
+    void findPickBestComments() throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김미뇽뇽뇽뇽", "password",
+                "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하하하하하", "password",
+                "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문밍주주주주주", "password", "mmj9908@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "유소영영영영", "password",
+                "merooongg@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", "user5", "장세웅", "password",
+                "howisitgoing@kakao.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", "password", "user6@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto7 = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        Member member7 = Member.createMemberBy(socialMemberDto7);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("무엇이 정답일까요?"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("꿈파 최고!"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("사랑해 꿈파!"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("여기가 꿈파?"), true, new Count(2),
+                new Count(3), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("행복한~"), LocalDateTime.now());
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("꿈빛!"), true, new Count(1),
+                new Count(2), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("파티시엘~!"), true, new Count(0),
+                new Count(1), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("진짜 너무 좋아"), member1, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("너무 행복하다"), member6, pick,
+                originParentPickComment1, pickReply1);
+        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("사랑해요~"), member6, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
+
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/comments/best",
+                        pick.getId())
+                        .queryParam("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("get-pick-best-comments",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디")
+                ),
+                queryParameters(
+                        parameterWithName("size").optional().description("조회되는 데이터 수(min=3, max=10)")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("datas").type(ARRAY).description("응답 데이터"),
+
+                        fieldWithPath("datas.[].pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디"),
+                        fieldWithPath("datas.[].createdAt").type(STRING).description("픽픽픽 댓글 작성일시"),
+                        fieldWithPath("datas.[].memberId").type(NUMBER).description("픽픽픽 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].author").type(STRING).description("픽픽픽 댓글 작성자 닉네임"),
+                        fieldWithPath("datas.[].isCommentOfPickAuthor").type(BOOLEAN)
+                                .description("댓글 작성자가 픽픽픽 작성자인지 여부"),
+                        fieldWithPath("datas.[].isCommentAuthor").type(BOOLEAN)
+                                .description("로그인한 회원이 댓글 작성자인지 여부"),
+                        fieldWithPath("datas.[].isRecommended").type(BOOLEAN)
+                                .description("로그인한 회원이 댓글 추천 여부"),
+                        fieldWithPath("datas.[].maskedEmail").type(STRING).description("픽픽픽 댓글 작성자 이메일"),
+                        fieldWithPath("datas.[].votedPickOption").optional().type(STRING)
+                                .description("픽픽픽 투표 선택 타입").attributes(pickOptionType()),
+                        fieldWithPath("datas.[].votedPickOptionTitle").optional().type(STRING)
+                                .description("픽픽픽 투표 선택 타입 제목").attributes(stringOrNull()),
+                        fieldWithPath("datas.[].contents").type(STRING).description("픽픽픽 댓글 내용"),
+                        fieldWithPath("datas.[].replyTotalCount").type(NUMBER)
+                                .description("픽픽픽 댓글의 답글 총 갯수"),
+                        fieldWithPath("datas.[].recommendTotalCount").type(NUMBER)
+                                .description("픽픽픽 댓글 좋아요 총 갯수"),
+                        fieldWithPath("datas.[].isDeleted").type(BOOLEAN)
+                                .description("픽픽픽 댓글 삭제 여부"),
+                        fieldWithPath("datas.[].isModified").type(BOOLEAN)
+                                .description("픽픽픽 댓글 수정 여부"),
+
+                        fieldWithPath("datas.[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
+                        fieldWithPath("datas.[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
+                        fieldWithPath("datas.[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].pickParentCommentId").type(NUMBER)
+                                .description("픽픽픽 답글의 부모 댓글 아이디"),
+                        fieldWithPath("datas.[].replies[].pickOriginParentCommentId").type(NUMBER)
+                                .description("픽픽픽 답글의 최상위 부모 댓글 아이디"),
+                        fieldWithPath("datas.[].replies[].createdAt").type(STRING).description("픽픽픽 답글 작성일시"),
+                        fieldWithPath("datas.[].replies[].isCommentOfPickAuthor").type(BOOLEAN)
+                                .description("답글 작성자가 픽픽픽 작성자인지 여부"),
+                        fieldWithPath("datas.[].replies[].isCommentAuthor").type(BOOLEAN)
+                                .description("로그인한 회원이 답글 작성자인지 여부"),
+                        fieldWithPath("datas.[].replies[].isRecommended").type(BOOLEAN)
+                                .description("로그인한 회원이 답글 추천 여부"),
+                        fieldWithPath("datas.[].replies[].author").type(STRING).description("픽픽픽 답글 작성자 닉네임"),
+                        fieldWithPath("datas.[].replies[].maskedEmail").type(STRING)
+                                .description("픽픽픽 답글 작성자 이메일"),
+                        fieldWithPath("datas.[].replies[].contents").type(STRING).description("픽픽픽 답글 내용"),
+                        fieldWithPath("datas.[].replies[].recommendTotalCount").type(NUMBER)
+                                .description("픽픽픽 답글 좋아요 총 갯수"),
+                        fieldWithPath("datas.[].replies[].isDeleted").type(BOOLEAN)
+                                .description("픽픽픽 답글 삭제 여부"),
+                        fieldWithPath("datas.[].replies[].isModified").type(BOOLEAN)
+                                .description("픽픽픽 답글 수정 여부"),
+                        fieldWithPath("datas.[].replies[].pickParentCommentMemberId").type(NUMBER)
+                                .description("픽픽픽 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].pickParentCommentAuthor").type(STRING)
+                                .description("픽픽픽 부모 댓글 작성자 닉네임")
+                )
+        ));
+    }
+
+    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
+                                                            Boolean recommendedStatus) {
+        PickCommentRecommend pickCommentRecommend = PickCommentRecommend.builder()
+                .member(member)
+                .recommendedStatus(recommendedStatus)
+                .build();
+
+        pickCommentRecommend.changePickComment(pickComment);
+
+        return pickCommentRecommend;
     }
 
     private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count recommendTotalCount,
