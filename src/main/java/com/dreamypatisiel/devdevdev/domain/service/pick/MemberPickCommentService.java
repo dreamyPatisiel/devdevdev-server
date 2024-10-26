@@ -128,7 +128,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Since: 2024.08.24
      */
     @Transactional
-    public PickCommentResponse registerPickRepliedComment(Long pickCommentParentId,
+    public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId,
                                                           Long pickCommentOriginParentId,
                                                           Long pickId,
                                                           RegisterPickRepliedCommentRequest pickSubCommentRequest,
@@ -140,7 +140,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 답글 대상의 픽픽픽 댓글 조회
-        PickComment findParentPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickCommentParentId, pickId)
+        PickComment findParentPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickParentCommentId, pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
         // 픽픽픽 게시글의 승인 상태 검증

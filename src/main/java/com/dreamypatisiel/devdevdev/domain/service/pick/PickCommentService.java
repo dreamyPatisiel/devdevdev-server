@@ -18,7 +18,7 @@ public interface PickCommentService {
                                             RegisterPickCommentRequest pickMainCommentRequest,
                                             Authentication authentication);
 
-    PickCommentResponse registerPickRepliedComment(Long pickCommentParentId,
+    PickCommentResponse registerPickRepliedComment(Long pickParentCommentId,
                                                    Long pickCommentOriginParentId,
                                                    Long pickId,
                                                    RegisterPickRepliedCommentRequest pickSubCommentRequest,

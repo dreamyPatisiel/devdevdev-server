@@ -844,14 +844,14 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 .andExpect(jsonPath("$.data.content.[0].isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentParentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentOriginParentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].techOriginParentCommentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].createdAt").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentParentMemberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentParentAuthor").isString())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentAuthor").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].isRecommended").isBoolean())
@@ -919,14 +919,14 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER)
                                 .description("기술블로그 답글 아이디"),
                         fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("기술블로그 답글 작성자 아이디"),
-                        fieldWithPath("data.content[].replies[].techCommentParentId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].techParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 아이디"),
-                        fieldWithPath("data.content[].replies[].techCommentOriginParentId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].techOriginParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("기술블로그 답글 작성일시"),
-                        fieldWithPath("data.content[].replies[].techCommentParentMemberId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].techParentCommentMemberId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 작성자 아이디"),
-                        fieldWithPath("data.content[].replies[].techCommentParentAuthor").type(STRING)
+                        fieldWithPath("data.content[].replies[].techParentCommentAuthor").type(STRING)
                                 .description("기술블로그 답글의 부모 댓글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("기술블로그 답글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].isCommentAuthor").type(BOOLEAN).description("회원의 기술블로그 답글 작성자 여부"),

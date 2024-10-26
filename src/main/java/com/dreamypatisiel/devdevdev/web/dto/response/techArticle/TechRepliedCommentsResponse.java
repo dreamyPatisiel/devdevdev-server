@@ -17,14 +17,14 @@ import java.time.LocalDateTime;
 public class TechRepliedCommentsResponse {
     private Long techCommentId;
     private Long memberId;
-    private Long techCommentParentMemberId;
-    private Long techCommentParentId;
-    private Long techCommentOriginParentId;
+    private Long techParentCommentMemberId;
+    private Long techParentCommentId;
+    private Long techOriginParentCommentId;
 
     private Boolean isCommentAuthor;
     private Boolean isRecommended;
 
-    private String techCommentParentAuthor;
+    private String techParentCommentAuthor;
     private String author;
     private String maskedEmail;
     private String contents;
@@ -37,19 +37,19 @@ public class TechRepliedCommentsResponse {
     private LocalDateTime createdAt;
 
     @Builder
-    public TechRepliedCommentsResponse(Long techCommentId, Long memberId, Long techCommentParentMemberId,
-                                       Long techCommentParentId, Long techCommentOriginParentId, Boolean isCommentAuthor,
-                                       Boolean isRecommended, String techCommentParentAuthor, String author,
+    public TechRepliedCommentsResponse(Long techCommentId, Long memberId, Long techParentCommentMemberId,
+                                       Long techParentCommentId, Long techOriginParentCommentId, Boolean isCommentAuthor,
+                                       Boolean isRecommended, String techParentCommentAuthor, String author,
                                        String maskedEmail, String contents, Long recommendTotalCount, Boolean isDeleted,
                                        Boolean isModified, LocalDateTime createdAt) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
-        this.techCommentParentMemberId = techCommentParentMemberId;
-        this.techCommentParentId = techCommentParentId;
-        this.techCommentOriginParentId = techCommentOriginParentId;
+        this.techParentCommentMemberId = techParentCommentMemberId;
+        this.techParentCommentId = techParentCommentId;
+        this.techOriginParentCommentId = techOriginParentCommentId;
         this.isCommentAuthor = isCommentAuthor;
         this.isRecommended = isRecommended;
-        this.techCommentParentAuthor = techCommentParentAuthor;
+        this.techParentCommentAuthor = techParentCommentAuthor;
         this.author = author;
         this.maskedEmail = maskedEmail;
         this.contents = contents;
@@ -62,16 +62,16 @@ public class TechRepliedCommentsResponse {
     public static TechRepliedCommentsResponse of(@Nullable Member member, TechComment repliedTechComment) {
 
         Member createdBy = repliedTechComment.getCreatedBy();
-        TechComment techCommentParent = repliedTechComment.getParent();
+        TechComment techParentComment = repliedTechComment.getParent();
 
         return TechRepliedCommentsResponse.builder()
                 .techCommentId(repliedTechComment.getId())
                 .memberId(createdBy.getId())
                 .author(createdBy.getNickname().getNickname())
-                .techCommentParentMemberId(techCommentParent.getCreatedBy().getId())
-                .techCommentParentAuthor(techCommentParent.getCreatedBy().getNicknameAsString())
-                .techCommentParentId(repliedTechComment.getParent().getId())
-                .techCommentOriginParentId(repliedTechComment.getOriginParent().getId())
+                .techParentCommentMemberId(techParentComment.getCreatedBy().getId())
+                .techParentCommentAuthor(techParentComment.getCreatedBy().getNicknameAsString())
+                .techParentCommentId(repliedTechComment.getParent().getId())
+                .techOriginParentCommentId(repliedTechComment.getOriginParent().getId())
                 .createdAt(repliedTechComment.getCreatedAt())
                 .isCommentAuthor(CommentResponseUtil.isTechCommentAuthor(member, repliedTechComment))
                 .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
