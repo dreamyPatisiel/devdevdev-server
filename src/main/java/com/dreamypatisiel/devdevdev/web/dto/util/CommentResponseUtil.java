@@ -49,7 +49,18 @@ public class CommentResponseUtil {
         if (member == null) {
             return false;
         }
-        return pickComment.getCreatedBy().isEqualId(member.getId());
+        return pickComment.getCreatedBy().isEqualsId(member.getId());
+    }
+
+    public static boolean isPickCommentRecommended(@Nullable Member member,
+                                                   PickComment pickComment) {
+        // member 가 null 인 경우 익명회원이 조회한 것
+        if (member == null) {
+            return false;
+        }
+
+        return pickComment.getPickCommentRecommends().stream()
+                .anyMatch(pickCommentRecommend -> pickCommentRecommend.getMember().isEqualsId(member.getId()));
     }
 
     public static boolean isTechCommentAuthor(Member member, TechComment techComment) {
@@ -57,7 +68,7 @@ public class CommentResponseUtil {
         if (member == null) {
             return false;
         }
-        return techComment.getCreatedBy().isEqualId(member.getId());
+        return techComment.getCreatedBy().isEqualsId(member.getId());
     }
 
     public static boolean isTechCommentRecommendedByMember(@Nullable Member member, TechComment techComment) {
@@ -67,7 +78,7 @@ public class CommentResponseUtil {
         }
 
         Optional<TechCommentRecommend> recommends = techComment.getRecommends().stream()
-                .filter(recommend -> recommend.getMember().isEqualId(member.getId()))
+                .filter(recommend -> recommend.getMember().isEqualsId(member.getId()))
                 .findAny();
 
         return recommends.map(TechCommentRecommend::isRecommended).orElse(false);

@@ -7,7 +7,6 @@ import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,6 +17,14 @@ import java.time.LocalDateTime;
 public class TechRepliedCommentsResponse {
     private Long techCommentId;
     private Long memberId;
+    private Long techCommentParentMemberId;
+    private Long techCommentParentId;
+    private Long techCommentOriginParentId;
+
+    private Boolean isCommentAuthor;
+    private Boolean isRecommended;
+
+    private String techCommentParentAuthor;
     private String author;
     private String maskedEmail;
     private String contents;
@@ -25,46 +32,44 @@ public class TechRepliedCommentsResponse {
     private Boolean isDeleted;
     private Boolean isModified;
 
-    private Long techCommentParentId;
-    private Long techCommentOriginParentId;
-
-    private Boolean isCommentAuthor;
-    private Boolean isRecommended;
 
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
 
     @Builder
-    public TechRepliedCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail,
-                                       String contents, Long likeTotalCount, Boolean isDeleted, Long techCommentParentId,
-                                       Long techCommentOriginParentId, LocalDateTime createdAt, Boolean isCommentAuthor,
-                                       Boolean isModified, Boolean isRecommended) {
-                                       String contents, Long recommendTotalCount, Boolean isDeleted,
-                                       Long techCommentParentId,
-                                       Long techCommentOriginParentId, LocalDateTime createdAt) {
+    public TechRepliedCommentsResponse(Long techCommentId, Long memberId, Long techCommentParentMemberId,
+                                       Long techCommentParentId, Long techCommentOriginParentId, Boolean isCommentAuthor,
+                                       Boolean isRecommended, String techCommentParentAuthor, String author,
+                                       String maskedEmail, String contents, Long recommendTotalCount, Boolean isDeleted,
+                                       Boolean isModified, LocalDateTime createdAt) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
+        this.techCommentParentMemberId = techCommentParentMemberId;
+        this.techCommentParentId = techCommentParentId;
+        this.techCommentOriginParentId = techCommentOriginParentId;
+        this.isCommentAuthor = isCommentAuthor;
+        this.isRecommended = isRecommended;
+        this.techCommentParentAuthor = techCommentParentAuthor;
         this.author = author;
         this.maskedEmail = maskedEmail;
         this.contents = contents;
         this.recommendTotalCount = recommendTotalCount;
         this.isDeleted = isDeleted;
-        this.techCommentParentId = techCommentParentId;
-        this.techCommentOriginParentId = techCommentOriginParentId;
-        this.createdAt = createdAt;
-        this.isRecommended = isRecommended;
-        this.isCommentAuthor = isCommentAuthor;
         this.isModified = isModified;
+        this.createdAt = createdAt;
     }
 
     public static TechRepliedCommentsResponse of(@Nullable Member member, TechComment repliedTechComment) {
 
         Member createdBy = repliedTechComment.getCreatedBy();
+        TechComment techCommentParent = repliedTechComment.getParent();
 
         return TechRepliedCommentsResponse.builder()
                 .techCommentId(repliedTechComment.getId())
                 .memberId(createdBy.getId())
                 .author(createdBy.getNickname().getNickname())
+                .techCommentParentMemberId(techCommentParent.getCreatedBy().getId())
+                .techCommentParentAuthor(techCommentParent.getCreatedBy().getNicknameAsString())
                 .techCommentParentId(repliedTechComment.getParent().getId())
                 .techCommentOriginParentId(repliedTechComment.getOriginParent().getId())
                 .createdAt(repliedTechComment.getCreatedAt())
@@ -73,7 +78,6 @@ public class TechRepliedCommentsResponse {
                 .contents(CommentResponseUtil.getCommentByTechCommentStatus(repliedTechComment))
                 .recommendTotalCount(repliedTechComment.getRecommendTotalCount().getCount())
                 .isRecommended(CommentResponseUtil.isTechCommentRecommendedByMember(member, repliedTechComment))
-                .likeTotalCount(repliedTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(repliedTechComment.isDeleted())
                 .isModified(repliedTechComment.isModified())
                 .build();

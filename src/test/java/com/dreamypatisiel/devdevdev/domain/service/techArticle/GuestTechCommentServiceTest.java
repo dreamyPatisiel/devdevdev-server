@@ -249,7 +249,7 @@ public class GuestTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -309,7 +309,7 @@ public class GuestTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -356,7 +356,7 @@ public class GuestTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -466,7 +466,7 @@ public class GuestTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -615,7 +615,7 @@ public class GuestTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -675,7 +675,7 @@ public class GuestTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -722,7 +722,7 @@ public class GuestTechCommentServiceTest {
                         "author",
                         "maskedEmail",
                         "contents",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -812,7 +812,7 @@ public class GuestTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -939,7 +939,7 @@ public class GuestTechCommentServiceTest {
                         "maskedEmail",
                         "contents",
                         "replyTotalCount",
-                        "likeTotalCount",
+                        "recommendTotalCount",
                         "isDeleted"
                 )
                 .containsExactly(
