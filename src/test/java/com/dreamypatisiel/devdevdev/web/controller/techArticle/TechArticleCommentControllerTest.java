@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -14,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -23,6 +25,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -35,6 +38,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechComm
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,6 +64,8 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     CompanyRepository companyRepository;
     @Autowired
     TechCommentRepository techCommentRepository;
+    @Autowired
+    TechCommentRecommendRepository techCommentRecommendRepository;
     @Autowired
     TimeProvider timeProvider;
     @Autowired
@@ -689,6 +695,194 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data.isRecommended").isBoolean())
                 .andExpect(jsonPath("$.data.recommendTotalCount").isNumber());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 베스트 댓글을 조회한다.")
+    void getTechBestComments() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", password, "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", password, "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", password, "mmj9908@naver.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        memberRepository.saveAll(List.of(member, member1, member2, member3));
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
+
+        // 기술 블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(12L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        // 댓글 생성
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member1,
+                techArticle, new Count(0L), new Count(3L), new Count(0L));
+        originParentTechComment1.modifyCommentContents(new CommentContents("최상위 댓글1 수정"), LocalDateTime.now());
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글1"), member2,
+                techArticle, new Count(0L), new Count(2L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글1"), member3,
+                techArticle, new Count(0L), new Count(1L), new Count(0L));
+        techCommentRepository.saveAll(
+                List.of(originParentTechComment1, originParentTechComment2, originParentTechComment3));
+
+        // 추천 생성
+        TechCommentRecommend techCommentRecommend = createTechCommentRecommend(true, originParentTechComment1, member1);
+        techCommentRecommendRepository.save(techCommentRecommend);
+
+        // 답글 생성
+        TechComment repliedTechComment = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member3,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        techCommentRepository.save(repliedTechComment);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}/comments/best",
+                        techArticle.getId())
+                        .queryParam("size", "3")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.datas").isNotEmpty())
+                .andExpect(jsonPath("$.datas").isArray())
+                .andExpect(jsonPath("$.datas.[0].techCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replyTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techParentCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techOriginParentCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techParentCommentAuthor").isString());
+    }
+
+    @Test
+    @DisplayName("익명 회원이 기술블로그 베스트 댓글을 조회한다.")
+    void getTechBestCommentsAnonymous() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", password, "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", password, "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", password, "mmj9908@naver.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        memberRepository.saveAll(List.of(member1, member2, member3));
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
+
+        // 기술 블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(12L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        // 댓글 생성
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member1,
+                techArticle, new Count(0L), new Count(3L), new Count(0L));
+        originParentTechComment1.modifyCommentContents(new CommentContents("최상위 댓글1 수정"), LocalDateTime.now());
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글1"), member2,
+                techArticle, new Count(0L), new Count(2L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글1"), member3,
+                techArticle, new Count(0L), new Count(1L), new Count(0L));
+        techCommentRepository.saveAll(
+                List.of(originParentTechComment1, originParentTechComment2, originParentTechComment3));
+
+        // 추천 생성
+        TechCommentRecommend techCommentRecommend = createTechCommentRecommend(true, originParentTechComment1, member1);
+        techCommentRecommendRepository.save(techCommentRecommend);
+
+        // 답글 생성
+        TechComment repliedTechComment = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member3,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        techCommentRepository.save(repliedTechComment);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}/comments/best",
+                        techArticle.getId())
+                        .queryParam("size", "3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.datas").isNotEmpty())
+                .andExpect(jsonPath("$.datas").isArray())
+                .andExpect(jsonPath("$.datas.[0].techCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replyTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techParentCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techOriginParentCommentId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].createdAt").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].author").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].contents").isString())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].techParentCommentAuthor").isString());
+    }
+
+    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment,
+                                                            Member member) {
+        TechCommentRecommend techCommentRecommend = TechCommentRecommend.builder()
+                .recommendedStatus(recommendedStatus)
+                .techComment(techComment)
+                .member(member)
+                .build();
+
+        techCommentRecommend.changeTechComment(techComment);
+
+        return techCommentRecommend;
     }
 
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
