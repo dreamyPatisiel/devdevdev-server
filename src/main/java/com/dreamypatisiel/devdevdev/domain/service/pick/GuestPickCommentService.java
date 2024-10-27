@@ -46,7 +46,7 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
     }
 
     @Override
-    public PickCommentResponse registerPickRepliedComment(Long pickCommentParentId, Long pickCommentOriginParentId,
+    public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId, Long pickCommentOriginParentId,
                                                           Long pickId,
                                                           RegisterPickRepliedCommentRequest pickSubCommentRequest,
                                                           Authentication authentication) {

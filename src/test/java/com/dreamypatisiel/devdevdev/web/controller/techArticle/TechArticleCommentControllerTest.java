@@ -90,7 +90,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
-                .andExpect(jsonPath("$.errorCode").value(HttpStatus.METHOD_NOT_ALLOWED.value()));
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.FORBIDDEN.value()));
     }
 
     @Test
@@ -624,8 +624,8 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentParentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentOriginParentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].techOriginParentCommentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].createdAt").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
                 .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())

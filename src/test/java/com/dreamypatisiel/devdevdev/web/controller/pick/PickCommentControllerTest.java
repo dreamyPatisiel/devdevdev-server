@@ -266,7 +266,7 @@ class PickCommentControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(
-                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickParentCommentId}",
                                 pick.getId(), pickComment.getId(), replidPickComment.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
@@ -313,7 +313,7 @@ class PickCommentControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(
-                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickCommentParentId}",
+                        post("/devdevdev/api/v1/picks/{pickId}/comments/{pickCommentOriginParentId}/{pickParentCommentId}",
                                 pick.getId(), pickComment.getId(), replidPickComment.getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)

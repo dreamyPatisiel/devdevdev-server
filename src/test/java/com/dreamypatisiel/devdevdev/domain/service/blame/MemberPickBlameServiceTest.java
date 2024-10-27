@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.pick;
+package com.dreamypatisiel.devdevdev.domain.service.blame;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.CommonExceptionMessage.INVALID_NOT_FOUND_BLAME_TYPE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE;
@@ -27,7 +27,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.blame.BlameRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.service.blame.MemberPickBlameService;
 import com.dreamypatisiel.devdevdev.domain.service.blame.dto.BlamePickDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;

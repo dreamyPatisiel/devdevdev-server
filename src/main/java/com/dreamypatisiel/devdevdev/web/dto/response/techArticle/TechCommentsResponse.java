@@ -6,10 +6,12 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDateTime;
-import java.util.List;
 import lombok.Builder;
 import lombok.Data;
+
+import javax.annotation.Nullable;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class TechCommentsResponse {
@@ -20,18 +22,20 @@ public class TechCommentsResponse {
     private String contents;
     private Long replyTotalCount;
     private Long recommendTotalCount;
+    private Boolean isCommentAuthor;
+    private Boolean isRecommended;
+    private Boolean isModified;
     private Boolean isDeleted;
+    private List<TechRepliedCommentsResponse> replies;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
 
-    private List<TechRepliedCommentsResponse> replies;
-
     @Builder
     public TechCommentsResponse(Long techCommentId, Long memberId, String author, String maskedEmail, String contents,
-                                Long replyTotalCount, Long recommendTotalCount, Boolean isDeleted,
-                                LocalDateTime createdAt,
-                                List<TechRepliedCommentsResponse> replies) {
+                                Long replyTotalCount, Long recommendTotalCount, Boolean isDeleted, Boolean isCommentAuthor,
+                                Boolean isModified, Boolean isRecommended, List<TechRepliedCommentsResponse> replies,
+                                LocalDateTime createdAt) {
         this.techCommentId = techCommentId;
         this.memberId = memberId;
         this.author = author;
@@ -40,12 +44,16 @@ public class TechCommentsResponse {
         this.replyTotalCount = replyTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.isDeleted = isDeleted;
-        this.createdAt = createdAt;
+        this.isCommentAuthor = isCommentAuthor;
+        this.isModified = isModified;
+        this.isRecommended = isRecommended;
         this.replies = replies;
+        this.createdAt = createdAt;
     }
 
-    public static TechCommentsResponse from(TechComment originParentTechComment,
-                                            List<TechRepliedCommentsResponse> replies) {
+    public static TechCommentsResponse of(@Nullable Member member,
+                                          TechComment originParentTechComment,
+                                          List<TechRepliedCommentsResponse> replies) {
         Member createdBy = originParentTechComment.getCreatedBy();
 
         return TechCommentsResponse.builder()
@@ -57,7 +65,10 @@ public class TechCommentsResponse {
                 .replyTotalCount(originParentTechComment.getReplyTotalCount().getCount())
                 .recommendTotalCount(originParentTechComment.getRecommendTotalCount().getCount())
                 .isDeleted(originParentTechComment.isDeleted())
+                .isModified(originParentTechComment.isModified())
+                .isRecommended(CommentResponseUtil.isTechCommentRecommendedByMember(member, originParentTechComment))
                 .createdAt(originParentTechComment.getCreatedAt())
+                .isCommentAuthor(CommentResponseUtil.isTechCommentAuthor(member, originParentTechComment))
                 .replies(replies)
                 .build();
     }

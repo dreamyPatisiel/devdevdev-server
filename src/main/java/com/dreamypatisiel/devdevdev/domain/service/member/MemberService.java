@@ -22,7 +22,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQues
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleCommonService;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
