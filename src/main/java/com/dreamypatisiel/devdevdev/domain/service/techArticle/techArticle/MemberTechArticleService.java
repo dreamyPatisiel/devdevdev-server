@@ -41,7 +41,6 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     private final BookmarkRepository bookmarkRepository;
     private final MemberProvider memberProvider;
 
-
     public MemberTechArticleService(TechArticleRepository techArticleRepository,
                                     ElasticTechArticleRepository elasticTechArticleRepository,
                                     ElasticTechArticleService elasticTechArticleService,
