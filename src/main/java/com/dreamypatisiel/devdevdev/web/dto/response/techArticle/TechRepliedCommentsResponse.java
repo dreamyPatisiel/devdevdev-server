@@ -7,11 +7,10 @@ import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import java.time.LocalDateTime;
+import javax.annotation.Nullable;
 import lombok.Builder;
 import lombok.Data;
-
-import javax.annotation.Nullable;
-import java.time.LocalDateTime;
 
 @Data
 public class TechRepliedCommentsResponse {
@@ -32,13 +31,13 @@ public class TechRepliedCommentsResponse {
     private Boolean isDeleted;
     private Boolean isModified;
 
-
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime createdAt;
 
     @Builder
     public TechRepliedCommentsResponse(Long techCommentId, Long memberId, Long techParentCommentMemberId,
-                                       Long techParentCommentId, Long techOriginParentCommentId, Boolean isCommentAuthor,
+                                       Long techParentCommentId, Long techOriginParentCommentId,
+                                       Boolean isCommentAuthor,
                                        Boolean isRecommended, String techParentCommentAuthor, String author,
                                        String maskedEmail, String contents, Long recommendTotalCount, Boolean isDeleted,
                                        Boolean isModified, LocalDateTime createdAt) {
