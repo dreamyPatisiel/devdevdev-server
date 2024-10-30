@@ -70,7 +70,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void registerTechCommentByAnonymous() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L),
@@ -98,7 +98,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void registerTechComment() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L),
@@ -134,7 +134,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void registerTechCommentNotFoundTechArticleException() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L),
@@ -169,7 +169,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void registerTechCommentNotFoundMemberException() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L),
@@ -199,7 +199,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void registerTechCommentContentsIsNullException(String contents) throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L),
@@ -228,7 +228,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void modifyTechComment() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -268,7 +268,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void modifyTechCommentContentsIsNullException(String contents) throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -306,7 +306,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void modifyTechCommentNotFoundException() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -339,7 +339,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void modifyTechCommentAlreadyDeletedException() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -380,7 +380,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void deleteTechComment() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -416,7 +416,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void deleteTechCommentNotFoundException() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -449,7 +449,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     void registerRepliedTechComment() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -502,7 +502,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -550,7 +550,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
@@ -665,7 +665,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         memberRepository.save(member);
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);

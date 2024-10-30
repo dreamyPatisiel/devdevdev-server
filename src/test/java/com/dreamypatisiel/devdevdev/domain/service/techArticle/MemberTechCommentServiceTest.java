@@ -117,7 +117,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -155,7 +155,7 @@ public class MemberTechCommentServiceTest {
     void registerTechCommentNotFoundTechArticleException() {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -216,7 +216,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -292,7 +292,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -314,7 +314,7 @@ public class MemberTechCommentServiceTest {
     void modifyTechCommentAlreadyDeletedException() {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -365,7 +365,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -399,7 +399,7 @@ public class MemberTechCommentServiceTest {
     void deleteTechCommentAlreadyDeletedException() {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -437,7 +437,7 @@ public class MemberTechCommentServiceTest {
     void deleteTechCommentNotFoundException() {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -482,7 +482,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -531,7 +531,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -584,7 +584,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -642,7 +642,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(2L), new Count(1L), null, company);
@@ -705,7 +705,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -741,7 +741,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -796,7 +796,7 @@ public class MemberTechCommentServiceTest {
 
     @Test
     @DisplayName("회원은 커서 방식으로 기술블로그 댓글/답글을 조회할 수 있다. (등록순)")
-    void getTechCommentsSortByOLDEST() {
+    void  getTechCommentsSortByOLDEST() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -809,7 +809,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
@@ -873,6 +873,9 @@ public class MemberTechCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -883,6 +886,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment1.getContents().getCommentContents(),
                                 originParentTechComment1.getReplyTotalCount().getCount(),
                                 originParentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment2.getId(),
@@ -892,6 +898,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment2.getContents().getCommentContents(),
                                 originParentTechComment2.getReplyTotalCount().getCount(),
                                 originParentTechComment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment3.getId(),
@@ -901,6 +910,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment3.getContents().getCommentContents(),
                                 originParentTechComment3.getReplyTotalCount().getCount(),
                                 originParentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment4.getId(),
@@ -910,6 +922,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment4.getContents().getCommentContents(),
                                 originParentTechComment4.getReplyTotalCount().getCount(),
                                 originParentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment5.getId(),
@@ -919,6 +934,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment5.getContents().getCommentContents(),
                                 originParentTechComment5.getReplyTotalCount().getCount(),
                                 originParentTechComment5.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -929,43 +947,78 @@ public class MemberTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "techParentCommentId",
+                        "techParentCommentMemberId",
+                        "techParentCommentAuthor",
+                        "techOriginParentCommentId",
                         "author",
                         "maskedEmail",
                         "contents",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
                         Tuple.tuple(parentTechComment1.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment1.getId(),
+                                originParentTechComment1.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment1.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment1.getContents().getCommentContents(),
                                 parentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(parentTechComment2.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment1.getId(),
+                                originParentTechComment1.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment1.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment2.getContents().getCommentContents(),
                                 parentTechComment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(techcomment1.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                parentTechComment1.getId(),
+                                parentTechComment1.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment1.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 techcomment1.getContents().getCommentContents(),
                                 techcomment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(techcomment2.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                parentTechComment2.getId(),
+                                parentTechComment2.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment1.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 techcomment2.getContents().getCommentContents(),
                                 techcomment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -976,27 +1029,48 @@ public class MemberTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "techParentCommentId",
+                        "techParentCommentMemberId",
+                        "techParentCommentAuthor",
+                        "techOriginParentCommentId",
                         "author",
                         "maskedEmail",
                         "contents",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
                         Tuple.tuple(parentTechComment3.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment2.getId(),
+                                originParentTechComment2.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment2.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment3.getContents().getCommentContents(),
                                 parentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(parentTechComment4.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment2.getId(),
+                                originParentTechComment2.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment2.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment4.getContents().getCommentContents(),
                                 parentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -1029,7 +1103,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
@@ -1093,6 +1167,9 @@ public class MemberTechCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1103,6 +1180,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment6.getContents().getCommentContents(),
                                 originParentTechComment6.getReplyTotalCount().getCount(),
                                 originParentTechComment6.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment5.getId(),
@@ -1112,6 +1192,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment5.getContents().getCommentContents(),
                                 originParentTechComment5.getReplyTotalCount().getCount(),
                                 originParentTechComment5.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment4.getId(),
@@ -1121,6 +1204,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment4.getContents().getCommentContents(),
                                 originParentTechComment4.getReplyTotalCount().getCount(),
                                 originParentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment3.getId(),
@@ -1130,6 +1216,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment3.getContents().getCommentContents(),
                                 originParentTechComment3.getReplyTotalCount().getCount(),
                                 originParentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment2.getId(),
@@ -1139,8 +1228,10 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment2.getContents().getCommentContents(),
                                 originParentTechComment2.getReplyTotalCount().getCount(),
                                 originParentTechComment2.getRecommendTotalCount().getCount(),
-                                false
-                        )
+                                true,
+                                false,
+                                false,
+                                false                        )
                 );
 
         TechCommentsResponse techCommentsResponse6 = response.getContent().get(0);
@@ -1181,7 +1272,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
@@ -1245,6 +1336,9 @@ public class MemberTechCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1255,6 +1349,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment2.getContents().getCommentContents(),
                                 originParentTechComment2.getReplyTotalCount().getCount(),
                                 originParentTechComment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment4.getId(),
@@ -1264,6 +1361,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment4.getContents().getCommentContents(),
                                 originParentTechComment4.getReplyTotalCount().getCount(),
                                 originParentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment6.getId(),
@@ -1273,6 +1373,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment6.getContents().getCommentContents(),
                                 originParentTechComment6.getReplyTotalCount().getCount(),
                                 originParentTechComment6.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment5.getId(),
@@ -1282,6 +1385,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment5.getContents().getCommentContents(),
                                 originParentTechComment5.getReplyTotalCount().getCount(),
                                 originParentTechComment5.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment3.getId(),
@@ -1291,6 +1397,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment3.getContents().getCommentContents(),
                                 originParentTechComment3.getReplyTotalCount().getCount(),
                                 originParentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -1301,43 +1410,78 @@ public class MemberTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "techParentCommentId",
+                        "techParentCommentMemberId",
+                        "techParentCommentAuthor",
+                        "techOriginParentCommentId",
                         "author",
                         "maskedEmail",
                         "contents",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
                         Tuple.tuple(parentTechComment1.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment2.getId(),
+                                originParentTechComment2.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment2.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment1.getContents().getCommentContents(),
                                 parentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(parentTechComment2.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment2.getId(),
+                                originParentTechComment2.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment2.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment2.getContents().getCommentContents(),
                                 parentTechComment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(techcomment1.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                parentTechComment1.getId(),
+                                parentTechComment1.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment2.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 techcomment1.getContents().getCommentContents(),
                                 techcomment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(techcomment2.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                parentTechComment2.getId(),
+                                parentTechComment2.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment2.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 techcomment2.getContents().getCommentContents(),
                                 techcomment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -1348,27 +1492,48 @@ public class MemberTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "techParentCommentId",
+                        "techParentCommentMemberId",
+                        "techParentCommentAuthor",
+                        "techOriginParentCommentId",
                         "author",
                         "maskedEmail",
                         "contents",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
                         Tuple.tuple(parentTechComment3.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment4.getId(),
+                                originParentTechComment4.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment4.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment3.getContents().getCommentContents(),
                                 parentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(parentTechComment4.getId(),
                                 member.getId(),
-                                member.getNickname().getNickname(),
+                                originParentTechComment4.getId(),
+                                originParentTechComment4.getCreatedBy().getId(),
+                                member.getNicknameAsString(),
+                                originParentTechComment4.getId(),
+                                member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
                                 parentTechComment4.getContents().getCommentContents(),
                                 parentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -1401,7 +1566,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
@@ -1445,6 +1610,9 @@ public class MemberTechCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1455,6 +1623,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment6.getContents().getCommentContents(),
                                 originParentTechComment6.getReplyTotalCount().getCount(),
                                 originParentTechComment6.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment3.getId(),
@@ -1464,6 +1635,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment3.getContents().getCommentContents(),
                                 originParentTechComment3.getReplyTotalCount().getCount(),
                                 originParentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment4.getId(),
@@ -1473,6 +1647,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment4.getContents().getCommentContents(),
                                 originParentTechComment4.getReplyTotalCount().getCount(),
                                 originParentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment1.getId(),
@@ -1482,6 +1659,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment1.getContents().getCommentContents(),
                                 originParentTechComment1.getReplyTotalCount().getCount(),
                                 originParentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment5.getId(),
@@ -1491,6 +1671,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment5.getContents().getCommentContents(),
                                 originParentTechComment5.getReplyTotalCount().getCount(),
                                 originParentTechComment5.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -1531,7 +1714,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
@@ -1575,6 +1758,9 @@ public class MemberTechCommentServiceTest {
                         "contents",
                         "replyTotalCount",
                         "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
                         "isDeleted"
                 )
                 .containsExactly(
@@ -1585,6 +1771,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment5.getContents().getCommentContents(),
                                 originParentTechComment5.getReplyTotalCount().getCount(),
                                 originParentTechComment5.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment4.getId(),
@@ -1594,6 +1783,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment4.getContents().getCommentContents(),
                                 originParentTechComment4.getReplyTotalCount().getCount(),
                                 originParentTechComment4.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment3.getId(),
@@ -1603,6 +1795,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment3.getContents().getCommentContents(),
                                 originParentTechComment3.getReplyTotalCount().getCount(),
                                 originParentTechComment3.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment2.getId(),
@@ -1612,6 +1807,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment2.getContents().getCommentContents(),
                                 originParentTechComment2.getReplyTotalCount().getCount(),
                                 originParentTechComment2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         ),
                         Tuple.tuple(originParentTechComment1.getId(),
@@ -1621,6 +1819,9 @@ public class MemberTechCommentServiceTest {
                                 originParentTechComment1.getContents().getCommentContents(),
                                 originParentTechComment1.getReplyTotalCount().getCount(),
                                 originParentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                false,
                                 false
                         )
                 );
@@ -1661,7 +1862,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(2L), new Count(1L), null, company);
@@ -1697,7 +1898,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(2L), new Count(1L), null, company);
@@ -1736,7 +1937,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
@@ -1769,7 +1970,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
-        company = companyRepository.save(company);
+        companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
