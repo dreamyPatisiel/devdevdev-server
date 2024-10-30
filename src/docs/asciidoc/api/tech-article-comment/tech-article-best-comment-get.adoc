@@ -1,4 +1,4 @@
-[[Pick-Best-Comment-Get]]
+[[Tech-Article-Best-Comment-Get]]
 == 기술블로그 베스트 댓글/답글 조회 API(GET: /devdevdev/api/v1/articles/{techArticleId}/comments/best?size=)
 
 * 기술블로그 베스트 댓글/답글을 조회한다.

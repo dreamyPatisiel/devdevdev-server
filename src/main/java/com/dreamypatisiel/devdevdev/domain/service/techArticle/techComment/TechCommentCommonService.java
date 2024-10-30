@@ -128,7 +128,7 @@ public class TechCommentCommonService {
                         originParentIds).stream()
                 .collect(Collectors.groupingBy(techCommentReply -> techCommentReply.getOriginParent().getId()));
 
-        // 픽픽픽 댓글/답글 응답 생성
+        // 기술블로그 댓글/답글 응답 생성
         return findOriginTechBestComments.stream()
                 .map(originParentTechComment -> getTechCommentsResponse(member, originParentTechComment,
                         techBestCommentReplies))
