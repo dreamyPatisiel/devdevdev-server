@@ -35,7 +35,7 @@ public enum TechCommentSort {
             return techComment.id.lt(findTechComment.getId());
         }
     },
-    LIKED("좋아요순") {
+    MOST_LIKED("좋아요순") {
         @Override
         public OrderSpecifier<?> getOrderSpecifierByTechCommentSort() {
             return new OrderSpecifier<>(Order.DESC, techComment.recommendTotalCount.count);

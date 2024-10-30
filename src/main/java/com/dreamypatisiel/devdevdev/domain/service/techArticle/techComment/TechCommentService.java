@@ -7,9 +7,9 @@ import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechComm
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
 
 public interface TechCommentService {
 
@@ -35,4 +35,6 @@ public interface TechCommentService {
 
     TechCommentRecommendResponse recommendTechComment(Long techArticleId, Long techCommentId,
                                                       Authentication authentication);
+
+    List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, Authentication authentication);
 }

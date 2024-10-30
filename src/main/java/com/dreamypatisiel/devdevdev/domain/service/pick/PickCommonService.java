@@ -184,6 +184,7 @@ public class PickCommonService {
         // 베스트 댓글 조회
         List<PickComment> findOriginPickBestComments = pickCommentRepository.findOriginParentPickBestCommentsByPickIdAndOffset(
                 pickId, offset);
+
         // 베스트 댓글 아이디 추출
         Set<Long> originParentIds = findOriginPickBestComments.stream()
                 .map(PickComment::getId)

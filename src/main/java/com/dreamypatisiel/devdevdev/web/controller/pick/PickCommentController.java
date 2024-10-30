@@ -138,7 +138,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentRecommendResponse));
     }
 
-    @Operation(summary = "픽픽픽 베스트 댓글 조회", description = "회원은 픽픽픽 베스트 댓글을 조회할 수 있습니다.")
+    @Operation(summary = "픽픽픽 베스트 댓글 조회", description = "픽픽픽 베스트 댓글을 조회할 수 있습니다.")
     @GetMapping("/picks/{pickId}/comments/best")
     public ResponseEntity<BasicResponse<PickCommentsResponse>> getPickBestComments(
             @RequestParam(defaultValue = "3") int size,

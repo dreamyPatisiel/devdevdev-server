@@ -11,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
@@ -24,9 +25,8 @@ import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechComm
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
-
+import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -44,8 +44,14 @@ public class MemberTechCommentService extends TechCommentCommonService implement
     private final TechCommentRepository techCommentRepository;
     private final TechCommentRecommendRepository techCommentRecommendRepository;
 
-    public MemberTechCommentService(TechCommentRepository techCommentRepository, TechArticleCommonService techArticleCommonService, MemberProvider memberProvider, TimeProvider timeProvider, TechArticlePopularScorePolicy techArticlePopularScorePolicy, TechCommentRepository techCommentRepository1, TechCommentRecommendRepository techCommentRecommendRepository) {
-        super(techCommentRepository);
+    public MemberTechCommentService(TechCommentRepository techCommentRepository,
+                                    TechArticleCommonService techArticleCommonService, MemberProvider memberProvider,
+                                    TimeProvider timeProvider,
+                                    TechArticlePopularScorePolicy techArticlePopularScorePolicy,
+                                    TechCommentRepository techCommentRepository1,
+                                    TechCommentRecommendRepository techCommentRecommendRepository,
+                                    TechBestCommentsPolicy techBestCommentsPolicy) {
+        super(techCommentRepository, techBestCommentsPolicy);
         this.techArticleCommonService = techArticleCommonService;
         this.memberProvider = memberProvider;
         this.timeProvider = timeProvider;
@@ -249,6 +255,21 @@ public class MemberTechCommentService extends TechCommentCommonService implement
         }
 
         return toggleTechCommentRecommend(findTechComment, findMember);
+    }
+
+    /**
+     * @Note: 회원이 기술블로그 베스트 댓글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2024.10.27
+     */
+    @Override
+    public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId,
+                                                           Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        return super.findTechBestComments(size, techArticleId, findMember);
     }
 
     private TechCommentRecommendResponse toggleTechCommentRecommend(TechComment techComment, Member member) {

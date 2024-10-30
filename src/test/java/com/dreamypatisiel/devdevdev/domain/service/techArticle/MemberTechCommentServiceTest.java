@@ -5,9 +5,11 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.common.MemberProvider.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
@@ -33,6 +35,7 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
@@ -42,7 +45,6 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsRes
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import org.assertj.core.groups.Tuple;
@@ -1598,7 +1600,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.LIKED, pageable, authentication);
+                null, TechCommentSort.MOST_LIKED, pageable, authentication);
 
         // then
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
@@ -2017,6 +2019,181 @@ public class MemberTechCommentServiceTest {
                 () -> memberTechCommentService.recommendTechComment(0L, 0L, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원인 경우 회원 전용 기술블로그 베스트 댓글 조회 메소드를 호출하면 예외가 발생한다.")
+    void findTechBestCommentsNotAnonymousMember() {
+        // given
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when // then
+        assertThatThrownBy(() -> memberTechCommentService.findTechBestComments(3, 0L, authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 offset에 정책에 맞게 기술블로그 베스트 댓글을 조회한다.")
+    void findTechBestComments() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, Role.ROLE_ADMIN.name());
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", name, "nickname2", password, "user2@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", name, "nickname3", password, "user3@gmail.com",
+                socialType, role);
+
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        memberRepository.saveAll(List.of(member1, member2, member3));
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member1);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
+
+        // 기술 블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(12L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        // 댓글 생성
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member1,
+                techArticle, new Count(0L), new Count(3L), new Count(0L));
+        originParentTechComment1.modifyCommentContents(new CommentContents("최상위 댓글1 수정"), LocalDateTime.now());
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글1"), member2,
+                techArticle, new Count(0L), new Count(2L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글1"), member3,
+                techArticle, new Count(0L), new Count(1L), new Count(0L));
+        techCommentRepository.saveAll(
+                List.of(originParentTechComment1, originParentTechComment2, originParentTechComment3));
+
+        // 추천 생성
+        TechCommentRecommend techCommentRecommend = createTechCommentRecommend(true, originParentTechComment1, member1);
+        techCommentRecommendRepository.save(techCommentRecommend);
+
+        // 답글 생성
+        TechComment repliedTechComment = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member3,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
+                new Count(0L));
+        techCommentRepository.save(repliedTechComment);
+
+        // when
+        List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(),
+                authentication);
+
+        // then
+        assertThat(response).hasSize(3)
+                .extracting(
+                        "techCommentId",
+                        "memberId",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "replyTotalCount",
+                        "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
+                        "isDeleted"
+                )
+                .containsExactly(
+                        Tuple.tuple(originParentTechComment1.getId(),
+                                member1.getId(),
+                                member1.getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(member1.getEmailAsString()),
+                                originParentTechComment1.getContents().getCommentContents(),
+                                originParentTechComment1.getReplyTotalCount().getCount(),
+                                originParentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
+                                true,
+                                true,
+                                false
+                        ),
+                        Tuple.tuple(originParentTechComment2.getId(),
+                                member2.getId(),
+                                member2.getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(member2.getEmailAsString()),
+                                originParentTechComment2.getContents().getCommentContents(),
+                                originParentTechComment2.getReplyTotalCount().getCount(),
+                                originParentTechComment2.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                false,
+                                false
+                        ),
+                        Tuple.tuple(originParentTechComment3.getId(),
+                                member3.getId(),
+                                member3.getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(member3.getEmailAsString()),
+                                originParentTechComment3.getContents().getCommentContents(),
+                                originParentTechComment3.getReplyTotalCount().getCount(),
+                                originParentTechComment3.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                false,
+                                false
+                        )
+                );
+
+        TechCommentsResponse techCommentsResponse = response.get(0);
+        List<TechRepliedCommentsResponse> replies = techCommentsResponse.getReplies();
+        assertThat(replies).hasSize(1)
+                .extracting(
+                        "techCommentId",
+                        "memberId",
+                        "techParentCommentMemberId",
+                        "techParentCommentId",
+                        "techOriginParentCommentId",
+                        "techParentCommentAuthor",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "isModified",
+                        "isDeleted"
+                ).containsExactly(
+                        Tuple.tuple(repliedTechComment.getId(),
+                                member3.getId(),
+                                repliedTechComment.getParent().getCreatedBy().getId(),
+                                repliedTechComment.getParent().getId(),
+                                repliedTechComment.getOriginParent().getId(),
+                                repliedTechComment.getOriginParent().getCreatedBy().getNicknameAsString(),
+                                member3.getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(member3.getEmailAsString()),
+                                repliedTechComment.getContents().getCommentContents(),
+                                repliedTechComment.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                false,
+                                false
+                        )
+                );
+    }
+
+    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment,
+                                                            Member member) {
+        TechCommentRecommend techCommentRecommend = TechCommentRecommend.builder()
+                .recommendedStatus(recommendedStatus)
+                .techComment(techComment)
+                .member(member)
+                .build();
+
+        techCommentRecommend.changeTechComment(techComment);
+
+        return techCommentRecommend;
     }
 
     private static TechComment createMainTechComment(CommentContents contents, Member createdBy,
