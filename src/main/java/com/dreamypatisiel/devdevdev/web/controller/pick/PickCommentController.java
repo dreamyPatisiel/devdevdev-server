@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.EnumSet;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -97,13 +98,13 @@ public class PickCommentController {
             @PathVariable Long pickId,
             @RequestParam(required = false) Long pickCommentId,
             @RequestParam(required = false) PickCommentSort pickCommentSort,
-            @RequestParam(required = false) PickOptionType pickOptionType) {
+            @RequestParam(required = false) EnumSet<PickOptionType> pickOptionTypes) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         SliceCustom<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickComments(pageable,
-                pickId, pickCommentId, pickCommentSort, pickOptionType, authentication);
+                pickId, pickCommentId, pickCommentSort, pickOptionTypes, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }

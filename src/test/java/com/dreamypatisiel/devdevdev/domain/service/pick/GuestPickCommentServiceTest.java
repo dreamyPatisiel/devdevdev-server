@@ -39,6 +39,7 @@ import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
@@ -457,7 +458,8 @@ class GuestPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = guestPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.firstPickOption, authentication);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.firstPickOption),
+                authentication);
 
         // then
         // 최상위 댓글 검증
@@ -680,7 +682,8 @@ class GuestPickCommentServiceTest {
 
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = guestPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption, authentication);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption),
+                authentication);
 
         // then
         // 최상위 댓글 검증
@@ -743,7 +746,7 @@ class GuestPickCommentServiceTest {
 
         // when // then
         assertThatThrownBy(() -> guestPickCommentService.findPickComments(pageable,
-                1L, Long.MAX_VALUE, pickCommentSort, PickOptionType.secondPickOption, authentication))
+                1L, Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption), authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }

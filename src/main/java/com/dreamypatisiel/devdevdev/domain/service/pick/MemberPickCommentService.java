@@ -33,6 +33,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -264,14 +265,14 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      */
     public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
                                                               Long pickCommentId, PickCommentSort pickCommentSort,
-                                                              PickOptionType pickOptionType,
+                                                              EnumSet<PickOptionType> pickOptionTypes,
                                                               Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 댓글/답글 조회
-        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionType, findMember);
+        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, findMember);
     }
 
     /**
