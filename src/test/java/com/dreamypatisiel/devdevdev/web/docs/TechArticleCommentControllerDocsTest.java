@@ -1013,6 +1013,52 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     }
 
     @Test
+    @DisplayName("존재하지 않는 기술블로그 댓글/답글을 추천하면 예외가 발생한다.")
+    void recommendTechCommentNotFoundTechComment() throws Exception {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId}/recommends",
+                                techArticle.getId(), techComment.getId() + 1)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
+        // Docs
+        actions.andDo(document("recommend-tech-comment-not-found-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디"),
+                        parameterWithName("techCommentId").description("기술블로그 댓글/답글 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
     @DisplayName("회원이 기술블로그 베스트 댓글을 조회한다.")
     void getTechBestComments() throws Exception {
         // given

@@ -14,6 +14,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
     @Override
     public Slice<PickComment> findOriginParentPickCommentsByCursor(Pageable pageable, Long pickId,
                                                                    Long pickCommentId, PickCommentSort pickCommentSort,
-                                                                   PickOptionType pickOptionType) {
+                                                                   EnumSet<PickOptionType> pickOptionTypes) {
 
         List<PickComment> contents = query.selectFrom(pickComment)
                 .innerJoin(pickComment.pick, pick).on(pick.id.eq(pickId))
@@ -40,7 +41,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                 .where(pick.contentStatus.eq(ContentStatus.APPROVAL)
                         .and(pickComment.parent.isNull())
                         .and(pickComment.originParent.isNull())
-                        .and(getPickOptionTypeCondition(pickOptionType))
+                        .and(getPickOptionTypeCondition(pickOptionTypes))
                         .and(getCursorCondition(pickCommentSort, pickCommentId))
                 )
                 .orderBy(pickCommentSort(pickCommentSort), pickComment.id.desc())
@@ -93,13 +94,13 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                 .orElse(PickCommentSort.LATEST.getCursorCondition(findPickComment));
     }
 
-    private BooleanExpression getPickOptionTypeCondition(PickOptionType pickOptionType) {
+    private BooleanExpression getPickOptionTypeCondition(EnumSet<PickOptionType> pickOptionTypes) {
 
-        if (ObjectUtils.isEmpty(pickOptionType)) {
+        if (ObjectUtils.isEmpty(pickOptionTypes)) {
             return null;
         }
 
-        return pickOption.pickOptionType.eq(pickOptionType)
+        return pickOption.pickOptionType.in(pickOptionTypes)
                 .and(pickComment.isPublic.isTrue());
     }
 

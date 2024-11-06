@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import java.util.EnumSet;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -32,7 +33,7 @@ public interface PickCommentService {
 
     SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
                                                        Long pickCommentId, PickCommentSort pickCommentSort,
-                                                       PickOptionType pickOptionType,
+                                                       EnumSet<PickOptionType> pickOptionTypes,
                                                        Authentication authentication);
 
     PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,

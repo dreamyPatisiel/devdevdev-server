@@ -23,6 +23,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsRes
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,12 +100,12 @@ public class PickCommonService {
      */
     protected SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
                                                                  Long pickCommentId, PickCommentSort pickCommentSort,
-                                                                 PickOptionType pickOptionType,
+                                                                 EnumSet<PickOptionType> pickOptionTypes,
                                                                  @Nullable Member member) {
 
         // 픽픽픽 최상위 댓글 조회
         Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
-                pageable, pickId, pickCommentId, pickCommentSort, pickOptionType);
+                pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes);
 
         // 최상위 댓글 아이디 추출
         List<PickComment> originParentPickComments = findOriginParentPickComments.getContent();
@@ -135,7 +136,8 @@ public class PickCommonService {
         }
 
         // 픽픽픽 전체 댓글/답글 갯수 추출
-        long originParentPickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
+        // 픽픽픽 댓글 갯수 + 답글 갯수
+        long originParentPickCommentTotalCount = findOriginParentPickComments.getSize() + pickCommentReplies.size();
 
         return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
                 originParentPickCommentTotalCount);
