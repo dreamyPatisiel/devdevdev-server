@@ -137,10 +137,11 @@ public class PickCommonService {
 
         // 픽픽픽 전체 댓글/답글 갯수 추출
         // 픽픽픽 댓글 갯수 + 답글 갯수
-        long originParentPickCommentTotalCount = findOriginParentPickComments.getSize() + pickCommentReplies.size();
+        long pickCommentTotalCount =
+                findOriginParentPickComments.getContent().size() + pickCommentReplies.size();
 
         return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
-                originParentPickCommentTotalCount);
+                pickCommentTotalCount);
     }
 
     private PickCommentsResponse getPickCommentsResponse(Member member, PickComment originPickComment,
