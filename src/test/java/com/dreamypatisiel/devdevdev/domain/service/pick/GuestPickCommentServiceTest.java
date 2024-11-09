@@ -405,7 +405,7 @@ class GuestPickCommentServiceTest {
         memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(9), member1);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성

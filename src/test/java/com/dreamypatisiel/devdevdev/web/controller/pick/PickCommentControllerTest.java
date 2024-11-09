@@ -505,7 +505,7 @@ class PickCommentControllerTest extends SupportControllerTest {
         memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(6), member1);
+        Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(8), member1);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -608,6 +608,154 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pageable.offset").isNumber())
                 .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
                 .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
+                .andExpect(jsonPath("$.data.totalElements").value(9))
+                .andExpect(jsonPath("$.data.first").isBoolean())
+                .andExpect(jsonPath("$.data.last").isBoolean())
+                .andExpect(jsonPath("$.data.size").isNumber())
+                .andExpect(jsonPath("$.data.number").isNumber())
+                .andExpect(jsonPath("$.data.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
+                .andExpect(jsonPath("$.data.empty").isBoolean());
+    }
+
+    @ParameterizedTest
+    @EnumSource(PickCommentSort.class)
+    @DisplayName("픽픽픽 댓글/답글을 정렬 조건에 따라서 조회한다.(첫 번째 픽픽픽에 투표한 댓글만 조회)")
+    void getPickCommentsFirstPickOption(PickCommentSort pickCommentSort) throws Exception {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", "user1", "김민영", password, "alsdudr97@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", "user2", "이임하", password, "wlgks555@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", "user3", "문민주", password, "mmj9908@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", "user4", "유소영", password, "merooongg@naver.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", "user5", "장세웅", password, "howisitgoing@kakao.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", "user6", "nickname", password, "user6@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto7 = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        Member member7 = Member.createMemberBy(socialMemberDto7);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(8), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("휴양지의 근본 제주도!"), new Count(2), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("한국의 알프스 강원도!"), new Count(2), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("나는 미뇽냥녕뇽이다!"), true, new Count(2),
+                new Count(2), member1, pick, member1PickVote);
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("임하하하하하"), true, new Count(1),
+                new Count(1), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("손흥민 최고다!"), true, new Count(0),
+                new Count(0), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("나는 소영소"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("힘들면 힘을내자!"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("미냥뇽냥녕 아닌가요?!"), member2, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("손흥민 아닌가요?"), member3, pick,
+                originParentPickComment1, pickReply1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("나는 소주소"), member4, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+
+        em.flush();
+        em.clear();
+
+        Pageable pageable = PageRequest.of(0, 5);
+
+        // when // then
+        mockMvc.perform(get("/devdevdev/api/v1/picks/{pickId}/comments",
+                        pick.getId())
+                        .queryParam("pickCommentId", String.valueOf(Long.MAX_VALUE))
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("pickCommentSort", pickCommentSort.name())
+                        .queryParam("pickOptionTypes", PickOptionType.firstPickOption.name())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.[0].pickCommentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].createdAt").isString())
+                .andExpect(jsonPath("$.data.content.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].author").isString())
+                .andExpect(jsonPath("$.data.content.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.data.content.[0].votedPickOption").isString())
+                .andExpect(jsonPath("$.data.content.[0].votedPickOptionTitle").isString())
+                .andExpect(jsonPath("$.data.content.[0].contents").isString())
+                .andExpect(jsonPath("$.data.content.[0].replyTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickCommentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickParentCommentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickOriginParentCommentId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].createdAt").isString())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isCommentOfPickAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isCommentAuthor").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isRecommended").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].recommendTotalCount").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isModified").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].replies.[0].pickParentCommentAuthor").isString())
+                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
+                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
+                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
+                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
+                .andExpect(jsonPath("$.data.totalElements").value(2))
                 .andExpect(jsonPath("$.data.first").isBoolean())
                 .andExpect(jsonPath("$.data.last").isBoolean())
                 .andExpect(jsonPath("$.data.size").isNumber())

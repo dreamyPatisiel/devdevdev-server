@@ -135,9 +135,8 @@ public class PickCommonService {
             return new SliceCustom<>(pickCommentsResponse, pageable, false, 0L);
         }
 
-        // 픽픽픽 전체 댓글/답글 갯수 추출
-        // 픽픽픽 댓글 갯수 + 답글 갯수
-        long pickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
+        // 픽픽픽 전체 댓글 갯수(답글 포함) 조회
+        Long pickCommentTotalCount = pickCommentRepository.countByPickIdAndPickOptionTypeIn(pickId, pickOptionTypes);
 
         return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
                 pickCommentTotalCount);

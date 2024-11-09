@@ -70,6 +70,23 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public Long countByPickIdAndPickOptionTypeIn(Long pickId, EnumSet<PickOptionType> pickOptionTypes) {
+        return query.selectFrom(pickComment)
+                .where(pickComment.pick.contentStatus.eq(ContentStatus.APPROVAL)
+                        .and(pickOptionTypeIn(pickOptionTypes)))
+                .fetchCount();
+    }
+
+    private static BooleanExpression pickOptionTypeIn(EnumSet<PickOptionType> pickOptionTypes) {
+        if (ObjectUtils.isEmpty(pickOptionTypes)) {
+            return null;
+        }
+
+        // 자동으로 join 절 생성
+        return pickComment.pickVote.pickOption.pickOptionType.in(pickOptionTypes);
+    }
+
     private BooleanExpression getCursorCondition(PickCommentSort pickCommentSort, Long pickCommentId) {
         if (ObjectUtils.isEmpty(pickCommentId)) {
             return null;

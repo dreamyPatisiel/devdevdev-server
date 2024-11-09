@@ -14,4 +14,6 @@ public interface PickCommentRepositoryCustom {
                                                             EnumSet<PickOptionType> pickOptionTypes);
 
     List<PickComment> findOriginParentPickBestCommentsByPickIdAndOffset(Long pickId, int offset);
+
+    Long countByPickIdAndPickOptionTypeIn(Long pickId, EnumSet<PickOptionType> pickOptionTypes);
 }
