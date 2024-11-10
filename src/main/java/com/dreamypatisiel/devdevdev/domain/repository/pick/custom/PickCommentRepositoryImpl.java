@@ -74,6 +74,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
     public Long countByPickIdAndPickOptionTypeIn(Long pickId, EnumSet<PickOptionType> pickOptionTypes) {
         return query.selectFrom(pickComment)
                 .where(pickComment.pick.contentStatus.eq(ContentStatus.APPROVAL)
+                        .and(pickComment.pick.id.eq(pickId))
                         .and(pickOptionTypeIn(pickOptionTypes)))
                 .fetchCount();
     }
