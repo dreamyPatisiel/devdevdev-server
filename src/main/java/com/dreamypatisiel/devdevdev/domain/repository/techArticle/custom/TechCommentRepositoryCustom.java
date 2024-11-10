@@ -11,6 +11,4 @@ public interface TechCommentRepositoryCustom {
                                                             TechCommentSort techCommentSort, Pageable pageable);
 
     List<TechComment> findOriginParentTechBestCommentsByTechArticleIdAndOffset(Long techArticleId, int size);
-
-    Long countByTechArticleIdAndParentIsNull(Long techArticleId);
 }

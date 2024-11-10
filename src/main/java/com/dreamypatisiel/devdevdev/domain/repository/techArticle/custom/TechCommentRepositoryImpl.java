@@ -59,14 +59,6 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
                 .fetch();
     }
 
-    @Override
-    public Long countByTechArticleIdAndParentIsNull(Long techArticleId) {
-        return query.selectFrom(techComment)
-                .where(techComment.techArticle.id.eq(techArticleId)
-                        .and(techComment.parent.isNull()))
-                .fetchCount();
-    }
-
     private BooleanExpression getCursorCondition(TechCommentSort techCommentSort, Long techCommentId) {
         if (ObjectUtils.isEmpty(techCommentId)) {
             return null;
