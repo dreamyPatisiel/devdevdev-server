@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
@@ -57,9 +58,9 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     }
 
     @Override
-    public SliceCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
-                                                             TechCommentSort techCommentSort, Pageable pageable,
-                                                             Authentication authentication) {
+    public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
+                                                                    TechCommentSort techCommentSort, Pageable pageable,
+                                                                    Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 

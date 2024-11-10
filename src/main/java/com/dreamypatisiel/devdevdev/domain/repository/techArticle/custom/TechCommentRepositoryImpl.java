@@ -1,26 +1,28 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom;
 
-import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
-
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.ObjectUtils;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
+
 @RequiredArgsConstructor
 public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
 
+    public static final int MINIMUM_RECOMMENDATION_COUNT = 1;
     private final JPQLQueryFactory query;
 
     @Override
@@ -49,10 +51,20 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
                 .where(techComment.parent.isNull()
                         .and(techComment.originParent.isNull())
                         .and(techComment.deletedAt.isNull())
+                        // 좋아요가 N개 이상인 댓글만 조회
+                        .and(techComment.recommendTotalCount.count.goe(MINIMUM_RECOMMENDATION_COUNT))
                 )
                 .orderBy(techCommentSort(TechCommentSort.MOST_LIKED), techComment.id.desc())
                 .limit(size)
                 .fetch();
+    }
+
+    @Override
+    public Long countByTechArticleIdAndParentIsNull(Long techArticleId) {
+        return query.selectFrom(techComment)
+                .where(techComment.techArticle.id.eq(techArticleId)
+                        .and(techComment.parent.isNull()))
+                .fetchCount();
     }
 
     private BooleanExpression getCursorCondition(TechCommentSort techCommentSort, Long techCommentId) {

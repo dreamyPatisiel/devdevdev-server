@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
@@ -36,7 +37,7 @@ public class TechCommentCommonService {
      * @Author: 유소영
      * @Since: 2024.09.05
      */
-    public SliceCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
+    public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
                                                              TechCommentSort techCommentSort, Pageable pageable,
                                                              @Nullable Member member) {
         // 기술블로그 최상위 댓글 조회
@@ -68,15 +69,18 @@ public class TechCommentCommonService {
 
         // 댓글이 하나도 없으면 빈 응답 리턴
         if (ObjectUtils.isEmpty(firstTechComment)) {
-            return new SliceCustom<>(techCommentsResponse, pageable, false, 0L);
+            return new SliceCommentCustom<>(techCommentsResponse, pageable, false, 0L, 0L);
         }
 
         // 기술블로그 전체 댓글/답글 개수 추출
         long originTechCommentTotalCount = firstTechComment.getTechArticle().getCommentTotalCount().getCount();
 
+        // 기술블로그 부모 댓글 개수 추출
+        long originParentTechCommentTotalCount = techCommentRepository.countByTechArticleIdAndParentIsNull(techArticleId);
+
         // 데이터 가공
-        return new SliceCustom<>(techCommentsResponse, pageable, findOriginParentTechComments.hasNext(),
-                originTechCommentTotalCount);
+        return new SliceCommentCustom<>(techCommentsResponse, pageable, findOriginParentTechComments.hasNext(),
+                originTechCommentTotalCount, originParentTechCommentTotalCount);
     }
 
     private TechCommentsResponse getTechCommentsResponse(@Nullable Member member, TechComment originParentTechComment,

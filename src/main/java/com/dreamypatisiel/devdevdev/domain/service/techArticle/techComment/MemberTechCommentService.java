@@ -1,10 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
@@ -19,18 +14,22 @@ import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechA
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
 
 @Service
 @Transactional(readOnly = true)
@@ -223,9 +222,9 @@ public class MemberTechCommentService extends TechCommentCommonService implement
      * @Author: 유소영
      * @Since: 2024.09.05
      */
-    public SliceCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
-                                                             TechCommentSort techCommentSort, Pageable pageable,
-                                                             Authentication authentication) {
+    public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
+                                                                    TechCommentSort techCommentSort, Pageable pageable,
+                                                                    Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
