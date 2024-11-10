@@ -505,7 +505,7 @@ class PickCommentControllerTest extends SupportControllerTest {
         memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6, member7));
 
         // 픽픽픽 생성
-        Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(8), member1);
+        Pick pick = createPick(new Title("꿈파 워크샵 어디로 갈까요?"), ContentStatus.APPROVAL, new Count(9), member1);
         pickRepository.save(pick);
 
         // 픽픽픽 옵션 생성
@@ -755,7 +755,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pageable.offset").isNumber())
                 .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
                 .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
-                .andExpect(jsonPath("$.data.totalElements").value(2))
+                .andExpect(jsonPath("$.data.totalElements").value(5))
                 .andExpect(jsonPath("$.data.first").isBoolean())
                 .andExpect(jsonPath("$.data.last").isBoolean())
                 .andExpect(jsonPath("$.data.size").isNumber())

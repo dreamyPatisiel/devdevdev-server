@@ -29,4 +29,6 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long>,
     @Modifying
     @Query("delete from PickComment pc where pc.pick.id =:pickId")
     void deleteAllByPickId(Long pickId);
+
+    Long countByOriginParentIdIn(Set<Long> pickIds);
 }
