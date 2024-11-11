@@ -21,6 +21,7 @@ import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
+import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -135,11 +136,34 @@ public class PickCommonService {
             return new SliceCustom<>(pickCommentsResponse, pageable, false, 0L);
         }
 
-        // 픽픽픽 전체 댓글 갯수(답글 포함) 조회
-        Long pickCommentTotalCount = pickCommentRepository.countByPickIdAndPickOptionTypeIn(pickId, pickOptionTypes);
+        // pickOptionTypes 필터링이 없으면
+        if (ObjectUtils.isEmpty(pickOptionTypes)) {
+            // 픽픽픽에서 전체 댓글 추출
+            Long pickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
+
+            return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
+                    pickCommentTotalCount);
+        }
+
+        // 픽픽픽 댓글/답글 총 갯수
+        Long pickCommentTotalCount = getPickCommentTotalCountBy(pickId, pickOptionTypes);
 
         return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
                 pickCommentTotalCount);
+    }
+
+    private Long getPickCommentTotalCountBy(Long pickId, @NotNull EnumSet<PickOptionType> pickOptionTypes) {
+        // 픽픽픽 전체 최상위 댓글 갯수 조회(pickOptionTypes 필터링)
+        Set<Long> allOriginParentPickCommentIds = pickCommentRepository.findOriginParentPickCommentsByPickIdAndPickOptionTypeIn(
+                        pickId, pickOptionTypes).stream()
+                .map(PickComment::getId)
+                .collect(Collectors.toSet());
+
+        // 픽픽픽 최상위 댓글의 답글 갯수 조회
+        Long childCommentCount = pickCommentRepository.countByOriginParentIdIn(allOriginParentPickCommentIds);
+
+        // 전체 댓글(답글 포함) 갯수
+        return allOriginParentPickCommentIds.size() + childCommentCount;
     }
 
     private PickCommentsResponse getPickCommentsResponse(Member member, PickComment originPickComment,
