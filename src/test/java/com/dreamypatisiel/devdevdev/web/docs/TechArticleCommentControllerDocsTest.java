@@ -941,6 +941,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
 
                         fieldWithPath("data.totalElements").type(NUMBER).description("전체 댓글 수"),
+                        fieldWithPath("data.totalOriginParentComments").type(NUMBER).description("전체 부모 댓글 수"),
                         fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
                         fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
                         fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),

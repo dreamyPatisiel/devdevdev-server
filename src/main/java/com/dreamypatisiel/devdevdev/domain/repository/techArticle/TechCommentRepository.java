@@ -21,4 +21,6 @@ public interface TechCommentRepository extends JpaRepository<TechComment, Long>,
     @EntityGraph(attributePaths = {"createdBy", "deletedBy", "techArticle"})
     List<TechComment> findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
             Set<Long> originParentIds);
+
+    Long countByTechArticleIdAndParentIsNull(Long techArticleId);
 }

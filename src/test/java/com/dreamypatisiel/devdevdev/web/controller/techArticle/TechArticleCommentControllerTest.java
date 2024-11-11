@@ -657,6 +657,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
                 .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
                 .andExpect(jsonPath("$.data.numberOfElements").isNumber())
+                .andExpect(jsonPath("$.data.totalOriginParentComments").isNumber())
                 .andExpect(jsonPath("$.data.empty").isBoolean());
     }
 

@@ -29,6 +29,7 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -237,10 +238,11 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
                 null, TechCommentSort.OLDEST, pageable, authentication);
 
         // then
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",
@@ -528,10 +530,11 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
                 null, TechCommentSort.LATEST, pageable, authentication);
 
         // then
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",
@@ -694,10 +697,11 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
                 null, TechCommentSort.MOST_COMMENTED, pageable, authentication);
 
         // then
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",
@@ -965,10 +969,11 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
                 null, TechCommentSort.MOST_LIKED, pageable, authentication);
 
         // then
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",
@@ -1110,10 +1115,11 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
                 originParentTechComment6.getId(), null, pageable, authentication);
 
         // then
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",
