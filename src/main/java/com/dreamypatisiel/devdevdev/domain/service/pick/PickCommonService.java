@@ -17,11 +17,10 @@ import com.dreamypatisiel.devdevdev.exception.InternalServerException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.openai.data.response.PickWithSimilarityDto;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
-import jakarta.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
@@ -99,10 +98,11 @@ public class PickCommonService {
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
-    protected SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
-                                                                 Long pickCommentId, PickCommentSort pickCommentSort,
-                                                                 EnumSet<PickOptionType> pickOptionTypes,
-                                                                 @Nullable Member member) {
+    protected SliceCommentCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                                        Long pickCommentId,
+                                                                        PickCommentSort pickCommentSort,
+                                                                        EnumSet<PickOptionType> pickOptionTypes,
+                                                                        @Nullable Member member) {
 
         // 픽픽픽 최상위 댓글 조회
         Slice<PickComment> findOriginParentPickComments = pickCommentRepository.findOriginParentPickCommentsByCursor(
@@ -133,26 +133,30 @@ public class PickCommonService {
 
         // 댓글이 하나도 없으면
         if (ObjectUtils.isEmpty(originParentPickComment)) {
-            return new SliceCustom<>(pickCommentsResponse, pageable, false, 0L);
+            return new SliceCommentCustom<>(pickCommentsResponse, pageable, false, 0L, 0L);
         }
+
+        // 삭제 상태가 아닌 픽픽픽 부모 댓글 조회
+        Long pickOriginCommentsIsNotDeleted = pickCommentRepository.countByPickIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(
+                pickId);
 
         // pickOptionTypes 필터링이 없으면
         if (ObjectUtils.isEmpty(pickOptionTypes)) {
             // 픽픽픽에서 전체 댓글 추출
             Long pickCommentTotalCount = originParentPickComment.getPick().getCommentTotalCount().getCount();
 
-            return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
-                    pickCommentTotalCount);
+            return new SliceCommentCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
+                    pickCommentTotalCount, pickOriginCommentsIsNotDeleted);
         }
 
         // 픽픽픽 댓글/답글 총 갯수
         Long pickCommentTotalCount = getPickCommentTotalCountBy(pickId, pickOptionTypes);
 
-        return new SliceCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
-                pickCommentTotalCount);
+        return new SliceCommentCustom<>(pickCommentsResponse, pageable, findOriginParentPickComments.hasNext(),
+                pickCommentTotalCount, pickOriginCommentsIsNotDeleted);
     }
 
-    private Long getPickCommentTotalCountBy(Long pickId, @NotNull EnumSet<PickOptionType> pickOptionTypes) {
+    private Long getPickCommentTotalCountBy(Long pickId, EnumSet<PickOptionType> pickOptionTypes) {
         // 픽픽픽 전체 최상위 댓글 갯수 조회(pickOptionTypes 필터링)
         Set<Long> allOriginParentPickCommentIds = pickCommentRepository.findOriginParentPickCommentsByPickIdAndPickOptionTypeIn(
                         pickId, pickOptionTypes).stream()

@@ -31,4 +31,6 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long>,
     void deleteAllByPickId(Long pickId);
 
     Long countByOriginParentIdIn(Set<Long> pickIds);
+
+    Long countByPickIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(Long pickId);
 }
