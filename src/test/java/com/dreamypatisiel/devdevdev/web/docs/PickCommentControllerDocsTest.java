@@ -645,6 +645,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 new Count(0), member5, pick, null);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
+        originParentPickComment6.changeDeletedAt(LocalDateTime.now(), member6);
         pickCommentRepository.saveAll(
                 List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
                         originParentPickComment3, originParentPickComment2, originParentPickComment1));
@@ -768,7 +769,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
                         fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
 
-                        fieldWithPath("data.totalElements").type(NUMBER).description("전체 댓글 수"),
+                        fieldWithPath("data.totalElements").type(NUMBER).description("전체 댓글(답글 포함) 수"),
+                        fieldWithPath("data.totalOriginParentComments").type(NUMBER).description("삭제 되지 않은 최상위 댓글 수"),
                         fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
                         fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
                         fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),

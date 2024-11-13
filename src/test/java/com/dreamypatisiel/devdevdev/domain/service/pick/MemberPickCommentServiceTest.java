@@ -2360,7 +2360,7 @@ class MemberPickCommentServiceTest {
     }
 
     @Test
-    @DisplayName("회원이 offset에 정책에 맞게 픽픽픽 베스트 댓글을 조회한다.")
+    @DisplayName("회원이 offset에 정책에 맞게 픽픽픽 베스트 댓글을 조회한다.(추천수가 1개 이상인 댓글 부터 최대 3개가 조회된다.)")
     void findPickBestComments() {
         // given
         // 회원 생성
@@ -2415,7 +2415,7 @@ class MemberPickCommentServiceTest {
         PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
                 new Count(2), member2, pick, member2PickVote);
         PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
-                new Count(1), member3, pick, member3PickVote);
+                new Count(0), member3, pick, member3PickVote);
         PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
                 new Count(0), member4, pick, member4PickVote);
         PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
@@ -2449,7 +2449,7 @@ class MemberPickCommentServiceTest {
 
         // then
         // 최상위 댓글 검증
-        assertThat(response).hasSize(3)
+        assertThat(response).hasSize(2)
                 .extracting(
                         "pickCommentId",
                         "memberId",
@@ -2495,22 +2495,6 @@ class MemberPickCommentServiceTest {
                                 originParentPickComment2.getContents().getCommentContents(),
                                 originParentPickComment2.getReplyTotalCount().getCount(),
                                 originParentPickComment2.getRecommendTotalCount().getCount(),
-                                false,
-                                false),
-
-                        Tuple.tuple(originParentPickComment3.getId(),
-                                originParentPickComment3.getCreatedBy().getId(),
-                                originParentPickComment3.getCreatedBy().getNickname().getNickname(),
-                                false,
-                                false,
-                                false,
-                                CommonResponseUtil.sliceAndMaskEmail(
-                                        originParentPickComment3.getCreatedBy().getEmail().getEmail()),
-                                originParentPickComment3.getPickVote().getPickOption().getPickOptionType(),
-                                originParentPickComment3.getPickVote().getPickOption().getTitle().getTitle(),
-                                originParentPickComment3.getContents().getCommentContents(),
-                                originParentPickComment3.getReplyTotalCount().getCount(),
-                                originParentPickComment3.getRecommendTotalCount().getCount(),
                                 false,
                                 false)
                 );
@@ -2602,11 +2586,6 @@ class MemberPickCommentServiceTest {
                                 pickReply3.getParent().getCreatedBy().getId(),
                                 pickReply3.getParent().getCreatedBy().getNicknameAsString())
                 );
-
-        // 세 번째 최상위 댓글의 답글 검증
-        PickCommentsResponse pickCommentsResponse3 = response.get(2);
-        List<PickRepliedCommentsResponse> replies3 = pickCommentsResponse3.getReplies();
-        assertThat(replies3).hasSize(0);
     }
 
     private Pick createPick(Title title, ContentStatus contentStatus, Count viewTotalCount, Count voteTotalCount,

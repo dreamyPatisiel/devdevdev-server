@@ -535,6 +535,8 @@ class PickCommentControllerTest extends SupportControllerTest {
                 new Count(0), member5, pick, null);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
+        originParentPickComment6.changeDeletedAt(LocalDateTime.now(), member6);
+
         pickCommentRepository.saveAll(
                 List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
                         originParentPickComment3, originParentPickComment2, originParentPickComment1));
@@ -609,6 +611,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
                 .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
                 .andExpect(jsonPath("$.data.totalElements").value(9))
+                .andExpect(jsonPath("$.data.totalOriginParentComments").value(5))
                 .andExpect(jsonPath("$.data.first").isBoolean())
                 .andExpect(jsonPath("$.data.last").isBoolean())
                 .andExpect(jsonPath("$.data.size").isNumber())
@@ -681,6 +684,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 new Count(0), member5, pick, null);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
+        originParentPickComment6.changeDeletedAt(LocalDateTime.now(), member6);
         pickCommentRepository.saveAll(
                 List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
                         originParentPickComment3, originParentPickComment2, originParentPickComment1));
@@ -756,6 +760,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
                 .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
                 .andExpect(jsonPath("$.data.totalElements").value(5))
+                .andExpect(jsonPath("$.data.totalOriginParentComments").value(5))
                 .andExpect(jsonPath("$.data.first").isBoolean())
                 .andExpect(jsonPath("$.data.last").isBoolean())
                 .andExpect(jsonPath("$.data.size").isNumber())

@@ -26,6 +26,8 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
 
+    public static final int MINIMUM_RECOMMENDATION_COUNT = 1;
+
     private final JPQLQueryFactory query;
 
     @Override
@@ -59,11 +61,12 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                 .innerJoin(pickComment.createdBy, member).fetchJoin()
                 .leftJoin(pickComment.pickVote, pickVote).fetchJoin()
                 .leftJoin(pickVote.pickOption, pickOption).fetchJoin()
-                .where(
-                        pick.contentStatus.eq(ContentStatus.APPROVAL)
-                                .and(pickComment.parent.isNull())
-                                .and(pickComment.originParent.isNull())
-                                .and(pickComment.deletedAt.isNull())
+                .where(pick.contentStatus.eq(ContentStatus.APPROVAL)
+                        .and(pickComment.parent.isNull())
+                        .and(pickComment.originParent.isNull())
+                        .and(pickComment.deletedAt.isNull())
+                        // 추천수가 N개 이상인 댓글만 조회
+                        .and(pickComment.recommendTotalCount.count.goe(MINIMUM_RECOMMENDATION_COUNT))
                 )
                 .orderBy(pickCommentSort(PickCommentSort.MOST_LIKED), pickComment.id.desc())
                 .limit(size)

@@ -26,7 +26,7 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
@@ -263,10 +263,11 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
-    public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
-                                                              Long pickCommentId, PickCommentSort pickCommentSort,
-                                                              EnumSet<PickOptionType> pickOptionTypes,
-                                                              Authentication authentication) {
+    public SliceCommentCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
+                                                                     Long pickCommentId,
+                                                                     PickCommentSort pickCommentSort,
+                                                                     EnumSet<PickOptionType> pickOptionTypes,
+                                                                     Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
