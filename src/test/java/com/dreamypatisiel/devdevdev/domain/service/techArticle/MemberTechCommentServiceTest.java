@@ -37,7 +37,6 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
@@ -47,6 +46,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedComm
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
@@ -1741,6 +1741,8 @@ public class MemberTechCommentServiceTest {
         TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
 
+        originParentTechComment6.changeDeletedAt(LocalDateTime.now(), member);
+
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
                 originParentTechComment4, originParentTechComment5, originParentTechComment6
@@ -1756,7 +1758,7 @@ public class MemberTechCommentServiceTest {
                 originParentTechComment6.getId(), null, pageable, authentication);
 
         // then
-        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(5L); // 삭제된 댓글은 카운트하지 않는다
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",

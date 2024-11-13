@@ -7,7 +7,6 @@ import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import java.util.Collections;
@@ -76,7 +75,7 @@ public class TechCommentCommonService {
         long originTechCommentTotalCount = firstTechComment.getTechArticle().getCommentTotalCount().getCount();
 
         // 기술블로그 부모 댓글 개수 추출
-        long originParentTechCommentTotalCount = techCommentRepository.countByTechArticleIdAndParentIsNull(techArticleId);
+        long originParentTechCommentTotalCount = techCommentRepository.countByTechArticleIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(techArticleId);
 
         // 데이터 가공
         return new SliceCommentCustom<>(techCommentsResponse, pageable, findOriginParentTechComments.hasNext(),
