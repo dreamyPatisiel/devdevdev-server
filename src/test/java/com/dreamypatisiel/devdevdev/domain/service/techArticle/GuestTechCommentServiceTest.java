@@ -1104,6 +1104,8 @@ public class GuestTechCommentServiceTest {
         TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
 
+        originParentTechComment6.changeDeletedAt(LocalDateTime.now(), member);
+
         techCommentRepository.saveAll(List.of(
                 originParentTechComment1, originParentTechComment2, originParentTechComment3,
                 originParentTechComment4, originParentTechComment5, originParentTechComment6
@@ -1119,7 +1121,7 @@ public class GuestTechCommentServiceTest {
                 originParentTechComment6.getId(), null, pageable, authentication);
 
         // then
-        assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
+        assertThat(response.getTotalOriginParentComments()).isEqualTo(5L); // 삭제된 댓글은 카운트하지 않는다
         assertThat(response).hasSizeLessThanOrEqualTo(pageable.getPageSize())
                 .extracting(
                         "techCommentId",
