@@ -12,9 +12,11 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -25,6 +27,9 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = {
+        @Index(name = "idx_tech_article_01", columnList = "elasticId")
+})
 public class TechArticle extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,7 +69,7 @@ public class TechArticle extends BasicTime {
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
 
-    @Column(length = 255)
+    @Column
     private String elasticId;
 
     @OneToMany(mappedBy = "techArticle")
