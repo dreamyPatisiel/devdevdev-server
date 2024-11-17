@@ -3,9 +3,9 @@ package com.dreamypatisiel.devdevdev.openai.embeddings;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
-import com.dreamypatisiel.devdevdev.openai.response.Embedding;
-import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.openai.data.request.EmbeddingRequest;
+import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

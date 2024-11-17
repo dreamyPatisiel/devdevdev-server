@@ -19,7 +19,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticKeyword;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticKeywordRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticKeywordService;
-import com.dreamypatisiel.devdevdev.web.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;

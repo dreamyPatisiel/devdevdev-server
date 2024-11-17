@@ -6,9 +6,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.openai.response.Embedding;
-import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
-import com.dreamypatisiel.devdevdev.openai.response.PickWithSimilarityDto;
+import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.openai.data.response.PickWithSimilarityDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -44,7 +44,7 @@ public class EmbeddingsService {
      */
     public List<PickWithSimilarityDto> getPicksWithSimilarityDtoExcludeTargetPick(Pick targetPick) {
 
-        // embedding 값이 존재하고 승인된 픽픽픽 중에 최신순으로 1000개 까지만 조회한다.
+        // embedding 값이 존재하고 승인된 픽픽픽 중에 최신순으로 1,000개 까지만 조회한다.
         List<Pick> picks = pickRepository.findTop1000ByContentStatusAndEmbeddingsIsNotNullOrderByCreatedAtDesc(
                 ContentStatus.APPROVAL);
 

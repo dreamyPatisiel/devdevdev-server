@@ -1,0 +1,45 @@
+[[Pick-Comment-Modify]]
+== 픽픽픽 댓글/답글 수정 API(PATCH: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
+
+* 픽픽픽 댓글/답글을 수정한다.
+* 회원 본인이 작성한 픽픽픽 댓글/답글을 수정 할 수 있다.
+* 픽픽픽 공개 여부는 수정 할 수 없다.
+* 삭제된 댓글/답글을 수정 할 수 없다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/modify-pick-comment/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/modify-pick-comment/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/modify-pick-comment/path-parameters.adoc[]
+
+==== HTTP Request Fields
+
+include::{snippets}/modify-pick-comment/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/modify-pick-comment/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/modify-pick-comment/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `내용을 작성해주세요.`: 댓글(contents)을 작성하지 않는 경우(공백 이거나 빈문자열)
+* `픽픽픽 댓글이 없습니다.`: 픽픽픽 댓글이 존재하지 않거나 본인이 작성하지 않았거나 픽픽픽 댓글 삭제된 경우
+* `승인 상태가 아닌 픽픽픽에는 댓글을 수정할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+
+include::{snippets}/modify-pick-comment-bind-exception/response-body.adoc[]

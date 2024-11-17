@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
@@ -14,13 +14,14 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -94,7 +95,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회한다. 이때 북마크 값은 false 이다.")
     void getTechArticle() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -117,7 +118,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회하면 조회수가 1 증가한다.")
     void getTechArticleIncrementViewCount() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
         long prevPopularScore = firstTechArticle.getPopularScore().getCount();
 
@@ -141,7 +142,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 익명 사용자가 아니면 예외가 발생한다.")
     void getTechArticleNotAnonymousUserException() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -226,11 +227,10 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        Long id = FIRST_TECH_ARTICLE_ID;
-        Boolean status = true;
+        Long id = firstTechArticle.getId();
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, status, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

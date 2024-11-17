@@ -1,0 +1,46 @@
+[[Pick-Reply-Register]]
+== 픽픽픽 답글 작성 API(POST: /devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId})
+
+* 픽픽픽 답글을 작성한다.
+* 회원만 픽픽픽 답글을 작성 할 수 있다.
+* #픽픽픽 댓글이 삭제 상태# 이면 답글을 작성 할 수 없다.
+* 최초 댓글에 대한 답글을 작성할 경우 `pickCommentOriginParentId` 값과 `pickParentCommentId` 값이 동일하다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/register-pick-comment-reply/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/register-pick-comment-reply/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/register-pick-comment-reply/path-parameters.adoc[]
+
+==== HTTP Request Fields
+
+include::{snippets}/register-pick-comment-reply/request-fields.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/register-pick-comment-reply/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/register-pick-comment-reply/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `내용을 작성해주세요.`: 댓글(contents)을 작성하지 않는 경우(공백 이거나 빈문자열)
+* `픽픽픽 댓글이 없습니다.`: 픽픽픽 댓글이 존재하지 않는 경우
+* `삭제된 픽픽픽 댓글에는 답글을 작성할 수 없습니다.`: 픽픽픽 댓글이 삭제된 경우
+* `승인 상태가 아닌 픽픽픽에는 답글을 작성할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+
+include::{snippets}/register-pick-comment-reply-bind-exception/response-body.adoc[]

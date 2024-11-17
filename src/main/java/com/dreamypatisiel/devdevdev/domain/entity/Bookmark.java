@@ -46,11 +46,11 @@ public class Bookmark extends BasicTime {
                 .build();
     }
 
-    public static Bookmark create(Member member, TechArticle techArticle, boolean status) {
+    public static Bookmark create(Member member, TechArticle techArticle) {
         return Bookmark.builder()
                 .member(member)
                 .techArticle(techArticle)
-                .status(status)
+                .status(true)
                 .build();
     }
 
@@ -58,8 +58,12 @@ public class Bookmark extends BasicTime {
         this.techArticle = techArticle;
     }
 
-    public void changeStatus(boolean status) {
-        this.status = status;
+    public void cancelBookmark() {
+        this.status = false;
+    }
+
+    public void registerBookmark() {
+        this.status = true;
     }
 
     public boolean isBookmarked() {

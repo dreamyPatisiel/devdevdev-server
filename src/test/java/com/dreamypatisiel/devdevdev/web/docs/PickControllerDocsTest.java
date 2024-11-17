@@ -21,6 +21,7 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
@@ -37,7 +38,6 @@ import static org.springframework.restdocs.request.RequestDocumentation.paramete
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,15 +67,15 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.openai.request.EmbeddingRequest;
-import com.dreamypatisiel.devdevdev.openai.response.Embedding;
-import com.dreamypatisiel.devdevdev.openai.response.OpenAIResponse;
-import com.dreamypatisiel.devdevdev.openai.response.Usage;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickOptionRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.VotePickOptionRequest;
+import com.dreamypatisiel.devdevdev.openai.data.request.EmbeddingRequest;
+import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
+import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
+import com.dreamypatisiel.devdevdev.openai.data.response.Usage;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickOptionRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.VotePickOptionRequest;
 import jakarta.persistence.EntityManager;
 import java.io.IOException;
 import java.net.URL;
@@ -1144,7 +1144,7 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(status().isOk());
 
         // docs
-        actions.andDo(document("pick-modify-pick-option-content-bind-exception",
+        actions.andDo(document("pick-modify-pick-option-content",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
@@ -1990,6 +1990,14 @@ public class PickControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
+
+    private Pick createPick(Title title, ContentStatus contentStatus, Member member) {
+        return Pick.builder()
+                .title(title)
+                .contentStatus(contentStatus)
+                .member(member)
+                .build();
     }
 
     private Pick createPick(Title title, Count pickVoteCount, Count commentTotalCount, Member member,

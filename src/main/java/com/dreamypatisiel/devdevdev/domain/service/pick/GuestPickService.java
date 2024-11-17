@@ -11,27 +11,31 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailOptionResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickMainResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickModifyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickRegisterResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.PickUploadImageResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.SimilarPickResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.VotePickOptionResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.VotePickResponse;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
-import com.dreamypatisiel.devdevdev.web.controller.request.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.controller.request.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -54,24 +58,27 @@ public class GuestPickService extends PickCommonService implements PickService {
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
     public static final int SIMILARITY_PICK_MAX_COUNT = 3;
 
-    private final PickRepository pickRepository;
     private final PickPopularScorePolicy pickPopularScorePolicy;
     private final PickVoteRepository pickVoteRepository;
     private final AnonymousMemberRepository anonymousMemberRepository;
-    private final EmbeddingsService embeddingsService;
+    private final TimeProvider timeProvider;
 
     public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
-                            PickRepository pickRepository1, PickPopularScorePolicy pickPopularScorePolicy,
-                            PickVoteRepository pickVoteRepository, AnonymousMemberRepository anonymousMemberRepository,
-                            EmbeddingsService embeddingsService1, PickCommonService pickCommonService) {
-        super(pickRepository, embeddingsService);
-        this.pickRepository = pickRepository1;
+                            PickBestCommentsPolicy pickBestCommentsPolicy,
+                            PickCommentRepository pickCommentRepository,
+                            PickCommentRecommendRepository pickCommentRecommendRepository,
+                            PickPopularScorePolicy pickPopularScorePolicy,
+                            PickVoteRepository pickVoteRepository,
+                            AnonymousMemberRepository anonymousMemberRepository, TimeProvider timeProvider) {
+        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+                pickCommentRecommendRepository);
         this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickVoteRepository = pickVoteRepository;
         this.anonymousMemberRepository = anonymousMemberRepository;
-        this.embeddingsService = embeddingsService1;
+        this.timeProvider = timeProvider;
     }
 
+    @Transactional
     @Override
     public Slice<PickMainResponse> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
                                                  String anonymousMemberId, Authentication authentication) {
@@ -166,8 +173,8 @@ public class GuestPickService extends PickCommonService implements PickService {
         // 익명 회원을 조회하거나 생성
         AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
 
-        Optional<PickVote> pickVoteOptional = pickVoteRepository.findByPickIdAndAnonymousMember(pickId,
-                anonymousMember);
+        Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndAnonymousMemberAndDeletedAtIsNull(
+                pickId, anonymousMember);
 
         return pickVoteOptional
                 // 픽픽픽 투표 이력이 있는 경우
@@ -232,7 +239,7 @@ public class GuestPickService extends PickCommonService implements PickService {
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
 
         // 픽픽픽 전체 득표수 증가
-        findPick.plusOneVoteTotalCount();
+        findPick.incrementVoteTotalCount();
 
         // 데이터 가공 및 로직 수행
         List<VotePickOptionResponse> votePickOptionResponses = findPick.getPickOptions().stream()
@@ -275,7 +282,7 @@ public class GuestPickService extends PickCommonService implements PickService {
         findPickOption.minusVoteTotalCount();
 
         // 투표 삭제
-        pickVoteRepository.delete(pickVote);
+        pickVote.delete(timeProvider.getLocalDateTimeNow());
 
         // 득표율 계산
         BigDecimal percent = PickOption.calculatePercentBy(findPick, findPickOption);

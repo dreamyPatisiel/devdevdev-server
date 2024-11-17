@@ -3,12 +3,16 @@ package com.dreamypatisiel.devdevdev.global.common;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 public class TimeProvider {
 
+    public final static String DEFAULT_ZONE_ID = "Asia/Seoul";
+
     public LocalDateTime getLocalDateTimeNow() {
-        return LocalDateTime.now();
+        return ZonedDateTime.now(ZoneId.of(DEFAULT_ZONE_ID)).toLocalDateTime();
     }
 
     public Date getDateNow() {

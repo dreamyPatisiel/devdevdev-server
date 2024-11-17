@@ -17,15 +17,16 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.domain.service.response.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.MemberTechArticleService;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -108,7 +109,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회한다.")
     void getTechArticle() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -137,7 +138,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 조회수가 1 증가한다.")
     void getTechArticleIncrementViewCount() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
         long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
         long prevPopularScore = firstTechArticle.getPopularScore().getCount();
 
@@ -169,7 +170,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 회원이 없으면 예외가 발생한다.")
     void getTechArticleNotFoundMemberException() {
         // given
-        Long id = FIRST_TECH_ARTICLE_ID;
+        Long id = firstTechArticle.getId();
 
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -278,17 +279,16 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Long id = FIRST_TECH_ARTICLE_ID;
-        Boolean status = true;
+        Long id = firstTechArticle.getId();
 
         // when
-        BookmarkResponse response = memberTechArticleService.updateBookmark(id, status, authentication);
+        BookmarkResponse response = memberTechArticleService.updateBookmark(id, authentication);
 
         // then
         assertThat(response)
                 .isNotNull()
                 .extracting(techArticleId -> response.techArticleId, updatedStatus -> response.status)
-                .containsExactly(id, status);
+                .containsExactly(id, true);
     }
 
     @Test
@@ -309,17 +309,16 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Bookmark bookmark = createBookmark(member, techArticle, true);
         bookmarkRepository.save(bookmark);
 
-        Long id = FIRST_TECH_ARTICLE_ID;
-        Boolean status = false;
+        Long id = firstTechArticle.getId();
 
         // when
-        BookmarkResponse response = memberTechArticleService.updateBookmark(id, status, authentication);
+        BookmarkResponse response = memberTechArticleService.updateBookmark(id, authentication);
 
         // then
         assertThat(response)
                 .isNotNull()
                 .extracting(techArticleId -> response.techArticleId, updatedStatus -> response.status)
-                .containsExactly(id, status);
+                .containsExactly(id, false);
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,

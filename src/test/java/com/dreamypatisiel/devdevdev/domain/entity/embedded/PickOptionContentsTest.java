@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 
@@ -49,6 +50,15 @@ class PickOptionContentsTest {
 
         // then
         assertEquals(result, pickOptionContentsString);
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    @DisplayName("빈문자열을 작성하면 예외가 발생하지 않는다.")
+    void pickOptionContentsEmptySource(String content) {
+        // given // when // then
+        assertThatCode(() -> new PickOptionContents(content))
+                .doesNotThrowAnyException();
     }
 
     static Stream<Arguments> generateValidData() {

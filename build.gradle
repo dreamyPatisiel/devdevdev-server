@@ -101,16 +101,13 @@ dependencies {
     asciidoctorExt 'org.springframework.restdocs:spring-restdocs-asciidoctor'
 }
 
-tasks.named('test') {
+test {
     useJUnitPlatform()
+    outputs.dir snippetsDir
 }
 
 clean {
     delete file('src/main/generated')
-}
-
-test {
-    outputs.dir snippetsDir
 }
 
 asciidoctor {

@@ -1,0 +1,9 @@
+= 기술블로그 댓글/답글
+
+include::tech-article-comment-register.adoc[]
+include::tech-article-reply-register.adoc[]
+include::tech-article-comment-modify.adoc[]
+include::tech-article-comment-delete.adoc[]
+include::tech-article-comment-get.adoc[]
+include::tech-article-comment-recommend.adoc[]
+include::tech-article-best-comment-get.adoc[]

@@ -1,0 +1,35 @@
+[[Pick-Best-Comment-Get]]
+== 픽픽픽 베스트 댓글/답글 조회 API(GET: /devdevdev/api/v1/picks/{pickId}/comments/best?size=)
+
+* 픽픽픽 베스트 댓글/답글을 조회한다.
+** 추천 수가 1개 미만이면 베스트 댓글에 포함되지 않는다.
+** 댓글이 존재하지 않으면, 빈 배열을 응답할 수 있다.
+* 최소 3개 최대 10개 까지만 조회가 가능하다.
+* 삭제 상태의 최초 댓글은 베스트 댓글에 포함되지 않는다.
+** 답글은 삭제 상태여도 포함된다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/get-pick-best-comments/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/get-pick-best-comments/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/get-pick-best-comments/path-parameters.adoc[]
+
+==== HTTP Request Query Parameters Fields
+
+include::{snippets}/get-pick-best-comments/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/get-pick-best-comments/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/get-pick-best-comments/response-fields.adoc[]

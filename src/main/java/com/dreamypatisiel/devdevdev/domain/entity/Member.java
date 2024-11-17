@@ -109,7 +109,7 @@ public class Member extends BasicTime {
     private List<Bookmark> bookmarks = new ArrayList<>();
 
     @OneToMany(mappedBy = "member")
-    private List<Recommend> recommends = new ArrayList<>();
+    private List<TechArticleRecommend> recommends = new ArrayList<>();
 
     @Builder
     private Member(String name, Nickname nickname, Email email, String password, String userId, String profileImage,
@@ -117,7 +117,7 @@ public class Member extends BasicTime {
                    String refreshToken, Email subscriptionLetterEmail, LocalDateTime loginDate, SocialType socialType,
                    Role role, Boolean isDeleted, LocalDateTime deletedAt, List<InterestedCompany> interestedCompanies,
                    List<Notification> notifications, List<Subscription> subscriptions, List<Bookmark> bookmarks,
-                   List<Recommend> recommends) {
+                   List<TechArticleRecommend> recommends) {
         this.name = name;
         this.nickname = nickname;
         this.email = email;
@@ -171,7 +171,7 @@ public class Member extends BasicTime {
         return nickname.getNickname();
     }
 
-    public boolean isEqualId(Long id) {
+    public boolean isEqualsId(Long id) {
         return this.id.equals(id);
     }
 
