@@ -17,6 +17,8 @@ import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
@@ -247,15 +249,19 @@ class CookieUtilsTest {
         );
     }
 
-    @Test
+    @ParameterizedTest
+    @CsvSource({
+            "ROLE_USER, false",
+            "ROLE_ADMIN, true"
+    })
     @DisplayName("응답 정보에 멤버 관련 쿠키를 설정한다."
             + " (유저 닉네임은 UTF-8로 인코딩되고 이메일은 인코딩되지 않는다."
             + " secure은 true, httpOnly은 false로 저장한다.)")
-    void configMemberCookie() {
+    void configMemberCookie(String inputIsAdmin, String expectedIsAdmin) {
         // given
         MockHttpServletResponse response = new MockHttpServletResponse();
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", "email@gmail.com", SocialType.KAKAO.name(), Role.ROLE_USER.name());
+                "꿈빛파티시엘", "1234", "email@gmail.com", SocialType.KAKAO.name(), inputIsAdmin);
         Member member = Member.createMemberBy(socialMemberDto);
         String encodedNickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
         String email = member.getEmailAsString();
@@ -266,10 +272,12 @@ class CookieUtilsTest {
         // then
         Cookie nicknameCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME);
         Cookie emailCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL);
+        Cookie isAdmin = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN);
 
         assertAll(
                 () -> assertThat(nicknameCookie).isNotNull(),
-                () -> assertThat(emailCookie).isNotNull()
+                () -> assertThat(emailCookie).isNotNull(),
+                () -> assertThat(isAdmin).isNotNull()
         );
 
         assertAll(
@@ -286,6 +294,14 @@ class CookieUtilsTest {
                 () -> assertThat(emailCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
                 () -> assertThat(emailCookie.getSecure()).isTrue(),
                 () -> assertThat(emailCookie.isHttpOnly()).isFalse()
+        );
+
+        assertAll(
+                () -> assertThat(isAdmin.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN),
+                () -> assertThat(isAdmin.getValue()).isEqualTo(expectedIsAdmin),
+                () -> assertThat(isAdmin.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(isAdmin.getSecure()).isTrue(),
+                () -> assertThat(isAdmin.isHttpOnly()).isFalse()
         );
     }
 
