@@ -18,5 +18,5 @@ public interface TechArticleService {
 
     BookmarkResponse updateBookmark(Long techArticleId, Authentication authentication);
 
-    TechArticleRecommendResponse updateRecommend(Long techArticleId, Authentication authentication);
+    TechArticleRecommendResponse updateRecommend(Long techArticleId, String anonymousMemberId, Authentication authentication);
 }

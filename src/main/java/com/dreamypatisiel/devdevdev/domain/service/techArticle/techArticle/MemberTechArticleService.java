@@ -129,7 +129,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     @Override
     @Transactional
-    public TechArticleRecommendResponse updateRecommend(Long techArticleId, Authentication authentication) {
+    public TechArticleRecommendResponse updateRecommend(Long techArticleId, String anonymousMemberId, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 

@@ -17,12 +17,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 
 @Tag(name = "기술블로그 API", description = "기술블로그 메인, 상세 API")
 @RestController
@@ -74,11 +71,14 @@ public class TechArticleController {
 
     @Operation(summary = "기술블로그 추천")
     @PostMapping("/articles/{techArticleId}/recommend")
-    public ResponseEntity<BasicResponse<TechArticleRecommendResponse>> updateRecommend(@PathVariable Long techArticleId) {
+    public ResponseEntity<BasicResponse<TechArticleRecommendResponse>> updateRecommend(
+            @PathVariable Long techArticleId,
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId
+    ) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        TechArticleRecommendResponse response = techArticleService.updateRecommend(techArticleId, authentication);
+        TechArticleRecommendResponse response = techArticleService.updateRecommend(techArticleId, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

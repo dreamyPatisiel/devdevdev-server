@@ -1,9 +1,13 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticleRecommend;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.hasNextPage;
@@ -34,14 +39,21 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
     private final ElasticTechArticleService elasticTechArticleService;
     private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
+    private final AnonymousMemberService anonymousMemberService;
+    private final TechArticleRecommendRepository techArticleRecommendRepository;
 
     public GuestTechArticleService(TechArticleRepository techArticleRepository,
                                    ElasticTechArticleRepository elasticTechArticleRepository,
                                    ElasticTechArticleService elasticTechArticleService,
-                                   TechArticlePopularScorePolicy techArticlePopularScorePolicy) {
+                                   TechArticlePopularScorePolicy techArticlePopularScorePolicy,
+                                   AnonymousMemberService anonymousMemberService,
+                                   TechArticleRecommendRepository techArticleRecommendRepository
+                                   ) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
         this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
+        this.anonymousMemberService = anonymousMemberService;
+        this.techArticleRecommendRepository = techArticleRecommendRepository;
     }
 
     @Override
@@ -89,8 +101,53 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     }
 
     @Override
-    public TechArticleRecommendResponse updateRecommend(Long techArticleId, Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    public TechArticleRecommendResponse updateRecommend(Long techArticleId, String anonymousMemberId, Authentication authentication) {
+        // 익명 사용자 호출인지 확인
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 익명 회원을 조회하거나 생성
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 익명회원의 해당 기술블로그 아티클 추천 조회
+        TechArticle techArticle = findTechArticle(techArticleId);
+        Optional<TechArticleRecommend> optionalTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(techArticle, anonymousMember);
+
+        // 추천이 존재하면 toggle
+        if (optionalTechArticleRecommend.isPresent()) {
+            TechArticleRecommend techArticleRecommend = optionalTechArticleRecommend.get();
+
+            // 추천 상태라면 추천 취소
+            if (techArticleRecommend.isRecommended()) {
+                techArticleRecommend.cancelRecommend();
+
+                // 기술블로그 추천 수 감소 및 점수 변경
+                techArticle.decrementRecommendTotalCount();
+                techArticle.changePopularScore(techArticlePopularScorePolicy);
+
+                return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+            }
+
+            // 추천 상태가 아니라면 추천
+            techArticleRecommend.registerRecommend();
+
+            // 기술블로그 추천 수 증가 및 점수 변경
+            techArticle.incrementRecommendTotalCount();
+            techArticle.changePopularScore(techArticlePopularScorePolicy);
+
+            return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+        }
+
+        // 추천 생성
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, techArticle);
+
+        // 추천 상태가 아니라면 추천
+        techArticleRecommend.registerRecommend();
+
+        // 기술블로그 추천 수 증가 및 점수 변경
+        techArticle.incrementRecommendTotalCount();
+        techArticle.changePopularScore(techArticlePopularScorePolicy);
+
+        return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
     }
 
     /**
