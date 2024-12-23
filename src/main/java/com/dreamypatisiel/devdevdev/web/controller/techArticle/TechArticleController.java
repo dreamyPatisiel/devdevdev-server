@@ -8,6 +8,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleRecommendResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,17 @@ public class TechArticleController {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         BookmarkResponse response = techArticleService.updateBookmark(techArticleId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "기술블로그 추천")
+    @PostMapping("/articles/{techArticleId}/recommend")
+    public ResponseEntity<BasicResponse<TechArticleRecommendResponse>> updateRecommend(@PathVariable Long techArticleId) {
+
+        TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        TechArticleRecommendResponse response = techArticleService.updateRecommend(techArticleId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

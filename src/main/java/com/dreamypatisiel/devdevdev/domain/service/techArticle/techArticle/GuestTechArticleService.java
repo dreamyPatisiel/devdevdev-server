@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle;
 
-import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.hasNextPage;
-
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
@@ -12,13 +10,7 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -27,6 +19,12 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.hasNextPage;
 
 @Slf4j
 @Service
@@ -87,6 +85,11 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
     @Override
     public BookmarkResponse updateBookmark(Long techArticleId, Authentication authentication) {
+        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    }
+
+    @Override
+    public TechArticleRecommendResponse updateRecommend(Long techArticleId, Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
