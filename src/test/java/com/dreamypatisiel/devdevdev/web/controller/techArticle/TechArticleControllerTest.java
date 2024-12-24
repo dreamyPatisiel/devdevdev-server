@@ -542,6 +542,78 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
     }
 
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청한다.")
+    void updateRecommend() throws Exception {
+        // given
+        Long id = firstTechArticle.getId();
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.techArticleId").isNumber())
+                .andExpect(jsonPath("$.data.status").isBoolean());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
+    void updateRecommendNotFoundTechArticleException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
+                new Count(1L),
+                new Count(1L), null, company);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId() + 1;
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청할 때 존재하지 않는 회원이라면 예외가 발생한다.")
+    void updateRecommendNotFoundMemberException() throws Exception {
+        // given
+        Long id = firstTechArticle.getId();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
                                             String socialType, String role) {
         return SocialMemberDto.builder()

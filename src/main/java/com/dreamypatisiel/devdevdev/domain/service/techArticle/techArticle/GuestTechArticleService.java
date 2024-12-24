@@ -33,6 +33,7 @@ import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 public class GuestTechArticleService extends TechArticleCommonService implements TechArticleService {
 
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
@@ -101,6 +102,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     }
 
     @Override
+    @Transactional
     public TechArticleRecommendResponse updateRecommend(Long techArticleId, String anonymousMemberId, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
@@ -139,9 +141,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
         // 추천 생성
         TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, techArticle);
-
-        // 추천 상태가 아니라면 추천
-        techArticleRecommend.registerRecommend();
+        techArticleRecommendRepository.save(techArticleRecommend);
 
         // 기술블로그 추천 수 증가 및 점수 변경
         techArticle.incrementRecommendTotalCount();

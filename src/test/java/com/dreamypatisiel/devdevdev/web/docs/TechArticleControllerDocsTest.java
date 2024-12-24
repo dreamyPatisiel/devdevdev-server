@@ -545,6 +545,44 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         ));
     }
 
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청한다.")
+    void updateRecommend() throws Exception {
+        // given
+        Long id = firstTechArticle.getId();
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print());
+
+        // Docs
+        actions.andDo(document("tech-article-recommend",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.techArticleId").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
+                        fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("추천 상태")
+                )
+        ));
+    }
+
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
                                             String socialType, String role) {
         return SocialMemberDto.builder()

@@ -16,6 +16,7 @@ public class AnonymousMemberService {
 
     private final AnonymousMemberRepository anonymousMemberRepository;
 
+    @Transactional
     public AnonymousMember findOrCreateAnonymousMember(String anonymousMemberId) {
         // 익명 사용자 검증
         validateAnonymousMemberId(anonymousMemberId);
