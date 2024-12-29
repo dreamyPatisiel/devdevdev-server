@@ -23,4 +23,6 @@ public interface TechCommentRepository extends JpaRepository<TechComment, Long>,
             Set<Long> originParentIds);
 
     Long countByTechArticleIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(Long techArticleId);
+
+    Long countByCreatedByIdAndDeletedAtIsNull(Long createdById);
 }

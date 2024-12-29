@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 위 코드가 mapper 설정을 하는 코드 -->
+
+<!-- Mapper를 사용하는 Repository의 전체 경로를 적어줘야함. -->
+<mapper namespace="com.dreamypatisiel.devdevdev.domain.repository.comment.mybatis.CommentMapper">
+    <!-- 회원이 작성한 댓글을 작성일시 내림차순으로 조회 -->
+    <select id="findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc"
+            resultMap="myWrittenComments">
+        <![CDATA[
+        select p.id                as post_id,
+               p.title             as post_title,
+               pc.id               as comment_id,
+               'PICK'              as comment_type,
+               pc.contents         as comment_contents,
+               pc.created_at       as comment_created_at,
+               po.title            as pick_option_title,
+               po.pick_option_type as pick_option_type
+        from pick_comment pc
+                 left join pick_vote pv on pv.id = pc.pick_vote_id
+                 left join pick_option po on po.id = pv.pick_option_id
+                 inner join pick p on p.id = pc.pick_id
+        where pc.created_by = #{memberId}
+          and pc.deleted_at is null
+          and pc.id < #{pickCommentId}
+        union
+        select t.id           as post_id,
+               t.title        as post_title,
+               tc.id          as comment_id,
+               'TECH_ARTICLE' as comment_type,
+               tc.contents    as comment_contents,
+               tc.created_at  as comment_created_at,
+               null           as pick_option_title,
+               null           as pick_option_type
+        from tech_comment tc
+                 inner join tech_article t on t.id = tc.tech_article_id
+        where tc.created_by = #{memberId}
+          and tc.deleted_at is null
+          and tc.id < #{techCommentId}
+        order by comment_created_at desc limit #{limit};
+        ]]>
+    </select>
+
+    <resultMap id="myWrittenComments"
+               type="com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenComment">
+        <id column="post_id" property="postId"/>
+        <result column="post_title" property="postTitle"/>
+        <result column="comment_id" property="commentId"/>
+        <result column="comment_type" property="commentType"/>
+        <result column="comment_contents" property="commentContents"/>
+        <result column="comment_created_at" property="commentCreatedAt"/>
+        <result column="pick_option_title" property="pickOptionTitle"/>
+        <result column="pick_option_type" property="pickOptionType"/>
+    </resultMap>
+
+</mapper>

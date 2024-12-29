@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -160,7 +161,9 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(
+                new Title("매일 1,000만 사용자의 데이터를 꿈파는 어떻게 처리할까?"),
+                new Url("https://example.com"), new Count(1L),
                 new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
@@ -181,7 +184,9 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(
+                new Title("매일 1,000만 사용자의 데이터를 꿈파는 어떻게 처리할까?"),
+                new Url("https://example.com"), new Count(1L),
                 new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
@@ -202,7 +207,9 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(
+                new Title("매일 1,000만 사용자의 데이터를 꿈파는 어떻게 처리할까?"),
+                new Url("https://example.com"), new Count(1L),
                 new Count(1L),
                 new Count(1L),
                 new Count(1L), "elasticId", company);

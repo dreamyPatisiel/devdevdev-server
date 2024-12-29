@@ -33,4 +33,6 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long>,
     Long countByOriginParentIdIn(Set<Long> pickIds);
 
     Long countByPickIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(Long pickId);
+
+    Long countByCreatedByIdAndDeletedAtIsNull(Long createdById);
 }
