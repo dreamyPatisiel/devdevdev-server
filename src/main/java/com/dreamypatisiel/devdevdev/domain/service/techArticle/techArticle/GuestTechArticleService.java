@@ -23,6 +23,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -79,9 +80,15 @@ public class GuestTechArticleService extends TechArticleCommonService implements
 
     @Override
     @Transactional
-    public TechArticleDetailResponse getTechArticle(Long techArticleId, Authentication authentication) {
+    public TechArticleDetailResponse getTechArticle(Long techArticleId, String anonymousMemberId, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 익명 회원을 조회하거나 생성
+        AnonymousMember anonymousMember = null;
+        if(!ObjectUtils.isEmpty(anonymousMemberId)) {
+            anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        }
 
         // 기술블로그 조회
         TechArticle techArticle = findTechArticle(techArticleId);
@@ -93,7 +100,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         techArticle.changePopularScore(techArticlePopularScorePolicy);
 
         // 데이터 가공
-        return TechArticleDetailResponse.of(techArticle, elasticTechArticle, companyResponse);
+        return TechArticleDetailResponse.of(techArticle, elasticTechArticle, companyResponse, anonymousMember);
     }
 
     @Override

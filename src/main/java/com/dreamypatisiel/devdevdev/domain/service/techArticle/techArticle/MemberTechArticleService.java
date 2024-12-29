@@ -78,7 +78,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     @Override
     @Transactional
-    public TechArticleDetailResponse getTechArticle(Long techArticleId, Authentication authentication) {
+    public TechArticleDetailResponse getTechArticle(Long techArticleId, String anonymousMemberId, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 

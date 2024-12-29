@@ -127,7 +127,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id,
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
                 authentication);
 
         // then
@@ -136,6 +136,69 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
                     assertThat(article.getIsBookmarked()).isNotNull();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그를 추천한 이력이 있으면 추천이 true이다.")
+    void getTechArticleWithRecommend() {
+        // given
+        Long id = firstTechArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(member, firstTechArticle);
+        techArticleRecommendRepository.save(techArticleRecommend);
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
+                authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleDetailResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getIsBookmarked()).isNotNull();
+                    assertThat(article.getIsRecommended()).isTrue();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그를 추천한 이력이 없으면 추천이 false이다.")
+    void getTechArticleWithoutRecommend() {
+        // given
+        Long id = firstTechArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
+                authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleDetailResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getIsBookmarked()).isNotNull();
+                    assertThat(article.getIsRecommended()).isFalse();
                 });
     }
 
@@ -158,7 +221,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id,
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
                 authentication);
 
         // then
@@ -184,7 +247,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -211,7 +274,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
     }
@@ -238,7 +301,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(TechArticleException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_ID_MESSAGE);
     }
@@ -265,7 +328,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
     }

@@ -49,11 +49,13 @@ public class TechArticleController {
 
     @Operation(summary = "기술블로그 상세 조회")
     @GetMapping("/articles/{techArticleId}")
-    public ResponseEntity<BasicResponse<TechArticleDetailResponse>> getTechArticle(@PathVariable Long techArticleId) {
+    public ResponseEntity<BasicResponse<TechArticleDetailResponse>> getTechArticle(
+            @PathVariable Long techArticleId,
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
 
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        TechArticleDetailResponse response = techArticleService.getTechArticle(techArticleId, authentication);
+        TechArticleDetailResponse response = techArticleService.getTechArticle(techArticleId, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

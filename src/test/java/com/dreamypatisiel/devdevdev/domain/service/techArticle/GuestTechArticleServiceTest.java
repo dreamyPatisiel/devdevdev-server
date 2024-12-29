@@ -115,7 +115,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id,
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id, null,
                 authentication);
 
         // then
@@ -124,6 +124,38 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
                     assertThat(article.getIsBookmarked()).isFalse();
+                });
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 본인이 추천했던 기술블로그 상세를 조회한다. 이때 추천 값은 true 이다.")
+    void getTechArticleWithRecommend() {
+        // given
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+        Long techArticleId = firstTechArticle.getId();
+
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, firstTechArticle);
+        techArticleRecommendRepository.save(techArticleRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(techArticleId, anonymousMemberId,
+                authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleDetailResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getIsRecommended()).isTrue();
                 });
     }
 
@@ -140,7 +172,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id,
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id, null,
                 authentication);
 
         // then
@@ -164,7 +196,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE);
     }
@@ -185,7 +217,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
     }
@@ -206,7 +238,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(TechArticleException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_ID_MESSAGE);
     }
@@ -227,7 +259,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
     }

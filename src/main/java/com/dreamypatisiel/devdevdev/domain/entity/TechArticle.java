@@ -75,6 +75,9 @@ public class TechArticle extends BasicTime {
     @OneToMany(mappedBy = "techArticle")
     private List<Bookmark> bookmarks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "techArticle")
+    private List<TechArticleRecommend> recommends = new ArrayList<>();
+
     @Builder
     private TechArticle(Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount, Count popularScore,
                         Url techArticleUrl, Company company, String elasticId) {

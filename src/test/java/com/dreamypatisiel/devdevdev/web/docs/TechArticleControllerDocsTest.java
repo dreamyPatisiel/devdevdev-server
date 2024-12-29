@@ -353,7 +353,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")
@@ -382,7 +383,9 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
                         fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN)
-                                .description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
+                                .description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                        fieldWithPath("data.isRecommended").attributes(authenticationType()).type(JsonFieldType.BOOLEAN)
+                                .description("회원의 추천 여부")
                 )
         ));
     }
@@ -430,6 +433,12 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
@@ -568,7 +577,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")

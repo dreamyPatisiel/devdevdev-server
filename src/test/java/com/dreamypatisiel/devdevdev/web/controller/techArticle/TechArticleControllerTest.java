@@ -320,10 +320,12 @@ class TechArticleControllerTest extends SupportControllerTest {
     void getTechArticleByAnonymous() throws Exception {
         // given
         Long id = firstTechArticle.getId();
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("Anonymous-Member-Id", anonymousMemberId)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -344,7 +346,8 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.viewTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.commentTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.popularScore").isNumber());
+                .andExpect(jsonPath("$.data.popularScore").isNumber())
+                .andExpect(jsonPath("$.data.isRecommended").isBoolean());
     }
 
     @Test
@@ -384,7 +387,8 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.commentTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.popularScore").isNumber())
-                .andExpect(jsonPath("$.data.isBookmarked").isBoolean());
+                .andExpect(jsonPath("$.data.isBookmarked").isBoolean())
+                .andExpect(jsonPath("$.data.isRecommended").isBoolean());
     }
 
     @Test
