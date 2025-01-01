@@ -30,19 +30,13 @@ public class TechArticleRecommend extends BasicTime {
     private TechArticle techArticle;
 
     @Builder
-    public TechArticleRecommend(boolean status, Member member, AnonymousMember anonymousMember, TechArticle techArticle) {
+    private TechArticleRecommend(boolean status, Member member, AnonymousMember anonymousMember, TechArticle techArticle) {
         this.status = status;
         this.member = member;
         this.anonymousMember = anonymousMember;
         this.techArticle = techArticle;
     }
 
-    public static TechArticleRecommend from(Member member, TechArticle techArticle) {
-        return TechArticleRecommend.builder()
-                .member(member)
-                .techArticle(techArticle)
-                .build();
-    }
 
     public static TechArticleRecommend create(Member member, TechArticle techArticle) {
         return TechArticleRecommend.builder()
@@ -62,6 +56,7 @@ public class TechArticleRecommend extends BasicTime {
 
     public void changeTechArticle(TechArticle techArticle) {
         this.techArticle = techArticle;
+        techArticle.getRecommends().add(this);
     }
 
     public void cancelRecommend() {

@@ -85,11 +85,7 @@ public class GuestTechArticleService extends TechArticleCommonService implements
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 익명 회원을 조회하거나 생성
-        AnonymousMember anonymousMember = null;
-        if(!ObjectUtils.isEmpty(anonymousMemberId)) {
-            anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        }
-
+        AnonymousMember anonymousMember = getAnonymousMemberOrNull(anonymousMemberId);
         // 기술블로그 조회
         TechArticle techArticle = findTechArticle(techArticleId);
         ElasticTechArticle elasticTechArticle = findElasticTechArticle(techArticle);
@@ -183,5 +179,15 @@ public class GuestTechArticleService extends TechArticleCommonService implements
                 .filter(elasticTechArticle -> techArticle.getElasticId().equals(elasticTechArticle.content().getId()))
                 .map(elasticTechArticle -> TechArticleMainResponse.of(techArticle, elasticTechArticle.content(),
                         CompanyResponse.from(techArticle.getCompany()), elasticTechArticle.score()));
+    }
+
+    /**
+     * anonymousMemberId가 있으면 익명 회원을 조회 또는 생성하고, 없으면 null 반환
+     */
+    public AnonymousMember getAnonymousMemberOrNull(String anonymousMemberId) {
+        if(!ObjectUtils.isEmpty(anonymousMemberId)) {
+            return anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        }
+        return null;
     }
 }
