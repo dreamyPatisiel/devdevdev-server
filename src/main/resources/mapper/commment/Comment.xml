@@ -8,7 +8,7 @@
 <mapper namespace="com.dreamypatisiel.devdevdev.domain.repository.comment.mybatis.CommentMapper">
     <!-- 회원이 작성한 댓글을 작성일시 내림차순으로 조회 -->
     <select id="findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc"
-            resultMap="myWrittenComments">
+            resultMap="myWrittenCommentsDto">
         <![CDATA[
         select p.id                as post_id,
                p.title             as post_title,
@@ -43,8 +43,8 @@
         ]]>
     </select>
 
-    <resultMap id="myWrittenComments"
-               type="com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenComment">
+    <resultMap id="myWrittenCommentsDto"
+               type="com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto">
         <id column="post_id" property="postId"/>
         <result column="post_title" property="postTitle"/>
         <result column="comment_id" property="commentId"/>

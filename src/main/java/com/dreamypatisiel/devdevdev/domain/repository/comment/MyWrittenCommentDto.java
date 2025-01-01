@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class MyWrittenComment {
+public class MyWrittenCommentDto {
     private Long postId;
     private String postTitle;
     private Long commentId;

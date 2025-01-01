@@ -18,7 +18,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenComment;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
@@ -144,7 +144,7 @@ class CommentMapperTest {
 
         int limit = 6;
 
-        List<MyWrittenComment> myWrittenComments = commentMapper.findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc(
+        List<MyWrittenCommentDto> myWrittenComments = commentMapper.findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc(
                 member.getId(), pickCommentId, techCommentId, limit);
 
         // then

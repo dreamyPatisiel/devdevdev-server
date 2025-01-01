@@ -17,13 +17,13 @@ public class CommentRepository {
     private final PickCommentRepository pickCommentRepository;
     private final TechCommentRepository techCommentRepository;
 
-    public SliceCustom<MyWrittenComment> findMyWrittenCommentsByCursor(Long memberId,
-                                                                       Long pickCommentId,
-                                                                       Long techCommentId,
-                                                                       Pageable pageable) {
+    public SliceCustom<MyWrittenCommentDto> findMyWrittenCommentsByCursor(Long memberId,
+                                                                          Long pickCommentId,
+                                                                          Long techCommentId,
+                                                                          Pageable pageable) {
 
         // 회원이 작성한 픽픽픽, 기술블로그 댓글 조회
-        List<MyWrittenComment> findMyWrittenComments = commentMapper.findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc(
+        List<MyWrittenCommentDto> findMyWrittenComments = commentMapper.findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc(
                 memberId, pickCommentId, techCommentId, pageable.getPageSize());
 
         // 다음 페이지 존재 여부

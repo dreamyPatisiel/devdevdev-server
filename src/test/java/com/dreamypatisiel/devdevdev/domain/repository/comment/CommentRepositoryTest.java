@@ -149,7 +149,7 @@ class CommentRepositoryTest {
         Pageable pageable = PageRequest.of(0, 6);
 
         // when
-        SliceCustom<MyWrittenComment> findMyWrittenComments = commentRepository.findMyWrittenCommentsByCursor(
+        SliceCustom<MyWrittenCommentDto> findMyWrittenComments = commentRepository.findMyWrittenCommentsByCursor(
                 member.getId(), pickCommentId, techCommentId, pageable);
 
         // then
