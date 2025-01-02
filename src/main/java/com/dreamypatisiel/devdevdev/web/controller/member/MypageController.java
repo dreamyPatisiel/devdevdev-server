@@ -5,14 +5,18 @@ import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.CommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -23,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/devdevdev/api/v1")
 @RequiredArgsConstructor
 public class MypageController {
-    
+
     private final MemberService memberService;
 
     @Operation(summary = "북마크 목록 조회")
@@ -98,5 +103,22 @@ public class MypageController {
         memberService.recordMemberExitSurveyAnswer(recordMemberExitSurveyAnswerRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success());
+    }
+
+    @Operation(summary = "내가 작성한 댓글 조회", description = "본인이 작성한 댓글을 무한 스크롤 방식으로 조회합니다.")
+    @GetMapping("/mypage/comments")
+    public ResponseEntity<BasicResponse<SliceCustom<MyWrittenCommentResponse>>> getMyWrittenComments(
+            @PageableDefault(size = 6) Pageable pageable,
+            @Valid @ModelAttribute CommentRequest commentRequest) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        Long pickCommentId = commentRequest.getPickCommentId();
+        Long techCommentId = commentRequest.getTechCommentId();
+        
+        SliceCustom<MyWrittenCommentResponse> myWrittenComments = memberService.findMyWrittenComments(pageable,
+                pickCommentId, techCommentId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(myWrittenComments));
     }
 }

@@ -237,7 +237,8 @@ public class MemberService {
      * @Author: 장세웅
      * @Since: 2024.12.31
      */
-    public SliceCustom<MyWrittenCommentResponse> findMyWrittenComments(Pageable pageable, Long pickCommentId,
+    public SliceCustom<MyWrittenCommentResponse> findMyWrittenComments(Pageable pageable,
+                                                                       Long pickCommentId,
                                                                        Long techCommentId,
                                                                        Authentication authentication) {
         // 회원 조회
