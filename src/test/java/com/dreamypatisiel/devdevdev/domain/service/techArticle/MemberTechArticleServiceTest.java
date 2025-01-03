@@ -6,16 +6,17 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.MemberTechArticleService;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
@@ -24,9 +25,11 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleRecommendResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,6 +52,8 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     MemberRepository memberRepository;
     @Autowired
     BookmarkRepository bookmarkRepository;
+    @Autowired
+    TechArticleRecommendRepository techArticleRecommendRepository;
     @Autowired
     EntityManager em;
 
@@ -122,7 +127,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id,
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
                 authentication);
 
         // then
@@ -131,6 +136,69 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
                     assertThat(article.getIsBookmarked()).isNotNull();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그를 추천한 이력이 있으면 추천이 true이다.")
+    void getTechArticleWithRecommend() {
+        // given
+        Long id = firstTechArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(member, firstTechArticle);
+        techArticleRecommendRepository.save(techArticleRecommend);
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
+                authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleDetailResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getIsBookmarked()).isNotNull();
+                    assertThat(article.getIsRecommended()).isTrue();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그를 추천한 이력이 없으면 추천이 false이다.")
+    void getTechArticleWithoutRecommend() {
+        // given
+        Long id = firstTechArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
+                authentication);
+
+        // then
+        assertThat(techArticleDetailResponse)
+                .isNotNull()
+                .isInstanceOf(TechArticleDetailResponse.class)
+                .satisfies(article -> {
+                    assertThat(article.getIsBookmarked()).isNotNull();
+                    assertThat(article.getIsRecommended()).isFalse();
                 });
     }
 
@@ -153,7 +221,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id,
+        TechArticleDetailResponse techArticleDetailResponse = memberTechArticleService.getTechArticle(id, null,
                 authentication);
 
         // then
@@ -179,7 +247,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -206,7 +274,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
     }
@@ -233,7 +301,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(TechArticleException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_ID_MESSAGE);
     }
@@ -260,7 +328,7 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, authentication))
+        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
     }
@@ -319,6 +387,99 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .isNotNull()
                 .extracting(techArticleId -> response.techArticleId, updatedStatus -> response.status)
                 .containsExactly(id, false);
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그를 추천하면 새로운 추천이 생성되고 기술블로그의 점수가 변경된다.")
+    void createTechArticleRecommend() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long techArticleId = firstTechArticle.getId();
+        Count popularScore = firstTechArticle.getPopularScore();
+        Count recommendTotalCount = firstTechArticle.getRecommendTotalCount();
+
+        // when
+        TechArticleRecommendResponse techArticleRecommendResponse = memberTechArticleService.updateRecommend(techArticleId, null, authentication);
+
+        // then
+        assertThat(techArticleRecommendResponse)
+                .isNotNull()
+                .satisfies(response -> {
+                    assertThat(response.getTechArticleId()).isEqualTo(techArticleId);
+                    assertThat(response.getStatus()).isTrue();
+                });
+
+        TechArticle techArticle = techArticleRepository.findById(techArticleId).get();
+        assertThat(techArticle)
+                .satisfies(article -> {
+                    assertThat(article.getRecommendTotalCount().getCount()).isEqualTo(recommendTotalCount.getCount() + 1);
+                    assertThat(article.getPopularScore().getCount()).isEqualTo(popularScore.getCount() + 4);
+                });
+
+        TechArticleRecommend techArticleRecommend = techArticleRecommendRepository.findByTechArticleAndMember(firstTechArticle, member).get();
+        assertThat(techArticleRecommend)
+                .satisfies(recommend -> {
+                    assertThat(recommend.getTechArticle().getId()).isEqualTo(firstTechArticle.getId());
+                    assertThat(recommend.getMember()).isEqualTo(member);
+                    assertThat(recommend.isRecommended()).isTrue();
+                });
+    }
+
+    @Test
+    @DisplayName("익명 사용자가 기술블로그 추천을 취소하면 상태가 false로 바뀌고 기술블로그의 점수가 변경된다.")
+    void cancelTechArticleRecommend() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Long techArticleId = firstTechArticle.getId();
+        Count popularScore = firstTechArticle.getPopularScore();
+        Count recommendTotalCount = firstTechArticle.getRecommendTotalCount();
+
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(member, firstTechArticle);
+        techArticleRecommendRepository.save(techArticleRecommend);
+
+        // when
+        TechArticleRecommendResponse techArticleRecommendResponse = memberTechArticleService.updateRecommend(techArticleId, null, authentication);
+
+        // then
+        assertThat(techArticleRecommendResponse)
+                .isNotNull()
+                .satisfies(response -> {
+                    assertThat(response.getTechArticleId()).isEqualTo(techArticleId);
+                    assertThat(response.getStatus()).isFalse();
+                });
+
+        TechArticle techArticle = techArticleRepository.findById(techArticleId).get();
+        assertThat(techArticle)
+                .satisfies(article -> {
+                    assertThat(article.getRecommendTotalCount().getCount()).isEqualTo(recommendTotalCount.getCount() - 1L);
+                    assertThat(article.getPopularScore().getCount()).isEqualTo(popularScore.getCount() - 4L);
+                });
+
+        TechArticleRecommend findTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndMember(firstTechArticle, member).get();
+        assertThat(findTechArticleRecommend)
+                .satisfies(recommend -> {
+                    assertThat(recommend.getTechArticle().getId()).isEqualTo(firstTechArticle.getId());
+                    assertThat(recommend.getMember()).isEqualTo(member);
+                    assertThat(recommend.isRecommended()).isFalse();
+                });
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,

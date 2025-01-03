@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.repository;
+package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;

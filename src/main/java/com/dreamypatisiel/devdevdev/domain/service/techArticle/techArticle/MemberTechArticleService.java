@@ -5,8 +5,10 @@ import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticleRecommend;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.elastic.data.response.ElasticResponse;
@@ -15,10 +17,8 @@ import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticle
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticTechArticleService;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.*;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -39,18 +39,20 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     private final ElasticTechArticleService elasticTechArticleService;
     private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
     private final BookmarkRepository bookmarkRepository;
+    private final TechArticleRecommendRepository techArticleRecommendRepository;
     private final MemberProvider memberProvider;
 
     public MemberTechArticleService(TechArticleRepository techArticleRepository,
                                     ElasticTechArticleRepository elasticTechArticleRepository,
                                     ElasticTechArticleService elasticTechArticleService,
                                     TechArticlePopularScorePolicy techArticlePopularScorePolicy,
-                                    BookmarkRepository bookmarkRepository,
+                                    BookmarkRepository bookmarkRepository, TechArticleRecommendRepository techArticleRecommendRepository,
                                     MemberProvider memberProvider) {
         super(techArticleRepository, elasticTechArticleRepository);
         this.elasticTechArticleService = elasticTechArticleService;
         this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
         this.bookmarkRepository = bookmarkRepository;
+        this.techArticleRecommendRepository = techArticleRecommendRepository;
         this.memberProvider = memberProvider;
     }
 
@@ -76,7 +78,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
     @Override
     @Transactional
-    public TechArticleDetailResponse getTechArticle(Long techArticleId, Authentication authentication) {
+    public TechArticleDetailResponse getTechArticle(Long techArticleId, String anonymousMemberId, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
@@ -123,6 +125,54 @@ public class MemberTechArticleService extends TechArticleCommonService implement
         bookmarkRepository.save(bookmark);
 
         return new BookmarkResponse(techArticle.getId(), bookmark.isBookmarked());
+    }
+
+    @Override
+    @Transactional
+    public TechArticleRecommendResponse updateRecommend(Long techArticleId, String anonymousMemberId, Authentication authentication) {
+        // 회원 조회
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원의 해당 기술블로그 아티클 추천 조회
+        TechArticle techArticle = findTechArticle(techArticleId);
+
+        Optional<TechArticleRecommend> optionalTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndMember(techArticle, member);
+
+        // 추천이 존재하면 toggle
+        if (optionalTechArticleRecommend.isPresent()) {
+            TechArticleRecommend techArticleRecommend = optionalTechArticleRecommend.get();
+
+            // 추천 상태라면 추천 취소
+            if (techArticleRecommend.isRecommended()) {
+                techArticleRecommend.cancelRecommend();
+
+                // 기술블로그 추천 수 감소 및 점수 변경
+                techArticle.decrementRecommendTotalCount();
+                techArticle.changePopularScore(techArticlePopularScorePolicy);
+
+                return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+            }
+
+            // 추천 상태가 아니라면 추천
+            techArticleRecommend.registerRecommend();
+
+            // 기술블로그 추천 수 증가 및 점수 변경
+            techArticle.incrementRecommendTotalCount();
+            techArticle.changePopularScore(techArticlePopularScorePolicy);
+
+            return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+        }
+
+        // 추천 생성
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(member, techArticle);
+
+        // 기술블로그 추천 수 증가 및 점수 변경
+        techArticle.incrementRecommendTotalCount();
+        techArticle.changePopularScore(techArticlePopularScorePolicy);
+
+        techArticleRecommendRepository.save(techArticleRecommend);
+
+        return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
     }
 
     /**
