@@ -9,8 +9,8 @@ public class TokenExpireTime {
     public static long REFRESH_TOKEN_EXPIRE_TIME;
 
     public TokenExpireTime(
-            @Value("${token.expire.access}") long accessTokenExpireTime,
-            @Value("${token.expire.refresh}") long refreshTokenExpireTime
+            @Value("${jwt.expire.access}") long accessTokenExpireTime,
+            @Value("${jwt.expire.refresh}") long refreshTokenExpireTime
     ) {
         ACCESS_TOKEN_EXPIRE_TIME = accessTokenExpireTime;
         REFRESH_TOKEN_EXPIRE_TIME = refreshTokenExpireTime;
