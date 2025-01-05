@@ -25,6 +25,10 @@ public class TechArticleResponseUtils {
     }
 
     public static boolean isRecommendedByAnonymousMember(TechArticle techArticle, AnonymousMember anonymousMember) {
+        if(anonymousMember == null) {
+            return false;
+        }
+
         Optional<TechArticleRecommend> recommends = techArticle.getRecommends().stream()
                 .filter(recommend -> recommend.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()))
                 .findAny();
