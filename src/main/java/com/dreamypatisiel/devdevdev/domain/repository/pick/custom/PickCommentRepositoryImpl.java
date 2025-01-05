@@ -9,9 +9,14 @@ import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.QMyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQueryFactory;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -83,6 +88,41 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public SliceCustom<MyWrittenCommentDto> findMyWrittenPickCommentsByCursor(Long memberId, Long pickCommentId,
+                                                                              Pageable pageable) {
+        // 회원이 작성한 픽픽픽 댓글 조회
+        List<MyWrittenCommentDto> contents = query.select(
+                        new QMyWrittenCommentDto(pick.id,
+                                pick.title.title,
+                                pickComment.id,
+                                Expressions.constant(MyWrittenCommentSort.PICK.name()),
+                                pickComment.contents.commentContents,
+                                pickComment.recommendTotalCount.count,
+                                pickComment.createdAt,
+                                pickOption.title.title,
+                                pickOption.pickOptionType.stringValue()))
+                .from(pickComment)
+                .leftJoin(pickComment.pickVote, pickVote)
+                .leftJoin(pickVote.pickOption, pickOption)
+                .innerJoin(pick).on(pick.id.eq(pickComment.pick.id).and(pick.contentStatus.eq(ContentStatus.APPROVAL)))
+                .where(pickComment.createdBy.id.eq(memberId)
+                        .and(pickComment.deletedAt.isNull())
+                        .and(pickComment.id.lt(pickCommentId)))
+                .orderBy(pickComment.createdAt.desc())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 회원이 작성한 픽픽픽 댓글 총 갯수(삭제 미포함)
+        long totalElements = query.select(pickComment.count())
+                .from(pickComment)
+                .where(pickComment.createdBy.id.eq(memberId)
+                        .and(pickComment.deletedAt.isNull()))
+                .fetchCount();
+
+        return new SliceCustom<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()), totalElements);
+    }
+
     private static BooleanExpression pickOptionTypeIn(EnumSet<PickOptionType> pickOptionTypes) {
         if (ObjectUtils.isEmpty(pickOptionTypes)) {
             return null;
@@ -131,7 +171,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                 .orElse(PickCommentSort.LATEST).getOrderSpecifierByPickCommentSort();
     }
 
-    private boolean hasNextPage(List<PickComment> contents, int pageSize) {
+    private <T> boolean hasNextPage(List<T> contents, int pageSize) {
         return contents.size() >= pageSize;
     }
 }

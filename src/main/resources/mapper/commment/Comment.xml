@@ -10,14 +10,16 @@
     <select id="findByMemberIdAndPickCommentIdAndTechCommentIdOrderByCommentCreatedAtDesc"
             resultMap="myWrittenCommentsDto">
         <![CDATA[
-        select p.id                as post_id,
-               p.title             as post_title,
-               pc.id               as comment_id,
-               'PICK'              as comment_type,
-               pc.contents         as comment_contents,
-               pc.created_at       as comment_created_at,
-               po.title            as pick_option_title,
-               po.pick_option_type as pick_option_type
+        -- 픽픽픽 댓글 조회
+        select p.id                     as post_id,
+               p.title                  as post_title,
+               pc.id                    as comment_id,
+               'PICK'                   as comment_type,
+               pc.contents              as comment_contents,
+               pc.recommend_total_count as recommend_total_count,
+               pc.created_at            as comment_created_at,
+               po.title                 as pick_option_title,
+               po.pick_option_type      as pick_option_type
         from pick_comment pc
                  left join pick_vote pv on pv.id = pc.pick_vote_id
                  left join pick_option po on po.id = pv.pick_option_id
@@ -26,14 +28,16 @@
           and pc.deleted_at is null
           and pc.id < #{pickCommentId}
         union
-        select t.id           as post_id,
-               t.title        as post_title,
-               tc.id          as comment_id,
-               'TECH_ARTICLE' as comment_type,
-               tc.contents    as comment_contents,
-               tc.created_at  as comment_created_at,
-               null           as pick_option_title,
-               null           as pick_option_type
+        -- 기술블로그 댓글 조회
+        select t.id                     as post_id,
+               t.title                  as post_title,
+               tc.id                    as comment_id,
+               'TECH_ARTICLE'           as comment_type,
+               tc.contents              as comment_contents,
+               tc.recommend_total_count as recommend_total_count,
+               tc.created_at            as comment_created_at,
+               null                     as pick_option_title,
+               null                     as pick_option_type
         from tech_comment tc
                  inner join tech_article t on t.id = tc.tech_article_id
         where tc.created_by = #{memberId}
@@ -50,6 +54,7 @@
         <result column="comment_id" property="commentId"/>
         <result column="comment_type" property="commentType"/>
         <result column="comment_contents" property="commentContents"/>
+        <result column="comment_recommend_total_count" property="commentRecommendTotalCount"/>
         <result column="comment_created_at" property="commentCreatedAt"/>
         <result column="pick_option_title" property="pickOptionTitle"/>
         <result column="pick_option_type" property="pickOptionType"/>

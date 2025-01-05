@@ -1,23 +1,27 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom;
 
+import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
+
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.QMyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPQLQueryFactory;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.ObjectUtils;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
 
 @RequiredArgsConstructor
 public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
@@ -59,6 +63,40 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    public SliceCustom<MyWrittenCommentDto> findMyWrittenTechCommentsByCursor(Long memberId, Long techCommentId,
+                                                                              Pageable pageable) {
+
+        // 회원이 작성한 기술블로그 댓글 조회
+        List<MyWrittenCommentDto> contents = query.select(
+                        new QMyWrittenCommentDto(techArticle.id,
+                                techArticle.title.title,
+                                techComment.id,
+                                Expressions.constant(MyWrittenCommentSort.TECH_ARTICLE.name()),
+                                techComment.contents.commentContents,
+                                techComment.recommendTotalCount.count,
+                                techComment.createdAt,
+                                Expressions.nullExpression(),
+                                Expressions.nullExpression()))
+                .from(techComment)
+                .innerJoin(techComment.techArticle, techArticle)
+                .where(techComment.createdBy.id.eq(memberId)
+                        .and(techComment.deletedAt.isNull())
+                        .and(techComment.id.lt(techCommentId)))
+                .orderBy(techComment.createdAt.desc())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 회원이 작성한 기술 블로그 댓글 총 갯수(삭제 미포함)
+        long totalElements = query.select(techComment.count())
+                .from(techComment)
+                .where(techComment.createdBy.id.eq(memberId)
+                        .and(techComment.deletedAt.isNull()))
+                .fetchCount();
+
+        return new SliceCustom<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()), totalElements);
+    }
+
     private BooleanExpression getCursorCondition(TechCommentSort techCommentSort, Long techCommentId) {
         if (ObjectUtils.isEmpty(techCommentId)) {
             return null;
@@ -87,7 +125,7 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
                 .orElse(TechCommentSort.LATEST).getOrderSpecifierByTechCommentSort();
     }
 
-    private boolean hasNextPage(List<TechComment> contents, int pageSize) {
+    private <T> boolean hasNextPage(List<T> contents, int pageSize) {
         return contents.size() >= pageSize;
     }
 }

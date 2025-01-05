@@ -150,7 +150,7 @@ public class BlameControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 신고 종류 생성
@@ -211,7 +211,7 @@ public class BlameControllerDocsTest extends SupportControllerDocsTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -447,8 +447,9 @@ public class BlameControllerDocsTest extends SupportControllerDocsTest {
         return pickComment;
     }
 
-    private Pick createPick(String title, ContentStatus contentStatus, Count commentTotalCount) {
+    private Pick createPick(Member member, String title, ContentStatus contentStatus, Count commentTotalCount) {
         return Pick.builder()
+                .member(member)
                 .title(new Title(title))
                 .contentStatus(contentStatus)
                 .commentTotalCount(commentTotalCount)

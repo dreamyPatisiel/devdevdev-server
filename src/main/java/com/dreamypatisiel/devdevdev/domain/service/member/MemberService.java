@@ -25,6 +25,8 @@ import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
@@ -238,15 +240,19 @@ public class MemberService {
      * @Since: 2024.12.31
      */
     public SliceCustom<MyWrittenCommentResponse> findMyWrittenComments(Pageable pageable,
-                                                                       Long pickCommentId,
-                                                                       Long techCommentId,
+                                                                       MyWrittenCommentRequest myWrittenCommentRequest,
                                                                        Authentication authentication) {
+
+        Long pickCommentId = myWrittenCommentRequest.getPickCommentId();
+        Long techCommentId = myWrittenCommentRequest.getTechCommentId();
+        MyWrittenCommentSort myWrittenCommentSort = myWrittenCommentRequest.getCommentSort();
+
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 회원이 작성한 댓글 조회
         SliceCustom<MyWrittenCommentDto> findMyWrittenCommentsDto = commentRepository.findMyWrittenCommentsByCursor(
-                findMember.getId(), pickCommentId, techCommentId, pageable);
+                findMember.getId(), pickCommentId, techCommentId, myWrittenCommentSort, pageable);
 
         // 데이터 가공
         List<MyWrittenCommentResponse> myWrittenCommentResponses = MyWrittenCommentResponse.from(

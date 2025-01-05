@@ -6,7 +6,7 @@ import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.CommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
@@ -109,15 +109,12 @@ public class MypageController {
     @GetMapping("/mypage/comments")
     public ResponseEntity<BasicResponse<SliceCustom<MyWrittenCommentResponse>>> getMyWrittenComments(
             @PageableDefault(size = 6) Pageable pageable,
-            @Valid @ModelAttribute CommentRequest commentRequest) {
+            @Valid @ModelAttribute MyWrittenCommentRequest myWrittenCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        Long pickCommentId = commentRequest.getPickCommentId();
-        Long techCommentId = commentRequest.getTechCommentId();
-        
         SliceCustom<MyWrittenCommentResponse> myWrittenComments = memberService.findMyWrittenComments(pageable,
-                pickCommentId, techCommentId, authentication);
+                myWrittenCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(myWrittenComments));
     }

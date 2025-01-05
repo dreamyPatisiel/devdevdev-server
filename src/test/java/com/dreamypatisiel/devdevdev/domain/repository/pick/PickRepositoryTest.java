@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.repository.pick;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
@@ -49,6 +50,9 @@ class PickRepositoryTest {
     @DisplayName("findPicksByCursor 쿼리 확인")
     void findPicksByCursor() {
         // given
+        Member member = createMember("사용자");
+        memberRepository.save(member);
+
         PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1),
                 PickOptionType.firstPickOption);
         PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(2),
@@ -66,19 +70,26 @@ class PickRepositoryTest {
         Count pick2ViewTotalCount = new Count(1);
         Count pick1CommentTotalCount = new Count(0);
         Count pick2CommentTotalCount = new Count(0);
-        Pick pick1 = createPick(new Title("픽1타이틀"), pick1VoteTotalCount, pick1ViewTotalCount, pick1CommentTotalCount,
+        Pick pick1 = createPick(member, new Title("픽1타이틀"), pick1VoteTotalCount, pick1ViewTotalCount,
+                pick1CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption1, pickOption2), List.of());
-        Pick pick2 = createPick(new Title("픽2타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2CommentTotalCount,
+        Pick pick2 = createPick(member, new Title("픽2타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption3, pickOption4), List.of());
-        Pick pick3 = createPick(new Title("픽3타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2CommentTotalCount,
+        Pick pick3 = createPick(member, new Title("픽3타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption3, pickOption4), List.of());
-        Pick pick4 = createPick(new Title("픽4타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2CommentTotalCount,
+        Pick pick4 = createPick(member, new Title("픽4타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption3, pickOption4), List.of());
-        Pick pick5 = createPick(new Title("픽5타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2CommentTotalCount,
+        Pick pick5 = createPick(member, new Title("픽5타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption3, pickOption4), List.of());
-        Pick pick6 = createPick(new Title("픽6타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2CommentTotalCount,
+        Pick pick6 = createPick(member, new Title("픽6타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption3, pickOption4), List.of());
-        Pick pick7 = createPick(new Title("픽7타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2CommentTotalCount,
+        Pick pick7 = createPick(member, new Title("픽7타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2CommentTotalCount,
                 thumbnailUrl, author, List.of(pickOption3, pickOption4), List.of());
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5, pick6, pick7));
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2, pickOption3, pickOption4));
@@ -96,12 +107,15 @@ class PickRepositoryTest {
     @DisplayName("조회수 내림차순으로 Pick을 조회한다.")
     void findPicksByCursorOrderByViewCountDesc() {
         // given
-        Pick pick1 = createPickViewTotalCount(new Title("픽1타이틀"), new Count(1));
-        Pick pick2 = createPickViewTotalCount(new Title("픽2타이틀"), new Count(2));
-        Pick pick3 = createPickViewTotalCount(new Title("픽3타이틀"), new Count(3));
-        Pick pick4 = createPickViewTotalCount(new Title("픽4타이틀"), new Count(3));
-        Pick pick5 = createPickViewTotalCount(new Title("픽5타이틀"), new Count(4));
-        Pick pick6 = createPickViewTotalCount(new Title("픽6타이틀"), new Count(5));
+        Member member = createMember("사용자");
+        memberRepository.save(member);
+
+        Pick pick1 = createPickViewTotalCount(member, new Title("픽1타이틀"), new Count(1));
+        Pick pick2 = createPickViewTotalCount(member, new Title("픽2타이틀"), new Count(2));
+        Pick pick3 = createPickViewTotalCount(member, new Title("픽3타이틀"), new Count(3));
+        Pick pick4 = createPickViewTotalCount(member, new Title("픽4타이틀"), new Count(3));
+        Pick pick5 = createPickViewTotalCount(member, new Title("픽5타이틀"), new Count(4));
+        Pick pick6 = createPickViewTotalCount(member, new Title("픽6타이틀"), new Count(5));
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5, pick6));
 
@@ -122,12 +136,15 @@ class PickRepositoryTest {
     @DisplayName("생성시간 내림차순으로 Pick을 조회한다.")
     void findPicksByCursorOrderByCreatedAtDesc() {
         // given
-        Pick pick1 = createPick(new Title("픽1타이틀"));
-        Pick pick2 = createPick(new Title("픽2타이틀"));
-        Pick pick3 = createPick(new Title("픽3타이틀"));
-        Pick pick4 = createPick(new Title("픽4타이틀"));
-        Pick pick5 = createPick(new Title("픽5타이틀"));
-        Pick pick6 = createPick(new Title("픽6타이틀"));
+        Member member = createMember("사용자");
+        memberRepository.save(member);
+
+        Pick pick1 = createPick(member, new Title("픽1타이틀"));
+        Pick pick2 = createPick(member, new Title("픽2타이틀"));
+        Pick pick3 = createPick(member, new Title("픽3타이틀"));
+        Pick pick4 = createPick(member, new Title("픽4타이틀"));
+        Pick pick5 = createPick(member, new Title("픽5타이틀"));
+        Pick pick6 = createPick(member, new Title("픽6타이틀"));
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5, pick6));
 
@@ -148,12 +165,15 @@ class PickRepositoryTest {
     @DisplayName("댓글수 내림차순으로 Pick을 조회한다.")
     void findPicksByCursorOrderByDesc() {
         // given
-        Pick pick1 = createPickCommentTotalCount(new Title("픽1타이틀"), new Count(1));
-        Pick pick2 = createPickCommentTotalCount(new Title("픽2타이틀"), new Count(2));
-        Pick pick3 = createPickCommentTotalCount(new Title("픽3타이틀"), new Count(3));
-        Pick pick4 = createPickCommentTotalCount(new Title("픽4타이틀"), new Count(3));
-        Pick pick5 = createPickCommentTotalCount(new Title("픽5타이틀"), new Count(4));
-        Pick pick6 = createPickCommentTotalCount(new Title("픽6타이틀"), new Count(5));
+        Member member = createMember("사용자");
+        memberRepository.save(member);
+
+        Pick pick1 = createPickCommentTotalCount(member, new Title("픽1타이틀"), new Count(1));
+        Pick pick2 = createPickCommentTotalCount(member, new Title("픽2타이틀"), new Count(2));
+        Pick pick3 = createPickCommentTotalCount(member, new Title("픽3타이틀"), new Count(3));
+        Pick pick4 = createPickCommentTotalCount(member, new Title("픽4타이틀"), new Count(3));
+        Pick pick5 = createPickCommentTotalCount(member, new Title("픽5타이틀"), new Count(4));
+        Pick pick6 = createPickCommentTotalCount(member, new Title("픽6타이틀"), new Count(5));
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5, pick6));
 
@@ -170,18 +190,28 @@ class PickRepositoryTest {
                 );
     }
 
+    private static Member createMember(String name) {
+        return Member.builder()
+                .name(name)
+                .isDeleted(false)
+                .build();
+    }
+
     @Test
     @DisplayName("인기순으로 Pick을 조회한다."
             + "(현재 가중치 = 댓글수:" + PickPopularScorePolicy.COMMENT_WEIGHT + ", 투표수:" + PickPopularScorePolicy.VOTE_WEIGHT
             + ", 조회수:" + PickPopularScorePolicy.VIEW_WEIGHT + ")")
     void findPicksByCursorOrderByPopular() {
         // given
-        Pick pick1 = createPickByPopularScore(new Title("픽1타이틀"), new Count(1));
-        Pick pick2 = createPickByPopularScore(new Title("픽2타이틀"), new Count(2));
-        Pick pick3 = createPickByPopularScore(new Title("픽3타이틀"), new Count(3));
-        Pick pick4 = createPickByPopularScore(new Title("픽4타이틀"), new Count(3));
-        Pick pick5 = createPickByPopularScore(new Title("픽5타이틀"), new Count(4));
-        Pick pick6 = createPickByPopularScore(new Title("픽6타이틀"), new Count(5));
+        Member member = createMember("사용자");
+        memberRepository.save(member);
+
+        Pick pick1 = createPickByPopularScore(member, new Title("픽1타이틀"), new Count(1));
+        Pick pick2 = createPickByPopularScore(member, new Title("픽2타이틀"), new Count(2));
+        Pick pick3 = createPickByPopularScore(member, new Title("픽3타이틀"), new Count(3));
+        Pick pick4 = createPickByPopularScore(member, new Title("픽4타이틀"), new Count(3));
+        Pick pick5 = createPickByPopularScore(member, new Title("픽5타이틀"), new Count(4));
+        Pick pick6 = createPickByPopularScore(member, new Title("픽6타이틀"), new Count(5));
 
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5, pick6));
 
@@ -203,7 +233,10 @@ class PickRepositoryTest {
     @DisplayName("findPickWithPickOptionWithPickVoteWithMemberByPickId 쿼리 확인")
     void findPickAndPickOptionAndPickOptionImageById() {
         // given
-        Pick pick = createPick(new Title("픽1타이틀"));
+        Member member = createMember("사용자");
+        memberRepository.save(member);
+
+        Pick pick = createPick(member, new Title("픽1타이틀"));
         pickRepository.save(pick);
 
         PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽옵션콘텐츠1"), new Count(1),
@@ -260,31 +293,35 @@ class PickRepositoryTest {
         return pickOptionImage;
     }
 
-    private Pick createPick(Title title) {
+    private Pick createPick(Member member, Title title) {
         return Pick.builder()
+                .member(member)
                 .title(title)
                 .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
-    private Pick createPickByPopularScore(Title title, Count popularScore) {
+    private Pick createPickByPopularScore(Member member, Title title, Count popularScore) {
         return Pick.builder()
+                .member(member)
                 .title(title)
                 .popularScore(popularScore)
                 .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
-    private Pick createPickViewTotalCount(Title title, Count viewTotalCount) {
+    private Pick createPickViewTotalCount(Member member, Title title, Count viewTotalCount) {
         return Pick.builder()
+                .member(member)
                 .title(title)
                 .viewTotalCount(viewTotalCount)
                 .contentStatus(ContentStatus.APPROVAL)
                 .build();
     }
 
-    private Pick createPickCommentTotalCount(Title title, Count commentTotalCount) {
+    private Pick createPickCommentTotalCount(Member member, Title title, Count commentTotalCount) {
         return Pick.builder()
+                .member(member)
                 .title(title)
                 .commentTotalCount(commentTotalCount)
                 .contentStatus(ContentStatus.APPROVAL)
@@ -298,12 +335,13 @@ class PickRepositoryTest {
                 .build();
     }
 
-    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+    private Pick createPick(Member member, Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
                             List<PickOption> pickOptions, List<PickVote> pickVotes
     ) {
 
         Pick pick = Pick.builder()
+                .member(member)
                 .title(title)
                 .voteTotalCount(pickVoteTotalCount)
                 .viewTotalCount(pickViewTotalCount)

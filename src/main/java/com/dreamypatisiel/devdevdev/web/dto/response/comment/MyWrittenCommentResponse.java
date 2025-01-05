@@ -19,24 +19,27 @@ public class MyWrittenCommentResponse {
     private Long commentId;
     private String commentType;
     private String commentContents;
+    private Long commentRecommendTotalCount;
 
     @JsonFormat(shape = Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = TimeProvider.DEFAULT_ZONE_ID)
     private LocalDateTime commentCreatedAt;
-    
+
     private String pickOptionTitle;
     private String pickOptionType;
 
     @Builder
     public MyWrittenCommentResponse(String uniqueCommentId, Long postId, String postTitle,
                                     Long commentId, String commentType,
-                                    String commentContents, LocalDateTime commentCreatedAt,
-                                    @Nullable String pickOptionTitle, @Nullable String pickOptionType) {
+                                    String commentContents, Long commentRecommendTotalCount,
+                                    LocalDateTime commentCreatedAt, @Nullable String pickOptionTitle,
+                                    @Nullable String pickOptionType) {
         this.uniqueCommentId = uniqueCommentId;
         this.postId = postId;
         this.postTitle = postTitle;
         this.commentId = commentId;
         this.commentType = commentType;
         this.commentContents = commentContents;
+        this.commentRecommendTotalCount = commentRecommendTotalCount;
         this.commentCreatedAt = commentCreatedAt;
         this.pickOptionTitle = pickOptionTitle;
         this.pickOptionType = pickOptionType;
@@ -55,6 +58,7 @@ public class MyWrittenCommentResponse {
                 .commentId(commentId)
                 .commentType(commentType)
                 .commentContents(myWrittenCommentDto.getCommentContents())
+                .commentRecommendTotalCount(myWrittenCommentDto.getCommentRecommendTotalCount())
                 .commentCreatedAt(myWrittenCommentDto.getCommentCreatedAt())
                 .pickOptionTitle(myWrittenCommentDto.getPickOptionTitle())
                 .pickOptionType(myWrittenCommentDto.getPickOptionType())

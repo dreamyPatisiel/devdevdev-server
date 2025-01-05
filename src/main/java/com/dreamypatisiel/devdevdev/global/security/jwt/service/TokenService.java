@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.service;
 
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.ACCESS_TOKEN_EXPIRE_TIME;
 import static com.dreamypatisiel.devdevdev.global.security.jwt.model.TokenExpireTime.REFRESH_TOKEN_EXPIRE_TIME;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -162,7 +163,7 @@ public class TokenService {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(timeProvider.getDateNow())
-                .setExpiration(new Date(timeProvider.getDateNow().getTime() + REFRESH_TOKEN_EXPIRE_TIME))
+                .setExpiration(new Date(timeProvider.getDateNow().getTime() + ACCESS_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

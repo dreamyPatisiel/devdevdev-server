@@ -2,7 +2,6 @@ package com.dreamypatisiel.devdevdev.web.controller;
 
 import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
@@ -24,20 +23,19 @@ import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentRes
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
 
-public class MyPageControllerTestUsedMockService extends SupportControllerTest {
+public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
 
-    @Autowired
-    ApplicationContext applicationContext;
     @Autowired
     MemberRepository memberRepository;
     @MockBean
@@ -57,15 +55,15 @@ public class MyPageControllerTestUsedMockService extends SupportControllerTest {
 
         // 응답 생성
         MyWrittenCommentResponse pickWrittenComment = createMyWrittenCommentResponse(
-                "PICK_1_1", 1L, "픽픽픽 제목", 1L, "PICK", "픽픽픽 댓글입니다.", now, "픽픽픽 A",
+                "PICK_1_1", 1L, "픽픽픽 제목", 1L, "PICK", "픽픽픽 댓글입니다.", 111L, now, "픽픽픽 A",
                 PickOptionType.firstPickOption.name());
         MyWrittenCommentResponse techWrittenComment = createMyWrittenCommentResponse(
-                "TECH_1_1", 1L, "기술블로그 제목", 1L, "TECH", "기술블로그 댓글입니다.", now, null, null);
+                "TECH_1_1", 1L, "기술블로그 제목", 1L, "TECH", "기술블로그 댓글입니다.", 54321L, now, null, null);
         List<MyWrittenCommentResponse> myWrittenComments = List.of(pickWrittenComment, techWrittenComment);
         SliceCustom<MyWrittenCommentResponse> result = new SliceCustom<>(myWrittenComments, pageable, false, 2L);
 
         // when
-        when(memberService.findMyWrittenComments(eq(pageable), anyLong(), anyLong(), any())).thenReturn(result);
+        when(memberService.findMyWrittenComments(eq(pageable), any(), any())).thenReturn(result);
 
         // then
         mockMvc.perform(get("/devdevdev/api/v1/mypage/comments")
@@ -86,6 +84,7 @@ public class MyPageControllerTestUsedMockService extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].commentId").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].commentType").isString())
                 .andExpect(jsonPath("$.data.content.[0].commentContents").isString())
+                .andExpect(jsonPath("$.data.content.[0].commentRecommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].commentCreatedAt").isString())
                 .andExpect(jsonPath("$.data.content.[0].pickOptionTitle").isString())
                 .andExpect(jsonPath("$.data.content.[0].pickOptionType").isString())
@@ -121,6 +120,25 @@ public class MyPageControllerTestUsedMockService extends SupportControllerTest {
     }
 
     @Test
+    @DisplayName("회원이 작성한 댓글을 조회할 때 회원이 유효하지 않으면 예외가 발생한다.")
+    void getMyWrittenCommentsMemberException() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 6);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/mypage/comments")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    @Disabled
+    @Test
     @DisplayName("회원이 작성한 댓글을 조회할 때 기술블로그 댓글 아이디가 없으면 예외가 발생한다.")
     void getMyWrittenCommentsTechCommentIdBindException() throws Exception {
         // given
@@ -144,6 +162,7 @@ public class MyPageControllerTestUsedMockService extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
+    @Disabled
     @Test
     @DisplayName("회원이 작성한 댓글을 조회할 때 픽픽픽 댓글 아이디가 없으면 예외가 발생한다.")
     void getMyWrittenCommentsPickCommentIdBindException() throws Exception {
@@ -174,6 +193,7 @@ public class MyPageControllerTestUsedMockService extends SupportControllerTest {
                                                                            Long commentId,
                                                                            String commentType,
                                                                            String commentContents,
+                                                                           Long commentRecommendTotalCount,
                                                                            LocalDateTime commentCreatedAt,
                                                                            String pickOptionTitle,
                                                                            String pickOptionType) {
@@ -184,6 +204,7 @@ public class MyPageControllerTestUsedMockService extends SupportControllerTest {
                 .commentId(commentId)
                 .commentType(commentType)
                 .commentContents(commentContents)
+                .commentRecommendTotalCount(commentRecommendTotalCount)
                 .commentCreatedAt(commentCreatedAt)
                 .pickOptionTitle(pickOptionTitle)
                 .pickOptionType(pickOptionType)
