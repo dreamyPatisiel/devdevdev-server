@@ -22,7 +22,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
@@ -321,10 +321,12 @@ class TechArticleControllerTest extends SupportControllerTest {
     void getTechArticleByAnonymous() throws Exception {
         // given
         Long id = firstTechArticle.getId();
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
 
         // when // then
         mockMvc.perform(get("/devdevdev/api/v1/articles/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("Anonymous-Member-Id", anonymousMemberId)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -345,7 +347,8 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.viewTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.commentTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.popularScore").isNumber());
+                .andExpect(jsonPath("$.data.popularScore").isNumber())
+                .andExpect(jsonPath("$.data.isRecommended").isBoolean());
     }
 
     @Test
@@ -385,7 +388,8 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.recommendTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.commentTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.popularScore").isNumber())
-                .andExpect(jsonPath("$.data.isBookmarked").isBoolean());
+                .andExpect(jsonPath("$.data.isBookmarked").isBoolean())
+                .andExpect(jsonPath("$.data.isRecommended").isBoolean());
     }
 
     @Test
@@ -537,6 +541,78 @@ class TechArticleControllerTest extends SupportControllerTest {
 
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/bookmark", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(INVALID_MEMBER_NOT_FOUND_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청한다.")
+    void updateRecommend() throws Exception {
+        // given
+        Long id = firstTechArticle.getId();
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.techArticleId").isNumber())
+                .andExpect(jsonPath("$.data.status").isBoolean());
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
+    void updateRecommendNotFoundTechArticleException() throws Exception {
+        // given
+        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+                new Count(1L),
+                new Count(1L),
+                new Count(1L), null, company);
+        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
+        Long id = savedTechArticle.getId() + 1;
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").value(NOT_FOUND_TECH_ARTICLE_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.NOT_FOUND.value()));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청할 때 존재하지 않는 회원이라면 예외가 발생한다.")
+    void updateRecommendNotFoundMemberException() throws Exception {
+        // given
+        Long id = firstTechArticle.getId();
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/recommend", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))

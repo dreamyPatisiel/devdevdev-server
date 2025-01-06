@@ -1,10 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_ANONYMOUS_MEMBER_ID_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_VOTE_SAME_PICK_OPTION_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
-
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
@@ -13,12 +8,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.*;
+import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.VotePickOptionException;
@@ -27,20 +18,7 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickModifyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRegisterResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickUploadImageResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.VotePickResponse;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -48,8 +26,15 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -60,8 +45,8 @@ public class GuestPickService extends PickCommonService implements PickService {
 
     private final PickPopularScorePolicy pickPopularScorePolicy;
     private final PickVoteRepository pickVoteRepository;
-    private final AnonymousMemberRepository anonymousMemberRepository;
     private final TimeProvider timeProvider;
+    private final AnonymousMemberService anonymousMemberService;
 
     public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
                             PickBestCommentsPolicy pickBestCommentsPolicy,
@@ -69,12 +54,12 @@ public class GuestPickService extends PickCommonService implements PickService {
                             PickCommentRecommendRepository pickCommentRecommendRepository,
                             PickPopularScorePolicy pickPopularScorePolicy,
                             PickVoteRepository pickVoteRepository,
-                            AnonymousMemberRepository anonymousMemberRepository, TimeProvider timeProvider) {
+                            TimeProvider timeProvider, AnonymousMemberService anonymousMemberService) {
         super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
                 pickCommentRecommendRepository);
         this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickVoteRepository = pickVoteRepository;
-        this.anonymousMemberRepository = anonymousMemberRepository;
+        this.anonymousMemberService = anonymousMemberService;
         this.timeProvider = timeProvider;
     }
 
@@ -86,7 +71,7 @@ public class GuestPickService extends PickCommonService implements PickService {
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // anonymousMemberId 검증
-        AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 조회
         Slice<Pick> picks = pickRepository.findPicksByCursor(pageable, pickId, pickSort);
@@ -123,7 +108,7 @@ public class GuestPickService extends PickCommonService implements PickService {
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 익명 회원 조회 또는 생성
-        AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 상세 조회(pickOption 페치조인)
         Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
@@ -146,15 +131,6 @@ public class GuestPickService extends PickCommonService implements PickService {
         return PickDetailResponse.of(findPick, findPick.getMember(), anonymousMember, pickDetailOptions);
     }
 
-    private AnonymousMember findOrCreateAnonymousMember(String anonymousMemberId) {
-        // 익명 사용자 검증
-        validateAnonymousMemberId(anonymousMemberId);
-
-        // 익명회원 조회 또는 생성
-        return anonymousMemberRepository.findByAnonymousMemberId(anonymousMemberId)
-                .orElseGet(() -> anonymousMemberRepository.save(AnonymousMember.create(anonymousMemberId)));
-    }
-
     /**
      * 익명 회원이 픽픽픽을 투표한다.
      */
@@ -171,7 +147,7 @@ public class GuestPickService extends PickCommonService implements PickService {
         String anonymousMemberId = votePickOptionDto.getAnonymousMemberId();
 
         // 익명 회원을 조회하거나 생성
-        AnonymousMember anonymousMember = findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
         Optional<PickVote> pickVoteOptional = pickVoteRepository.findWithPickAndPickOptionByPickIdAndAnonymousMemberAndDeletedAtIsNull(
                 pickId, anonymousMember);
@@ -298,12 +274,6 @@ public class GuestPickService extends PickCommonService implements PickService {
     @Override
     public List<SimilarPickResponse> findTop3SimilarPicks(Long pickId) {
         return super.findTop3SimilarPicks(pickId);
-    }
-
-    private void validateAnonymousMemberId(String anonymousMemberId) {
-        if (!StringUtils.hasText(anonymousMemberId)) {
-            throw new IllegalArgumentException(INVALID_ANONYMOUS_MEMBER_ID_MESSAGE);
-        }
     }
 
     @Override

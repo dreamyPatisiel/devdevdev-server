@@ -486,7 +486,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("일반 회원이 픽픽픽을 작성하면 픽픽픽은 대기(READY) 상태이다.")
+    @DisplayName("일반 회원이 픽픽픽을 작성하면 픽픽픽은 승인(APPROVAL) 상태이다.")
     void registerPickRoleUser() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -531,7 +531,7 @@ class MemberPickServiceTest {
         assertAll(
                 () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
                 () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
-                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.READY),
+                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.APPROVAL),
                 () -> assertThat(findPick.getPickOptions()).hasSize(2)
                         .extracting("title", "contents")
                         .containsAnyOf(

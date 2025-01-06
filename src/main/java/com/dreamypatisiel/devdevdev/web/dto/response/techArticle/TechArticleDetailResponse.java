@@ -1,13 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.techArticle;
 
-import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.isBookmarkedByMember;
-
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Data;
+
+import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.*;
 
 @Data
 public class TechArticleDetailResponse {
@@ -27,13 +28,13 @@ public class TechArticleDetailResponse {
     public final Long commentTotalCount;
     public final Long popularScore;
     public final Boolean isBookmarked;
+    public final Boolean isRecommended;
 
     @Builder
     private TechArticleDetailResponse(String elasticId, String thumbnailUrl, String techArticleUrl, String title,
-                                      String contents,
-                                      CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
-                                      Long recommendTotalCount, Long commentTotalCount, Long popularScore,
-                                      Boolean isBookmarked) {
+                                      String contents, CompanyResponse company, LocalDate regDate, String author,
+                                      Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore,
+                                      Boolean isBookmarked, Boolean isRecommended) {
         this.elasticId = elasticId;
         this.thumbnailUrl = thumbnailUrl;
         this.techArticleUrl = techArticleUrl;
@@ -47,11 +48,13 @@ public class TechArticleDetailResponse {
         this.recommendTotalCount = recommendTotalCount;
         this.commentTotalCount = commentTotalCount;
         this.popularScore = popularScore;
+        this.isRecommended = isRecommended;
     }
 
     public static TechArticleDetailResponse of(TechArticle techArticle,
                                                ElasticTechArticle elasticTechArticle,
-                                               CompanyResponse companyResponse) {
+                                               CompanyResponse companyResponse,
+                                               AnonymousMember anonymousMember) {
         return TechArticleDetailResponse.builder()
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
@@ -66,6 +69,7 @@ public class TechArticleDetailResponse {
                 .author(elasticTechArticle.getAuthor())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .isBookmarked(false)
+                .isRecommended(isRecommendedByAnonymousMember(techArticle, anonymousMember))
                 .build();
     }
 
@@ -87,6 +91,7 @@ public class TechArticleDetailResponse {
                 .author(elasticTechArticle.getAuthor())
                 .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
                 .isBookmarked(isBookmarkedByMember(techArticle, member))
+                .isRecommended(isRecommendedByMember(techArticle, member))
                 .build();
     }
 

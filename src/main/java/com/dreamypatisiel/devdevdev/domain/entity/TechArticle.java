@@ -78,6 +78,9 @@ public class TechArticle extends BasicTime {
     @OneToMany(mappedBy = "techArticle")
     private List<Bookmark> bookmarks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "techArticle")
+    private List<TechArticleRecommend> recommends = new ArrayList<>();
+
     @Builder
     private TechArticle(Title title, Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount,
                         Count popularScore,
@@ -134,6 +137,10 @@ public class TechArticle extends BasicTime {
         this.popularScore = this.calculatePopularScore(policy);
     }
 
+    private Count calculatePopularScore(TechArticlePopularScorePolicy policy) {
+        return policy.calculatePopularScore(this);
+    }
+
     public void changeCompany(Company company) {
         company.getTechArticles().add(this);
         this.company = company;
@@ -143,15 +150,20 @@ public class TechArticle extends BasicTime {
         this.viewTotalCount = Count.plusOne(this.viewTotalCount);
     }
 
-    private Count calculatePopularScore(TechArticlePopularScorePolicy policy) {
-        return policy.calculatePopularScore(this);
-    }
-
     public void incrementCommentCount() {
         this.commentTotalCount = Count.plusOne(this.commentTotalCount);
     }
 
     public void decrementCommentCount() {
         this.commentTotalCount = Count.minusOne(this.commentTotalCount);
+    }
+
+
+    public void incrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.plusOne(this.recommendTotalCount);
+    }
+
+    public void decrementRecommendTotalCount() {
+        this.recommendTotalCount = Count.minusOne(this.recommendTotalCount);
     }
 }

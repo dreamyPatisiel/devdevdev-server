@@ -102,6 +102,8 @@ public class CookieUtils {
                 nickname, DEFAULT_MAX_AGE, false, true);
         addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL,
                 member.getEmailAsString(), DEFAULT_MAX_AGE, false, true);
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN,
+                String.valueOf(member.isAdmin()), DEFAULT_MAX_AGE, false, true);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {

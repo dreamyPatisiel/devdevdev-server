@@ -125,12 +125,13 @@ public class Pick extends BasicTime {
         pick.popularScore = Count.defaultCount();
         pick.blameTotalCount = Count.defaultCount();
         pick.author = author;
-        pick.contentStatus = getDefaultContentStatusByMemberRole(member);
+        pick.contentStatus = ContentStatus.APPROVAL;
         pick.member = member;
 
         return pick;
     }
 
+    @Deprecated // 신고 기능 추가로 인한 삭제
     private static ContentStatus getDefaultContentStatusByMemberRole(Member member) {
         if (member.isAdmin()) {
             return ContentStatus.APPROVAL;
