@@ -587,16 +587,16 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         PickComment pickComment4 = createPickComment(pick, member, null, pickComment1, pickComment3, "픽픽픽 댓글4", false,
                 3L);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment1);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment2);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment3);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment4);
 
         // 기술블로그 회사 생성
@@ -613,16 +613,16 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         TechComment techComment3 = createTechComment(techArticle, member, techComment1, techComment2, "기술블로그 댓글3", 2L);
         TechComment techComment4 = createTechComment(techArticle, member, techComment1, techComment3, "기술블로그 댓글4", 3L);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment1);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment2);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment3);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment4);
 
         Pageable pageable = PageRequest.of(0, 6);
@@ -742,7 +742,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         AuditingHandler auditingHandler = mock(AuditingHandler.class);
         auditingHandler.setDateTimeProvider(dateTimeProvider);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
 
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -782,25 +782,25 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         PickComment pickComment7 = createPickComment(pick, member, null, pickComment1, pickComment6, "픽픽픽 댓글7", false,
                 6L);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment1);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment2);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment3);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment4);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment5);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment6);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment7);
 
         // 기술블로그 회사 생성
@@ -817,16 +817,16 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         TechComment techComment3 = createTechComment(techArticle, member, techComment1, techComment2, "기술블로그 댓글3", 2L);
         TechComment techComment4 = createTechComment(techArticle, member, techComment1, techComment3, "기술블로그 댓글4", 3L);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment1);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment2);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment3);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment4);
 
         Pageable pageable = PageRequest.of(0, 6);
@@ -917,7 +917,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         AuditingHandler auditingHandler = mock(AuditingHandler.class);
         auditingHandler.setDateTimeProvider(dateTimeProvider);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
 
         // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -951,16 +951,16 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         PickComment pickComment4 = createPickComment(pick, member, null, pickComment1, pickComment3, "픽픽픽 댓글4", false,
                 3L);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment1);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment2);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment3);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0, 0, 0)));
         pickCommentRepository.save(pickComment4);
 
         // 기술블로그 회사 생성
@@ -980,25 +980,25 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         TechComment techComment6 = createTechComment(techArticle, member, techComment1, techComment5, "기술블로그 댓글6", 5L);
         TechComment techComment7 = createTechComment(techArticle, member, techComment1, techComment6, "기술블로그 댓글7", 6L);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment1);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment2);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment3);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment4);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 9, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 9, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment5);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 10, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 10, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment6);
 
-        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 11, 1, 0, 0)));
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 11, 1, 0, 0, 0, 0)));
         techCommentRepository.save(techComment7);
 
         Pageable pageable = PageRequest.of(0, 6);
