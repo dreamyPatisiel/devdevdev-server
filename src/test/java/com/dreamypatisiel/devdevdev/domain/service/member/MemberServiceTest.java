@@ -646,23 +646,20 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         assertThat(page1.getContent()).hasSize(6)
                 .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
-                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType", "commentCreatedAt")
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
                 .containsExactly(
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment4.getId(),
                                 "TECH_ARTICLE", techComment4.getContents().getCommentContents(),
                                 techComment4.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment4.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment3.getId(),
                                 "TECH_ARTICLE", techComment3.getContents().getCommentContents(),
                                 techComment3.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment3.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment2.getId(),
                                 "TECH_ARTICLE", techComment2.getContents().getCommentContents(),
                                 techComment2.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment2.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment1.getId(),
                                 "TECH_ARTICLE", techComment1.getContents().getCommentContents(),
                                 techComment1.getRecommendTotalCount().getCount(),
@@ -671,13 +668,11 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment4.getId(),
                                 "PICK", pickComment4.getContents().getCommentContents(),
                                 pickComment4.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment4.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment3.getId(),
                                 "PICK", pickComment3.getContents().getCommentContents(),
                                 pickComment3.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment3.getCreatedAt())
+                                null, null)
                 );
 
         // 두 번째 페이지
@@ -699,18 +694,16 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         assertThat(page2.getContent()).hasSize(2)
                 .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
-                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType", "commentCreatedAt")
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
                 .containsExactly(
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment2.getId(),
                                 "PICK", pickComment2.getContents().getCommentContents(),
                                 pickComment2.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment2.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment1.getId(),
                                 "PICK", pickComment1.getContents().getCommentContents(),
                                 pickComment1.getRecommendTotalCount().getCount(),
-                                pickOption.getTitle().getTitle(), pickOption.getPickOptionType().name(),
-                                pickComment1.getCreatedAt())
+                                pickOption.getTitle().getTitle(), pickOption.getPickOptionType().name())
                 );
     }
 
@@ -849,38 +842,32 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         assertThat(page1.getContent()).hasSize(6)
                 .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
-                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType", "commentCreatedAt")
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
                 .containsExactly(
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment7.getId(),
                                 "PICK", pickComment7.getContents().getCommentContents(),
                                 pickComment7.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment7.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment6.getId(),
                                 "PICK", pickComment6.getContents().getCommentContents(),
                                 pickComment6.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment6.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment5.getId(),
                                 "PICK", pickComment5.getContents().getCommentContents(),
                                 pickComment5.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment5.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment4.getId(),
                                 "PICK", pickComment4.getContents().getCommentContents(),
                                 pickComment4.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment4.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment3.getId(),
                                 "PICK", pickComment3.getContents().getCommentContents(),
                                 pickComment3.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment3.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment2.getId(),
                                 "PICK", pickComment2.getContents().getCommentContents(),
                                 pickComment2.getRecommendTotalCount().getCount(),
-                                null, null,
-                                pickComment2.getCreatedAt())
+                                null, null)
                 );
 
         pickCommentId = pickComment2.getId();
@@ -899,13 +886,12 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         assertThat(page2.getContent()).hasSize(1)
                 .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
-                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType", "commentCreatedAt")
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
                 .containsExactly(
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment1.getId(),
                                 "PICK", pickComment1.getContents().getCommentContents(),
                                 pickComment1.getRecommendTotalCount().getCount(),
-                                pickOption.getTitle().getTitle(), pickOption.getPickOptionType().name(),
-                                pickComment1.getCreatedAt())
+                                pickOption.getTitle().getTitle(), pickOption.getPickOptionType().name())
                 );
     }
 
@@ -1022,38 +1008,32 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         assertThat(page1.getContent()).hasSize(6)
                 .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
-                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType", "commentCreatedAt")
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
                 .containsExactly(
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment7.getId(),
                                 "TECH_ARTICLE", techComment7.getContents().getCommentContents(),
                                 techComment7.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment7.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment6.getId(),
                                 "TECH_ARTICLE", techComment6.getContents().getCommentContents(),
                                 techComment6.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment6.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment5.getId(),
                                 "TECH_ARTICLE", techComment5.getContents().getCommentContents(),
                                 techComment5.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment5.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment4.getId(),
                                 "TECH_ARTICLE", techComment4.getContents().getCommentContents(),
                                 techComment4.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment4.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment3.getId(),
                                 "TECH_ARTICLE", techComment3.getContents().getCommentContents(),
                                 techComment3.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment3.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment2.getId(),
                                 "TECH_ARTICLE", techComment2.getContents().getCommentContents(),
                                 techComment2.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment2.getCreatedAt())
+                                null, null)
                 );
 
         // 두 번째 페이지
@@ -1079,8 +1059,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment1.getId(),
                                 "TECH_ARTICLE", techComment1.getContents().getCommentContents(),
                                 techComment1.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment1.getCreatedAt())
+                                null, null)
                 );
     }
 
