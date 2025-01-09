@@ -663,8 +663,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment1.getId(),
                                 "TECH_ARTICLE", techComment1.getContents().getCommentContents(),
                                 techComment1.getRecommendTotalCount().getCount(),
-                                null, null,
-                                techComment1.getCreatedAt()),
+                                null, null),
                         Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment4.getId(),
                                 "PICK", pickComment4.getContents().getCommentContents(),
                                 pickComment4.getRecommendTotalCount().getCount(),
@@ -1054,7 +1053,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         assertThat(page2.getContent()).hasSize(1)
                 .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
-                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType", "commentCreatedAt")
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
                 .containsExactly(
                         Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment1.getId(),
                                 "TECH_ARTICLE", techComment1.getContents().getCommentContents(),
