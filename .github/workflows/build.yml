@@ -54,7 +54,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build and Test with Gradle
-        run: ./gradlew bootJar -Pprofile=dev
+        run: ./gradlew bootJar -Pprofile=dev --info
 
 
         
