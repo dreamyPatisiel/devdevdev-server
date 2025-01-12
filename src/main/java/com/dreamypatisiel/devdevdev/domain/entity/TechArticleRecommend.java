@@ -70,4 +70,12 @@ public class TechArticleRecommend extends BasicTime {
     public boolean isRecommended() {
         return this.status;
     }
+
+    public boolean isAnonymousMemberNotNull() {
+        return this.anonymousMember != null;
+    }
+    public boolean isMemberNotNull() {
+        return this.member != null;
+    }
+
 }

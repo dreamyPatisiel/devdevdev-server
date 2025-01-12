@@ -18,7 +18,9 @@ public class TechArticleResponseUtils {
 
     public static boolean isRecommendedByMember(TechArticle techArticle, Member member) {
         Optional<TechArticleRecommend> recommends = techArticle.getRecommends().stream()
-                .filter(recommend -> recommend.getMember().isEqualsId(member.getId()))
+                .filter(recommend ->
+                        recommend.isMemberNotNull()
+                        && recommend.getMember().isEqualsId(member.getId()))
                 .findAny();
 
         return recommends.map(TechArticleRecommend::isRecommended).orElse(false);
@@ -30,7 +32,9 @@ public class TechArticleResponseUtils {
         }
 
         Optional<TechArticleRecommend> recommends = techArticle.getRecommends().stream()
-                .filter(recommend -> recommend.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()))
+                .filter(recommend ->
+                        recommend.isAnonymousMemberNotNull()
+                        && recommend.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()))
                 .findAny();
 
         return recommends.map(TechArticleRecommend::isRecommended).orElse(false);
