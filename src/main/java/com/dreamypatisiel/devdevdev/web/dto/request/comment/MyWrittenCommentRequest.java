@@ -7,11 +7,12 @@ import lombok.Data;
 public class MyWrittenCommentRequest {
     private Long pickCommentId;
     private Long techCommentId;
-    private MyWrittenCommentSort commentSort;
+    private MyWrittenCommentFilter commentFilter;
 
-    public MyWrittenCommentRequest(Long pickCommentId, Long techCommentId, MyWrittenCommentSort myWrittenCommentSort) {
+    public MyWrittenCommentRequest(Long pickCommentId, Long techCommentId,
+                                   MyWrittenCommentFilter myWrittenCommentSort) {
         this.pickCommentId = Objects.requireNonNullElse(pickCommentId, Long.MAX_VALUE);
         this.techCommentId = Objects.requireNonNullElse(techCommentId, Long.MAX_VALUE);
-        this.commentSort = Objects.requireNonNullElse(myWrittenCommentSort, MyWrittenCommentSort.ALL);
+        this.commentFilter = Objects.requireNonNullElse(myWrittenCommentSort, MyWrittenCommentFilter.ALL);
     }
 }

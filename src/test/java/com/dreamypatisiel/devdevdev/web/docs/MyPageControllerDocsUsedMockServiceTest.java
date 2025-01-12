@@ -100,7 +100,7 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
                         parameterWithName("size").optional().description("조회되는 데이터 수"),
                         parameterWithName("pickCommentId").optional().description("가장 작은 픽픽픽 아이디"),
                         parameterWithName("techCommentId").optional().description("가장 작은 기술블로그 아이디"),
-                        parameterWithName("commentSort").optional().description("댓글 정렬 기준")
+                        parameterWithName("commentFilter").optional().description("댓글 정렬 기준")
                                 .attributes(myWrittenCommentSort())
                 ),
                 responseFields(

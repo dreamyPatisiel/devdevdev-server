@@ -25,8 +25,8 @@ import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
@@ -245,7 +245,7 @@ public class MemberService {
 
         Long pickCommentId = myWrittenCommentRequest.getPickCommentId();
         Long techCommentId = myWrittenCommentRequest.getTechCommentId();
-        MyWrittenCommentSort myWrittenCommentSort = myWrittenCommentRequest.getCommentSort();
+        MyWrittenCommentFilter myWrittenCommentSort = myWrittenCommentRequest.getCommentFilter();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);

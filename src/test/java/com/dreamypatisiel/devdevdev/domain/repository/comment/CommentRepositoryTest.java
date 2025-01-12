@@ -28,7 +28,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -150,7 +150,7 @@ class CommentRepositoryTest {
 
         // when
         SliceCustom<MyWrittenCommentDto> findMyWrittenComments = commentRepository.findMyWrittenCommentsByCursor(
-                member.getId(), pickCommentId, techCommentId, MyWrittenCommentSort.ALL, pageable);
+                member.getId(), pickCommentId, techCommentId, MyWrittenCommentFilter.ALL, pageable);
 
         // then
         assertThat(findMyWrittenComments.getTotalElements()).isEqualTo(6);

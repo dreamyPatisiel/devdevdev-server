@@ -13,7 +13,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDt
 import com.dreamypatisiel.devdevdev.domain.repository.comment.QMyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -96,7 +96,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                         new QMyWrittenCommentDto(pick.id,
                                 pick.title.title,
                                 pickComment.id,
-                                Expressions.constant(MyWrittenCommentSort.PICK.name()),
+                                Expressions.constant(MyWrittenCommentFilter.PICK.name()),
                                 pickComment.contents.commentContents,
                                 pickComment.recommendTotalCount.count,
                                 pickComment.createdAt,

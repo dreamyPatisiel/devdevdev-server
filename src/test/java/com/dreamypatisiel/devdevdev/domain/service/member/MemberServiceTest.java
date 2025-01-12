@@ -54,8 +54,8 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
@@ -633,7 +633,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         Long pickCommentId = pickComment4.getId() + 1L;
 
         MyWrittenCommentRequest myWrittenCommentRequest = new MyWrittenCommentRequest(pickCommentId, techCommentId,
-                MyWrittenCommentSort.ALL);
+                MyWrittenCommentFilter.ALL);
 
         SliceCustom<MyWrittenCommentResponse> page1 = memberService.findMyWrittenComments(pageable,
                 myWrittenCommentRequest, authentication);
@@ -680,7 +680,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         pickCommentId = pickComment3.getId();
 
         MyWrittenCommentRequest myWrittenCommentRequest2 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
-                MyWrittenCommentSort.ALL);
+                MyWrittenCommentFilter.ALL);
 
         SliceCustom<MyWrittenCommentResponse> page2 = memberService.findMyWrittenComments(pageable,
                 myWrittenCommentRequest2, authentication);
@@ -718,7 +718,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         Pageable pageable = PageRequest.of(0, 6);
         MyWrittenCommentRequest myWrittenCommentRequest = new MyWrittenCommentRequest(0L, 0L,
-                MyWrittenCommentSort.ALL);
+                MyWrittenCommentFilter.ALL);
 
         // when // then
         assertThatThrownBy(() -> memberService.findMyWrittenComments(pageable, myWrittenCommentRequest, authentication))
@@ -828,7 +828,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         Long pickCommentId = pickComment7.getId() + 1L;
 
         MyWrittenCommentRequest myWrittenCommentRequest1 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
-                MyWrittenCommentSort.PICK);
+                MyWrittenCommentFilter.PICK);
 
         SliceCustom<MyWrittenCommentResponse> page1 = memberService.findMyWrittenComments(pageable,
                 myWrittenCommentRequest1, authentication);
@@ -872,7 +872,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         pickCommentId = pickComment2.getId();
 
         MyWrittenCommentRequest myWrittenCommentRequest2 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
-                MyWrittenCommentSort.PICK);
+                MyWrittenCommentFilter.PICK);
 
         SliceCustom<MyWrittenCommentResponse> page2 = memberService.findMyWrittenComments(pageable,
                 myWrittenCommentRequest2, authentication);
@@ -994,7 +994,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         Long pickCommentId = pickComment4.getId() + 1L;
 
         MyWrittenCommentRequest myWrittenCommentRequest1 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
-                MyWrittenCommentSort.TECH_ARTICLE);
+                MyWrittenCommentFilter.TECH_ARTICLE);
 
         SliceCustom<MyWrittenCommentResponse> page1 = memberService.findMyWrittenComments(pageable,
                 myWrittenCommentRequest1, authentication);
@@ -1040,7 +1040,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         techCommentId = techComment2.getId();
 
         MyWrittenCommentRequest myWrittenCommentRequest2 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
-                MyWrittenCommentSort.TECH_ARTICLE);
+                MyWrittenCommentFilter.TECH_ARTICLE);
 
         SliceCustom<MyWrittenCommentResponse> page2 = memberService.findMyWrittenComments(pageable,
                 myWrittenCommentRequest2, authentication);

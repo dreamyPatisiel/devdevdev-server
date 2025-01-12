@@ -10,7 +10,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -115,7 +115,7 @@ public interface ApiDocsFormatGenerator {
     }
 
     static Attributes.Attribute myWrittenCommentSort() {
-        String blamePathType = Arrays.stream(MyWrittenCommentSort.values())
+        String blamePathType = Arrays.stream(MyWrittenCommentFilter.values())
                 .map(Enum::name)
                 .collect(Collectors.joining(COMMA));
 

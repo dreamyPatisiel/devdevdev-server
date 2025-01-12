@@ -9,7 +9,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDt
 import com.dreamypatisiel.devdevdev.domain.repository.comment.QMyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -72,7 +72,7 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
                         new QMyWrittenCommentDto(techArticle.id,
                                 techArticle.title.title,
                                 techComment.id,
-                                Expressions.constant(MyWrittenCommentSort.TECH_ARTICLE.name()),
+                                Expressions.constant(MyWrittenCommentFilter.TECH_ARTICLE.name()),
                                 techComment.contents.commentContents,
                                 techComment.recommendTotalCount.count,
                                 techComment.createdAt,

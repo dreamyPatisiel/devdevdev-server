@@ -4,7 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.comment.mybatis.CommentMap
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentSort;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -21,16 +21,16 @@ public class CommentRepository {
     public SliceCustom<MyWrittenCommentDto> findMyWrittenCommentsByCursor(Long memberId,
                                                                           Long pickCommentId,
                                                                           Long techCommentId,
-                                                                          MyWrittenCommentSort myWrittenCommentSort,
+                                                                          MyWrittenCommentFilter myWrittenCommentSort,
                                                                           Pageable pageable) {
 
         // 픽픽픽
-        if (MyWrittenCommentSort.PICK.equals(myWrittenCommentSort)) {
+        if (MyWrittenCommentFilter.PICK.equals(myWrittenCommentSort)) {
             return pickCommentRepository.findMyWrittenPickCommentsByCursor(memberId, pickCommentId, pageable);
         }
 
         // 기술블로그
-        if (MyWrittenCommentSort.TECH_ARTICLE.equals(myWrittenCommentSort)) {
+        if (MyWrittenCommentFilter.TECH_ARTICLE.equals(myWrittenCommentSort)) {
             return techCommentRepository.findMyWrittenTechCommentsByCursor(memberId, techCommentId, pageable);
         }
 
