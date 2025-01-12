@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -34,6 +35,8 @@ public class TechArticle extends BasicTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private Title title;
 
     @Embedded
     @AttributeOverride(name = "count",
@@ -79,8 +82,10 @@ public class TechArticle extends BasicTime {
     private List<TechArticleRecommend> recommends = new ArrayList<>();
 
     @Builder
-    private TechArticle(Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount, Count popularScore,
+    private TechArticle(Title title, Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount,
+                        Count popularScore,
                         Url techArticleUrl, Company company, String elasticId) {
+        this.title = title;
         this.techArticleUrl = techArticleUrl;
         this.viewTotalCount = viewTotalCount;
         this.recommendTotalCount = recommendTotalCount;
@@ -92,6 +97,7 @@ public class TechArticle extends BasicTime {
 
     public static TechArticle createTechArticle(ElasticTechArticle elasticTechArticle, Company company) {
         TechArticle techArticle = TechArticle.builder()
+                .title(new Title(elasticTechArticle.getTitle()))
                 .techArticleUrl(new Url(elasticTechArticle.getTechArticleUrl()))
                 .viewTotalCount(new Count(elasticTechArticle.getViewTotalCount()))
                 .recommendTotalCount(new Count(elasticTechArticle.getRecommendTotalCount()))
@@ -105,10 +111,11 @@ public class TechArticle extends BasicTime {
         return techArticle;
     }
 
-    public static TechArticle createTechArticle(Url techArticleUrl, Count viewTotalCount, Count recommendTotalCount,
-                                                Count commentTotalCount,
-                                                Count popularScore, String elasticId, Company company) {
+    public static TechArticle createTechArticle(Title title, Url techArticleUrl, Count viewTotalCount,
+                                                Count recommendTotalCount, Count commentTotalCount, Count popularScore,
+                                                String elasticId, Company company) {
         return TechArticle.builder()
+                .title(title)
                 .techArticleUrl(techArticleUrl)
                 .viewTotalCount(viewTotalCount)
                 .recommendTotalCount(recommendTotalCount)

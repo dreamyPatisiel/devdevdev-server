@@ -10,6 +10,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.CommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyAnswerRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
@@ -17,18 +19,22 @@ import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuesti
 import com.dreamypatisiel.devdevdev.domain.repository.survey.custom.SurveyAnswerJdbcTemplateRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,6 +61,7 @@ public class MemberService {
     private final TimeProvider timeProvider;
     private final SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     private final SurveyAnswerJdbcTemplateRepository surveyAnswerJdbcTemplateRepository;
+    private final CommentRepository commentRepository;
 
     /**
      * 회원 탈퇴 회원의 북마크와 회원 정보를 삭제합니다.
@@ -169,11 +176,12 @@ public class MemberService {
     private SurveyAnswer createSurveyAnswerBy(SurveyQuestionOption option,
                                               Map<Long, RecordMemberExitSurveyQuestionOptionsRequest> surveyQuestionOptions,
                                               Member findMember) {
+
         if (!surveyQuestionOptions.containsKey(option.getId())) {
             return null;
         }
-        // surveyQuestionOptions 에 알맞은 키의 값이 존재하면
 
+        // surveyQuestionOptions 에 알맞은 키의 값이 존재하면
         String message = surveyQuestionOptions.get(option.getId()).getMessage();
         SurveyQuestion surveyQuestion = option.getSurveyQuestion();
 
@@ -187,7 +195,6 @@ public class MemberService {
         return SurveyAnswer.create(new CustomSurveyAnswer(message), findMember,
                 surveyQuestion, option);
     }
-
 
     /**
      * 회원 자신이 북마크한 기술블로그를 조회합니다.
@@ -225,5 +232,35 @@ public class MemberService {
                 .filter(elasticTechArticle -> techArticle.getElasticId().equals(elasticTechArticle.getId()))
                 .map(elasticTechArticle -> TechArticleMainResponse.of(techArticle, elasticTechArticle,
                         CompanyResponse.from(techArticle.getCompany()), member));
+    }
+
+    /**
+     * @Note: 회원이 작성한 댓글을 조회합니다.(삭제된 댓글 미포함)
+     * @Author: 장세웅
+     * @Since: 2024.12.31
+     */
+    public SliceCustom<MyWrittenCommentResponse> findMyWrittenComments(Pageable pageable,
+                                                                       MyWrittenCommentRequest myWrittenCommentRequest,
+                                                                       Authentication authentication) {
+
+        Long pickCommentId = myWrittenCommentRequest.getPickCommentId();
+        Long techCommentId = myWrittenCommentRequest.getTechCommentId();
+        MyWrittenCommentFilter myWrittenCommentSort = myWrittenCommentRequest.getCommentFilter();
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원이 작성한 댓글 조회
+        SliceCustom<MyWrittenCommentDto> findMyWrittenCommentsDto = commentRepository.findMyWrittenCommentsByCursor(
+                findMember.getId(), pickCommentId, techCommentId, myWrittenCommentSort, pageable);
+
+        // 데이터 가공
+        List<MyWrittenCommentResponse> myWrittenCommentResponses = MyWrittenCommentResponse.from(
+                findMyWrittenCommentsDto.getContent());
+
+        boolean hasNext = findMyWrittenCommentsDto.hasNext();
+        long totalElements = findMyWrittenCommentsDto.getTotalElements();
+
+        return new SliceCustom<>(myWrittenCommentResponses, pageable, hasNext, totalElements);
     }
 }

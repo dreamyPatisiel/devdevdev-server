@@ -88,7 +88,7 @@ public class Pick extends BasicTime {
     private List<String> embeddings;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @OneToMany(mappedBy = "pick")
