@@ -16,7 +16,7 @@
                pc.id                    as comment_id,
                'PICK'                   as comment_type,
                pc.contents              as comment_contents,
-               pc.recommend_total_count as recommend_total_count,
+               pc.recommend_total_count as comment_recommend_total_count,
                pc.created_at            as comment_created_at,
                po.title                 as pick_option_title,
                po.pick_option_type      as pick_option_type
@@ -34,7 +34,7 @@
                tc.id                    as comment_id,
                'TECH_ARTICLE'           as comment_type,
                tc.contents              as comment_contents,
-               tc.recommend_total_count as recommend_total_count,
+               tc.recommend_total_count as comment_recommend_total_count,
                tc.created_at            as comment_created_at,
                null                     as pick_option_title,
                null                     as pick_option_type
