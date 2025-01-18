@@ -150,7 +150,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
                 techArticle.decrementRecommendTotalCount();
                 techArticle.changePopularScore(techArticlePopularScorePolicy);
 
-                return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+                return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended(), techArticle.getRecommendTotalCount().getCount());
             }
 
             // 추천 상태가 아니라면 추천
@@ -160,7 +160,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
             techArticle.incrementRecommendTotalCount();
             techArticle.changePopularScore(techArticlePopularScorePolicy);
 
-            return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+            return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended(), techArticle.getRecommendTotalCount().getCount());
         }
 
         // 추천 생성
@@ -172,7 +172,7 @@ public class MemberTechArticleService extends TechArticleCommonService implement
 
         techArticleRecommendRepository.save(techArticleRecommend);
 
-        return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended());
+        return new TechArticleRecommendResponse(techArticle.getId(), techArticleRecommend.isRecommended(), techArticle.getRecommendTotalCount().getCount());
     }
 
     /**
