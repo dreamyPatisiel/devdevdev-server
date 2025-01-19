@@ -592,7 +592,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
 
                         fieldWithPath("data.techArticleId").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
-                        fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("추천 상태")
+                        fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("추천 상태"),
+                        fieldWithPath("data.recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 총 추천수")
                 )
         ));
     }

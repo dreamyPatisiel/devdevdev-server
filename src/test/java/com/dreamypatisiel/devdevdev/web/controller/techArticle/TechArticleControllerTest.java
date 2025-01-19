@@ -573,7 +573,9 @@ class TechArticleControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data").isMap())
                 .andExpect(jsonPath("$.data.techArticleId").isNumber())
-                .andExpect(jsonPath("$.data.status").isBoolean());
+                .andExpect(jsonPath("$.data.status").isBoolean())
+                .andExpect(jsonPath("$.data.recommendTotalCount").isNumber());
+
     }
 
     @Test

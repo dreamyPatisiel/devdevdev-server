@@ -310,6 +310,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
                 .satisfies(response -> {
                     assertThat(response.getTechArticleId()).isEqualTo(techArticleId);
                     assertThat(response.getStatus()).isTrue();
+                    assertThat(response.getRecommendTotalCount()).isEqualTo(recommendTotalCount.getCount() + 1);
                 });
 
         TechArticle techArticle = techArticleRepository.findById(techArticleId).get();
