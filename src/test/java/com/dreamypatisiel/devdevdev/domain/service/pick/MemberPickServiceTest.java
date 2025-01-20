@@ -163,7 +163,7 @@ class MemberPickServiceTest {
         Count pickPopularScore = new Count(0);
         String thumbnailUrl = "섬네일 이미지 url";
         String author = "운영자";
-        Pick pick = createPick(pickTitle, pickVoteTotalCount, pickViewTotalCount, pickCommentTotalCount,
+        Pick pick = createPick(member, pickTitle, pickVoteTotalCount, pickViewTotalCount, pickCommentTotalCount,
                 pickPopularScore, thumbnailUrl, author, ContentStatus.APPROVAL);
         pick.changePopularScore(pickPopularScorePolicy);
         pickRepository.save(pick);
@@ -208,6 +208,9 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 회원 전용 조회수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_VIEWED() {
         // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
 
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
@@ -220,21 +223,17 @@ class MemberPickServiceTest {
         Count pick4ViewTotalCount = new Count(4);
 
         Count count = new Count(1);
-        Pick pick1 = createPick(title1, count, pick1ViewTotalCount, count, count, thumbnailUrl, author,
+        Pick pick1 = createPick(member, title1, count, pick1ViewTotalCount, count, count, thumbnailUrl, author,
                 ContentStatus.APPROVAL);
-        Pick pick2 = createPick(title2, count, pick2ViewTotalCount, count, count, thumbnailUrl, author,
+        Pick pick2 = createPick(member, title2, count, pick2ViewTotalCount, count, count, thumbnailUrl, author,
                 ContentStatus.APPROVAL);
-        Pick pick3 = createPick(title3, count, pick3ViewTotalCount, count, count, thumbnailUrl, author,
+        Pick pick3 = createPick(member, title3, count, pick3ViewTotalCount, count, count, thumbnailUrl, author,
                 ContentStatus.REJECT);
-        Pick pick4 = createPick(title4, count, pick4ViewTotalCount, count, count, thumbnailUrl, author,
+        Pick pick4 = createPick(member, title4, count, pick4ViewTotalCount, count, count, thumbnailUrl, author,
                 ContentStatus.READY);
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4));
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
 
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -259,24 +258,27 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 익명 사용자 전용 생성시간 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainLATEST() {
         // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
         Title title4 = new Title("픽4타이틀");
         Count count = new Count(1);
 
-        Pick pick1 = createPick(title1, count, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL);
-        Pick pick2 = createPick(title2, count, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL);
-        Pick pick3 = createPick(title3, count, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL);
-        Pick pick4 = createPick(title4, count, count, count, count, thumbnailUrl, author, ContentStatus.READY);
-        Pick pick5 = createPick(title4, count, count, count, count, thumbnailUrl, author, ContentStatus.REJECT);
+        Pick pick1 = createPick(member, title1, count, count, count, count, thumbnailUrl, author,
+                ContentStatus.APPROVAL);
+        Pick pick2 = createPick(member, title2, count, count, count, count, thumbnailUrl, author,
+                ContentStatus.APPROVAL);
+        Pick pick3 = createPick(member, title3, count, count, count, count, thumbnailUrl, author,
+                ContentStatus.APPROVAL);
+        Pick pick4 = createPick(member, title4, count, count, count, count, thumbnailUrl, author, ContentStatus.READY);
+        Pick pick5 = createPick(member, title4, count, count, count, count, thumbnailUrl, author, ContentStatus.REJECT);
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5));
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
 
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -302,6 +304,10 @@ class MemberPickServiceTest {
     @DisplayName("회원이 커서 방식으로 익명 사용자 전용 댓글수 내림차순으로 픽픽픽 메인을 조회한다.")
     void findPicksMainMOST_COMMENTED() {
         // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
@@ -312,23 +318,19 @@ class MemberPickServiceTest {
         Count pick5commentTotalCount = new Count(5);
         Count count = new Count(1);
 
-        Pick pick1 = createPick(title1, count, count, pick1commentTotalCount, count, thumbnailUrl, author,
+        Pick pick1 = createPick(member, title1, count, count, pick1commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.APPROVAL);
-        Pick pick2 = createPick(title2, count, count, pick2commentTotalCount, count, thumbnailUrl, author,
+        Pick pick2 = createPick(member, title2, count, count, pick2commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.APPROVAL);
-        Pick pick3 = createPick(title3, count, count, pick3commentTotalCount, count, thumbnailUrl, author,
+        Pick pick3 = createPick(member, title3, count, count, pick3commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.APPROVAL);
-        Pick pick4 = createPick(title3, count, count, pick4commentTotalCount, count, thumbnailUrl, author,
+        Pick pick4 = createPick(member, title3, count, count, pick4commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.READY);
-        Pick pick5 = createPick(title3, count, count, pick5commentTotalCount, count, thumbnailUrl, author,
+        Pick pick5 = createPick(member, title3, count, count, pick5commentTotalCount, count, thumbnailUrl, author,
                 ContentStatus.REJECT);
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5));
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
 
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -357,6 +359,10 @@ class MemberPickServiceTest {
             + ", 조회수:" + PickPopularScorePolicy.VIEW_WEIGHT + ")")
     void findPicksMainPOPULAR() {
         // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
         Title title1 = new Title("픽1타이틀");
         Title title2 = new Title("픽2타이틀");
         Title title3 = new Title("픽3타이틀");
@@ -373,32 +379,33 @@ class MemberPickServiceTest {
         Count pick3VoteTotalCount = new Count(1);
         Count pick3ViewTotalCount = new Count(2);
 
-        Pick pick1 = createPick(new Title("픽1타이틀"), pick1VoteTotalCount, pick1ViewTotalCount, pick1commentTotalCount,
+        Pick pick1 = createPick(member, new Title("픽1타이틀"), pick1VoteTotalCount, pick1ViewTotalCount,
+                pick1commentTotalCount,
                 thumbnailUrl, author, ContentStatus.APPROVAL, List.of());
         pick1.changePopularScore(pickPopularScorePolicy);
 
-        Pick pick2 = createPick(new Title("픽2타이틀"), pick2VoteTotalCount, pick2ViewTotalCount, pick2commentTotalCount,
+        Pick pick2 = createPick(member, new Title("픽2타이틀"), pick2VoteTotalCount, pick2ViewTotalCount,
+                pick2commentTotalCount,
                 thumbnailUrl, author, ContentStatus.APPROVAL, List.of());
         pick2.changePopularScore(pickPopularScorePolicy);
 
-        Pick pick3 = createPick(new Title("픽3타이틀"), pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
+        Pick pick3 = createPick(member, new Title("픽3타이틀"), pick3VoteTotalCount, pick3ViewTotalCount,
+                pick3commentTotalCount,
                 thumbnailUrl, author, ContentStatus.APPROVAL, List.of());
         pick3.changePopularScore(pickPopularScorePolicy);
 
-        Pick pick4 = createPick(new Title("픽4타이틀"), pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
+        Pick pick4 = createPick(member, new Title("픽4타이틀"), pick3VoteTotalCount, pick3ViewTotalCount,
+                pick3commentTotalCount,
                 thumbnailUrl, author, ContentStatus.READY, List.of());
         pick4.changePopularScore(pickPopularScorePolicy);
 
-        Pick pick5 = createPick(new Title("픽5타이틀"), pick3VoteTotalCount, pick3ViewTotalCount, pick3commentTotalCount,
+        Pick pick5 = createPick(member, new Title("픽5타이틀"), pick3VoteTotalCount, pick3ViewTotalCount,
+                pick3commentTotalCount,
                 thumbnailUrl, author, ContentStatus.REJECT, List.of());
         pick5.changePopularScore(pickPopularScorePolicy);
         pickRepository.saveAll(List.of(pick1, pick2, pick3, pick4, pick5));
 
         Pageable pageable = PageRequest.of(0, 10);
-
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
 
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -479,7 +486,7 @@ class MemberPickServiceTest {
     }
 
     @Test
-    @DisplayName("일반 회원이 픽픽픽을 작성하면 픽픽픽은 대기(READY) 상태이다.")
+    @DisplayName("일반 회원이 픽픽픽을 작성하면 픽픽픽은 승인(APPROVAL) 상태이다.")
     void registerPickRoleUser() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
@@ -524,7 +531,7 @@ class MemberPickServiceTest {
         assertAll(
                 () -> assertThat(findPick.getTitle()).isEqualTo(new Title("나의 픽픽픽")),
                 () -> assertThat(findPick.getAuthor()).isEqualTo(member.getName()),
-                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.READY),
+                () -> assertThat(findPick.getContentStatus()).isEqualTo(ContentStatus.APPROVAL),
                 () -> assertThat(findPick.getPickOptions()).hasSize(2)
                         .extracting("title", "contents")
                         .containsAnyOf(
@@ -1626,12 +1633,13 @@ class MemberPickServiceTest {
                 .build();
     }
 
-    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+    private Pick createPick(Member member, Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, Count pickPopularScore, String thumbnailUrl,
                             String author, ContentStatus contentStatus
     ) {
 
         return Pick.builder()
+                .member(member)
                 .title(title)
                 .voteTotalCount(pickVoteTotalCount)
                 .viewTotalCount(pickViewTotalCount)
@@ -1643,13 +1651,14 @@ class MemberPickServiceTest {
                 .build();
     }
 
-    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+    private Pick createPick(Member member, Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
                             ContentStatus contentStatus,
                             List<PickVote> pickVotes
     ) {
 
         Pick pick = Pick.builder()
+                .member(member)
                 .title(title)
                 .voteTotalCount(pickVoteTotalCount)
                 .viewTotalCount(pickViewTotalCount)

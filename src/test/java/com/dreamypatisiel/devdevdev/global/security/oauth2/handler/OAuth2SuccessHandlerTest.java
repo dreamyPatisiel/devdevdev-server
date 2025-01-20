@@ -104,13 +104,15 @@ class OAuth2SuccessHandlerTest {
         Cookie loginStatusCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS);
         Cookie nicknameCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME);
         Cookie emailCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL);
+        Cookie isAdmin = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN);
 
         assertAll(
                 () -> assertThat(accessCookie).isNotNull(),
                 () -> assertThat(refreshCookie).isNotNull(),
                 () -> assertThat(loginStatusCookie).isNotNull(),
                 () -> assertThat(nicknameCookie).isNotNull(),
-                () -> assertThat(emailCookie).isNotNull()
+                () -> assertThat(emailCookie).isNotNull(),
+                () -> assertThat(isAdmin).isNotNull()
         );
         assertAll(
                 () -> assertThat(accessCookie.isHttpOnly()).isFalse(),

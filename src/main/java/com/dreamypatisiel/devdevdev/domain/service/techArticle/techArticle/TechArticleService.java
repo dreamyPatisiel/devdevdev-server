@@ -4,17 +4,19 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSor
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleRecommendResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
 
 public interface TechArticleService {
     Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, String elasticId, TechArticleSort techArticleSort,
                                                    String keyword, Long companyId, Float score,
                                                    Authentication authentication);
 
-    TechArticleDetailResponse getTechArticle(Long techArticleId, Authentication authentication);
+    TechArticleDetailResponse getTechArticle(Long techArticleId, String anonymousMemberId, Authentication authentication);
 
     BookmarkResponse updateBookmark(Long techArticleId, Authentication authentication);
+
+    TechArticleRecommendResponse updateRecommend(Long techArticleId, String anonymousMemberId, Authentication authentication);
 }

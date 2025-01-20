@@ -61,6 +61,14 @@ spring:
           max-idle: 8
           min-idle: 2
 
+#MyBatis
+mybatis:
+  type-aliases-package: com.dreamypatisiel.devdevdev.domain.repository
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/**/*.xml
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
+    com.dreamypatisiel.devdevdev: TRACE
