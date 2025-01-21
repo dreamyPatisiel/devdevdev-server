@@ -1,8 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.dto.util;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +14,30 @@ public class TechArticleResponseUtils {
                 .findAny();
 
         return bookmarks.map(Bookmark::isBookmarked).orElse(false);
+    }
+
+    public static boolean isRecommendedByMember(TechArticle techArticle, Member member) {
+        Optional<TechArticleRecommend> recommends = techArticle.getRecommends().stream()
+                .filter(recommend ->
+                        recommend.isMemberNotNull()
+                        && recommend.getMember().isEqualsId(member.getId()))
+                .findAny();
+
+        return recommends.map(TechArticleRecommend::isRecommended).orElse(false);
+    }
+
+    public static boolean isRecommendedByAnonymousMember(TechArticle techArticle, AnonymousMember anonymousMember) {
+        if(anonymousMember == null) {
+            return false;
+        }
+
+        Optional<TechArticleRecommend> recommends = techArticle.getRecommends().stream()
+                .filter(recommend ->
+                        recommend.isAnonymousMemberNotNull()
+                        && recommend.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()))
+                .findAny();
+
+        return recommends.map(TechArticleRecommend::isRecommended).orElse(false);
     }
 
     public static boolean hasNextPage(List<TechArticleMainResponse> contents, Pageable pageable) {

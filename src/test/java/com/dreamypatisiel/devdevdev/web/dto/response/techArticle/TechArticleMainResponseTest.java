@@ -1,17 +1,19 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.techArticle;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class TechArticleMainResponseTest {
 
@@ -22,7 +24,8 @@ class TechArticleMainResponseTest {
         Company company = createCompany("꿈빛 파티시엘", "https://officialImageUrl.png",
                 "https://officialUrl.com", "https://careerUrl.com");
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
 
         ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId", "타이틀", LocalDate.now(),
@@ -47,7 +50,8 @@ class TechArticleMainResponseTest {
         Company company = createCompany("꿈빛 파티시엘", "https://officialImageUrl.png",
                 "https://officialUrl.com", "https://careerUrl.com");
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
 
         ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId", "타이틀", LocalDate.now(),

@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -30,7 +31,6 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
@@ -101,7 +101,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
@@ -128,7 +129,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
@@ -160,7 +162,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(2L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
@@ -189,7 +192,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
@@ -481,7 +485,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
@@ -608,7 +613,7 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false                        )
+                                false)
                 );
 
         TechCommentsResponse techCommentsResponse6 = response.getContent().get(0);
@@ -648,7 +653,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
@@ -940,7 +946,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
@@ -1086,8 +1093,8 @@ public class GuestTechCommentServiceTest {
         Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1261,8 +1268,8 @@ public class GuestTechCommentServiceTest {
         companyRepository.save(company);
 
         // 기술 블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
 
         // 댓글 생성

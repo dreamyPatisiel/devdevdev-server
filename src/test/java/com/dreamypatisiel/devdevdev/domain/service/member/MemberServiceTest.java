@@ -5,10 +5,15 @@ import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
@@ -17,6 +22,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
@@ -25,8 +33,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
@@ -35,26 +44,37 @@ import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptio
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionOptionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
+import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.auditing.AuditingHandler;
+import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -102,6 +122,12 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     @Autowired
     SurveyAnswerRepository surveyAnswerRepository;
+    @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
+    TechCommentRepository techCommentRepository;
+    @Autowired
+    PickCommentRepository pickCommentRepository;
 
     @Test
     @DisplayName("회원이 회원탈퇴 설문조사를 완료하지 않으면 탈퇴가 불가능하다.")
@@ -517,6 +543,579 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 () -> memberService.recordMemberExitSurveyAnswer(null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 작성한 픽픽픽, 기술블로그 댓글을 작성시간 내림차순으로 무한스크롤 방식으로 조회한다.")
+    void findMyWrittenComments_ALL() {
+        // given
+        DateTimeProvider dateTimeProvider = mock(DateTimeProvider.class);
+        AuditingHandler auditingHandler = mock(AuditingHandler.class);
+        auditingHandler.setDateTimeProvider(dateTimeProvider);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0)));
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick("픽픽픽", member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption pickOption = createPickOption(pick, "픽픽픽 A", PickOptionType.firstPickOption);
+        pickOptionRepository.save(pickOption);
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(pick, pickOption, member);
+        pickVoteRepository.save(pickVote);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment1 = createPickComment(pick, member, pickVote, null, null, "픽픽픽 댓글1", true, 0L);
+        PickComment pickComment2 = createPickComment(pick, member, null, pickComment1, pickComment1, "픽픽픽 댓글2", false,
+                1L);
+        PickComment pickComment3 = createPickComment(pick, member, null, pickComment1, pickComment2, "픽픽픽 댓글3", false,
+                2L);
+        PickComment pickComment4 = createPickComment(pick, member, null, pickComment1, pickComment3, "픽픽픽 댓글4", false,
+                3L);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment1);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment2);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment3);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment4);
+
+        // 기술블로그 회사 생성
+        Company company = createCompany("DreamyPatisiel");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = createTechArticle(company, "기술블로그 제목");
+        techArticleRepository.save(techArticle);
+
+        // 기술블로그 댓글 생성
+        TechComment techComment1 = createTechComment(techArticle, member, null, null, "기술블로그 댓글1", 0L);
+        TechComment techComment2 = createTechComment(techArticle, member, techComment1, techComment1, "기술블로그 댓글2", 1L);
+        TechComment techComment3 = createTechComment(techArticle, member, techComment1, techComment2, "기술블로그 댓글3", 2L);
+        TechComment techComment4 = createTechComment(techArticle, member, techComment1, techComment3, "기술블로그 댓글4", 3L);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment1);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment2);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment3);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment4);
+
+        Pageable pageable = PageRequest.of(0, 6);
+
+        // 첫 번째 페이지
+        // when1
+        Long techCommentId = techComment4.getId() + 1L;
+        Long pickCommentId = pickComment4.getId() + 1L;
+
+        MyWrittenCommentRequest myWrittenCommentRequest = new MyWrittenCommentRequest(pickCommentId, techCommentId,
+                MyWrittenCommentFilter.ALL);
+
+        SliceCustom<MyWrittenCommentResponse> page1 = memberService.findMyWrittenComments(pageable,
+                myWrittenCommentRequest, authentication);
+
+        // then1
+        assertAll(
+                () -> assertThat(page1.getTotalElements()).isEqualTo(8),
+                () -> assertThat(page1.hasNext()).isEqualTo(true)
+        );
+
+        assertThat(page1.getContent()).hasSize(6)
+                .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
+                .containsExactly(
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment4.getId(),
+                                "TECH_ARTICLE", techComment4.getContents().getCommentContents(),
+                                techComment4.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment3.getId(),
+                                "TECH_ARTICLE", techComment3.getContents().getCommentContents(),
+                                techComment3.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment2.getId(),
+                                "TECH_ARTICLE", techComment2.getContents().getCommentContents(),
+                                techComment2.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment1.getId(),
+                                "TECH_ARTICLE", techComment1.getContents().getCommentContents(),
+                                techComment1.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment4.getId(),
+                                "PICK", pickComment4.getContents().getCommentContents(),
+                                pickComment4.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment3.getId(),
+                                "PICK", pickComment3.getContents().getCommentContents(),
+                                pickComment3.getRecommendTotalCount().getCount(),
+                                null, null)
+                );
+
+        // 두 번째 페이지
+        // when2
+        techCommentId = techComment1.getId();
+        pickCommentId = pickComment3.getId();
+
+        MyWrittenCommentRequest myWrittenCommentRequest2 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
+                MyWrittenCommentFilter.ALL);
+
+        SliceCustom<MyWrittenCommentResponse> page2 = memberService.findMyWrittenComments(pageable,
+                myWrittenCommentRequest2, authentication);
+
+        // then2
+        assertAll(
+                () -> assertThat(page2.getTotalElements()).isEqualTo(8),
+                () -> assertThat(page2.hasNext()).isEqualTo(false)
+        );
+
+        assertThat(page2.getContent()).hasSize(2)
+                .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
+                .containsExactly(
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment2.getId(),
+                                "PICK", pickComment2.getContents().getCommentContents(),
+                                pickComment2.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment1.getId(),
+                                "PICK", pickComment1.getContents().getCommentContents(),
+                                pickComment1.getRecommendTotalCount().getCount(),
+                                pickOption.getTitle().getTitle(), pickOption.getPickOptionType().name())
+                );
+    }
+
+    @Test
+    @DisplayName("픽픽픽, 기술블로그 댓글을 작성시간 내림차순으로 무한스크롤 방식으로 조회할 때 회원이 아니면 예외가 발생한다.")
+    void findMyWrittenComments_INVALID_MEMBER_NOT_FOUND_MESSAGE() {
+        // given
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Pageable pageable = PageRequest.of(0, 6);
+        MyWrittenCommentRequest myWrittenCommentRequest = new MyWrittenCommentRequest(0L, 0L,
+                MyWrittenCommentFilter.ALL);
+
+        // when // then
+        assertThatThrownBy(() -> memberService.findMyWrittenComments(pageable, myWrittenCommentRequest, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 작성한 픽픽픽 댓글을 작성시간 내림차순으로 무한스크롤 방식으로 조회한다.")
+    void findMyWrittenComments_PICK() {
+        // given
+        DateTimeProvider dateTimeProvider = mock(DateTimeProvider.class);
+        AuditingHandler auditingHandler = mock(AuditingHandler.class);
+        auditingHandler.setDateTimeProvider(dateTimeProvider);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick("픽픽픽", member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption pickOption = createPickOption(pick, "픽픽픽 A", PickOptionType.firstPickOption);
+        pickOptionRepository.save(pickOption);
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(pick, pickOption, member);
+        pickVoteRepository.save(pickVote);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment1 = createPickComment(pick, member, pickVote, null, null, "픽픽픽 댓글1", true, 0L);
+        PickComment pickComment2 = createPickComment(pick, member, null, pickComment1, pickComment1, "픽픽픽 댓글2", false,
+                1L);
+        PickComment pickComment3 = createPickComment(pick, member, null, pickComment1, pickComment2, "픽픽픽 댓글3", false,
+                2L);
+        PickComment pickComment4 = createPickComment(pick, member, null, pickComment1, pickComment3, "픽픽픽 댓글4", false,
+                3L);
+        PickComment pickComment5 = createPickComment(pick, member, null, pickComment1, pickComment4, "픽픽픽 댓글5", false,
+                4L);
+        PickComment pickComment6 = createPickComment(pick, member, null, pickComment1, pickComment5, "픽픽픽 댓글6", false,
+                5L);
+        PickComment pickComment7 = createPickComment(pick, member, null, pickComment1, pickComment6, "픽픽픽 댓글7", false,
+                6L);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment1);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment2);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment3);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment4);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment5);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment6);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment7);
+
+        // 기술블로그 회사 생성
+        Company company = createCompany("DreamyPatisiel");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = createTechArticle(company, "기술블로그 제목");
+        techArticleRepository.save(techArticle);
+
+        // 기술블로그 댓글 생성
+        TechComment techComment1 = createTechComment(techArticle, member, null, null, "기술블로그 댓글1", 0L);
+        TechComment techComment2 = createTechComment(techArticle, member, techComment1, techComment1, "기술블로그 댓글2", 1L);
+        TechComment techComment3 = createTechComment(techArticle, member, techComment1, techComment2, "기술블로그 댓글3", 2L);
+        TechComment techComment4 = createTechComment(techArticle, member, techComment1, techComment3, "기술블로그 댓글4", 3L);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment1);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment2);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment3);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment4);
+
+        Pageable pageable = PageRequest.of(0, 6);
+
+        // 첫 번째 페이지
+        Long techCommentId = techComment4.getId() + 1L;
+        Long pickCommentId = pickComment7.getId() + 1L;
+
+        MyWrittenCommentRequest myWrittenCommentRequest1 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
+                MyWrittenCommentFilter.PICK);
+
+        SliceCustom<MyWrittenCommentResponse> page1 = memberService.findMyWrittenComments(pageable,
+                myWrittenCommentRequest1, authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(page1.getTotalElements()).isEqualTo(7),
+                () -> assertThat(page1.hasNext()).isEqualTo(true)
+        );
+
+        assertThat(page1.getContent()).hasSize(6)
+                .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
+                .containsExactly(
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment7.getId(),
+                                "PICK", pickComment7.getContents().getCommentContents(),
+                                pickComment7.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment6.getId(),
+                                "PICK", pickComment6.getContents().getCommentContents(),
+                                pickComment6.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment5.getId(),
+                                "PICK", pickComment5.getContents().getCommentContents(),
+                                pickComment5.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment4.getId(),
+                                "PICK", pickComment4.getContents().getCommentContents(),
+                                pickComment4.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment3.getId(),
+                                "PICK", pickComment3.getContents().getCommentContents(),
+                                pickComment3.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment2.getId(),
+                                "PICK", pickComment2.getContents().getCommentContents(),
+                                pickComment2.getRecommendTotalCount().getCount(),
+                                null, null)
+                );
+
+        pickCommentId = pickComment2.getId();
+
+        MyWrittenCommentRequest myWrittenCommentRequest2 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
+                MyWrittenCommentFilter.PICK);
+
+        SliceCustom<MyWrittenCommentResponse> page2 = memberService.findMyWrittenComments(pageable,
+                myWrittenCommentRequest2, authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(page2.getTotalElements()).isEqualTo(7),
+                () -> assertThat(page2.hasNext()).isEqualTo(false)
+        );
+
+        assertThat(page2.getContent()).hasSize(1)
+                .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
+                .containsExactly(
+                        Tuple.tuple(pick.getId(), pick.getTitle().getTitle(), pickComment1.getId(),
+                                "PICK", pickComment1.getContents().getCommentContents(),
+                                pickComment1.getRecommendTotalCount().getCount(),
+                                pickOption.getTitle().getTitle(), pickOption.getPickOptionType().name())
+                );
+    }
+
+    @Test
+    @DisplayName("회원이 작성한 기술블로그 댓글을 작성시간 내림차순으로 무한스크롤 방식으로 조회한다.")
+    void findMyWrittenComments_TECH() {
+        // given
+        DateTimeProvider dateTimeProvider = mock(DateTimeProvider.class);
+        AuditingHandler auditingHandler = mock(AuditingHandler.class);
+        auditingHandler.setDateTimeProvider(dateTimeProvider);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성
+        Pick pick = createPick("픽픽픽", member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption pickOption = createPickOption(pick, "픽픽픽 A", PickOptionType.firstPickOption);
+        pickOptionRepository.save(pickOption);
+
+        // 픽픽픽 투표 생성
+        PickVote pickVote = createPickVote(pick, pickOption, member);
+        pickVoteRepository.save(pickVote);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment1 = createPickComment(pick, member, pickVote, null, null, "픽픽픽 댓글1", true, 0L);
+        PickComment pickComment2 = createPickComment(pick, member, null, pickComment1, pickComment1, "픽픽픽 댓글2", false,
+                1L);
+        PickComment pickComment3 = createPickComment(pick, member, null, pickComment1, pickComment2, "픽픽픽 댓글3", false,
+                2L);
+        PickComment pickComment4 = createPickComment(pick, member, null, pickComment1, pickComment3, "픽픽픽 댓글4", false,
+                3L);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment1);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 2, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment2);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 3, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment3);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 4, 1, 0, 0, 0, 0)));
+        pickCommentRepository.save(pickComment4);
+
+        // 기술블로그 회사 생성
+        Company company = createCompany("DreamyPatisiel");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = createTechArticle(company, "기술블로그 제목");
+        techArticleRepository.save(techArticle);
+
+        // 기술블로그 댓글 생성
+        TechComment techComment1 = createTechComment(techArticle, member, null, null, "기술블로그 댓글1", 0L);
+        TechComment techComment2 = createTechComment(techArticle, member, techComment1, techComment1, "기술블로그 댓글2", 1L);
+        TechComment techComment3 = createTechComment(techArticle, member, techComment1, techComment2, "기술블로그 댓글3", 2L);
+        TechComment techComment4 = createTechComment(techArticle, member, techComment1, techComment3, "기술블로그 댓글4", 3L);
+        TechComment techComment5 = createTechComment(techArticle, member, techComment1, techComment4, "기술블로그 댓글5", 4L);
+        TechComment techComment6 = createTechComment(techArticle, member, techComment1, techComment5, "기술블로그 댓글6", 5L);
+        TechComment techComment7 = createTechComment(techArticle, member, techComment1, techComment6, "기술블로그 댓글7", 6L);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 5, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment1);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 6, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment2);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 7, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment3);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 8, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment4);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 9, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment5);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 10, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment6);
+
+        when(dateTimeProvider.getNow()).thenReturn(Optional.of(LocalDateTime.of(2024, 11, 1, 0, 0, 0, 0)));
+        techCommentRepository.save(techComment7);
+
+        Pageable pageable = PageRequest.of(0, 6);
+
+        // 첫 번째 페이지
+        // when1
+        Long techCommentId = techComment7.getId() + 1L;
+        Long pickCommentId = pickComment4.getId() + 1L;
+
+        MyWrittenCommentRequest myWrittenCommentRequest1 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
+                MyWrittenCommentFilter.TECH_ARTICLE);
+
+        SliceCustom<MyWrittenCommentResponse> page1 = memberService.findMyWrittenComments(pageable,
+                myWrittenCommentRequest1, authentication);
+
+        // then1
+        assertAll(
+                () -> assertThat(page1.getTotalElements()).isEqualTo(7),
+                () -> assertThat(page1.hasNext()).isEqualTo(true)
+        );
+
+        assertThat(page1.getContent()).hasSize(6)
+                .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
+                .containsExactly(
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment7.getId(),
+                                "TECH_ARTICLE", techComment7.getContents().getCommentContents(),
+                                techComment7.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment6.getId(),
+                                "TECH_ARTICLE", techComment6.getContents().getCommentContents(),
+                                techComment6.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment5.getId(),
+                                "TECH_ARTICLE", techComment5.getContents().getCommentContents(),
+                                techComment5.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment4.getId(),
+                                "TECH_ARTICLE", techComment4.getContents().getCommentContents(),
+                                techComment4.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment3.getId(),
+                                "TECH_ARTICLE", techComment3.getContents().getCommentContents(),
+                                techComment3.getRecommendTotalCount().getCount(),
+                                null, null),
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment2.getId(),
+                                "TECH_ARTICLE", techComment2.getContents().getCommentContents(),
+                                techComment2.getRecommendTotalCount().getCount(),
+                                null, null)
+                );
+
+        // 두 번째 페이지
+        // when2
+        techCommentId = techComment2.getId();
+
+        MyWrittenCommentRequest myWrittenCommentRequest2 = new MyWrittenCommentRequest(pickCommentId, techCommentId,
+                MyWrittenCommentFilter.TECH_ARTICLE);
+
+        SliceCustom<MyWrittenCommentResponse> page2 = memberService.findMyWrittenComments(pageable,
+                myWrittenCommentRequest2, authentication);
+
+        // then2
+        assertAll(
+                () -> assertThat(page2.getTotalElements()).isEqualTo(7),
+                () -> assertThat(page2.hasNext()).isEqualTo(false)
+        );
+
+        assertThat(page2.getContent()).hasSize(1)
+                .extracting("postId", "postTitle", "commentId", "commentType", "commentContents",
+                        "commentRecommendTotalCount", "pickOptionTitle", "pickOptionType")
+                .containsExactly(
+                        Tuple.tuple(techArticle.getId(), techArticle.getTitle().getTitle(), techComment1.getId(),
+                                "TECH_ARTICLE", techComment1.getContents().getCommentContents(),
+                                techComment1.getRecommendTotalCount().getCount(),
+                                null, null)
+                );
+    }
+
+    private static TechComment createTechComment(TechArticle techArticle, Member member, TechComment originParent,
+                                                 TechComment parent, String contents, Long recommendTotalCount) {
+        return TechComment.builder()
+                .techArticle(techArticle)
+                .createdBy(member)
+                .originParent(originParent)
+                .parent(parent)
+                .contents(new CommentContents(contents))
+                .recommendTotalCount(new Count(recommendTotalCount))
+                .build();
+    }
+
+    private static TechArticle createTechArticle(Company company, String title) {
+        return TechArticle.builder()
+                .company(company)
+                .title(new Title(title))
+                .build();
+    }
+
+    private static Company createCompany(String companyName) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .build();
+    }
+
+    private static PickOption createPickOption(Pick pick, String title, PickOptionType pickOptionType) {
+        return PickOption.builder()
+                .pick(pick)
+                .title(new Title(title))
+                .pickOptionType(pickOptionType)
+                .build();
+    }
+
+    private static Pick createPick(String title, Member member) {
+        return Pick.builder()
+                .title(new Title(title))
+                .member(member)
+                .contentStatus(ContentStatus.APPROVAL)
+                .build();
+    }
+
+    private static PickComment createPickComment(Pick pick, Member member, PickVote pickVote, PickComment originParent,
+                                                 PickComment parent, String contents, Boolean isPublic,
+                                                 Long recommendTotalCount) {
+        return PickComment.builder()
+                .pick(pick)
+                .createdBy(member)
+                .pickVote(pickVote)
+                .originParent(originParent)
+                .parent(parent)
+                .contents(new CommentContents(contents))
+                .isPublic(isPublic)
+                .recommendTotalCount(new Count(recommendTotalCount))
+                .build();
     }
 
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,

@@ -10,6 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 public class CommentResponseUtil {
+    
     public static String getCommentByPickCommentStatus(PickComment pickComment) {
         if (pickComment.isDeleted()) {
             // 댓글 작성자에 의해 삭제된 경우
@@ -86,5 +87,9 @@ public class CommentResponseUtil {
                 .findAny();
 
         return recommends.map(TechCommentRecommend::isRecommended).orElse(false);
+    }
+
+    public static String createUniqueCommentId(String commentType, Long postId, Long commentId) {
+        return commentType + "_" + postId + "_" + commentId;
     }
 }

@@ -102,6 +102,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class PickControllerDocsTest extends SupportControllerDocsTest {
 
+
     @Autowired
     PickRepository pickRepository;
     @Autowired

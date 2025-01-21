@@ -28,10 +28,11 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
@@ -353,7 +354,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")
@@ -382,7 +384,9 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.commentTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 댓글수"),
                         fieldWithPath("data.popularScore").type(JsonFieldType.NUMBER).description("기술블로그 인기점수"),
                         fieldWithPath("data.isBookmarked").attributes(authenticationType()).type(JsonFieldType.BOOLEAN)
-                                .description("회원의 북마크 여부(익명 사용자는 필드가 없다)")
+                                .description("회원의 북마크 여부(익명 사용자는 필드가 없다)"),
+                        fieldWithPath("data.isRecommended").attributes(authenticationType()).type(JsonFieldType.BOOLEAN)
+                                .description("회원의 추천 여부")
                 )
         ));
     }
@@ -424,12 +428,19 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
@@ -453,7 +464,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticIdException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L),
                 new Count(1L), null, company);
@@ -482,7 +494,8 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundElasticTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Url("https://example.com"), new Count(1L),
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
                 new Count(1L),
                 new Count(1L),
                 new Count(1L), "elasticId", company);
@@ -541,6 +554,46 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.techArticleId").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
                         fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("북마크 상태")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 기술블로그 추천을 요청한다.")
+    void updateRecommend() throws Exception {
+        // given
+        Long id = firstTechArticle.getId();
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/articles/{techArticleId}/recommend", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print());
+
+        // Docs
+        actions.andDo(document("tech-article-recommend",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
+                ),
+                pathParameters(
+                        parameterWithName("techArticleId").description("기술블로그 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.techArticleId").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
+                        fieldWithPath("data.status").type(JsonFieldType.BOOLEAN).description("추천 상태"),
+                        fieldWithPath("data.recommendTotalCount").type(JsonFieldType.NUMBER).description("기술블로그 총 추천수")
                 )
         ));
     }
