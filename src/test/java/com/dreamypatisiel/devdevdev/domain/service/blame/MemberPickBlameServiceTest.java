@@ -82,7 +82,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 신고 종류 생성
@@ -124,7 +124,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 신고 종류 생성
@@ -185,7 +185,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", contentStatus, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", contentStatus, new Count(0L));
         pickRepository.save(pick);
 
         BlamePickDto blamePickDto = new BlamePickDto(pick.getId(), null, 0L, null);
@@ -206,7 +206,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         BlamePickDto blamePickDto = new BlamePickDto(pick.getId(), null, 0L, null);
@@ -227,7 +227,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -273,7 +273,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -338,7 +338,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         BlamePickDto blamePickDto = new BlamePickDto(pick.getId(), 0L, 0L, null);
@@ -360,7 +360,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", contentStatus, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", contentStatus, new Count(0L));
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -385,7 +385,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 삭제 상태의 픽픽픽 댓글 생성
@@ -411,7 +411,7 @@ class MemberPickBlameServiceTest {
         memberRepository.save(member);
 
         // 픽픽픽 생성
-        Pick pick = createPick("픽픽픽", ContentStatus.APPROVAL, new Count(0L));
+        Pick pick = createPick(member, "픽픽픽", ContentStatus.APPROVAL, new Count(0L));
         pickRepository.save(pick);
 
         // 픽픽픽 댓글 생성
@@ -439,8 +439,9 @@ class MemberPickBlameServiceTest {
         return pickComment;
     }
 
-    private Pick createPick(String title, ContentStatus contentStatus, Count commentTotalCount) {
+    private Pick createPick(Member member, String title, ContentStatus contentStatus, Count commentTotalCount) {
         return Pick.builder()
+                .member(member)
                 .title(new Title(title))
                 .contentStatus(contentStatus)
                 .commentTotalCount(commentTotalCount)

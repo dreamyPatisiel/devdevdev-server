@@ -105,24 +105,27 @@ class PickControllerTest extends SupportControllerTest {
     @DisplayName("회원이 픽픽픽 메인을 조회한다.")
     void getPicksMainByMember() throws Exception {
         // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
         PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1),
                 firstPickOption);
         PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(1),
                 secondPickOption);
+
         Title title = new Title("픽1타이틀");
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = createPick(title, count, count, count,
-                thumbnailUrl, author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
+        Pick pick = createPick(member, title, count, count, count, thumbnailUrl, author, ContentStatus.APPROVAL,
+                List.of(pickOption1, pickOption2), List.of());
         pick.changePopularScore(pickPopularScorePolicy);
 
         pickRepository.save(pick);
         pickOptionRepository.saveAll(List.of(pickOption1, pickOption2));
 
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
@@ -183,15 +186,21 @@ class PickControllerTest extends SupportControllerTest {
     @DisplayName("익명 사용자가 픽픽픽 메인을 조회한다.")
     void getPicksMainByAnonymous() throws Exception {
         // given
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
         PickOption pickOption1 = createPickOption(new Title("픽옵션1"), new PickOptionContents("픽콘텐츠1"), new Count(1),
                 firstPickOption);
         PickOption pickOption2 = createPickOption(new Title("픽옵션2"), new PickOptionContents("픽콘텐츠2"), new Count(1),
                 secondPickOption);
+
         Title title = new Title("픽1타이틀");
         Count count = new Count(2);
         String thumbnailUrl = "https://devdevdev.co.kr/devdevdev/api/v1/pick/image/1";
         String author = "운영자";
-        Pick pick = createPick(title, count, count, count,
+        Pick pick = createPick(member, title, count, count, count,
                 thumbnailUrl, author, ContentStatus.APPROVAL, List.of(pickOption1, pickOption2), List.of());
         pick.changePopularScore(pickPopularScorePolicy);
 
@@ -1389,13 +1398,14 @@ class PickControllerTest extends SupportControllerTest {
                 .build();
     }
 
-    private Pick createPick(Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
+    private Pick createPick(Member member, Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
                             ContentStatus contentStatus,
                             List<PickOption> pickOptions, List<PickVote> pickVotes
     ) {
 
         Pick pick = Pick.builder()
+                .member(member)
                 .title(title)
                 .voteTotalCount(pickVoteTotalCount)
                 .viewTotalCount(pickViewTotalCount)

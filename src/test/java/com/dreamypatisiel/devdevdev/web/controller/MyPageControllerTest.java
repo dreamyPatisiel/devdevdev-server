@@ -36,7 +36,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
@@ -74,6 +74,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -91,6 +92,8 @@ class MyPageControllerTest extends SupportControllerTest {
     private static final int TEST_ARTICLES_COUNT = 20;
     private static List<TechArticle> techArticles;
 
+    @Autowired
+    ApplicationContext applicationContext;
     @Autowired
     TechArticleRepository techArticleRepository;
     @Autowired
