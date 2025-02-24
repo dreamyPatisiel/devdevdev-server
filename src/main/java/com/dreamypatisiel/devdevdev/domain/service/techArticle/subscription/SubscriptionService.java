@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Subscription;
 import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -40,7 +41,7 @@ public class SubscriptionService {
 
         // 이미 구독한 경우
         if (isSubscription) {
-            throw new SubscriptionException(CompanyExceptionMessage.ALREADY_SUBSCRIBED_COMPANY_MESSAGE);
+            throw new SubscriptionException(SubscriptionExceptionMessage.ALREADY_SUBSCRIBED_COMPANY_MESSAGE);
         }
 
         // 기업 조회
@@ -51,5 +52,25 @@ public class SubscriptionService {
         Subscription subscription = subscriptionRepository.save(Subscription.create(findMember, findCompany));
 
         return new SubscriptionResponse(subscription.getId());
+    }
+
+    /**
+     * @Note: 기업 구독 취소
+     * @Author: 장세웅
+     * @Since: 2025-02-24
+     */
+    @Transactional
+    public void unsubscribe(Long companyId, Authentication authentication) {
+
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 기업 기술블로그 구독 이력 조회
+        // Todo: 소영님 아래 쿼리에서 member, company left join 발생하는데 이유를 알까요?
+        Subscription findSubscription = subscriptionRepository.findByMemberIdAndCompanyId(findMember.getId(), companyId)
+                .orElseThrow(() -> new NotFoundException(SubscriptionExceptionMessage.NOT_FOUND_SUBSCRIPTION_MESSAGE));
+
+        // 삭제
+        subscriptionRepository.delete(findSubscription);
     }
 }
