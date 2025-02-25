@@ -55,11 +55,4 @@ public class Company extends BasicTime {
         this.officialImageUrl = officialImageUrl;
         this.careerUrl = careerUrl;
     }
-
-    public void changeTechArticles(List<TechArticle> techArticles) {
-        for (TechArticle techArticle : techArticles) {
-            techArticle.changeCompany(this);
-            this.getTechArticles().add(techArticle);
-        }
-    }
 }

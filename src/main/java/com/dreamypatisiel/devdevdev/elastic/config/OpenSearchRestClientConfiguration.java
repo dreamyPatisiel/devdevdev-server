@@ -15,8 +15,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
+@Profile({"!test"})
 @Configuration
 @EnableElasticsearchRepositories(basePackages = "com.dreamypatisiel.devdevdev.elastic.domain.repository")
 public class OpenSearchRestClientConfiguration extends AbstractOpenSearchConfiguration {
