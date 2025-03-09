@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.subscription;
 
+import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.SubscriptionService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -8,12 +9,17 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionRes
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "구독 API", description = "구독 관련 기능")
@@ -30,11 +36,10 @@ public class SubscriptionController {
      * @Since: 2025-02-24
      */
     @Operation(summary = "기업 구독하기", description = "구독 가능한 기업을 구독합니다.")
-    @PostMapping("/subscription/{companyId}")
+    @PostMapping("/subscriptions/{companyId}")
     public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(@PathVariable Long companyId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
 
         SubscriptionResponse response = subscriptionService.subscribe(companyId, authentication);
@@ -48,15 +53,29 @@ public class SubscriptionController {
      * @Since: 2025-02-24
      */
     @Operation(summary = "기업 구독 취소", description = "구독한 기업을 구독 취소 합니다.")
-    @DeleteMapping("/subscription/{companyId}")
+    @DeleteMapping("/subscriptions/{companyId}")
     public ResponseEntity<BasicResponse<Void>> unsubscribe(@PathVariable Long companyId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
 
         subscriptionService.unsubscribe(companyId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success());
+    }
+
+    @Operation(summary = "구독한 가능한 기업 목록 조회", description = "구독 가능한 기업 목록을 조회합니다.")
+    @GetMapping("/subscriptions/companies")
+    public ResponseEntity<BasicResponse<Slice<SubscriableCompanyResponse>>> getSubscriptions(
+            @PageableDefault(size = 20) Pageable pageable,
+            @RequestParam Long companyId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
+
+        Slice<SubscriableCompanyResponse> response = subscriptionService.getSubscribableCompany(pageable,
+                companyId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
     }
 }
