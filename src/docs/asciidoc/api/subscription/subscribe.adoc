@@ -1,5 +1,5 @@
 [[Subscribe]]
-== 기업 구독 API(POST: /devdevdev/api/v1/subscription/{companyId})
+== 기업 구독 API(POST: /devdevdev/api/v1/subscriptions/{companyId})
 
 * 회원은 구독한 가능한 기업을 구독 할 수 있다.
 

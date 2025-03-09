@@ -29,7 +29,7 @@ public class SubscriptionController {
      * @Since: 2025-02-24
      */
     @Operation(summary = "기업 구독하기", description = "구독 가능한 기업을 구독합니다.")
-    @PostMapping("/subscription/{companyId}")
+    @PostMapping("/subscriptions/{companyId}")
     public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(@PathVariable Long companyId) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionResponse response = subscriptionService.subscribe(companyId, authentication);
@@ -43,7 +43,7 @@ public class SubscriptionController {
      * @Since: 2025-02-24
      */
     @Operation(summary = "기업 구독 취소", description = "구독한 기업을 구독 취소 합니다.")
-    @DeleteMapping("/subscription/{companyId}")
+    @DeleteMapping("/subscriptions/{companyId}")
     public ResponseEntity<BasicResponse<Void>> unsubscribe(@PathVariable Long companyId) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         subscriptionService.unsubscribe(companyId, authentication);
