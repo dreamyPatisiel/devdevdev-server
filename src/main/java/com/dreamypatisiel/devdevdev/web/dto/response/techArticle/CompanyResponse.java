@@ -33,7 +33,7 @@ public class CompanyResponse {
                 .id(company.getId())
                 .name(company.getName().getCompanyName())
                 .careerUrl(company.getCareerUrl().getUrl())
-                .officialImageUrl(company.getOfficialImageUrl())
+                .officialImageUrl(company.getOfficialImageUrl().getUrl())
                 .build();
     }
 }

@@ -95,7 +95,7 @@ public class ElasticsearchSupportTest {
                 .name(new CompanyName(companyName))
                 .officialUrl(new Url(officialUrl))
                 .careerUrl(new Url(careerUrl))
-                .officialImageUrl(officialImageUrl)
+                .officialImageUrl(new Url(officialImageUrl))
                 .build();
     }
 }

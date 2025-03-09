@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.subscription;
 
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.SubscriptionService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class SubscriptionController {
 
-    private final SubscriptionService subscriptionService;
+    private final TechArticleServiceStrategy techArticleServiceStrategy;
 
     /**
      * @Note: 기업 구독하기
@@ -31,7 +32,11 @@ public class SubscriptionController {
     @Operation(summary = "기업 구독하기", description = "구독 가능한 기업을 구독합니다.")
     @PostMapping("/subscription/{companyId}")
     public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(@PathVariable Long companyId) {
+
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
+
         SubscriptionResponse response = subscriptionService.subscribe(companyId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -45,7 +50,11 @@ public class SubscriptionController {
     @Operation(summary = "기업 구독 취소", description = "구독한 기업을 구독 취소 합니다.")
     @DeleteMapping("/subscription/{companyId}")
     public ResponseEntity<BasicResponse<Void>> unsubscribe(@PathVariable Long companyId) {
+
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
+
         subscriptionService.unsubscribe(companyId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success());
