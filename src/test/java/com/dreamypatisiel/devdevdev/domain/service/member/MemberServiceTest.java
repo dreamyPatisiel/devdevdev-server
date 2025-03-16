@@ -9,30 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
@@ -45,6 +28,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepos
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
@@ -63,9 +47,11 @@ import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQues
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.groups.Tuple;
@@ -128,6 +114,8 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     TechCommentRepository techCommentRepository;
     @Autowired
     PickCommentRepository pickCommentRepository;
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
 
     @Test
     @DisplayName("회원이 회원탈퇴 설문조사를 완료하지 않으면 탈퇴가 불가능하다.")
@@ -445,7 +433,7 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     }
 
     @Test
-    @DisplayName("커서 방식으로 기술블로그 북마크 목록을 조회할 때 회원이 없으면 예외가 발생한다.")
+    @DisplayName("회원이 커서 방식으로 기술블로그 북마크 목록을 조회할 때 회원이 없으면 예외가 발생한다.")
     void getBookmarkedTechArticlesNotFoundMemberException() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
@@ -1060,6 +1048,133 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                                 techComment1.getRecommendTotalCount().getCount(),
                                 null, null)
                 );
+    }
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
+    void findMySubscribedCompanies() {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 회사 생성
+        Company company1 = createCompany("Toss", "https://toss.tech",
+                "https://toss.im/career/jobs", "https://image.com", "토스", "금융");
+        Company company2 = createCompany("우아한 형제들", "https://techblog.woowahan.com",
+                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드");
+        Company company3 = createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
+                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드");
+        Company company4 = createCompany("채널톡", "https://channel.io/ko/blog",
+                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅");
+
+        List<Company> companies = List.of(company1, company2, company3, company4);
+        companyRepository.saveAll(companies);
+
+        // 회원 구독
+        Subscription subscription1 = Subscription.create(member, company1);
+        Subscription subscription2 = Subscription.create(member, company2);
+        List<Subscription> subscriptions = List.of(subscription1, subscription2);
+        subscriptionRepository.saveAll(subscriptions);
+
+        em.flush();
+        em.clear();
+
+        // when
+        SliceCustom<SubscribedCompanyResponse> mySubscribedCompanies = memberService.findMySubscribedCompanies(pageable, null, authentication);
+
+        // then
+        assertThat(mySubscribedCompanies)
+                .hasSize(pageable.getPageSize())
+                .extracting(SubscribedCompanyResponse::getIsSubscribed)
+                .contains(true);
+    }
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 다음페이지의 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
+    void findMySubscribedCompaniesByCursor() {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 회사 생성
+        Company company1 = createCompany("Toss", "https://toss.tech",
+                "https://toss.im/career/jobs", "https://image.com", "토스", "금융");
+        Company company2 = createCompany("우아한 형제들", "https://techblog.woowahan.com",
+                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드");
+        Company company3 = createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
+                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드");
+        Company company4 = createCompany("채널톡", "https://channel.io/ko/blog",
+                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅");
+
+        List<Company> companies = List.of(company1, company2, company3, company4);
+        companyRepository.saveAll(companies);
+
+        // 회원 구독
+        Subscription subscription1 = Subscription.create(member, company1);
+        Subscription subscription2 = Subscription.create(member, company2);
+        List<Subscription> subscriptions = List.of(subscription1, subscription2);
+        subscriptionRepository.saveAll(subscriptions);
+
+        em.flush();
+        em.clear();
+
+        // when
+        SliceCustom<SubscribedCompanyResponse> mySubscribedCompanies = memberService.findMySubscribedCompanies(pageable, company2.getId(), authentication);
+
+        // then
+        assertThat(mySubscribedCompanies)
+                .hasSize(pageable.getPageSize())
+                .extracting(SubscribedCompanyResponse::getCompanyId)
+                .contains(company1.getId());
+    }
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 자신이 구독한 기업 목록을 조회할 때 회원이 없으면 예외가 발생한다.")
+    void findMySubscribedCompaniesNotFoundMemberException() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(
+                () -> memberService.findMySubscribedCompanies(pageable, null, authentication))
+                .isInstanceOf(MemberException.class)
+                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    private static Company createCompany(String companyName, String officialUrl, String careerUrl,
+                                         String imageUrl, String description, String industry) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
+                .officialImageUrl(new Url(imageUrl))
+                .description(description)
+                .industry(industry)
+                .build();
     }
 
     private static TechComment createTechComment(TechArticle techArticle, Member member, TechComment originParent,

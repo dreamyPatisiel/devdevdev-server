@@ -7,7 +7,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.subscription.SubscribeCompan
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +68,7 @@ public class SubscriptionController {
     }
 
     /**
-     * @Note: 기업 구독 취소
+     * @Note: 구독한 가능한 기업 목록 조회
      * @Author: 장세웅
      * @Since: 2025-03-09
      */
@@ -76,7 +76,7 @@ public class SubscriptionController {
     @GetMapping("/subscriptions/companies")
     public ResponseEntity<BasicResponse<Slice<SubscriableCompanyResponse>>> getSubscriptions(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam Long companyId) {
+            @RequestParam(required = false) Long companyId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();

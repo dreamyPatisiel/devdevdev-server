@@ -15,18 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
@@ -48,6 +37,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuesti
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
@@ -59,9 +49,11 @@ import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieCo
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
@@ -119,6 +111,10 @@ class MyPageControllerTest extends SupportControllerTest {
     SurveyAnswerRepository surveyAnswerRepository;
     @Autowired
     SurveyQuestionOptionRepository surveyQuestionOptionRepository;
+    @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
     @Autowired
     TimeProvider timeProvider;
     @Autowired
@@ -776,6 +772,81 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
     }
 
+    @Test
+    @DisplayName("회원이 커서 방식으로 다음페이지의 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
+    void findMySubscribedCompaniesByCursor() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 회사 생성
+        Company company1 = createCompany("Toss", "https://toss.tech",
+                "https://toss.im/career/jobs", "https://image.com", "토스", "금융");
+        Company company2 = createCompany("우아한 형제들", "https://techblog.woowahan.com",
+                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드");
+        Company company3 = createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
+                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드");
+        Company company4 = createCompany("채널톡", "https://channel.io/ko/blog",
+                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅");
+
+        List<Company> companies = List.of(company1, company2, company3, company4);
+        companyRepository.saveAll(companies);
+
+        // 회원 구독
+        Subscription subscription1 = Subscription.create(member, company1);
+        Subscription subscription2 = Subscription.create(member, company2);
+        List<Subscription> subscriptions = List.of(subscription1, subscription2);
+        subscriptionRepository.saveAll(subscriptions);
+
+        // when
+        mockMvc.perform(get(DEFAULT_PATH_V1 + "/mypage/subscriptions/companies")
+                .queryParam("size", String.valueOf(pageable.getPageSize()))
+                .queryParam("companyId", "3")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                .characterEncoding(StandardCharsets.UTF_8))
+            .andDo(print())
+            .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.[0].companyId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].companyName").isString())
+                .andExpect(jsonPath("$.data.content.[0].companyImageUrl").isString())
+                .andExpect(jsonPath("$.data.content.[0].isSubscribed").isBoolean())
+                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
+                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
+                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
+                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
+                .andExpect(jsonPath("$.data.first").isBoolean())
+                .andExpect(jsonPath("$.data.last").isBoolean())
+                .andExpect(jsonPath("$.data.size").isNumber())
+                .andExpect(jsonPath("$.data.number").isNumber())
+                .andExpect(jsonPath("$.data.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
+                .andExpect(jsonPath("$.data.empty").isBoolean());
+    }
+
+
     private Long pickSetup(Member member, ContentStatus contentStatus, Title pickTitle, Title firstPickOptionTitle,
                            PickOptionContents firstPickOptionContents, Title secondPickOptinTitle,
                            PickOptionContents secondPickOptionContents) {
@@ -899,6 +970,18 @@ class MyPageControllerTest extends SupportControllerTest {
                 .officialImageUrl(new Url(officialImageUrl))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
+                .build();
+    }
+
+    private static Company createCompany(String companyName, String officialUrl, String careerUrl,
+                                         String imageUrl, String description, String industry) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
+                .officialImageUrl(new Url(imageUrl))
+                .description(description)
+                .industry(industry)
                 .build();
     }
 }
