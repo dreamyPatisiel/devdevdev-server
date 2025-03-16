@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServic
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.SubscriptionService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,6 +81,18 @@ public class SubscriptionController {
 
         Slice<SubscriableCompanyResponse> response = subscriptionService.getSubscribableCompany(pageable,
                 companyId, authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "구독 가능한 기업 상세 정보 조회", description = "구독 가능한 기업의 상세 정보를 조회합니다.")
+    @GetMapping("/subscriptions/companies/{companyId}")
+    public ResponseEntity<BasicResponse<CompanyDetailResponse>> getCompanyDetail(@PathVariable Long companyId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
+
+        CompanyDetailResponse response = subscriptionService.getCompanyDetail(companyId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
