@@ -59,7 +59,7 @@ jobs:
           rm -f appspec.yml
           rm -f deploy.sh
           cat ./appspec-prod.yml >> ./appspec.yml
-          cat ./deploy-proc.sh >> ./deploy.sh
+          cat ./deploy-prod.sh >> ./deploy.sh
 
       ## 테스트 코드에도 storage-s3, open-ai 가 필요함!
       - name: make application-test.yml
