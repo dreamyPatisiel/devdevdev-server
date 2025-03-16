@@ -9,8 +9,6 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import com.dreamypatisiel.devdevdev.LocalInitData;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticKeywordRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
@@ -42,11 +40,6 @@ import org.springframework.web.client.RestTemplate;
 public class SupportControllerDocsTest {
 
     protected String DEFAULT_PATH_V1 = "/devdevdev/api/v1";
-
-    @MockBean
-    ElasticKeywordRepository elasticKeywordRepository;
-    @MockBean
-    ElasticTechArticleRepository elasticTechArticleRepository;
 
     @Autowired
     protected ObjectMapper om;
