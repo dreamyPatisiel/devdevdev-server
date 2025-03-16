@@ -48,16 +48,16 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ls
-          rm Dockerfile
-          cat ./Dockerfile-dev >> ./Dockerfile
+          rm -f Dockerfile
+          cat ./Dockerfile-prod >> ./Dockerfile
 
       # appspec.yml, deploy.sh 주입
       - name: make appspec.yml, deploy.sh
         run: |
           cd $GITHUB_WORKSPACE
           ls
-          rm appspec.yml
-          rm deploy.sh
+          rm -f appspec.yml
+          rm -f deploy.sh
           cat ./appspec-prod.yml >> ./appspec.yml
           cat ./deploy-proc.sh >> ./deploy.sh
 
