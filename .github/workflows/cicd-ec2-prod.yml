@@ -36,7 +36,6 @@ jobs:
         run: |
           ## create application-prod.yml
           cd ./src/main/resources
-
           echo "${{ secrets.application_prod }}" >> ./application-prod.yml
           echo "${{ secrets.application_jwt_prod }}" >> ./application-jwt-prod.yml
           echo "${{ secrets.application_oauth2_prod }}" >> ./application-oauth2-prod.yml
@@ -44,23 +43,31 @@ jobs:
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           echo "${{ secrets.application_opensearch_prod }}" >> ./application-opensearch-prod.yml
 
-      # Dockerfile 주입
-      - name: make Dockerfile
+      # Dockerfile-prod 주입
+      - name: make Dockerfile-prod
         run: |
           cd $GITHUB_WORKSPACE
           ls
           rm Dockerfile
-          echo "${{ secrets.dockerfile_prod }}" >> ./Dockerfile
+          cat ./Dockerfile-dev >> ./Dockerfile
+
+      # appspec.yml, deploy.sh 주입
+      - name: make appspec.yml, deploy.sh
+        run: |
+          cd $GITHUB_WORKSPACE
+          ls
+          rm appspec.yml
+          rm deploy.sh
+          cat ./appspec-prod.yml >> ./appspec.yml
+          cat ./deploy-proc.sh >> ./deploy.sh
 
       ## 테스트 코드에도 storage-s3, open-ai 가 필요함!
       - name: make application-test.yml
         run: |
           cd ./src/test/resources
-          
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
-
         shell: bash
 
       ## Springboot 프로젝트 빌드
