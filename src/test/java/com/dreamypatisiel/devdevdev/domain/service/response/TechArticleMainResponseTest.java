@@ -21,7 +21,7 @@ class TechArticleMainResponseTest {
                 "http://example.com/", "설명", null, "작성자",
                 "꿈빛 파티시엘", 1L, 1L, 1L, 1L, 1L);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://companylogo.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
 
         TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
@@ -32,7 +32,7 @@ class TechArticleMainResponseTest {
                 companyResponse);
 
         // then
-        assertThat(techArticleMainResponse.getThumbnailUrl()).isEqualTo(company.getOfficialImageUrl());
+        assertThat(techArticleMainResponse.getThumbnailUrl()).isEqualTo(company.getOfficialImageUrl().getUrl());
     }
 
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,

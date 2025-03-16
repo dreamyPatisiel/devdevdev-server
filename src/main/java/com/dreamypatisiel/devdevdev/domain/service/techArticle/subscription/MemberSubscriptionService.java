@@ -7,10 +7,13 @@ import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom.dto.CompanyDetailDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.SubscriptionException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,9 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberSubscriptionService implements SubscriptionService {
 
     private final MemberProvider memberProvider;
-    
+
     private final CompanyRepository companyRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final TechArticleRepository techArticleRepository;
 
     /**
      * @Note: 기업 구독하기
@@ -112,5 +116,26 @@ public class MemberSubscriptionService implements SubscriptionService {
                 .collect(Collectors.toList());
 
         return new SliceImpl<>(response, pageable, findCompanies.hasNext());
+    }
+
+    /**
+     * @Note: 회원이 구독 가능한 기업 상세 정보를 조회한다.
+     * @Author: 장세웅
+     * @Since: 2025-03-12
+     */
+    @Override
+    public CompanyDetailResponse getCompanyDetail(Long companyId, Authentication authentication) {
+
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 기업 조회(구독 조인)
+        CompanyDetailDto findCompanyDetailDto = companyRepository.findCompanyDetailDtoByMemberIdAndCompanyId(
+                        findMember.getId(), companyId)
+                .orElseThrow(() -> new NotFoundException(CompanyExceptionMessage.NOT_FOUND_COMPANY_MESSAGE));
+
+        // 회사의 기술 블로그 총 갯수 조회
+        Long techArticleTotalCount = techArticleRepository.countByCompanyId(companyId);
+
+        return CompanyDetailResponse.createMemberCompanyDetailResponse(findCompanyDetailDto, techArticleTotalCount);
     }
 }

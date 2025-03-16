@@ -1,5 +1,5 @@
 [[Subscribable-Companies]]
-== 기업 구독 API(GET: /devdevdev/api/v1/subscriptions/companies)
+== 구독 가능한 기업 목록 조회 API(GET: /devdevdev/api/v1/subscriptions/companies)
 
 * 회원 또는 익명회원이 구독 가능한 기업 목록을 조회한다.
 

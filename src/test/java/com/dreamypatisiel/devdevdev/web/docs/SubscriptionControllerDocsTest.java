@@ -1,30 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
-import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessage;
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.SliceImpl;
-import org.springframework.http.MediaType;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -40,9 +24,26 @@ import static org.springframework.restdocs.payload.PayloadDocumentation.response
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import org.springframework.test.web.servlet.ResultActions;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.test.web.servlet.ResultActions;
 
 class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
 
@@ -56,7 +57,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
         given(memberSubscriptionService.subscribe(anyLong(), any())).willReturn(new SubscriptionResponse(1L));
 
         // when // then
-        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscriptions/{companyId}", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -89,7 +90,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 new NotFoundException(CompanyExceptionMessage.NOT_FOUND_COMPANY_MESSAGE));
 
         // when // then
-        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscriptions/{companyId}", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -117,7 +118,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
         doNothing().when(memberSubscriptionService).unsubscribe(anyLong(), any());
 
         // then
-        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions/{companyId}", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -148,7 +149,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 .when(memberSubscriptionService).unsubscribe(anyLong(), any());
 
         // then
-        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions/{companyId}", "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))

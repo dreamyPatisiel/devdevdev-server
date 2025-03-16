@@ -1,10 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.controller.subscription;
 
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.SubscriptionService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -64,6 +64,11 @@ public class SubscriptionController {
         return ResponseEntity.ok(BasicResponse.success());
     }
 
+    /**
+     * @Note: 기업 구독 취소
+     * @Author: 장세웅
+     * @Since: 2025-03-09
+     */
     @Operation(summary = "구독한 가능한 기업 목록 조회", description = "구독 가능한 기업 목록을 조회합니다.")
     @GetMapping("/subscriptions/companies")
     public ResponseEntity<BasicResponse<Slice<SubscriableCompanyResponse>>> getSubscriptions(

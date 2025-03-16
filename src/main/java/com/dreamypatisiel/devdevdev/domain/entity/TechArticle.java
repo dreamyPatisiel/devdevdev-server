@@ -64,7 +64,7 @@ public class TechArticle extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "url",
-            column = @Column(name = "tech_article_url", length = 255)
+            column = @Column(name = "tech_article_url")
     )
     private Url techArticleUrl;
 

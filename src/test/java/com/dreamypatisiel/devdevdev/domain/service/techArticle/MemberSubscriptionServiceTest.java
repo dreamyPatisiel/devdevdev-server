@@ -1,8 +1,14 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Subscription;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
@@ -13,7 +19,7 @@ import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessag
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticKeywordRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
@@ -22,14 +28,12 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.exception.SubscriptionException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.assertj.core.groups.Tuple;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +66,8 @@ class MemberSubscriptionServiceTest {
     MemberRepository memberRepository;
     @Autowired
     SubscriptionRepository subscriptionRepository;
+    @Autowired
+    TechArticleRepository techArticleRepository;
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -321,6 +327,137 @@ class MemberSubscriptionServiceTest {
                 .containsExactly(
                         Tuple.tuple(company1.getId(), company1.getOfficialImageUrl().getUrl(), true)
                 );
+    }
+
+    @Test
+    @DisplayName("회원이 구독하지 않은 구독 가능한 기업 상세 정보를 조회한다.")
+    void getCompanyDetailNotSubscribe() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 기업 생성
+        Company company = createCompany("트이다", "교육", "트이다는..", "https://www.teuida.net/iamge.png",
+                "https://www.teuida.net/career");
+        companyRepository.save(company);
+
+        // 기술 블로그 생성
+        TechArticle techArticle1 = createTechArticle(company);
+        TechArticle techArticle2 = createTechArticle(company);
+        TechArticle techArticle3 = createTechArticle(company);
+        techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
+
+        // when
+        CompanyDetailResponse companyDetail = memberSubscriptionService.getCompanyDetail(company.getId(),
+                authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(companyDetail.getCompanyId()).isEqualTo(company.getId()),
+                () -> assertThat(companyDetail.getCompanyName()).isEqualTo(company.getName().getCompanyName()),
+                () -> assertThat(companyDetail.getIndustry()).isEqualTo(company.getIndustry()),
+                () -> assertThat(companyDetail.getCompanyDescription()).isEqualTo(company.getDescription()),
+                () -> assertThat(companyDetail.getCompanyCareerUrl()).isEqualTo(company.getCareerUrl().getUrl()),
+                () -> assertThat(companyDetail.getCompanyOfficialImageUrl()).isEqualTo(
+                        company.getOfficialImageUrl().getUrl()),
+                () -> assertThat(companyDetail.getTechArticleTotalCount()).isEqualTo(3L),
+                () -> assertThat(companyDetail.getIsSubscribed()).isFalse()
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 이미 구독한 구독 가능한 기업 상세 정보를 조회한다.")
+    void getCompanyDetail() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 기업 생성
+        Company company = createCompany("트이다", "교육", "트이다는..", "https://www.teuida.net/iamge.png",
+                "https://www.teuida.net/career");
+        companyRepository.save(company);
+
+        // 구독 생성
+        Subscription subscription = createSubscription(member, company);
+        subscriptionRepository.save(subscription);
+
+        // 기술 블로그 생성
+        TechArticle techArticle1 = createTechArticle(company);
+        TechArticle techArticle2 = createTechArticle(company);
+        TechArticle techArticle3 = createTechArticle(company);
+        techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3));
+
+        // when
+        CompanyDetailResponse companyDetail = memberSubscriptionService.getCompanyDetail(company.getId(),
+                authentication);
+
+        // then
+        assertAll(
+                () -> assertThat(companyDetail.getCompanyId()).isEqualTo(company.getId()),
+                () -> assertThat(companyDetail.getCompanyName()).isEqualTo(company.getName().getCompanyName()),
+                () -> assertThat(companyDetail.getIndustry()).isEqualTo(company.getIndustry()),
+                () -> assertThat(companyDetail.getCompanyDescription()).isEqualTo(company.getDescription()),
+                () -> assertThat(companyDetail.getCompanyCareerUrl()).isEqualTo(company.getCareerUrl().getUrl()),
+                () -> assertThat(companyDetail.getCompanyOfficialImageUrl()).isEqualTo(
+                        company.getOfficialImageUrl().getUrl()),
+                () -> assertThat(companyDetail.getTechArticleTotalCount()).isEqualTo(3L),
+                () -> assertThat(companyDetail.getIsSubscribed()).isTrue()
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 구독 가능한 기업 상세 정보를 조회할 때 기업이 존재하지 않으면 예외가 발생한다.")
+    void getCompanyDetailNotFoundCompany() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberSubscriptionService.getCompanyDetail(0L, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(CompanyExceptionMessage.NOT_FOUND_COMPANY_MESSAGE);
+
+    }
+
+    private static TechArticle createTechArticle(Company company) {
+        return TechArticle.builder()
+                .company(company)
+                .build();
+    }
+
+    private static Company createCompany(String companyName, String industry, String description,
+                                         String officialImageUrl, String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .industry(industry)
+                .description(description)
+                .officialImageUrl(new Url(officialImageUrl))
+                .careerUrl(new Url(careerUrl))
+                .build();
     }
 
     private static Company createCompany(String companyName, String officialImageUrl) {

@@ -1,10 +1,15 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuestSubscriptionService implements SubscriptionService {
 
     private final CompanyRepository companyRepository;
+    private final TechArticleRepository techArticleRepository;
 
     @Override
     public SubscriptionResponse subscribe(Long companyId, Authentication authentication) {
@@ -51,5 +57,22 @@ public class GuestSubscriptionService implements SubscriptionService {
 
         // 응답 생성
         return new SliceImpl<>(response, pageable, findCompanies.hasNext());
+    }
+
+    @Override
+    public CompanyDetailResponse getCompanyDetail(Long companyId, Authentication authentication) {
+
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 기업 조회
+        Company findCompany = companyRepository.findById(companyId)
+                .orElseThrow(() -> new NotFoundException(CompanyExceptionMessage.NOT_FOUND_COMPANY_MESSAGE));
+
+        // 회사의 기술 블로그 총 갯수 조회
+        Long techArticleTotalCount = techArticleRepository.countByCompanyId(companyId);
+
+        // 응답 생성
+        return CompanyDetailResponse.createGuestCompanyDetailResponse(findCompany, techArticleTotalCount);
     }
 }

@@ -1,31 +1,32 @@
 package com.dreamypatisiel.devdevdev.web.controller.subscription;
 
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
-import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.SliceImpl;
-import org.springframework.http.MediaType;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.http.MediaType;
 
 class SubscriptionControllerTest extends SupportControllerTest {
 
