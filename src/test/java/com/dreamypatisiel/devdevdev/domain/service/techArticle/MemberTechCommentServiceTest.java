@@ -1,5 +1,17 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.common.MemberProvider.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -12,11 +24,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
@@ -26,7 +33,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSor
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import static com.dreamypatisiel.devdevdev.global.common.MemberProvider.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -42,14 +48,9 @@ import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.assertj.core.groups.Tuple;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -118,7 +119,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -157,7 +159,8 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 기술블로그에 댓글을 작성하면 예외가 발생한다.")
     void registerTechCommentNotFoundTechArticleException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -219,7 +222,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -296,7 +300,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -319,7 +324,8 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 기술블로그 댓글을 수정할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
     void modifyTechCommentAlreadyDeletedException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -371,7 +377,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -406,7 +413,8 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 댓글을 삭제할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
     void deleteTechCommentAlreadyDeletedException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -445,7 +453,8 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 댓글을 삭제할 때, 댓글이 존재하지 않으면 예외가 발생한다.")
     void deleteTechCommentNotFoundException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -491,7 +500,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -541,7 +551,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -595,7 +606,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -654,7 +666,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -718,7 +731,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -755,7 +769,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -824,7 +839,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1120,7 +1136,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1291,7 +1308,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1587,7 +1605,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1737,7 +1756,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1889,7 +1909,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1926,7 +1947,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1966,7 +1988,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -2000,7 +2023,8 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -2089,7 +2113,8 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 회사 생성
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         // 기술 블로그 생성
@@ -2238,7 +2263,8 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 회사 생성
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         // 기술 블로그 생성
