@@ -1,30 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
-import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessage;
-import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.SliceImpl;
-import org.springframework.http.MediaType;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
@@ -36,13 +20,34 @@ import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
 import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
 import static org.springframework.restdocs.payload.JsonFieldType.STRING;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import org.springframework.test.web.servlet.ResultActions;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.exception.SubscriptionExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.MemberSubscriptionService;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.web.dto.request.subscription.SubscribeCompanyRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.web.servlet.ResultActions;
 
 class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
 
@@ -56,9 +61,10 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
         given(memberSubscriptionService.subscribe(anyLong(), any())).willReturn(new SubscriptionResponse(1L));
 
         // when // then
-        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(1L)))
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -70,14 +76,44 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
                         fieldWithPath("data").type(OBJECT).description("응답 데이터"),
                         fieldWithPath("data.id").type(NUMBER).description("구독 아이디")
                 )
+        ));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @DisplayName("회원이 기업을 구독할 때 기업아이디가 null 이면 예외가 발생한다.")
+    void subscribeBindException(Long companyId) throws Exception {
+        // given
+        given(memberSubscriptionService.subscribe(anyLong(), any())).willReturn(new SubscriptionResponse(1L));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(companyId)))
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // docs
+        actions.andDo(document("subscribe-company-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
+                ),
+                exceptionResponseFields()
         ));
     }
 
@@ -89,9 +125,10 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 new NotFoundException(CompanyExceptionMessage.NOT_FOUND_COMPANY_MESSAGE));
 
         // when // then
-        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(post(DEFAULT_PATH_V1 + "/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(1L)))
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
@@ -103,8 +140,8 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 exceptionResponseFields()
         ));
@@ -117,9 +154,10 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
         doNothing().when(memberSubscriptionService).unsubscribe(anyLong(), any());
 
         // then
-        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(1L)))
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -131,12 +169,42 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과")
                 )
+        ));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @DisplayName("회원이 기업을 구독 취소한다.")
+    void unsubscribeBindException(Long companyId) throws Exception {
+        // given // when
+        doNothing().when(memberSubscriptionService).unsubscribe(anyLong(), any());
+
+        // then
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(companyId)))
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // docs
+        actions.andDo(document("unsubscribe-company-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
+                ),
+                exceptionResponseFields()
         ));
     }
 
@@ -148,9 +216,10 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 .when(memberSubscriptionService).unsubscribe(anyLong(), any());
 
         // then
-        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscription/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(1L)))
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
@@ -162,8 +231,8 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 exceptionResponseFields()
         ));
@@ -207,7 +276,8 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content").type(ARRAY).description("구독 가능한 기업 목록 메인 배열"),
                         fieldWithPath("data.content[].companyId").type(NUMBER).description("기업 아이디"),
                         fieldWithPath("data.content[].companyImageUrl").type(STRING).description("기업 로고 이미지 url"),
-                        fieldWithPath("data.content[].isSubscribed").type(BOOLEAN).description("회원의 구독 여부"),
+                        fieldWithPath("data.content[].isSubscribed").type(JsonFieldType.BOOLEAN)
+                                .description("회원의 구독 여부"),
 
                         fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
                         fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),

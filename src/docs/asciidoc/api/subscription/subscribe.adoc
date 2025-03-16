@@ -1,5 +1,5 @@
 [[Subscribe]]
-== 기업 구독 API(POST: /devdevdev/api/v1/subscriptions/{companyId})
+== 기업 구독 API(POST: /devdevdev/api/v1/subscriptions)
 
 * 회원은 구독한 가능한 기업을 구독 할 수 있다.
 
@@ -13,9 +13,9 @@ include::{snippets}/subscribe-company/http-request.adoc[]
 
 include::{snippets}/subscribe-company/request-headers.adoc[]
 
-==== HTTP Request Path Parameters Fields
+==== HTTP Request Fields
 
-include::{snippets}/subscribe-company/path-parameters.adoc[]
+include::{snippets}/subscribe-company/request-fields.adoc[]
 
 ==== HTTP Response
 
@@ -33,5 +33,6 @@ include::{snippets}/subscribe-company/response-fields.adoc[]
 * `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
 * `이미 구독하고 있는 기업입니다.`: 이미 구독하고 있는 기업인 경우
 * `존재하지 않는 기업 입니다.`: 존재하지 않는 기업인 경우
+* `기업 아이디는 필수 입니다.`: 기업 아이디가 null 인 경우
 
 include::{snippets}/subscribe-company-not-found-company/response-body.adoc[]

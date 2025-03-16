@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyRe
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.SubscriptionService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.request.subscription.SubscribeCompanyRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,10 +15,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,13 +38,13 @@ public class SubscriptionController {
      * @Since: 2025-02-24
      */
     @Operation(summary = "기업 구독하기", description = "구독 가능한 기업을 구독합니다.")
-    @PostMapping("/subscriptions/{companyId}")
-    public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(@PathVariable Long companyId) {
-
+    @PostMapping("/subscriptions")
+    public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(
+            @RequestBody @Validated SubscribeCompanyRequest request) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
 
-        SubscriptionResponse response = subscriptionService.subscribe(companyId, authentication);
+        SubscriptionResponse response = subscriptionService.subscribe(request.getCompanyId(), authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -53,13 +55,12 @@ public class SubscriptionController {
      * @Since: 2025-02-24
      */
     @Operation(summary = "기업 구독 취소", description = "구독한 기업을 구독 취소 합니다.")
-    @DeleteMapping("/subscriptions/{companyId}")
-    public ResponseEntity<BasicResponse<Void>> unsubscribe(@PathVariable Long companyId) {
-
+    @DeleteMapping("/subscriptions")
+    public ResponseEntity<BasicResponse<Void>> unsubscribe(@RequestBody @Validated SubscribeCompanyRequest request) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
 
-        subscriptionService.unsubscribe(companyId, authentication);
+        subscriptionService.unsubscribe(request.getCompanyId(), authentication);
 
         return ResponseEntity.ok(BasicResponse.success());
     }

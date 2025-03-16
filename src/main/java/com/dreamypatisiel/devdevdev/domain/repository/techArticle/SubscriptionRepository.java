@@ -9,7 +9,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long>, SubscriptionRepositoryCustom {
-    Optional<Subscription> findByMemberIdAndCompanyId(Long memberId, Long companyId);
+    Optional<Subscription> findByMemberAndCompanyId(Member member, Long companyId);
 
     List<Subscription> findByMemberAndCompanyIn(Member member, List<Company> companies);
 }
