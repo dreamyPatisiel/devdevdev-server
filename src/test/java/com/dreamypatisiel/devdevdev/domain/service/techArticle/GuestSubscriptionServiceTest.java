@@ -1,5 +1,8 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
@@ -8,19 +11,14 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.service.response.SubscriableCompanyResponse;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.GuestSubscriptionService;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticKeywordRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import static org.assertj.core.api.Assertions.assertThat;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -32,11 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 class GuestSubscriptionServiceTest {
-
-    @MockBean
-    ElasticKeywordRepository elasticKeywordRepository;
-    @MockBean
-    ElasticTechArticleRepository elasticTechArticleRepository;
 
     @Autowired
     EntityManager em;

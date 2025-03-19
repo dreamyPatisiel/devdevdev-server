@@ -61,9 +61,11 @@ public class ElasticsearchSupportTest {
 
     @AfterAll
     static void tearDown(@Autowired TechArticleRepository techArticleRepository,
-                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                         @Autowired CompanyRepository companyRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
+        companyRepository.deleteAllInBatch();
     }
 
     private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
