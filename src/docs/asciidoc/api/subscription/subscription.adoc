@@ -3,3 +3,4 @@
 include::subscribe.adoc[]
 include::unsubscribe.adoc[]
 include::subscribable-companies.adoc[]
+include::subscribable-company-detail.adoc[]

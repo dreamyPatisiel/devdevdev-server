@@ -18,6 +18,4 @@ include::api/pick/pick.adoc[]
 include::api/pick-commnet/pick-comment.adoc[]
 include::api/tech-article/tech-article.adoc[]
 include::api/tech-article-comment/tech-article-comment.adoc[]
-
-include::api/subscription/subscription.adoc[]
 include::api/subscription/subscription.adoc[]
