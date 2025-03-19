@@ -51,10 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 class MemberSubscriptionServiceTest {
-    @MockBean
-    ElasticKeywordRepository elasticKeywordRepository;
-    @MockBean
-    ElasticTechArticleRepository elasticTechArticleRepository;
 
     @Autowired
     EntityManager em;

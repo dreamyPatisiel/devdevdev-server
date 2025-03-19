@@ -105,8 +105,8 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 exceptionResponseFields()
         ));
@@ -119,9 +119,10 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
         doNothing().when(memberSubscriptionService).unsubscribe(anyLong(), any());
 
         // then
-        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(1L)))
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk());
@@ -133,12 +134,42 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과")
                 )
+        ));
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @DisplayName("회원이 기업을 구독 취소한다.")
+    void unsubscribeBindException(Long companyId) throws Exception {
+        // given // when
+        doNothing().when(memberSubscriptionService).unsubscribe(anyLong(), any());
+
+        // then
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(companyId)))
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+
+        // docs
+        actions.andDo(document("unsubscribe-company-bind-exception",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
+                ),
+                exceptionResponseFields()
         ));
     }
 
@@ -150,9 +181,10 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 .when(memberSubscriptionService).unsubscribe(anyLong(), any());
 
         // then
-        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions/{companyId}", "1")
+        ResultActions actions = mockMvc.perform(delete(DEFAULT_PATH_V1 + "/subscriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .content(om.writeValueAsBytes(new SubscribeCompanyRequest(1L)))
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().is4xxClientError());
@@ -164,10 +196,79 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 requestHeaders(
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
-                pathParameters(
-                        parameterWithName("companyId").description("기업 아이디")
+                requestFields(
+                        fieldWithPath("companyId").description("기업 아이디")
                 ),
                 exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("구독 가능한 기업 목록을 조회한다.")
+    void getSubscriptions() throws Exception {
+        // given
+        SubscriableCompanyResponse response = new SubscriableCompanyResponse(1L,
+                "https://www.teuida.net/public/src/img/teuida_logo.png", true);
+        given(memberSubscriptionService.getSubscribableCompany(any(), anyLong(), any()))
+                .willReturn(new SliceImpl<>(List.of(response), PageRequest.of(0, 20), false));
+
+        // when // then
+        ResultActions actions = mockMvc.perform(
+                        RestDocumentationRequestBuilders.get(DEFAULT_PATH_V1 + "/subscriptions/companies")
+                                .queryParam("size", "10")
+                                .queryParam("companyId", "105")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("subscribable-companies",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("size").optional().description("조회되는 데이터 수"),
+                        parameterWithName("companyId").optional().description("기업 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.content").type(ARRAY).description("구독 가능한 기업 목록 메인 배열"),
+                        fieldWithPath("data.content[].companyId").type(NUMBER).description("기업 아이디"),
+                        fieldWithPath("data.content[].companyImageUrl").type(STRING).description("기업 로고 이미지 url"),
+                        fieldWithPath("data.content[].isSubscribed").type(JsonFieldType.BOOLEAN)
+                                .description("회원의 구독 여부"),
+
+                        fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
+                        fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
+                        fieldWithPath("data.pageable.pageSize").type(NUMBER).description("페이지 사이즈"),
+
+                        fieldWithPath("data.pageable.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.pageable.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.pageable.sort.sorted").type(BOOLEAN).description("정렬 여부"),
+                        fieldWithPath("data.pageable.sort.unsorted").type(BOOLEAN).description("비정렬 여부"),
+
+                        fieldWithPath("data.pageable.offset").type(NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
+                        fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
+                        fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
+
+                        fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
+                        fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
+                        fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),
+                        fieldWithPath("data.number").type(NUMBER).description("현재 페이지"),
+
+                        fieldWithPath("data.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.sort.sorted").type(BOOLEAN).description("정렬 상태 여부"),
+                        fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
+                        fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
+                        fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
+                )
         ));
     }
 

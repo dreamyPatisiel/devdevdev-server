@@ -1,11 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.when;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
@@ -38,11 +33,6 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 class GuestSubscriptionServiceTest {
-
-    @MockBean
-    ElasticKeywordRepository elasticKeywordRepository;
-    @MockBean
-    ElasticTechArticleRepository elasticTechArticleRepository;
 
     @Autowired
     EntityManager em;

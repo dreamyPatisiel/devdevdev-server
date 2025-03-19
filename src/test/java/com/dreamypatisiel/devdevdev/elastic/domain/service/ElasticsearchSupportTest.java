@@ -31,7 +31,7 @@ public class ElasticsearchSupportTest {
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
-        company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+        company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -61,9 +61,11 @@ public class ElasticsearchSupportTest {
 
     @AfterAll
     static void tearDown(@Autowired TechArticleRepository techArticleRepository,
-                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                         @Autowired CompanyRepository companyRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
+        companyRepository.deleteAllInBatch();
     }
 
     private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,

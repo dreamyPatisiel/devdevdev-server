@@ -78,7 +78,7 @@ public class MemberSubscriptionService implements SubscriptionService {
 
         // 기업 기술블로그 구독 이력 조회
         // Todo: 소영님 아래 쿼리에서 member, company left join 발생하는데 이유를 알까요?
-        Subscription findSubscription = subscriptionRepository.findByMemberIdAndCompanyId(findMember.getId(), companyId)
+        Subscription findSubscription = subscriptionRepository.findByMemberAndCompanyId(findMember, companyId)
                 .orElseThrow(() -> new NotFoundException(SubscriptionExceptionMessage.NOT_FOUND_SUBSCRIPTION_MESSAGE));
 
         // 삭제

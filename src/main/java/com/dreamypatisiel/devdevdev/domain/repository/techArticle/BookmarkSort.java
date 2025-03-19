@@ -1,5 +1,8 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.entity.QBookmark.bookmark;
+import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.querydsl.core.types.Order;
@@ -7,9 +10,6 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import static com.dreamypatisiel.devdevdev.domain.entity.QBookmark.bookmark;
-import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
 
 @Getter
 @RequiredArgsConstructor
@@ -60,5 +60,6 @@ public enum BookmarkSort {
     private final String description;
 
     abstract public OrderSpecifier<?> getOrderSpecifierByBookmarkSort();
+
     abstract public BooleanExpression getCursorCondition(Bookmark findBookmark, TechArticle findTechArticle);
 }
