@@ -6,4 +6,4 @@ COPY build/libs/*.jar app.jar
 ENV TZ Asia/Seoul
 
 # 시스템 진입점 정의
-CMD java -jar -Dspring.profiles.active=dev /app.jar
+CMD java -jar -Dspring.profiles.active=local /app.jar
