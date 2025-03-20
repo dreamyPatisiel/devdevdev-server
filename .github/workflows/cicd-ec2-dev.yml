@@ -8,9 +8,9 @@ on:
 # 환경 변수 $변수명으로 사용
 env:
   PROJECT_NAME: "devdevdev"
-  BUCKET_NAME: "devdevdev-cicd-bucket"
-  CODE_DEPLOY_APP: "devdevdev-server"
-  CODE_DEPLOY_DEPLOYMENT_GROUP: "devdevdev-server-deployment-group"
+  BUCKET_NAME: "dev-devdevdev-cicd-bucket"
+  CODE_DEPLOY_APP: "dev-devdevdev-server"
+  CODE_DEPLOY_DEPLOYMENT_GROUP: "dev-devdevdev-server-deployment-group"
 
 jobs:
   build:
@@ -36,7 +36,6 @@ jobs:
         run: |
           ## create application-dev.yml
           cd ./src/main/resources
-
           echo "${{ secrets.application_dev }}" >> ./application-dev.yml
           echo "${{ secrets.application_jwt_dev }}" >> ./application-jwt-dev.yml
           echo "${{ secrets.application_oauth2_dev }}" >> ./application-oauth2-dev.yml
@@ -44,23 +43,31 @@ jobs:
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           echo "${{ secrets.application_opensearch_dev }}" >> ./application-opensearch-dev.yml
 
-      # Dockerfile 주입
-      - name: make Dockerfile
+      # Dockerfile-dev 주입
+      - name: make Dockerfile-dev
         run: |
           cd $GITHUB_WORKSPACE
           ls
-          rm Dockerfile
-          echo "${{ secrets.dockerfile_dev }}" >> ./Dockerfile
+          rm -f Dockerfile
+          cat ./Dockerfile-dev >> ./Dockerfile
+
+      # appspec.yml, deploy.sh 주입
+      - name: make appspec.yml, deploy.sh
+        run: |
+          cd $GITHUB_WORKSPACE
+          ls
+          rm -f appspec.yml
+          rm -f deploy.sh
+          cat ./appspec-dev.yml >> ./appspec.yml
+          cat ./deploy-dev.sh >> ./deploy.sh
 
       ## 테스트 코드에도 sotrage-s3, open-ai 가 필요함!
       - name: make application-test.yml
         run: |
           cd ./src/test/resources
-          
           echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
-
         shell: bash
 
       ## Springboot 프로젝트 빌드
@@ -80,8 +87,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       # S3에 빌드파일 업로드
