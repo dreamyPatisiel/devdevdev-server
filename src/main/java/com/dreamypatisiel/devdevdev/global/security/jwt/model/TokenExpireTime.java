@@ -1,7 +1,18 @@
 package com.dreamypatisiel.devdevdev.global.security.jwt.model;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
 public class TokenExpireTime {
-    public static final long ACCESS_TOKEN_EXPIRE_TIME = 1_000 * 60 * 30; // 30분
-    public static final long REFRESH_TOKEN_EXPIRE_TIME = 1_000 * 60 * 60 * 24 * 7; // 7일
-    public static final long TEST_TOKEN_EXPIRE_TIME = 1_000 * 60 * 60 * 24 * 21; // 21일
+    public static long ACCESS_TOKEN_EXPIRE_TIME;
+    public static long REFRESH_TOKEN_EXPIRE_TIME;
+
+    public TokenExpireTime(
+            @Value("${jwt.expire.access}") long accessTokenExpireTime,
+            @Value("${jwt.expire.refresh}") long refreshTokenExpireTime
+    ) {
+        ACCESS_TOKEN_EXPIRE_TIME = accessTokenExpireTime;
+        REFRESH_TOKEN_EXPIRE_TIME = refreshTokenExpireTime;
+    }
 }
