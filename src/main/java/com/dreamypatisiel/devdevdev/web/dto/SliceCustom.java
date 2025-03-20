@@ -10,8 +10,8 @@ public class SliceCustom<T> extends SliceImpl<T> {
 
     private final long totalElements;
 
-    public SliceCustom(List<T> content, Pageable pageable, boolean haseNext, Long totalElements) {
-        super(content, pageable, haseNext);
+    public SliceCustom(List<T> content, Pageable pageable, boolean hasNext, Long totalElements) {
+        super(content, pageable, hasNext);
         this.totalElements = totalElements;
     }
 
