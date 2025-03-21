@@ -21,7 +21,7 @@ class TechArticleMainResponseTest {
     @DisplayName("ElasticTechArticle의 썸네일 이미지가 있다면 썸네일 이미지로 설정되어야 한다.")
     public void setThumbnailImageWhenPresent() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://officialImageUrl.png",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png",
                 "https://officialUrl.com", "https://careerUrl.com");
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -47,7 +47,7 @@ class TechArticleMainResponseTest {
     @DisplayName("ElasticTechArticle의 썸네일 이미지가 없다면 회사 로고 이미지로 대체하고, isLogoImage가 true로 설정되어야 한다.")
     public void setLogoImageWhenThumbnailIsAbsent() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://officialImageUrl.png",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png",
                 "https://officialUrl.com", "https://careerUrl.com");
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -65,7 +65,7 @@ class TechArticleMainResponseTest {
                 .of(techArticle, elasticTechArticle, companyResponse);
 
         // then
-        assertEquals(company.getOfficialImageUrl(), techArticleMainResponse.getThumbnailUrl());
+        assertEquals(company.getOfficialImageUrl().getUrl(), techArticleMainResponse.getThumbnailUrl());
         assertTrue(techArticleMainResponse.getIsLogoImage());
     }
 
@@ -75,7 +75,7 @@ class TechArticleMainResponseTest {
                 .name(new CompanyName(companyName))
                 .officialUrl(new Url(officialUrl))
                 .careerUrl(new Url(careerUrl))
-                .officialImageUrl(officialImageUrl)
+                .officialImageUrl(new Url(officialImageUrl))
                 .build();
     }
 

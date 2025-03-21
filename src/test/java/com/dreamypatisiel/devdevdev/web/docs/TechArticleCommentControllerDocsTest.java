@@ -98,7 +98,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("익명 사용자는 기술블로그 댓글을 작성할 수 없다.")
     void registerTechCommentByAnonymous() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -140,7 +141,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원은 기술블로그 댓글을 작성할 수 있다.")
     void registerTechComment() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -198,7 +200,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
     void registerTechCommentNotFoundTechArticleException() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -249,7 +252,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 회원이라면 예외가 발생한다.")
     void registerTechCommentNotFoundMemberException() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -296,7 +300,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원이 기술블로그 댓글을 작성할 때 댓글 내용이 공백이라면 예외가 발생한다.")
     void registerTechCommentContentsIsNullException(String contents) throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -338,7 +343,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원은 기술블로그 댓글을 수정할 수 있다.")
     void modifyTechComment() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -401,7 +407,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원이 기술블로그 댓글을 수정할 때 댓글 내용이 공백이라면 예외가 발생한다.")
     void modifyTechCommentContentsIsNullException(String contents) throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -456,7 +463,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원이 기술블로그 댓글을 수정할 때 댓글이 존재하지 않으면 예외가 발생한다.")
     void modifyTechCommentNotFoundException() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -506,7 +514,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원은 본인이 작성한 기술블로그 댓글을 삭제할 수 있다.")
     void deleteTechComment() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -562,7 +571,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원이 기술블로그 댓글을 삭제할 때 댓글이 존재하지 않으면 예외가 발생한다.")
     void deleteTechCommentNotFoundException() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
@@ -612,7 +622,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("회원은 기술블로그 댓글에 답글을 작성할 수 있다.")
     void registerTechReply() throws Exception {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -688,7 +699,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -753,7 +765,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -980,7 +993,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1037,7 +1051,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1095,7 +1110,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         memberRepository.saveAll(List.of(member1, member2, member3));
 
         // 회사 생성
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         // 기술 블로그 생성
@@ -1231,7 +1247,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .officialImageUrl(officialImageUrl)
+                .officialImageUrl(new Url(officialImageUrl))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
                 .build();

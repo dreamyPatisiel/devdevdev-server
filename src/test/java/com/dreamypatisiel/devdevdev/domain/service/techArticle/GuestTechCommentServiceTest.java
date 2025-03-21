@@ -98,7 +98,8 @@ public class GuestTechCommentServiceTest {
 
         Authentication authentication = mock(Authentication.class);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -126,7 +127,8 @@ public class GuestTechCommentServiceTest {
 
         Authentication authentication = mock(Authentication.class);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -159,7 +161,8 @@ public class GuestTechCommentServiceTest {
 
         Authentication authentication = mock(Authentication.class);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -189,7 +192,8 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -482,7 +486,8 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -650,7 +655,8 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -943,7 +949,8 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1090,7 +1097,8 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -1264,7 +1272,8 @@ public class GuestTechCommentServiceTest {
         memberRepository.saveAll(List.of(member1, member2, member3));
 
         // 회사 생성
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         // 기술 블로그 생성
@@ -1455,7 +1464,7 @@ public class GuestTechCommentServiceTest {
                 .name(new CompanyName(companyName))
                 .officialUrl(new Url(officialUrl))
                 .careerUrl(new Url(careerUrl))
-                .officialImageUrl(officialImageUrl)
+                .officialImageUrl(new Url(officialImageUrl))
                 .build();
     }
 }

@@ -48,4 +48,8 @@ public class Subscription extends BasicTime {
 
         return subscription;
     }
+
+    public boolean isEqualsCompany(Company company) {
+        return this.company.isEqualsId(company.getId());
+    }
 }

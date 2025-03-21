@@ -37,7 +37,11 @@ public class Company extends BasicTime {
     )
     private Url officialUrl;
 
-    private String officialImageUrl;
+    @Embedded
+    @AttributeOverride(name = "url",
+            column = @Column(name = "official_image_url")
+    )
+    private Url officialImageUrl;
 
     @Embedded
     @AttributeOverride(name = "url",
@@ -49,10 +53,14 @@ public class Company extends BasicTime {
     private List<TechArticle> techArticles = new ArrayList<>();
 
     @Builder
-    private Company(CompanyName name, Url officialUrl, String officialImageUrl, Url careerUrl) {
+    private Company(CompanyName name, Url officialUrl, Url officialImageUrl, Url careerUrl) {
         this.name = name;
         this.officialUrl = officialUrl;
         this.officialImageUrl = officialImageUrl;
         this.careerUrl = careerUrl;
+    }
+
+    public boolean isEqualsId(Long companyId) {
+        return this.id.equals(companyId);
     }
 }

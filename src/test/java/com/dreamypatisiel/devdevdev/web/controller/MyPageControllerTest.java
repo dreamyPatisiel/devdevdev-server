@@ -36,7 +36,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
@@ -47,6 +46,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptio
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
@@ -125,7 +125,8 @@ class MyPageControllerTest extends SupportControllerTest {
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
-        Company company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+                "https://example.com");
         companyRepository.save(company);
 
         // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
@@ -892,7 +893,7 @@ class MyPageControllerTest extends SupportControllerTest {
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .officialImageUrl(officialImageUrl)
+                .officialImageUrl(new Url(officialImageUrl))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
                 .build();
