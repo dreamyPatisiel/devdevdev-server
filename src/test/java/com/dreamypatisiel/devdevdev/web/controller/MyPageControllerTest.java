@@ -53,6 +53,9 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
@@ -125,7 +128,7 @@ class MyPageControllerTest extends SupportControllerTest {
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 

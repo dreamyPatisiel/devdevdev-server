@@ -1,9 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.techArticle;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
@@ -12,6 +8,9 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import java.time.LocalDate;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +20,7 @@ class TechArticleMainResponseTest {
     @DisplayName("ElasticTechArticle의 썸네일 이미지가 있다면 썸네일 이미지로 설정되어야 한다.")
     public void setThumbnailImageWhenPresent() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png",
                 "https://officialUrl.com", "https://careerUrl.com");
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
@@ -47,7 +46,7 @@ class TechArticleMainResponseTest {
     @DisplayName("ElasticTechArticle의 썸네일 이미지가 없다면 회사 로고 이미지로 대체하고, isLogoImage가 true로 설정되어야 한다.")
     public void setLogoImageWhenThumbnailIsAbsent() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png",
                 "https://officialUrl.com", "https://careerUrl.com");
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),

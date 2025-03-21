@@ -1,0 +1,35 @@
+[[Subscribable-Companies-Detail]]
+== 구독 가능한 기업 상세 조회 API(GET: /devdevdev/api/v1/subscriptions/companies/{companyId})
+
+* 모든 회원은 구독 가능한 기업의 상세 정보를 조회할 수 있다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/subscribable-company-detail/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/subscribable-company-detail/request-headers.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/subscribable-company-detail/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/subscribable-company-detail/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/subscribable-company-detail/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+* `존재하지 않는 기업 입니다.`: 존재하지 않는 기업인 경우
+
+include::{snippets}/subscribable-company-detail-not-found-exception/response-body.adoc[]

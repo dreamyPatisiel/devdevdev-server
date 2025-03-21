@@ -138,7 +138,7 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 

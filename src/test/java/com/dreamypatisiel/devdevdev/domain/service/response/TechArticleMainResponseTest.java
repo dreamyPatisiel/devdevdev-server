@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.response;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
@@ -9,6 +7,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +21,7 @@ class TechArticleMainResponseTest {
                 "http://example.com/", "설명", null, "작성자",
                 "꿈빛 파티시엘", 1L, 1L, 1L, 1L, 1L);
 
-        Company company = createCompany("꿈빛 파티시엘", "https://companylogo.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
 
         TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);

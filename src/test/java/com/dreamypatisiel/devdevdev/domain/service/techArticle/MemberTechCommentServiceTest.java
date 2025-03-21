@@ -119,7 +119,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -159,7 +159,7 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 기술블로그에 댓글을 작성하면 예외가 발생한다.")
     void registerTechCommentNotFoundTechArticleException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -222,7 +222,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -300,7 +300,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -324,7 +324,7 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 기술블로그 댓글을 수정할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
     void modifyTechCommentAlreadyDeletedException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -377,7 +377,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -413,7 +413,7 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 댓글을 삭제할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
     void deleteTechCommentAlreadyDeletedException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -453,7 +453,7 @@ public class MemberTechCommentServiceTest {
     @DisplayName("회원이 댓글을 삭제할 때, 댓글이 존재하지 않으면 예외가 발생한다.")
     void deleteTechCommentNotFoundException() {
         // given
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -500,7 +500,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -551,7 +551,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -606,7 +606,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -666,7 +666,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -731,7 +731,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -769,7 +769,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -839,7 +839,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1136,7 +1136,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1308,7 +1308,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1605,7 +1605,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1756,7 +1756,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1909,7 +1909,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1947,7 +1947,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -1988,7 +1988,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -2023,7 +2023,7 @@ public class MemberTechCommentServiceTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -2113,7 +2113,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 회사 생성
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
@@ -2263,7 +2263,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 회사 생성
-        Company company = createCompany("꿈빛 파티시엘", "https://example.net/image.png", "https://example.com",
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
