@@ -48,7 +48,7 @@ public class CompanyRepositoryImpl implements CompanyRepositoryCustom {
                 .leftJoin(subscription).on(subscription.company.id.eq(company.id)
                         .and(subscription.member.id.eq(memberId)))
                 .where(company.id.eq(companyId))
-                .fetchFirst();
+                .fetchOne();
 
         return Optional.ofNullable(companyDetailDto);
     }
