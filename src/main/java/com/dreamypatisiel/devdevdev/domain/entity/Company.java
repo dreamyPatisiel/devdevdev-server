@@ -49,18 +49,27 @@ public class Company extends BasicTime {
     )
     private Url careerUrl;
 
+    @Column(length = 10)
+    private String industry;
+
+    @Column(length = 500)
+    private String description;
+
     @OneToMany(mappedBy = "company")
     private List<TechArticle> techArticles = new ArrayList<>();
 
     @Builder
-    private Company(CompanyName name, Url officialUrl, Url officialImageUrl, Url careerUrl) {
+    private Company(CompanyName name, Url officialUrl, Url officialImageUrl, Url careerUrl, String industry,
+                    String description) {
         this.name = name;
         this.officialUrl = officialUrl;
         this.officialImageUrl = officialImageUrl;
         this.careerUrl = careerUrl;
+        this.industry = industry;
+        this.description = description;
     }
 
-    public boolean isEqualsId(Long companyId) {
-        return this.id.equals(companyId);
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
     }
 }

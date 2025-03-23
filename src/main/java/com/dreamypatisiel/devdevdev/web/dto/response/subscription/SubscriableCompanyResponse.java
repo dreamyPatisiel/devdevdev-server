@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service.response;
+package com.dreamypatisiel.devdevdev.web.dto.response.subscription;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import lombok.Builder;
