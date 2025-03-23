@@ -812,7 +812,7 @@ class MyPageControllerTest extends SupportControllerTest {
         // when
         mockMvc.perform(get(DEFAULT_PATH_V1 + "/mypage/subscriptions/companies")
                 .queryParam("size", String.valueOf(pageable.getPageSize()))
-                .queryParam("companyId", "3")
+                .queryParam("companyId", company4.getId().toString())
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                 .characterEncoding(StandardCharsets.UTF_8))
