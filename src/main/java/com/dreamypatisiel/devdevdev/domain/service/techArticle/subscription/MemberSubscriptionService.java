@@ -90,7 +90,6 @@ public class MemberSubscriptionService implements SubscriptionService {
      * @Author: 장세웅
      * @Since: 2025-03-08
      */
-    @Transactional
     public Slice<SubscriableCompanyResponse> getSubscribableCompany(Pageable pageable, Long companyId,
                                                                     Authentication authentication) {
 
