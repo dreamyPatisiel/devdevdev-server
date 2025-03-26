@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.controller;
 import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -23,6 +24,8 @@ import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentRes
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -186,6 +189,57 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").isString())
                 .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
+    }
+
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 다음페이지의 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
+    void findMySubscribedCompaniesByCursor() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+        long cursorCompanyId = 999L;
+        SubscribedCompanyResponse subscribedCompanyResponse = new SubscribedCompanyResponse(
+                1L, "Toss", "https://image.net/image.png", true);
+        List<SubscribedCompanyResponse> content = List.of(subscribedCompanyResponse);
+        SliceCustom<SubscribedCompanyResponse> response = new SliceCustom<>(content, pageable, 1L);
+
+        when(memberService.findMySubscribedCompanies(any(), any(), any())).thenReturn(response);
+
+        // when
+        mockMvc.perform(get(DEFAULT_PATH_V1 + "/mypage/subscriptions/companies")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("companyId", Long.toString(cursorCompanyId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data.content").isArray())
+                .andExpect(jsonPath("$.data.content.[0].companyId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].companyName").isString())
+                .andExpect(jsonPath("$.data.content.[0].companyImageUrl").isString())
+                .andExpect(jsonPath("$.data.content.[0].isSubscribed").isBoolean())
+                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
+                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
+                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
+                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
+                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
+                .andExpect(jsonPath("$.data.first").isBoolean())
+                .andExpect(jsonPath("$.data.last").isBoolean())
+                .andExpect(jsonPath("$.data.size").isNumber())
+                .andExpect(jsonPath("$.data.number").isNumber())
+                .andExpect(jsonPath("$.data.sort").isNotEmpty())
+                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
+                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
+                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
+                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
+                .andExpect(jsonPath("$.data.empty").isBoolean());
     }
 
     private static MyWrittenCommentResponse createMyWrittenCommentResponse(String uniqueCommentId, Long postId,

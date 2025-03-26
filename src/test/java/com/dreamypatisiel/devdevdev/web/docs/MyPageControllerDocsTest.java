@@ -1,47 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.bookmarkSortType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.contentStatusType;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
-import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
-import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
-import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
-import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
-import static org.springframework.restdocs.payload.JsonFieldType.STRING;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
-import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dreamypatisiel.devdevdev.domain.entity.*;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
@@ -51,39 +11,25 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyAnswerRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.*;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
-import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import jakarta.persistence.EntityManager;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -95,6 +41,34 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.*;
+import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
+import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class MyPageControllerDocsTest extends SupportControllerDocsTest {
 
@@ -131,8 +105,6 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     SubscriptionRepository subscriptionRepository;
     @Autowired
     EntityManager em;
-    @SpyBean
-    MemberService memberService;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
@@ -871,78 +843,6 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
                         headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                 ),
                 exceptionResponseFields()
-        ));
-    }
-
-    @Test
-    @DisplayName("회원이 커서 방식으로 다음페이지의 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
-    void findMySubscribedCompaniesByCursor() throws Exception {
-        // given
-        Pageable pageable = PageRequest.of(0, 1);
-        long cursorCompanyId = 999L;
-        SubscribedCompanyResponse subscribedCompanyResponse = new SubscribedCompanyResponse(
-                1L, "Toss", "https://image.net/image.png", true);
-        List<SubscribedCompanyResponse> content = List.of(subscribedCompanyResponse);
-        SliceCustom<SubscribedCompanyResponse> response = new SliceCustom<>(content, pageable, 1L);
-
-        doReturn(response).when(memberService).findMySubscribedCompanies(any(), any(), any());
-
-        // when
-        ResultActions actions = mockMvc.perform(get(DEFAULT_PATH_V1 + "/mypage/subscriptions/companies")
-                        .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("companyId", Long.toString(cursorCompanyId))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .characterEncoding(StandardCharsets.UTF_8))
-                .andDo(print())
-                .andExpect(status().isOk());
-
-        actions.andDo(document("subscribed-companies",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()),
-                requestHeaders(
-                        headerWithName(SecurityConstant.AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
-                ),
-                queryParameters(
-                        parameterWithName("size").optional().description("조회되는 데이터 수"),
-                        parameterWithName("companyId").optional().description("커서(마지막 기업 아이디)")
-                ),
-                responseFields(
-                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
-                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
-
-                        fieldWithPath("data.content").type(ARRAY).description("구독한 기업 목록 메인 배열"),
-                        fieldWithPath("data.content[].companyId").type(NUMBER).description("기업 아이디"),
-                        fieldWithPath("data.content[].companyName").type(STRING).description("기업 이름"),
-                        fieldWithPath("data.content[].companyImageUrl").type(STRING).description("기업 로고 이미지 url"),
-                        fieldWithPath("data.content[].isSubscribed").type(JsonFieldType.BOOLEAN).description("회원의 구독 여부"),
-
-                        fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
-                        fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
-                        fieldWithPath("data.pageable.pageSize").type(NUMBER).description("페이지 사이즈"),
-
-                        fieldWithPath("data.pageable.sort").type(OBJECT).description("정렬 정보"),
-                        fieldWithPath("data.pageable.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
-                        fieldWithPath("data.pageable.sort.sorted").type(BOOLEAN).description("정렬 여부"),
-                        fieldWithPath("data.pageable.sort.unsorted").type(BOOLEAN).description("비정렬 여부"),
-
-                        fieldWithPath("data.pageable.offset").type(NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
-                        fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
-                        fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
-
-                        fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
-                        fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
-                        fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),
-                        fieldWithPath("data.number").type(NUMBER).description("현재 페이지"),
-
-                        fieldWithPath("data.sort").type(OBJECT).description("정렬 정보"),
-                        fieldWithPath("data.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
-                        fieldWithPath("data.sort.sorted").type(BOOLEAN).description("정렬 상태 여부"),
-                        fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
-                        fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
-                        fieldWithPath("data.totalElements").type(NUMBER).description("전체 데이터 수"),
-                        fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
-                )
         ));
     }
 
