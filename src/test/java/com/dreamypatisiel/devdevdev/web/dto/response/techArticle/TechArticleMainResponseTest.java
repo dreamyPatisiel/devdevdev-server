@@ -28,7 +28,7 @@ class TechArticleMainResponseTest {
                 new Count(1L), new Count(1L), new Count(1L), null, company);
 
         ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId", "타이틀", LocalDate.now(),
-                "내용", "http://example.com/", "설명", "http://thumbnailImage.com", "작성자",
+                "내용", "http://example.com/", "설명", "http://thumbnailImage.com/image.png", "작성자",
                 company.getName().getCompanyName(), company.getId(), 0L, 0L, 0L, 0L);
 
         CompanyResponse companyResponse = CompanyResponse.from(company);
@@ -38,7 +38,7 @@ class TechArticleMainResponseTest {
                 .of(techArticle, elasticTechArticle, companyResponse);
 
         // then
-        assertEquals("http://thumbnailImage.com", techArticleMainResponse.getThumbnailUrl());
+        assertEquals("http://thumbnailImage.com/image.png", techArticleMainResponse.getThumbnailUrl());
         assertFalse(techArticleMainResponse.getIsLogoImage());
     }
 

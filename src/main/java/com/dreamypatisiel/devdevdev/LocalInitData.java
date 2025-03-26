@@ -154,13 +154,13 @@ public class LocalInitData {
     private List<Company> createCompanies() {
         List<Company> companies = new ArrayList<>();
         companies.add(createCompany("Toss", "https://toss.tech",
-                "https://toss.im/career/jobs", "https://image.com", "토스", "금융"));
+                "https://toss.im/career/jobs", "https://company.net/image.png", "토스", "금융"));
         companies.add(createCompany("우아한 형제들", "https://techblog.woowahan.com",
-                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드"));
+                "https://career.woowahan.com", "https://company.net/image.png", "우아한 형제들", "푸드"));
         companies.add(createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
-                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드"));
+                "https://aws.amazon.com/ko/careers", "https://company.net/image.png", "AWS", "클라우드"));
         companies.add(createCompany("채널톡", "https://channel.io/ko/blog",
-                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅"));
+                "https://channel.io/ko/jobs", "https://company.net/image.png", "채널톡", "채팅"));
         return companies;
     }
 

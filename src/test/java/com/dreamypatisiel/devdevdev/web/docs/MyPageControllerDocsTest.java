@@ -9,6 +9,8 @@ import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerato
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.bookmarkSortType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.contentStatusType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -58,14 +60,17 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkReposi
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyQuestionOptionsRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -78,6 +83,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -125,6 +131,8 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     SubscriptionRepository subscriptionRepository;
     @Autowired
     EntityManager em;
+    @SpyBean
+    MemberService memberService;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
@@ -870,43 +878,19 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("회원이 커서 방식으로 다음페이지의 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
     void findMySubscribedCompaniesByCursor() throws Exception {
         // given
-        Pageable pageable = PageRequest.of(0, 2);
+        Pageable pageable = PageRequest.of(0, 1);
+        long cursorCompanyId = 999L;
+        SubscribedCompanyResponse subscribedCompanyResponse = new SubscribedCompanyResponse(
+                1L, "Toss", "https://image.net/image.png", true);
+        List<SubscribedCompanyResponse> content = List.of(subscribedCompanyResponse);
+        SliceCustom<SubscribedCompanyResponse> response = new SliceCustom<>(content, pageable, 1L);
 
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // 회사 생성
-        Company company1 = createCompany("Toss", "https://toss.tech",
-                "https://toss.im/career/jobs", "https://image.com", "토스", "금융");
-        Company company2 = createCompany("우아한 형제들", "https://techblog.woowahan.com",
-                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드");
-        Company company3 = createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
-                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드");
-        Company company4 = createCompany("채널톡", "https://channel.io/ko/blog",
-                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅");
-
-        List<Company> companies = List.of(company1, company2, company3, company4);
-        companyRepository.saveAll(companies);
-
-        // 회원 구독
-        Subscription subscription1 = Subscription.create(member, company1);
-        Subscription subscription2 = Subscription.create(member, company2);
-        List<Subscription> subscriptions = List.of(subscription1, subscription2);
-        subscriptionRepository.saveAll(subscriptions);
+        doReturn(response).when(memberService).findMySubscribedCompanies(any(), any(), any());
 
         // when
         ResultActions actions = mockMvc.perform(get(DEFAULT_PATH_V1 + "/mypage/subscriptions/companies")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("companyId", company4.getId().toString())
+                        .queryParam("companyId", Long.toString(cursorCompanyId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .characterEncoding(StandardCharsets.UTF_8))

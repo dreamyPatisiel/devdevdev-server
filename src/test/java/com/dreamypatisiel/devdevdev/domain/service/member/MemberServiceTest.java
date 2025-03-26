@@ -1068,13 +1068,13 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         // 회사 생성
         Company company1 = createCompany("Toss", "https://toss.tech",
-                "https://toss.im/career/jobs", "https://image.com", "토스", "금융");
+                "https://toss.im/career/jobs", "https://company.net/image.png", "토스", "금융");
         Company company2 = createCompany("우아한 형제들", "https://techblog.woowahan.com",
-                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드");
+                "https://career.woowahan.com", "https://company.net/image.png", "우아한 형제들", "푸드");
         Company company3 = createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
-                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드");
+                "https://aws.amazon.com/ko/careers", "https://company.net/image.png", "AWS", "클라우드");
         Company company4 = createCompany("채널톡", "https://channel.io/ko/blog",
-                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅");
+                "https://channel.io/ko/jobs", "https://company.net/image.png", "채널톡", "채팅");
 
         List<Company> companies = List.of(company1, company2, company3, company4);
         companyRepository.saveAll(companies);
@@ -1094,8 +1094,14 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         // then
         assertThat(mySubscribedCompanies)
                 .hasSize(pageable.getPageSize())
-                .extracting(SubscribedCompanyResponse::getIsSubscribed)
-                .contains(true);
+                .extracting(
+                        SubscribedCompanyResponse::getCompanyId,
+                        SubscribedCompanyResponse::getCompanyName,
+                        SubscribedCompanyResponse::getCompanyImageUrl,
+                        SubscribedCompanyResponse::getIsSubscribed)
+                .containsExactly(
+                        Tuple.tuple(company2.getId(), company2.getName().getCompanyName(), company2.getOfficialImageUrl().getUrl(), true)
+                );
     }
 
     @Test
@@ -1116,13 +1122,13 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         // 회사 생성
         Company company1 = createCompany("Toss", "https://toss.tech",
-                "https://toss.im/career/jobs", "https://image.com", "토스", "금융");
+                "https://toss.im/career/jobs", "https://company.net/image.png", "토스", "금융");
         Company company2 = createCompany("우아한 형제들", "https://techblog.woowahan.com",
-                "https://career.woowahan.com", "https://image.com", "우아한 형제들", "푸드");
+                "https://career.woowahan.com", "https://company.net/image.png", "우아한 형제들", "푸드");
         Company company3 = createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
-                "https://aws.amazon.com/ko/careers", "https://image.com", "AWS", "클라우드");
+                "https://aws.amazon.com/ko/careers", "https://company.net/image.png", "AWS", "클라우드");
         Company company4 = createCompany("채널톡", "https://channel.io/ko/blog",
-                "https://channel.io/ko/jobs", "https://image.com", "채널톡", "채팅");
+                "https://channel.io/ko/jobs", "https://company.net/image.png", "채널톡", "채팅");
 
         List<Company> companies = List.of(company1, company2, company3, company4);
         companyRepository.saveAll(companies);
@@ -1142,8 +1148,14 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         // then
         assertThat(mySubscribedCompanies)
                 .hasSize(pageable.getPageSize())
-                .extracting(SubscribedCompanyResponse::getCompanyId)
-                .contains(company1.getId());
+                .extracting(
+                        SubscribedCompanyResponse::getCompanyId,
+                        SubscribedCompanyResponse::getCompanyName,
+                        SubscribedCompanyResponse::getCompanyImageUrl,
+                        SubscribedCompanyResponse::getIsSubscribed)
+                .containsExactly(
+                        Tuple.tuple(company1.getId(), company1.getName().getCompanyName(), company1.getOfficialImageUrl().getUrl(), true)
+                        );
     }
 
     @Test
