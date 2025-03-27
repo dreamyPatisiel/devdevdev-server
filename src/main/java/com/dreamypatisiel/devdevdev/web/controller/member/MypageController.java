@@ -123,7 +123,7 @@ public class MypageController {
     @Operation(summary = "내가 구독한 기업 목록 조회", description = "본인이 구독한 기업을 무한 스크롤 방식으로 조회합니다.")
     @GetMapping("/mypage/subscriptions/companies")
     public ResponseEntity<BasicResponse<SliceCustom<SubscribedCompanyResponse>>> getMySubscribedCompanies(
-            @PageableDefault(size = 6) Pageable pageable,
+            @PageableDefault(size = 8) Pageable pageable,
             @RequestParam(required = false) Long companyId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
