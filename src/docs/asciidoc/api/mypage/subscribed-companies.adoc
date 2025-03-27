@@ -13,6 +13,10 @@ include::{snippets}/subscribed-companies/http-request.adoc[]
 
 include::{snippets}/subscribed-companies/request-headers.adoc[]
 
+==== HTTP Request Query Parameters Fields
+
+include::{snippets}/subscribed-companies/query-parameters.adoc[]
+
 ==== HTTP Response
 
 include::{snippets}/subscribed-companies/http-response.adoc[]
