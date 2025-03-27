@@ -1,37 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
-import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.*;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
@@ -41,21 +11,15 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyAnswerRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionOptionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyQuestionRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuestionMapperRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.survey.*;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
@@ -64,14 +28,6 @@ import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurve
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.Cookie;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -89,6 +45,28 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
+import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class MyPageControllerTest extends SupportControllerTest {
 
@@ -119,6 +97,10 @@ class MyPageControllerTest extends SupportControllerTest {
     SurveyAnswerRepository surveyAnswerRepository;
     @Autowired
     SurveyQuestionOptionRepository surveyQuestionOptionRepository;
+    @Autowired
+    CompanyRepository companyRepository;
+    @Autowired
+    SubscriptionRepository subscriptionRepository;
     @Autowired
     TimeProvider timeProvider;
     @Autowired
@@ -899,6 +881,18 @@ class MyPageControllerTest extends SupportControllerTest {
                 .officialImageUrl(new Url(officialImageUrl))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
+                .build();
+    }
+
+    private static Company createCompany(String companyName, String officialUrl, String careerUrl,
+                                         String imageUrl, String description, String industry) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
+                .officialImageUrl(new Url(imageUrl))
+                .description(description)
+                .industry(industry)
                 .build();
     }
 }

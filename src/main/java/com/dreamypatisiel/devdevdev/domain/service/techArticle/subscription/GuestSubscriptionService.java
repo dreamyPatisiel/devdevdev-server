@@ -10,7 +10,7 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriptionResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
