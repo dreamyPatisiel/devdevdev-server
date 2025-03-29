@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,6 +32,14 @@ public class Notification extends BasicTime {
 
     @Column(nullable = false)
     private boolean isRead = false;
+
+    @Builder
+    private Notification(String message, NotificationType type, Member member, boolean isRead) {
+        this.message = message;
+        this.type = type;
+        this.member = member;
+        this.isRead = isRead;
+    }
 
     public void markAsRead() {
         this.isRead = true;
