@@ -8,10 +8,10 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -23,12 +23,12 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     /**
-     * @Author: 유소영
-     * @Since: 2025.03.28
-     * @Note: 알림 단건 읽기
      * @param notificationId 알림 ID
      * @param authentication 회원 정보
      * @return NotificationReadResponse
+     * @Author: 유소영
+     * @Since: 2025.03.28
+     * @Note: 알림 단건 읽기
      */
     @Transactional
     public NotificationReadResponse readNotification(Long notificationId, Authentication authentication) {
@@ -46,5 +46,20 @@ public class NotificationService {
 
         // 응답 반환
         return NotificationReadResponse.from(findNotification);
+    }
+
+    /**
+     * @param authentication 회원 인증 정보
+     * @Author: 유소영
+     * @Since: 2025.03.29
+     * @Note: 회원의 모든 알림을 읽음 처리
+     */
+    @Transactional
+    public void readAllNotifications(Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 읽지 않은 모든 알림 조회
+        notificationRepository.bulkMarkAllAsReadByMemberId(findMember.getId());
     }
 }
