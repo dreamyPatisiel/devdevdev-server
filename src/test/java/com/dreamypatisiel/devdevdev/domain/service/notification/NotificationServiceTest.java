@@ -52,7 +52,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된다.")
-    void readNotification_success() {
+    void readNotification() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -86,7 +86,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("회원이 자신의 알림이 아닌 알림을 조회하면 예외가 발생한다.")
-    void readNotification_notOwner_throwsException() {
+    void readNotificationNotOwnerException() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -114,7 +114,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("회원이 모든 알림을 읽으면 isRead가 true로 일괄 업데이트된다.")
-    void readAllNotifications_success() {
+    void readAllNotifications() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(
                 "dreamy", "꿈빛파티시엘", "행복한 꿈빛", "pass123", "dreamy@kakao.com", "KAKAO", "ROLE_USER"
@@ -151,7 +151,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("회원이 읽을 알림이 하나도 없어도 readAllNotifications는 성공한다.")
-    void readAllNotifications_whenNoUnreadNotifications_success() {
+    void readAllNotificationsWhenNoUnreadNotifications() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(
                 "dreamy", "꿈빛파티시엘", "행복한 꿈빛", "pass123", "dreamy@kakao.com", "KAKAO", "ROLE_USER"
@@ -179,7 +179,7 @@ class NotificationServiceTest {
         em.clear();
 
         // then
-        List<Notification> allNotifications = notificationRepository.findAll();
+        List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
         assertThat(allNotifications)
                 .hasSize(2)
                 .allMatch(Notification::isRead); // 여전히 모두 읽음 상태

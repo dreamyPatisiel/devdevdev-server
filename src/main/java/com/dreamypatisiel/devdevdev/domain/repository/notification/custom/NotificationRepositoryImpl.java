@@ -14,7 +14,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     public void bulkMarkAllAsReadByMemberId(Long memberId) {
         query.update(notification)
                 .set(notification.isRead, true)
-                .where(notification.member.id.eq(memberId)
+                .where(notification.memberId.eq(memberId)
                         .and(notification.isRead.isFalse()))
                 .execute();
     }

@@ -32,6 +32,9 @@ public class Notification extends BasicTime {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @Column(name = "member_id", insertable = false, updatable = false)
+    private Long memberId;
+
     @Column(nullable = false)
     private boolean isRead = false;
 

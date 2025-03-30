@@ -30,7 +30,7 @@ class NotificationControllerTest extends SupportControllerTest {
 
     @Test
     @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된 응답을 받는다.")
-    void readNotification_success() throws Exception {
+    void readNotification() throws Exception {
         // given
         Long notificationId = 1L;
         given(notificationService.readNotification(anyLong(), any()))
@@ -51,7 +51,7 @@ class NotificationControllerTest extends SupportControllerTest {
 
     @Test
     @DisplayName("회원이 자신의 알림이 아닌 알림을 조회하면 예외가 발생한다.")
-    void readNotification_notOwner_throwsException() throws Exception {
+    void readNotificationNotOwnerException() throws Exception {
         // given
         Long notificationId = 1L;
         given(notificationService.readNotification(anyLong(), any()))
