@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "notification", indexes = {
-        @Index(name = "idx_notification_id_member_id", columnList = "id, member_id")
+        @Index(name = "idx_notification_01", columnList = "member_id"),
+        @Index(name = "idx_notification_02", columnList = "id, member_id"),
+        @Index(name = "idx_notification_03", columnList = "member_id, is_read")
 })
 public class Notification extends BasicTime {
 
