@@ -103,7 +103,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
 
     @Test
     @DisplayName("회원이 모든 알림을 읽는다.")
-    void readAllNotifications_success() throws Exception {
+    void readAllNotifications() throws Exception {
         // given
         doNothing().when(notificationService).readAllNotifications(any());
 

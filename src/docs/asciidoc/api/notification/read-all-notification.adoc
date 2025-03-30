@@ -2,6 +2,7 @@
 == 모든 알림 읽기 API (PATCH: /devdevdev/api/v1/notifications/read-all)
 
 * 회원이 자신에게 온 모든 알림을 읽기 처리한다.
+* 회원이 읽을 알림이 하나도 없어도 예외가 발생하지 않고 성공한다.
 
 === 정상 요청/응답
 
