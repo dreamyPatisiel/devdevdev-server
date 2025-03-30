@@ -23,12 +23,12 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     /**
+     * @Note: 알림 단건 읽기
+     * @Author: 유소영
+     * @Since: 2025.03.28
      * @param notificationId 알림 ID
      * @param authentication 회원 정보
      * @return NotificationReadResponse
-     * @Author: 유소영
-     * @Since: 2025.03.28
-     * @Note: 알림 단건 읽기
      */
     @Transactional
     public NotificationReadResponse readNotification(Long notificationId, Authentication authentication) {
@@ -49,10 +49,10 @@ public class NotificationService {
     }
 
     /**
-     * @param authentication 회원 인증 정보
+     * @Note: 회원의 모든 알림을 읽음 처리
      * @Author: 유소영
      * @Since: 2025.03.29
-     * @Note: 회원의 모든 알림을 읽음 처리
+     * @param authentication 회원 인증 정보
      */
     @Transactional
     public void readAllNotifications(Authentication authentication) {

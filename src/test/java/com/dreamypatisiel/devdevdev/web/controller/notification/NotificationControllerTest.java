@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -65,5 +66,26 @@ class NotificationControllerTest extends SupportControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
                 .andExpect(jsonPath("$.message").value(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
+    }
+
+    @Test
+    @DisplayName("회원이 모든 알림을 읽는다.")
+    void readAllNotifications() throws Exception {
+        // given
+        // 별도의 응답이 없으므로 void 메서드 호출만 mock
+        doNothing().when(notificationService).readAllNotifications(any());
+
+        // when // then
+        mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/read-all")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").doesNotExist());
+
+        // 호출 여부 확인
+        verify(notificationService, times(1)).readAllNotifications(any());
     }
 }
