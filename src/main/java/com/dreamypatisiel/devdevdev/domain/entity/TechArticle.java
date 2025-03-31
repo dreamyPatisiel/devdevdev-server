@@ -81,6 +81,10 @@ public class TechArticle extends BasicTime {
     @OneToMany(mappedBy = "techArticle")
     private List<TechArticleRecommend> recommends = new ArrayList<>();
 
+    public TechArticle(Long id) {
+        this.id = id;
+    }
+
     @Builder
     private TechArticle(Title title, Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount,
                         Count popularScore,

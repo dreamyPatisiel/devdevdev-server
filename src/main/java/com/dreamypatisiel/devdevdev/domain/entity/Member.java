@@ -110,6 +110,10 @@ public class Member extends BasicTime {
 
     @OneToMany(mappedBy = "member")
     private List<TechArticleRecommend> recommends = new ArrayList<>();
+    
+    public Member(Long id) {
+        this.id = id;
+    }
 
     @Builder
     private Member(String name, Nickname nickname, Email email, String password, String userId, String profileImage,

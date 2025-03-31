@@ -7,13 +7,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum NotificationType {
     // 구독 알림
-    // 댓글, 대댓글
     SUBSCRIPTION {
         @Override
         public String createMessage() {
             return null;
         }
-    }, COMMENT_AND_REPLY {
+    },
+    
+    // 댓글, 대댓글
+    COMMENT_AND_REPLY {
         @Override
         public String createMessage() {
             return null;
@@ -21,5 +23,6 @@ public enum NotificationType {
     };
 
     private String message;
+
     abstract public String createMessage();
 }
