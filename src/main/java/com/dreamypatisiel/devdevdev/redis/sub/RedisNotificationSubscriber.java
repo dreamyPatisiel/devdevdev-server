@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.redis.sub;
+package com.dreamypatisiel.devdevdev.redis.sub;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -7,10 +7,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.Subscription;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
+import com.dreamypatisiel.devdevdev.domain.service.SseEmitterService;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
-import com.dreamypatisiel.devdevdev.web.service.SseEmitterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class RedisNotificationSubscriber implements MessageListener {
+
+    public static final String TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 글이 올라왔어요!";
 
     private final SseEmitterService sseEmitterService;
     private final TimeProvider timeProvider;
@@ -51,7 +53,7 @@ public class RedisNotificationSubscriber implements MessageListener {
             // 기업을 구독중인 모든 회원 추출
             Set<Member> members = findSubscriptions.stream()
                     .map(Subscription::getMember)
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
+                    .collect(Collectors.toCollection(LinkedHashSet::new)); // 순서 유지
 
             // 새롭게 publish 된 기술블로그 아이디 추출
             Set<Long> techArticleIds = request.getTechArticles().stream()
@@ -63,24 +65,27 @@ public class RedisNotificationSubscriber implements MessageListener {
                     members, techArticleIds);
 
             // 구독한 기업에 대해서 새로운 글 알림이 존재하지 않은 회원 추출
-            Set<Member> membersWithoutNotification = members.stream()
+            Set<Member> membersWithoutNotifications = members.stream()
                     .filter(member -> findSubscriptionNotifications.stream()
                             .noneMatch(notification -> notification.isEqualsMember(member)))
                     .collect(Collectors.toSet());
 
             // 메시지 생성
             Company company = findSubscriptions.getFirst().getCompany();
-            String notificationMessage = company.getName().getCompanyName() + "에서 새로운 글이 올라왔어요!";
+            String notificationMessage = String.format(TECH_ARTICLE_NOTIFICATION_FORMAT, company.getName().getCompanyName());
 
             // 알림이 없는 회원들의 알림 생성
-            membersWithoutNotification.forEach(memberWithoutNotification -> techArticleIds.forEach(techArticleId -> {
-                Notification notification = Notification.createTechArticleNotification(memberWithoutNotification,
-                        new TechArticle(techArticleId), notificationMessage);
-                notificationRepository.save(notification);
+            membersWithoutNotifications.forEach(memberWithoutNotification ->
+                    techArticleIds.forEach(techArticleId -> {
+                        // 알림 이력 생성 및 저장
+                        Notification notification = Notification.createTechArticleNotification(
+                                memberWithoutNotification, new TechArticle(techArticleId), notificationMessage);
+                        notificationRepository.save(notification);
 
-                // 알림 전송
-                sseEmitterService.sendNotification(new NotificationMessageDto(notification), memberWithoutNotification);
-            }));
+                        // 알림 전송
+                        sseEmitterService.sendNotification(new NotificationMessageDto(notification),
+                                memberWithoutNotification);
+                    }));
 
         } catch (IOException e) {
             throw new RuntimeException(e);

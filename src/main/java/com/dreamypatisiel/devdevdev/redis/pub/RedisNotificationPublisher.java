@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.redis.pub;
+package com.dreamypatisiel.devdevdev.redis.pub;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;

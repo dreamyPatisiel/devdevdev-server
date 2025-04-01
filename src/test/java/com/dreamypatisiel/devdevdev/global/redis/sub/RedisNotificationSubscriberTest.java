@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.global.redis.sub;
 
+import com.dreamypatisiel.devdevdev.redis.sub.RedisNotificationSubscriber;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

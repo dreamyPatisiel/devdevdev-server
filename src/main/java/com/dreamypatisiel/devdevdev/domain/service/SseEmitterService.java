@@ -1,9 +1,9 @@
-package com.dreamypatisiel.devdevdev.web.service;
+package com.dreamypatisiel.devdevdev.domain.service;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
-import com.dreamypatisiel.devdevdev.global.redis.sub.NotificationMessageDto;
+import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.redis.config;
+package com.dreamypatisiel.devdevdev.redis.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

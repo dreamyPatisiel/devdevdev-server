@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.redis.sub;
+package com.dreamypatisiel.devdevdev.redis.sub;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Notification;
 import java.time.LocalDateTime;

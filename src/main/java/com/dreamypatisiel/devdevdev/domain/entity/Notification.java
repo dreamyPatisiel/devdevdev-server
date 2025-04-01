@@ -81,7 +81,7 @@ public class Notification extends BasicTime {
                 .build();
     }
 
-    public void read() {
+    public void markAsRead() {
         this.isRead = true;
     }
 
