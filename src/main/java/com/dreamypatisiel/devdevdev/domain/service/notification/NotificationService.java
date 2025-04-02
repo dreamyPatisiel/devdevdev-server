@@ -10,10 +10,8 @@ import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationRe
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -36,7 +34,7 @@ public class NotificationService {
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 알림 조회
-        Notification findNotification = notificationRepository.findByIdAndMemberId(notificationId, findMember.getId())
+        Notification findNotification = notificationRepository.findByIdAndMember(notificationId, findMember)
                 .orElseThrow(() -> new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
 
         // 알림 읽기 처리 (이미 읽은 알림의 경우이라도 예외를 발생시키지 않고 처리)

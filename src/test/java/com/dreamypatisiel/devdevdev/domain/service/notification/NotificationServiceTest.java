@@ -50,7 +50,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된다.")
-    void readNotification_success() {
+    void readNotification() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -84,7 +84,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("회원이 자신의 알림이 아닌 알림을 조회하면 예외가 발생한다.")
-    void readNotification_notOwner_throwsException() {
+    void readNotificationNotOwnerException() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
