@@ -167,9 +167,11 @@ public class MyPageControllerDocsTest extends SupportControllerDocsTest {
 
     @AfterAll
     static void tearDown(@Autowired TechArticleRepository techArticleRepository,
-                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                         @Autowired CompanyRepository companyRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
+        companyRepository.deleteAllInBatch();
     }
 
     @Test

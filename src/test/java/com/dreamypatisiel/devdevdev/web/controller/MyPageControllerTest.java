@@ -53,9 +53,6 @@ import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_LOGIN_STATUS;
-import static com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant.DEVDEVDEV_REFRESH_TOKEN;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
@@ -157,9 +154,11 @@ class MyPageControllerTest extends SupportControllerTest {
 
     @AfterAll
     static void tearDown(@Autowired ElasticTechArticleRepository elasticTechArticleRepository,
-                         @Autowired TechArticleRepository techArticleRepository) {
+                         @Autowired TechArticleRepository techArticleRepository,
+                         @Autowired CompanyRepository companyRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
+        companyRepository.deleteAllInBatch();
     }
 
     @Test
