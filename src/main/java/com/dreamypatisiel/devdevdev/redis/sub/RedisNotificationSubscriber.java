@@ -8,7 +8,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.service.SseEmitterService;
-import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,15 +20,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RedisNotificationSubscriber implements MessageListener {
 
     public static final String TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 글이 올라왔어요!";
 
     private final SseEmitterService sseEmitterService;
-    private final TimeProvider timeProvider;
 
     private final NotificationRepository notificationRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -39,6 +39,7 @@ public class RedisNotificationSubscriber implements MessageListener {
      * @Author: 장세웅
      * @Since: 2025.03.27
      */
+    @Transactional
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
@@ -49,6 +50,10 @@ public class RedisNotificationSubscriber implements MessageListener {
             // 기업 구독 목록 조회(member fetch join)
             List<Subscription> findSubscriptions = subscriptionRepository.findWithMemberByCompanyIdOrderByMemberDesc(
                     request.getCompanyId());
+
+            if (findSubscriptions.isEmpty()) {
+                return;
+            }
 
             // 기업을 구독중인 모든 회원 추출
             Set<Member> members = findSubscriptions.stream()

@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.redis.config;
 
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.redis.sub.RedisNotificationSubscriber;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -11,14 +12,12 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 @RequiredArgsConstructor
 public class RedisSubscribeConfig {
 
-    public static final String TECH_ARTICLE_CHANNEL = "tech-article";
-
     private final RedisMessageListenerContainer redisMessageListenerContainer;
     private final RedisNotificationSubscriber redisNotificationSubscriber;
 
     @PostConstruct
     public void init() {
         redisMessageListenerContainer.addMessageListener(redisNotificationSubscriber,
-                new PatternTopic(TECH_ARTICLE_CHANNEL));
+                new PatternTopic(NotificationType.SUBSCRIPTION.name()));
     }
 }

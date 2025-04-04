@@ -61,7 +61,7 @@ class SseEmitterServiceTest {
 
     @Test
     @DisplayName("회원이 구독자로 추가되었을 때, SseEmitter 객체를 반환한다.")
-    void subscribe() {
+    void addClient() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -74,7 +74,7 @@ class SseEmitterServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        SseEmitter sseEmitter = sseEmitterService.subscribe(authentication);
+        SseEmitter sseEmitter = sseEmitterService.addClient(authentication);
 
         // then
         SseEmitter findSseEmitter = sseEmitterRepository.findByMemberId(member);
@@ -84,7 +84,7 @@ class SseEmitterServiceTest {
 
     @Test
     @DisplayName("회원이 구독자로 추가되었을 때, 회원이 존재하지 않으면 예외가 발생한다.")
-    void subscribeMemberException() {
+    void addClientMemberException() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
@@ -96,7 +96,7 @@ class SseEmitterServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> sseEmitterService.subscribe(authentication))
+        assertThatThrownBy(() -> sseEmitterService.addClient(authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
