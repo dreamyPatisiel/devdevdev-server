@@ -4,21 +4,21 @@ import static com.dreamypatisiel.devdevdev.domain.service.SseEmitterService.UNRE
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,6 +33,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @SpringBootTest
 @Transactional
 class SseEmitterServiceTest {
+
+    @MockBean
+    TimeProvider timeProvider;
 
     @MockBean
     private MemberProvider memberProvider;
@@ -56,9 +59,14 @@ class SseEmitterServiceTest {
         SseEmitter realEmitter = new SseEmitter();
         SseEmitter spyEmitter = spy(realEmitter);
 
-        when(memberProvider.getMemberByAuthentication(mockAuthentication)).thenReturn(mockMember);
-        when(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).thenReturn(unreadNotificationCount);
-        when(sseEmitterService.createSseEmitter(anyLong())).thenReturn(spyEmitter);
+        given(timeProvider.getLocalDateTimeNow()).willReturn(LocalDateTime.of(2025, 1, 1, 0, 0, 0));
+        given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
+        given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(unreadNotificationCount);
+        given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
+
+        String notificationMessage = String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount);
+        NotificationMessageDto notificationMessageDto = new NotificationMessageDto(notificationMessage,
+                timeProvider.getLocalDateTimeNow());
 
         // when
         SseEmitter resultEmitter = sseEmitterService.addClientAndSendNotification(mockAuthentication);
@@ -67,7 +75,7 @@ class SseEmitterServiceTest {
         verify(memberProvider).getMemberByAuthentication(mockAuthentication);
         verify(sseEmitterRepository).save(mockMember, resultEmitter);
         verify(notificationRepository).countByMemberAndIsReadIsFalse(mockMember);
-        verify(resultEmitter).send(String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount));
+        verify(resultEmitter).send(notificationMessageDto);
         verify(sseEmitterRepository, never()).remove(mockMember);
     }
 
@@ -80,9 +88,9 @@ class SseEmitterServiceTest {
         SseEmitter realEmitter = new SseEmitter();
         SseEmitter spyEmitter = spy(realEmitter);
 
-        when(memberProvider.getMemberByAuthentication(mockAuthentication)).thenReturn(mockMember);
-        when(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).thenReturn(0L);
-        when(sseEmitterService.createSseEmitter(anyLong())).thenReturn(spyEmitter);
+        given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
+        given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(0L);
+        given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
 
         // when
         SseEmitter resultEmitter = sseEmitterService.addClientAndSendNotification(mockAuthentication);
@@ -105,10 +113,16 @@ class SseEmitterServiceTest {
         SseEmitter realEmitter = new SseEmitter();
         SseEmitter spyEmitter = spy(realEmitter);
 
+        given(timeProvider.getLocalDateTimeNow()).willReturn(LocalDateTime.of(2025, 1, 1, 0, 0, 0));
         given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
         given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(unreadNotificationCount);
         given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
-        doThrow(new IOException()).when(spyEmitter).send(anyString());
+
+        String notificationMessage = String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount);
+        NotificationMessageDto notificationMessageDto = new NotificationMessageDto(notificationMessage,
+                timeProvider.getLocalDateTimeNow());
+
+        doThrow(new IOException()).when(spyEmitter).send(notificationMessageDto);
 
         // when // then
         assertThatCode(() -> sseEmitterService.addClientAndSendNotification(mockAuthentication))
@@ -117,7 +131,7 @@ class SseEmitterServiceTest {
         verify(memberProvider).getMemberByAuthentication(mockAuthentication);
         verify(sseEmitterRepository).save(mockMember, spyEmitter);
         verify(notificationRepository).countByMemberAndIsReadIsFalse(mockMember);
-        verify(spyEmitter).send(String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount));
+        verify(spyEmitter).send(notificationMessageDto);
         verify(sseEmitterRepository).remove(mockMember);
     }
 

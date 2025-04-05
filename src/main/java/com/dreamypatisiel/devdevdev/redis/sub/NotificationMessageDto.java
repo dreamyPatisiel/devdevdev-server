@@ -9,6 +9,11 @@ public class NotificationMessageDto {
     private String message;
     private LocalDateTime createdAt;
 
+    public NotificationMessageDto(String message, LocalDateTime createdAt) {
+        this.message = message;
+        this.createdAt = createdAt;
+    }
+
     public NotificationMessageDto(Notification notification) {
         this.message = notification.getMessage();
         this.createdAt = notification.getCreatedAt();

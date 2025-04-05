@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ public class SseEmitterService {
     public static final String UNREAD_NOTIFICATION_FORMAT = "읽지 않은 알림이 %d개가 있어요.";
 
     private final MemberProvider memberProvider;
+    private final TimeProvider timeProvider;
 
     private final SseEmitterRepository sseEmitterRepository;
     private final NotificationRepository notificationRepository;
@@ -51,9 +53,13 @@ public class SseEmitterService {
         // 알림이 존재하면 구독자에게 알림 전송
         if (unreadNotificationCount > 0) {
             try {
-                // 알림 전송
+                // 알림 메시지 생성
                 String notificationMessage = String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount);
-                sseEmitter.send(notificationMessage);
+                NotificationMessageDto notificationMessageDto = new NotificationMessageDto(
+                        notificationMessage, timeProvider.getLocalDateTimeNow());
+
+                // 알림 전송
+                sseEmitter.send(notificationMessageDto);
             } catch (Exception e) {
                 // 구독자 제거
                 sseEmitterRepository.remove(findMember);
