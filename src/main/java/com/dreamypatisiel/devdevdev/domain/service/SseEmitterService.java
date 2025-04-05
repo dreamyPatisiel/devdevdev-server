@@ -24,18 +24,22 @@ public class SseEmitterService {
     private final SseEmitterRepository sseEmitterRepository;
     private final NotificationRepository notificationRepository;
 
+    public SseEmitter createSseEmitter(Long timeout) {
+        return new SseEmitter(timeout);
+    }
+
     /**
-     * @Note: 실시간 알림을 받을 구독자 추가
+     * @Note: 실시간 알림을 받을 구독자 추가 및
      * @Author: 장세웅
      * @Since: 2025.03.31
      */
-    public SseEmitter addClient(Authentication authentication) {
+    public SseEmitter addClientAndSendNotification(Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 구독자 생성
-        SseEmitter sseEmitter = new SseEmitter(TIMEOUT);
+        SseEmitter sseEmitter = createSseEmitter(TIMEOUT);
         sseEmitterRepository.save(findMember, sseEmitter);
 
         sseEmitter.onCompletion(() -> sseEmitterRepository.remove(findMember));
@@ -49,7 +53,7 @@ public class SseEmitterService {
             try {
                 // 알림 전송
                 String notificationMessage = String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount);
-                sseEmitter.send(SseEmitter.event().data(notificationMessage));
+                sseEmitter.send(notificationMessage);
             } catch (Exception e) {
                 // 구독자 제거
                 sseEmitterRepository.remove(findMember);
@@ -70,7 +74,7 @@ public class SseEmitterService {
         if (!ObjectUtils.isEmpty(sseEmitter)) {
             try {
                 // 알림 전송
-                sseEmitter.send(SseEmitter.event().data(notificationMessageDto));
+                sseEmitter.send(notificationMessageDto);
             } catch (Exception e) {
                 // 구독자 제거
                 sseEmitterRepository.remove(member);

@@ -34,7 +34,7 @@ public class NotificationController {
     @GetMapping(value = "/notification", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter notification() {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        return sseEmitterService.addClient(authentication);
+        return sseEmitterService.addClientAndSendNotification(authentication);
     }
 
     @Operation(summary = "알림 생성", description = "알림을 생성 합니다.")

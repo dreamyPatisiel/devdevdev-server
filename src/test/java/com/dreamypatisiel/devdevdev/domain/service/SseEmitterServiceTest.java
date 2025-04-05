@@ -1,35 +1,32 @@
 package com.dreamypatisiel.devdevdev.domain.service;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.dreamypatisiel.devdevdev.domain.service.SseEmitterService.UNREAD_NOTIFICATION_FORMAT;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Notification;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.exception.MemberException;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import java.io.IOException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -37,176 +34,129 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Transactional
 class SseEmitterServiceTest {
 
-    String userId = "dreamy5patisiel";
-    String name = "꿈빛파티시엘";
-    String nickname = "행복한 꿈빛파티시엘";
-    String email = "dreamy5patisiel@kakao.com";
-    String password = "password";
-    String socialType = SocialType.KAKAO.name();
-    String role = Role.ROLE_USER.name();
+    @MockBean
+    private MemberProvider memberProvider;
 
-    @Autowired
-    SseEmitterService sseEmitterService;
+    @MockBean
+    private NotificationRepository notificationRepository;
 
-    @Autowired
-    SseEmitterRepository sseEmitterRepository;
-    @Autowired
-    MemberRepository memberRepository;
-    @Autowired
-    CompanyRepository companyRepository;
-    @Autowired
-    TechArticleRepository techArticleRepository;
-    @Autowired
-    NotificationRepository notificationRepository;
+    @MockBean
+    private SseEmitterRepository sseEmitterRepository;
 
-    @Test
-    @DisplayName("회원이 구독자로 추가되었을 때, SseEmitter 객체를 반환한다.")
-    void addClient() {
+    @SpyBean
+    private SseEmitterService sseEmitterService;
+
+    @ParameterizedTest
+    @ValueSource(longs = {1, 2, 10, 50, 100})
+    @DisplayName("읽지 않은 알림이 존재할 때, SSE 구독 등록 후 알림을 전송한다.")
+    void addClientAndSendNotificationHaveUnreadNotification(long unreadNotificationCount) throws Exception {
         // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
+        Authentication mockAuthentication = mock(Authentication.class);
+        Member mockMember = mock(Member.class);
+        SseEmitter realEmitter = new SseEmitter();
+        SseEmitter spyEmitter = spy(realEmitter);
 
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(memberProvider.getMemberByAuthentication(mockAuthentication)).thenReturn(mockMember);
+        when(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).thenReturn(unreadNotificationCount);
+        when(sseEmitterService.createSseEmitter(anyLong())).thenReturn(spyEmitter);
 
         // when
-        SseEmitter sseEmitter = sseEmitterService.addClient(authentication);
+        SseEmitter resultEmitter = sseEmitterService.addClientAndSendNotification(mockAuthentication);
 
         // then
-        SseEmitter findSseEmitter = sseEmitterRepository.findByMemberId(member);
-        assertThat(sseEmitter).isNotNull();
-        assertThat(sseEmitter).isEqualTo(findSseEmitter);
+        verify(memberProvider).getMemberByAuthentication(mockAuthentication);
+        verify(sseEmitterRepository).save(mockMember, resultEmitter);
+        verify(notificationRepository).countByMemberAndIsReadIsFalse(mockMember);
+        verify(resultEmitter).send(String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount));
+        verify(sseEmitterRepository, never()).remove(mockMember);
     }
 
     @Test
-    @DisplayName("회원이 구독자로 추가되었을 때, 회원이 존재하지 않으면 예외가 발생한다.")
-    void addClientMemberException() {
+    @DisplayName("읽지 않은 알림이 없을 때, 구독자만 등록하고 알림은 전송하지 않는다.")
+    void addClientAndSendNotificationHaveNotUnreadNotification() throws IOException {
         // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
+        Authentication mockAuthentication = mock(Authentication.class);
+        Member mockMember = mock(Member.class);
+        SseEmitter realEmitter = new SseEmitter();
+        SseEmitter spyEmitter = spy(realEmitter);
 
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        when(memberProvider.getMemberByAuthentication(mockAuthentication)).thenReturn(mockMember);
+        when(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).thenReturn(0L);
+        when(sseEmitterService.createSseEmitter(anyLong())).thenReturn(spyEmitter);
+
+        // when
+        SseEmitter resultEmitter = sseEmitterService.addClientAndSendNotification(mockAuthentication);
+
+        // then
+        verify(memberProvider).getMemberByAuthentication(mockAuthentication);
+        verify(sseEmitterRepository).save(mockMember, resultEmitter);
+        verify(notificationRepository).countByMemberAndIsReadIsFalse(mockMember);
+        verify(resultEmitter, never()).send(String.format(UNREAD_NOTIFICATION_FORMAT, any()));
+        verify(sseEmitterRepository, never()).remove(mockMember);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1, 2, 10, 50, 100})
+    @DisplayName("알림 전송 중 예외가 발생하면 구독자를 제거한다.")
+    void addClientAndSendNotificationIoException(Long unreadNotificationCount) throws IOException {
+        // given
+        Authentication mockAuthentication = mock(Authentication.class);
+        Member mockMember = mock(Member.class);
+        SseEmitter realEmitter = new SseEmitter();
+        SseEmitter spyEmitter = spy(realEmitter);
+
+        given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
+        given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(unreadNotificationCount);
+        given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
+        doThrow(new IOException()).when(spyEmitter).send(anyString());
 
         // when // then
-        assertThatThrownBy(() -> sseEmitterService.addClient(authentication))
-                .isInstanceOf(MemberException.class)
-                .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+        assertThatCode(() -> sseEmitterService.addClientAndSendNotification(mockAuthentication))
+                .doesNotThrowAnyException();
+
+        verify(memberProvider).getMemberByAuthentication(mockAuthentication);
+        verify(sseEmitterRepository).save(mockMember, spyEmitter);
+        verify(notificationRepository).countByMemberAndIsReadIsFalse(mockMember);
+        verify(spyEmitter).send(String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount));
+        verify(sseEmitterRepository).remove(mockMember);
     }
 
     @Test
-    @DisplayName("기술블로그 알림 발생시 회원에게 실시간으로 전송한다.")
-    void sendNotification() {
+    @DisplayName("구독자에게 알림을 전송합니다.")
+    void sendNotification() throws IOException {
         // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
+        Member mockMember = mock(Member.class);
+        NotificationMessageDto mockMessageDto = mock(NotificationMessageDto.class);
 
-        // 회사 생성
-        Company company = createCompany("Teuida");
-        companyRepository.save(company);
-
-        // 기술 블로그 생성
-        TechArticle techArticle = createTechArticle(company);
-        techArticleRepository.save(techArticle);
-
-        // 기술 블로그 알림 생성
-        Notification notification = createTechArticleNotification(member, techArticle, "알림 메시지");
-        notificationRepository.save(notification);
-
-        // 구독자 생성
-        SseEmitter sseEmitter = new SseEmitter();
-        sseEmitterRepository.save(member, sseEmitter);
-
-        // 알림 메시지 생성
-        NotificationMessageDto notificationMessageDto = new NotificationMessageDto(notification);
+        // SseEmitter를 모킹해줍니다.
+        SseEmitter mockEmitter = mock(SseEmitter.class);
+        given(sseEmitterRepository.findByMemberId(mockMember)).willReturn(mockEmitter);
 
         // when
-        sseEmitterService.sendNotification(notificationMessageDto, member);
+        sseEmitterService.sendNotification(mockMessageDto, mockMember);
 
-        // then
-        assertThat(sseEmitterRepository.findByMemberId(member)).isEqualTo(sseEmitter);
+        verify(mockEmitter).send(mockMessageDto);
+        verify(sseEmitterRepository, never()).remove(mockMember);
     }
 
     @Test
-    void sendNotificationIOException() {
-        // Given: 테스트 데이터 준비
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
+    @DisplayName("구독자에게 알림 전송 중 예외가 발생하면 구독자를 제거합니다.")
+    void sendNotificationIoException() throws IOException {
+        // given
+        Member mockMember = mock(Member.class);
+        NotificationMessageDto mockMessageDto = mock(NotificationMessageDto.class);
 
-        // 회사 생성
-        Company company = createCompany("Teuida");
-        companyRepository.save(company);
+        // SseEmitter를 모킹해줍니다.
+        SseEmitter mockEmitter = mock(SseEmitter.class);
+        given(sseEmitterRepository.findByMemberId(mockMember)).willReturn(mockEmitter);
 
-        // 기술 블로그 생성
-        TechArticle techArticle = createTechArticle(company);
-        techArticleRepository.save(techArticle);
+        doThrow(new IOException()).when(mockEmitter).send(mockMessageDto);
 
-        // 기술 블로그 알림 생성
-        Notification notification = createTechArticleNotification(member, techArticle, "알림 메시지");
-        notificationRepository.save(notification);
+        // when // then
+        assertThatCode(() -> sseEmitterService.sendNotification(mockMessageDto, mockMember))
+                .doesNotThrowAnyException();
 
-        // SseEmitter를 직접 생성하고 예외를 유발하도록 설정
-        SseEmitter sseEmitter = new SseEmitter() {
-            @Override
-            public void send(SseEventBuilder builder) throws IOException {
-                throw new IOException("Test exception");
-            }
-        };
-        sseEmitterRepository.save(member, sseEmitter);
-
-        // 알림 메시지 생성
-        NotificationMessageDto notificationMessageDto = new NotificationMessageDto(notification);
-
-        // when
-        sseEmitterService.sendNotification(notificationMessageDto, member);
-
-        // then
-        assertThat(sseEmitterRepository.findByMemberId(member)).isNull();
-    }
-
-    private static Company createCompany(String name) {
-        return Company.builder()
-                .name(new CompanyName(name))
-                .build();
-    }
-
-    private static TechArticle createTechArticle(Company company) {
-        return TechArticle.builder()
-                .company(company)
-                .build();
-    }
-
-    private static Notification createTechArticleNotification(Member member, TechArticle techArticle, String message) {
-        return Notification.builder()
-                .member(member)
-                .techArticle(techArticle)
-                .message(message)
-                .type(NotificationType.SUBSCRIPTION)
-                .isRead(false)
-                .build();
-    }
-
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
-                                            String socialType, String role) {
-        return SocialMemberDto.builder()
-                .userId(userId)
-                .name(name)
-                .nickname(nickName)
-                .password(password)
-                .email(email)
-                .socialType(SocialType.valueOf(socialType))
-                .role(Role.valueOf(role))
-                .build();
+        verify(mockEmitter).send(mockMessageDto);
+        verify(sseEmitterRepository).remove(mockMember);
     }
 }
