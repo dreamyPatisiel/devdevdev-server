@@ -1,6 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service;
 
-import static com.dreamypatisiel.devdevdev.domain.service.SseEmitterService.UNREAD_NOTIFICATION_FORMAT;
+import static com.dreamypatisiel.devdevdev.domain.service.NotificationService.UNREAD_NOTIFICATION_FORMAT;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -32,7 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @SpringBootTest
 @Transactional
-class SseEmitterServiceTest {
+class NotificationServiceTest {
 
     @MockBean
     TimeProvider timeProvider;
@@ -47,7 +47,7 @@ class SseEmitterServiceTest {
     private SseEmitterRepository sseEmitterRepository;
 
     @SpyBean
-    private SseEmitterService sseEmitterService;
+    private NotificationService notificationService;
 
     @ParameterizedTest
     @ValueSource(longs = {1, 2, 10, 50, 100})
@@ -62,14 +62,14 @@ class SseEmitterServiceTest {
         given(timeProvider.getLocalDateTimeNow()).willReturn(LocalDateTime.of(2025, 1, 1, 0, 0, 0));
         given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
         given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(unreadNotificationCount);
-        given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
+        given(notificationService.createSseEmitter(anyLong())).willReturn(spyEmitter);
 
         String notificationMessage = String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount);
         NotificationMessageDto notificationMessageDto = new NotificationMessageDto(notificationMessage,
                 timeProvider.getLocalDateTimeNow());
 
         // when
-        SseEmitter resultEmitter = sseEmitterService.addClientAndSendNotification(mockAuthentication);
+        SseEmitter resultEmitter = notificationService.addClientAndSendNotification(mockAuthentication);
 
         // then
         verify(memberProvider).getMemberByAuthentication(mockAuthentication);
@@ -90,10 +90,10 @@ class SseEmitterServiceTest {
 
         given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
         given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(0L);
-        given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
+        given(notificationService.createSseEmitter(anyLong())).willReturn(spyEmitter);
 
         // when
-        SseEmitter resultEmitter = sseEmitterService.addClientAndSendNotification(mockAuthentication);
+        SseEmitter resultEmitter = notificationService.addClientAndSendNotification(mockAuthentication);
 
         // then
         verify(memberProvider).getMemberByAuthentication(mockAuthentication);
@@ -116,7 +116,7 @@ class SseEmitterServiceTest {
         given(timeProvider.getLocalDateTimeNow()).willReturn(LocalDateTime.of(2025, 1, 1, 0, 0, 0));
         given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
         given(notificationRepository.countByMemberAndIsReadIsFalse(mockMember)).willReturn(unreadNotificationCount);
-        given(sseEmitterService.createSseEmitter(anyLong())).willReturn(spyEmitter);
+        given(notificationService.createSseEmitter(anyLong())).willReturn(spyEmitter);
 
         String notificationMessage = String.format(UNREAD_NOTIFICATION_FORMAT, unreadNotificationCount);
         NotificationMessageDto notificationMessageDto = new NotificationMessageDto(notificationMessage,
@@ -125,7 +125,7 @@ class SseEmitterServiceTest {
         doThrow(new IOException()).when(spyEmitter).send(notificationMessageDto);
 
         // when // then
-        assertThatCode(() -> sseEmitterService.addClientAndSendNotification(mockAuthentication))
+        assertThatCode(() -> notificationService.addClientAndSendNotification(mockAuthentication))
                 .doesNotThrowAnyException();
 
         verify(memberProvider).getMemberByAuthentication(mockAuthentication);
@@ -147,7 +147,7 @@ class SseEmitterServiceTest {
         given(sseEmitterRepository.findByMemberId(mockMember)).willReturn(mockEmitter);
 
         // when
-        sseEmitterService.sendNotification(mockMessageDto, mockMember);
+        notificationService.sendNotification(mockMessageDto, mockMember);
 
         verify(mockEmitter).send(mockMessageDto);
         verify(sseEmitterRepository, never()).remove(mockMember);
@@ -167,7 +167,7 @@ class SseEmitterServiceTest {
         doThrow(new IOException()).when(mockEmitter).send(mockMessageDto);
 
         // when // then
-        assertThatCode(() -> sseEmitterService.sendNotification(mockMessageDto, mockMember))
+        assertThatCode(() -> notificationService.sendNotification(mockMessageDto, mockMember))
                 .doesNotThrowAnyException();
 
         verify(mockEmitter).send(mockMessageDto);

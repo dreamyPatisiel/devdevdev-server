@@ -58,11 +58,11 @@ public class Notification extends BasicTime {
     private NotificationType type;
 
     @Column(columnDefinition = "default false", nullable = false)
-    private Boolean isRead;
+    private Boolean isRead = false;
 
     @Builder
-    public Notification(Member member, TechArticle techArticle, TechComment techComment, PickComment pickComment,
-                        String message, NotificationType type, Boolean isRead) {
+    private Notification(Member member, TechArticle techArticle, TechComment techComment, PickComment pickComment,
+                         String message, NotificationType type, Boolean isRead) {
         this.member = member;
         this.techArticle = techArticle;
         this.techComment = techComment;
