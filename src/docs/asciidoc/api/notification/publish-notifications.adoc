@@ -1,0 +1,40 @@
+[[Publish-Notifications]]
+== 알림 생성 API(POST: /devdevdev/api/v1/notifications/{channel})
+
+* 어드민이 알림을 생성한다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/publish-notifications/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/publish-notifications/request-headers.adoc[]
+
+==== HTTP Request Fields
+
+include::{snippets}/publish-notifications/request-fields.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/publish-notifications/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/publish-notifications/http-response.adoc[]
+
+==== HTTP Response Body Fields
+
+include::{snippets}/publish-notifications/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+* `유효하지 않은 회원 입니다.`: 회원이 유효하지 않은 경우
+
+include::{snippets}/not-found-member-exception/response-body.adoc[]

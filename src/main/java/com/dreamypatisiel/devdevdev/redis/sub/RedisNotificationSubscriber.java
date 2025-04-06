@@ -1,10 +1,12 @@
 package com.dreamypatisiel.devdevdev.redis.sub;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.dreamypatisiel.devdevdev.domain.service.NotificationService;
+import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
@@ -25,12 +27,14 @@ public class RedisNotificationSubscriber implements MessageListener {
      */
     @Transactional
     @Override
-    public void onMessage(Message message, byte[] pattern) {
+    public void onMessage(@Nullable Message message, byte[] pattern) {
         try {
-            ObjectMapper om = new ObjectMapper();
-            String channel = om.readValue(pattern, String.class);
-            if (channel.equals(NotificationType.SUBSCRIPTION.name())) {
+            // 채널 파싱
+            String channel = new String(pattern, StandardCharsets.UTF_8);
 
+            // 구독 채널인 경우
+            if (channel.equals(NotificationType.SUBSCRIPTION.name())) {
+                ObjectMapper om = new ObjectMapper();
                 PublishTechArticleRequest publishTechArticleRequest = om.readValue(message.getBody(),
                         PublishTechArticleRequest.class);
 

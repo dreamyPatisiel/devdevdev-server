@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.domain.service;
+package com.dreamypatisiel.devdevdev.domain.service.notification;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -15,11 +15,13 @@ import com.dreamypatisiel.devdevdev.redis.pub.NotificationPublisher;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.RedisPublishRequest;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class NotificationService {
     public static final String UNREAD_NOTIFICATION_FORMAT = "읽지 않은 알림이 %d개가 있어요.";
     public static final String MAIN_TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 기슬블로그 %d개가 올라왔어요!";
     public static final String TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 글이 올라왔어요!";
+    public static final String ACCESS_DENIED_MESSAGE = "접근할 수 없는 권한 입니다.";
 
     private final MemberProvider memberProvider;
     private final TimeProvider timeProvider;
@@ -109,7 +112,6 @@ public class NotificationService {
 
     @Transactional
     public void sendMainTechArticleNotifications(PublishTechArticleRequest publishTechArticleRequest) {
-
         // 기업 구독 목록 조회(member fetch join)
         List<Subscription> findSubscriptions = subscriptionRepository.findWithMemberByCompanyIdOrderByMemberDesc(
                 publishTechArticleRequest.getCompanyId());
@@ -164,7 +166,13 @@ public class NotificationService {
         });
     }
 
-    public <T> void publish(NotificationType channel, T message) {
-        notificationPublisher.publish(channel, message);
+    public <T extends RedisPublishRequest> Long publish(Authentication authentication, NotificationType channel, T message) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+        if (!findMember.isAdmin()) {
+            throw new AccessDeniedException(ACCESS_DENIED_MESSAGE);
+        }
+
+        return notificationPublisher.publish(channel, message);
     }
 }

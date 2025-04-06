@@ -4,7 +4,6 @@ import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -13,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.dreamypatisiel.devdevdev.domain.service.NotificationService;
+import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.redis.pub.NotificationPublisher;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
@@ -66,6 +65,8 @@ class NotificationControllerTest extends SupportControllerTest {
                 .andExpect(content().string(containsString("data")))
                 .andExpect(content().string(containsString("message")))
                 .andExpect(content().string(containsString("createdAt")));
+
+        sseEmitter.complete();
     }
 
     @Test
@@ -81,10 +82,7 @@ class NotificationControllerTest extends SupportControllerTest {
                         new PublishTechArticle(2L))
         );
 
-        // when
-        doNothing().when(notificationPublisher).publish(NotificationType.SUBSCRIPTION, notificationMessageDto);
-
-        // then
+        // when // then
         mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", NotificationType.SUBSCRIPTION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -108,10 +106,7 @@ class NotificationControllerTest extends SupportControllerTest {
                         new PublishTechArticle(2L))
         );
 
-        // when
-        doNothing().when(notificationPublisher).publish(NotificationType.SUBSCRIPTION, notificationMessageDto);
-
-        // then
+        // when // then
         mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", "INVALID_CHANNEL")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)

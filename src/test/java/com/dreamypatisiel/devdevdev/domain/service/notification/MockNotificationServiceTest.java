@@ -1,6 +1,6 @@
-package com.dreamypatisiel.devdevdev.domain.service;
+package com.dreamypatisiel.devdevdev.domain.service.notification;
 
-import static com.dreamypatisiel.devdevdev.domain.service.NotificationService.UNREAD_NOTIFICATION_FORMAT;
+import static com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService.UNREAD_NOTIFICATION_FORMAT;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -32,7 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @SpringBootTest
 @Transactional
-class NotificationServiceTest {
+class MockNotificationServiceTest {
 
     @MockBean
     TimeProvider timeProvider;

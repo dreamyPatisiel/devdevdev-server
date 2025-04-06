@@ -12,7 +12,7 @@ public class RedisNotificationPublisher implements NotificationPublisher {
     private final RedisTemplate<?, ?> redisTemplate;
 
     @Override
-    public <T> void publish(NotificationType channel, T message) {
-        redisTemplate.convertAndSend(channel.name(), message);
+    public <T> Long publish(NotificationType channel, T message) {
+        return redisTemplate.convertAndSend(channel.name(), message);
     }
 }

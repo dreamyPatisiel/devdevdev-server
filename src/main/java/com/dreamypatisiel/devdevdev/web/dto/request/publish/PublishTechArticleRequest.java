@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class PublishTechArticleRequest implements Serializable {
+public class PublishTechArticleRequest implements Serializable, RedisPublishRequest {
 
     @NotNull(message = "회사 아이디는 필수 입니다.")
     private Long companyId;

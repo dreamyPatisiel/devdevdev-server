@@ -1,7 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller.notification;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.dreamypatisiel.devdevdev.domain.service.NotificationService;
+import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
@@ -40,7 +40,10 @@ public class NotificationController {
     public ResponseEntity<BasicResponse<Void>> publish(
             @PathVariable NotificationType channel,
             @RequestBody @Validated PublishTechArticleRequest publishTechArticleRequest) {
-        notificationService.publish(channel, publishTechArticleRequest);
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        notificationService.publish(authentication, channel, publishTechArticleRequest);
+
         return ResponseEntity.ok(BasicResponse.success());
     }
 }

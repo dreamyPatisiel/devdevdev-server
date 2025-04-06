@@ -57,7 +57,7 @@ public class Notification extends BasicTime {
     @Column(nullable = false)
     private NotificationType type;
 
-    @Column(columnDefinition = "default false", nullable = false)
+    @Column(nullable = false)
     private Boolean isRead = false;
 
     @Builder

@@ -1,3 +1,4 @@
 = 알림
 
 include::notifications.adoc[]
+include::publish-notifications.adoc[]
