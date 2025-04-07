@@ -107,6 +107,7 @@ dependencies {
 test {
     useJUnitPlatform()
     outputs.dir snippetsDir
+    jvmArgs '-Xmx1024m', '-Xms512m'
 }
 
 clean {
