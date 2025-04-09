@@ -36,7 +36,7 @@ public class SubscriptionController {
 
     @Operation(summary = "기업 구독하기", description = "구독 가능한 기업을 구독합니다.")
     @PostMapping("/subscriptions")
-    public ResponseEntity<BasicResponse<SubscriptionResponse>> subscriptions(
+    public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(
             @RequestBody @Validated SubscribeCompanyRequest request) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
@@ -48,8 +48,7 @@ public class SubscriptionController {
 
     @Operation(summary = "기업 구독 취소", description = "구독한 기업을 구독 취소 합니다.")
     @DeleteMapping("/subscriptions")
-    public ResponseEntity<BasicResponse<Void>> cancelSubscriptions(
-            @RequestBody @Validated SubscribeCompanyRequest request) {
+    public ResponseEntity<BasicResponse<Void>> unsubscribe(@RequestBody @Validated SubscribeCompanyRequest request) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();
 
@@ -62,7 +61,7 @@ public class SubscriptionController {
     @GetMapping("/subscriptions/companies")
     public ResponseEntity<BasicResponse<Slice<SubscriableCompanyResponse>>> getSubscriptions(
             @PageableDefault(size = 20) Pageable pageable,
-            @RequestParam Long companyId) {
+            @RequestParam(required = false) Long companyId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         SubscriptionService subscriptionService = techArticleServiceStrategy.getSubscriptionService();

@@ -1,23 +1,46 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
+import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.nio.charset.StandardCharsets;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.custom.CustomPreprocessors.modifyResponseBody;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.notificationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.resultType;
 import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
-import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
-import static org.springframework.restdocs.payload.JsonFieldType.STRING;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseBody;
@@ -29,29 +52,102 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
-import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
-import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
-import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
-import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 class NotificationControllerDocsTest extends SupportControllerDocsTest {
 
     @MockBean
     NotificationService notificationService;
+
+    @Test
+    @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된 응답을 받는다.")
+    void readNotification() throws Exception {
+        // given
+        Long notificationId = 1L;
+        given(notificationService.readNotification(anyLong(), any()))
+                .willReturn(new NotificationReadResponse(notificationId, true));
+
+        // when
+        ResultActions actions = mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/{notificationId}/read", notificationId)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("read-notification",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("notificationId").description("알림 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+                        fieldWithPath("data.id").type(NUMBER).description("알림 아이디"),
+                        fieldWithPath("data.isRead").type(BOOLEAN).description("알림 읽음 여부")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 자신의 알림이 아닌 알림을 조회하면 예외가 발생한다.")
+    void readNotificationNotOwnerException() throws Exception {
+        // given
+        Long notificationId = 2L;
+        given(notificationService.readNotification(anyLong(), any()))
+                .willThrow(new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
+
+        // when
+        ResultActions actions = mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/{notificationId}/read", notificationId)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+
+        // docs
+        actions.andDo(document("read-notification-not-found",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                pathParameters(
+                        parameterWithName("notificationId").description("알림 아이디")
+                ),
+                exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 모든 알림을 읽는다.")
+    void readAllNotifications() throws Exception {
+        // given
+        doNothing().when(notificationService).readAllNotifications(any());
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/read-all")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("read-all-notifications",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
+                )
+        ));
+    }
 
     /**
      * SseEmitter는 내부적으로 HttpServletResponse.getOutputStream() 또는 getWriter()를 직접 사용해서 데이터를 보냄 그래서

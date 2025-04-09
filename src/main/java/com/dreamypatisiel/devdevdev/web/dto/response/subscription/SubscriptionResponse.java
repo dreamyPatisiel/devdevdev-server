@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.dto.response.techArticle;
+package com.dreamypatisiel.devdevdev.web.dto.response.subscription;
 
 import lombok.Data;
 

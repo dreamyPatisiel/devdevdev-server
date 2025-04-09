@@ -8,6 +8,7 @@ import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerato
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.uniqueCommentIdType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -16,6 +17,7 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -36,6 +38,8 @@ import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentRes
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -274,6 +278,78 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
                         fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 다음페이지의 자신이 구독한 기업 목록을 조회하여 응답을 생성한다.")
+    void findMySubscribedCompaniesByCursor() throws Exception {
+        // given
+        Pageable pageable = PageRequest.of(0, 1);
+        long cursorCompanyId = 999L;
+        SubscribedCompanyResponse subscribedCompanyResponse = new SubscribedCompanyResponse(
+                1L, "Toss", "https://image.net/image.png", true);
+        List<SubscribedCompanyResponse> content = List.of(subscribedCompanyResponse);
+        SliceCustom<SubscribedCompanyResponse> response = new SliceCustom<>(content, pageable, 1L);
+
+        when(memberService.findMySubscribedCompanies(any(), any(), any())).thenReturn(response);
+
+        // when
+        ResultActions actions = mockMvc.perform(get(DEFAULT_PATH_V1 + "/mypage/subscriptions/companies")
+                        .queryParam("size", String.valueOf(pageable.getPageSize()))
+                        .queryParam("companyId", Long.toString(cursorCompanyId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        actions.andDo(document("subscribed-companies",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(SecurityConstant.AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                queryParameters(
+                        parameterWithName("size").optional().description("조회되는 데이터 수"),
+                        parameterWithName("companyId").optional().description("커서(마지막 기업 아이디)")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.content").type(ARRAY).description("구독한 기업 목록 메인 배열"),
+                        fieldWithPath("data.content[].companyId").type(NUMBER).description("기업 아이디"),
+                        fieldWithPath("data.content[].companyName").type(STRING).description("기업 이름"),
+                        fieldWithPath("data.content[].companyImageUrl").type(STRING).description("기업 로고 이미지 url"),
+                        fieldWithPath("data.content[].isSubscribed").type(JsonFieldType.BOOLEAN).description("회원의 구독 여부"),
+
+                        fieldWithPath("data.pageable").type(OBJECT).description("픽픽픽 메인 페이지네이션 정보"),
+                        fieldWithPath("data.pageable.pageNumber").type(NUMBER).description("페이지 번호"),
+                        fieldWithPath("data.pageable.pageSize").type(NUMBER).description("페이지 사이즈"),
+
+                        fieldWithPath("data.pageable.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.pageable.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.pageable.sort.sorted").type(BOOLEAN).description("정렬 여부"),
+                        fieldWithPath("data.pageable.sort.unsorted").type(BOOLEAN).description("비정렬 여부"),
+
+                        fieldWithPath("data.pageable.offset").type(NUMBER).description("페이지 오프셋 (페이지 크기 * 페이지 번호)"),
+                        fieldWithPath("data.pageable.paged").type(BOOLEAN).description("페이지 정보 포함 여부"),
+                        fieldWithPath("data.pageable.unpaged").type(BOOLEAN).description("페이지 정보 비포함 여부"),
+
+                        fieldWithPath("data.first").type(BOOLEAN).description("현재 페이지가 첫 페이지 여부"),
+                        fieldWithPath("data.last").type(BOOLEAN).description("현재 페이지가 마지막 페이지 여부"),
+                        fieldWithPath("data.size").type(NUMBER).description("페이지 크기"),
+                        fieldWithPath("data.number").type(NUMBER).description("현재 페이지"),
+
+                        fieldWithPath("data.sort").type(OBJECT).description("정렬 정보"),
+                        fieldWithPath("data.sort.empty").type(BOOLEAN).description("정렬 정보가 비어있는지 여부"),
+                        fieldWithPath("data.sort.sorted").type(BOOLEAN).description("정렬 상태 여부"),
+                        fieldWithPath("data.sort.unsorted").type(BOOLEAN).description("비정렬 상태 여부"),
+                        fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 데이터 수"),
+                        fieldWithPath("data.totalElements").type(NUMBER).description("전체 데이터 수"),
+                        fieldWithPath("data.empty").type(BOOLEAN).description("현재 빈 페이지 여부")
                 )
         ));
     }

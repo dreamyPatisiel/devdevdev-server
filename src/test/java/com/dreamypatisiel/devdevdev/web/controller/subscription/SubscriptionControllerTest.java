@@ -20,7 +20,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.subscription.SubscribeCompan
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriptionResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;

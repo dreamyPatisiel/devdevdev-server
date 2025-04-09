@@ -1,0 +1,34 @@
+[[Subscribed-Companies]]
+== 회원이 구독한 기업 목록 조회 API(GET: /devdevdev/api/v1/mypage/subscriptions/companies)
+
+* 모든 회원은 자신이 구독한 기업 목록을 조회할 수 있다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/subscribed-companies/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/subscribed-companies/request-headers.adoc[]
+
+==== HTTP Request Query Parameters Fields
+
+include::{snippets}/subscribed-companies/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/subscribed-companies/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/subscribed-companies/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+
+include::{snippets}/subscribed-companies-not-found-member-exception/response-body.adoc[]

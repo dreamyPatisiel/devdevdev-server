@@ -14,7 +14,7 @@ import com.dreamypatisiel.devdevdev.exception.SubscriptionException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriptionResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;

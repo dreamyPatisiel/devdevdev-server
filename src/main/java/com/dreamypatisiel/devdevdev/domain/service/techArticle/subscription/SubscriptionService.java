@@ -2,7 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription;
 
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.CompanyDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriableCompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.SubscriptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscriptionResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;

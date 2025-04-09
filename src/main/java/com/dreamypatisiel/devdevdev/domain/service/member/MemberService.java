@@ -1,15 +1,8 @@
 package com.dreamypatisiel.devdevdev.domain.service.member;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
-
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
-import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.CommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -33,12 +26,9 @@ import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentRes
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQuestionResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -46,6 +36,14 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -62,6 +60,7 @@ public class MemberService {
     private final SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     private final SurveyAnswerJdbcTemplateRepository surveyAnswerJdbcTemplateRepository;
     private final CommentRepository commentRepository;
+    private final CompanyRepository companyRepository;
 
     /**
      * 회원 탈퇴 회원의 북마크와 회원 정보를 삭제합니다.
@@ -262,5 +261,29 @@ public class MemberService {
         long totalElements = findMyWrittenCommentsDto.getTotalElements();
 
         return new SliceCustom<>(myWrittenCommentResponses, pageable, hasNext, totalElements);
+    }
+
+    /**
+     * @Note: 회원이 구독한 기업 목록을 조회합니다.
+     * @Author: 유소영
+     * @Since: 2025.03.23
+     */
+    public SliceCustom<SubscribedCompanyResponse> findMySubscribedCompanies(Pageable pageable,
+                                                                            Long companyId,
+                                                                            Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원이 구독한 기업 목록 조회(구독 조인)
+        SliceCustom<Company> subscribedCompanies = companyRepository.findSubscribedCompaniesByMemberByCursor(pageable,
+                companyId, findMember.getId());
+
+        // 데이터 가공
+        List<SubscribedCompanyResponse> subscribedCompanyResponses = subscribedCompanies.getContent().stream().map(
+                company -> {
+                    return SubscribedCompanyResponse.createWithIsSubscribed(company, true);
+                }).collect(Collectors.toList());
+
+        return new SliceCustom<>(subscribedCompanyResponses, pageable, subscribedCompanies.getTotalElements());
     }
 }

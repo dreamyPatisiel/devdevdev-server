@@ -6,16 +6,18 @@ import com.dreamypatisiel.devdevdev.domain.entity.Notification;
 import com.dreamypatisiel.devdevdev.domain.entity.Subscription;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
+import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
-import com.dreamypatisiel.devdevdev.redis.pub.NotificationPublisher;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.RedisPublishRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,9 +31,10 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class NotificationService {
+
     public static final long TIMEOUT = 60 * 1000L;
     public static final String UNREAD_NOTIFICATION_FORMAT = "읽지 않은 알림이 %d개가 있어요.";
     public static final String MAIN_TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 기슬블로그 %d개가 올라왔어요!";
@@ -40,14 +43,53 @@ public class NotificationService {
 
     private final MemberProvider memberProvider;
     private final TimeProvider timeProvider;
-    private final NotificationPublisher notificationPublisher;
-
-    private final SseEmitterRepository sseEmitterRepository;
     private final NotificationRepository notificationRepository;
+    private final SseEmitterRepository sseEmitterRepository;
     private final SubscriptionRepository subscriptionRepository;
 
     public SseEmitter createSseEmitter(Long timeout) {
         return new SseEmitter(timeout);
+    }
+
+    /**
+     * @Note: 알림 단건 읽기
+     * @Author: 유소영
+     * @Since: 2025.03.28
+     * @param notificationId 알림 ID
+     * @param authentication 회원 정보
+     * @return NotificationReadResponse
+     */
+    @Transactional
+    public NotificationReadResponse readNotification(Long notificationId, Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 알림 조회
+        Notification findNotification = notificationRepository.findByIdAndMember(notificationId, findMember)
+                .orElseThrow(() -> new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
+
+        // 알림 읽기 처리 (이미 읽은 알림의 경우이라도 예외를 발생시키지 않고 처리)
+        if (!findNotification.isRead()) {
+            findNotification.markAsRead();
+        }
+
+        // 응답 반환
+        return NotificationReadResponse.from(findNotification);
+    }
+
+    /**
+     * @Note: 회원의 모든 알림을 읽음 처리
+     * @Author: 유소영
+     * @Since: 2025.03.29
+     * @param authentication 회원 인증 정보
+     */
+    @Transactional
+    public void readAllNotifications(Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 읽지 않은 모든 알림 조회
+        notificationRepository.bulkMarkAllAsReadByMemberId(findMember.getId());
     }
 
     /**
