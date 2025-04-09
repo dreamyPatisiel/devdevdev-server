@@ -1,5 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.notification;
 
+import static com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService.ACCESS_DENIED_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Notification;
@@ -22,6 +28,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import java.util.Set;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
@@ -29,21 +36,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
-import static com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService.ACCESS_DENIED_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Transactional
@@ -91,14 +89,15 @@ class NotificationServiceTest {
         notificationRepository.save(notification);
 
         // when
-        NotificationReadResponse notificationReadResponse = notificationService.readNotification(notification.getId(), authentication);
+        NotificationReadResponse notificationReadResponse = notificationService.readNotification(notification.getId(),
+                authentication);
 
         em.flush();
         em.clear(); // 영속성 컨텍스트 초기화
 
         // then
         Notification findNotification = notificationRepository.findById(notification.getId()).orElseThrow();
-        assertThat(findNotification.isRead()).isTrue();
+        assertThat(findNotification.getIsRead()).isTrue();
 
         assertAll(
                 () -> assertThat(notificationReadResponse.getId()).isEqualTo(notification.getId()),
@@ -168,7 +167,7 @@ class NotificationServiceTest {
         List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
         assertThat(allNotifications)
                 .hasSize(3)
-                .allMatch(Notification::isRead);
+                .allMatch(Notification::getIsRead);
     }
 
     @Test
@@ -204,7 +203,7 @@ class NotificationServiceTest {
         List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
         assertThat(allNotifications)
                 .hasSize(2)
-                .allMatch(Notification::isRead); // 여전히 모두 읽음 상태
+                .allMatch(Notification::getIsRead); // 여전히 모두 읽음 상태
     }
 
     @Test

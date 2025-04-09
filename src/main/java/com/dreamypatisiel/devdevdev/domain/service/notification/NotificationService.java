@@ -13,6 +13,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRe
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.redis.pub.NotificationPublisher;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
@@ -43,6 +44,8 @@ public class NotificationService {
 
     private final MemberProvider memberProvider;
     private final TimeProvider timeProvider;
+    private final NotificationPublisher notificationPublisher;
+
     private final NotificationRepository notificationRepository;
     private final SseEmitterRepository sseEmitterRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -52,12 +55,12 @@ public class NotificationService {
     }
 
     /**
-     * @Note: 알림 단건 읽기
-     * @Author: 유소영
-     * @Since: 2025.03.28
      * @param notificationId 알림 ID
      * @param authentication 회원 정보
      * @return NotificationReadResponse
+     * @Note: 알림 단건 읽기
+     * @Author: 유소영
+     * @Since: 2025.03.28
      */
     @Transactional
     public NotificationReadResponse readNotification(Long notificationId, Authentication authentication) {
@@ -69,7 +72,7 @@ public class NotificationService {
                 .orElseThrow(() -> new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
 
         // 알림 읽기 처리 (이미 읽은 알림의 경우이라도 예외를 발생시키지 않고 처리)
-        if (!findNotification.isRead()) {
+        if (!findNotification.getIsRead()) {
             findNotification.markAsRead();
         }
 
@@ -78,10 +81,10 @@ public class NotificationService {
     }
 
     /**
+     * @param authentication 회원 인증 정보
      * @Note: 회원의 모든 알림을 읽음 처리
      * @Author: 유소영
      * @Since: 2025.03.29
-     * @param authentication 회원 인증 정보
      */
     @Transactional
     public void readAllNotifications(Authentication authentication) {
