@@ -9,8 +9,8 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -21,9 +21,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
 
     /**
+     * @Note: 알림 단건 읽기
      * @Author: 유소영
      * @Since: 2025.03.28
-     * @Note: 알림 단건 읽기
      * @param notificationId 알림 ID
      * @param authentication 회원 정보
      * @return NotificationReadResponse
@@ -44,5 +44,20 @@ public class NotificationService {
 
         // 응답 반환
         return NotificationReadResponse.from(findNotification);
+    }
+
+    /**
+     * @Note: 회원의 모든 알림을 읽음 처리
+     * @Author: 유소영
+     * @Since: 2025.03.29
+     * @param authentication 회원 인증 정보
+     */
+    @Transactional
+    public void readAllNotifications(Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 읽지 않은 모든 알림 조회
+        notificationRepository.bulkMarkAllAsReadByMemberId(findMember.getId());
     }
 }

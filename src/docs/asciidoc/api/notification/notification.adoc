@@ -1,3 +1,4 @@
 = 알림
 
 include::read-notification.adoc[]
+include::read-all-notification.adoc[]

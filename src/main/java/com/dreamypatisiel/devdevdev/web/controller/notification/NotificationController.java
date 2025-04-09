@@ -31,4 +31,12 @@ public class NotificationController {
         NotificationReadResponse response = notificationService.readNotification(notificationId, authentication);
         return ResponseEntity.ok(BasicResponse.success(response));
     }
+
+    @Operation(summary = "모든 알림 읽음 처리")
+    @PatchMapping("/notifications/read-all")
+    public ResponseEntity<BasicResponse<Void>> readAllNotifications() {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        notificationService.readAllNotifications(authentication);
+        return ResponseEntity.ok(BasicResponse.success());
+    }
 }

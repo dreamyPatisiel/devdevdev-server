@@ -23,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -108,6 +110,88 @@ class NotificationServiceTest {
         assertThatThrownBy(() -> notificationService.readNotification(notification.getId(), authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 모든 알림을 읽으면 isRead가 true로 일괄 업데이트된다.")
+    void readAllNotifications() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(
+                "dreamy", "꿈빛파티시엘", "행복한 꿈빛", "pass123", "dreamy@kakao.com", "KAKAO", "ROLE_USER"
+        );
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal principal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(
+                principal, principal.getAuthorities(), principal.getSocialType().name()
+        ));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 안 읽은 알림 여러 개 저장
+        notificationRepository.saveAll(List.of(
+                createNotification(member, false),
+                createNotification(member, false),
+                createNotification(member, false)
+        ));
+
+        // when
+        notificationService.readAllNotifications(authentication);
+
+        em.flush();
+        em.clear();
+
+        // then
+        List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
+        assertThat(allNotifications)
+                .hasSize(3)
+                .allMatch(Notification::isRead);
+    }
+
+    @Test
+    @DisplayName("회원이 읽을 알림이 하나도 없어도 readAllNotifications는 성공한다.")
+    void readAllNotificationsWhenNoUnreadNotifications() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(
+                "dreamy", "꿈빛파티시엘", "행복한 꿈빛", "pass123", "dreamy@kakao.com", "KAKAO", "ROLE_USER"
+        );
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal principal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(
+                principal, principal.getAuthorities(), principal.getSocialType().name()
+        ));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 읽은 알림만 저장
+        notificationRepository.saveAll(List.of(
+                createNotification(member, true),
+                createNotification(member, true)
+        ));
+
+        // when
+        notificationService.readAllNotifications(authentication);
+
+        em.flush();
+        em.clear();
+
+        // then
+        List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
+        assertThat(allNotifications)
+                .hasSize(2)
+                .allMatch(Notification::isRead); // 여전히 모두 읽음 상태
+    }
+
+    private Notification createNotification(Member member, boolean isRead) {
+        return Notification.builder()
+                .member(member)
+                .message("테스트 알림")
+                .type(NotificationType.SUBSCRIPTION)
+                .isRead(isRead)
+                .build();
     }
 
     private Notification createNotification(Member member, String message, NotificationType type, boolean isRead) {

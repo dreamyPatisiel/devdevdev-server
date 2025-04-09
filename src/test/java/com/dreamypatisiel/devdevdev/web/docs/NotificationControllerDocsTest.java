@@ -17,6 +17,7 @@ import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTH
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -97,6 +98,33 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         parameterWithName("notificationId").description("알림 아이디")
                 ),
                 exceptionResponseFields()
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 모든 알림을 읽는다.")
+    void readAllNotifications() throws Exception {
+        // given
+        doNothing().when(notificationService).readAllNotifications(any());
+
+        // when // then
+        ResultActions actions = mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/read-all")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("read-all-notifications",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과")
+                )
         ));
     }
 }
