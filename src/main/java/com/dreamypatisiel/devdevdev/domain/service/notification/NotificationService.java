@@ -2,15 +2,22 @@ package com.dreamypatisiel.devdevdev.domain.service.notification;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Notification;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -59,5 +66,33 @@ public class NotificationService {
 
         // 읽지 않은 모든 알림 조회
         notificationRepository.bulkMarkAllAsReadByMemberId(findMember.getId());
+    }
+
+    /**
+     * @Note: 알림 팝업 조회
+     * @Author: 유소영
+     * @Since: 2025.04.09
+     * @param authentication 회원 인증 정보
+     */
+    public SliceCustom<NotificationPopupResponse> getNotificationPopup(Pageable pageable, Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 최근 5개 알림 조회
+        SliceCustom<Notification> notifications = notificationRepository.findNotificationsByMemberOrderByCreatedAtDesc(pageable, findMember);
+
+        // 데이터 가공
+        // NotificationType 에 따라 다른 DTO로 변환
+        List<NotificationPopupResponse> response = notifications.getContent().stream()
+                .map(notification -> {
+                    if (notification.getType() == NotificationType.SUBSCRIPTION) {
+                        return (NotificationPopupResponse) NotificationPopupNewArticleResponse.from(notification);
+                    } else {
+                        throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
+                    }
+                })
+                .toList();
+
+        return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
     }
 }

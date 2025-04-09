@@ -2,17 +2,19 @@ package com.dreamypatisiel.devdevdev.web.controller.notification;
 
 import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "알림 API", description = "알림 API")
 @RestController
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final ObjectMapper objectMapper;
 
     @Operation(summary = "알림 단건 읽음 처리")
     @PatchMapping("/notifications/{notificationId}/read")
@@ -39,4 +42,23 @@ public class NotificationController {
         notificationService.readAllNotifications(authentication);
         return ResponseEntity.ok(BasicResponse.success());
     }
+
+    /**
+     * 알림 팝업 조회(최근 알림 5개 조회)
+     * - 최근 5개로 고정이지만 추후 정책 변경 대응을 위해 Pageable 사용
+     * - 알림 팝업은 읽음 여부 상관하지 않음
+     * - 읽지 않은 알림 총 개수 전달
+     * - input: 유저 정보, pageable
+     * - output: 알림 팝업 리스트
+     */
+     @Operation(summary = "알림 팝업 조회")
+     @GetMapping("/notifications/popup")
+     public ResponseEntity<BasicResponse<SliceCustom<NotificationPopupResponse>>> getNotificationPopup(
+             @PageableDefault(size = 5) Pageable pageable
+     ) {
+         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+         SliceCustom<NotificationPopupResponse> response = notificationService.getNotificationPopup(pageable, authentication);
+
+         return ResponseEntity.ok(BasicResponse.success(response));
+     }
 }
