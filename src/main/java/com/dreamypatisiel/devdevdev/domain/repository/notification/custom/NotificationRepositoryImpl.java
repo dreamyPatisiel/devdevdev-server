@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.repository.notification.custom;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Notification;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -38,11 +39,37 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
 
         return new SliceCustom<>(contents, pageable, false, unReadNotificationTotalCount);    }
 
+    @Override
+    public SliceCustom<Notification> findNotificationsByMemberAndCursor(Pageable pageable, Long notificationId, Member findMember) {
+        List<Notification> contents = query.selectFrom(notification)
+                .where(notification.member.eq(findMember)
+                        .and(getCursorCondition(notificationId)))
+                .orderBy(notification.createdAt.desc())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 회원이 읽지 않은 알림 개수
+        long unReadNotificationTotalCount = countByMemberAndIsReadFalse(findMember);
+
+        // hasNextPage
+        boolean hasNextPage = contents.size() >= pageable.getPageSize();
+
+        return new SliceCustom<>(contents, pageable, hasNextPage, unReadNotificationTotalCount);
+    }
+
     private Long countByMemberAndIsReadFalse(Member member) {
         return query.select(notification.count())
                 .from(notification)
                 .where(notification.member.eq(member)
                         .and(notification.isRead.isFalse()))
                 .fetchOne();
+    }
+
+    private BooleanExpression getCursorCondition(Long notificationId) {
+        if (notificationId == null) {
+            return null;
+        }
+
+        return notification.id.lt(notificationId);
     }
 }

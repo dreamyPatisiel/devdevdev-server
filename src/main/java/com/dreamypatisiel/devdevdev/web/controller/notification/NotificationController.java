@@ -6,6 +6,7 @@ import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -58,7 +59,24 @@ public class NotificationController {
      ) {
          Authentication authentication = AuthenticationMemberUtils.getAuthentication();
          SliceCustom<NotificationPopupResponse> response = notificationService.getNotificationPopup(pageable, authentication);
-
          return ResponseEntity.ok(BasicResponse.success(response));
      }
+
+    /**
+     * 알림 페이지 조회(전체 알림 조회)
+     * - notificationId 무한스크롤 조회, 정렬 옵션 X (최신순)
+     * - 읽음 여부 상관하지 않고 모두 조회
+     * - 읽지 않은 알림 총 개수 전달
+     */
+    @Operation(summary = "알림 페이지 조회")
+    @GetMapping("/notifications")
+    public ResponseEntity<BasicResponse<SliceCustom<NotificationResponse>>> getNotifications(
+            @PageableDefault Pageable pageable,
+            @RequestParam(required = false) Long notificationId
+    ) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        SliceCustom<NotificationResponse> response = notificationService.getNotifications(pageable, notificationId,
+                authentication);
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
 }

@@ -9,4 +9,6 @@ public interface NotificationRepositoryCustom {
     void bulkMarkAllAsReadByMemberId(Long memberId);
 
     SliceCustom<Notification> findNotificationsByMemberOrderByCreatedAtDesc(Pageable pageable, Member member);
+
+    SliceCustom<Notification> findNotificationsByMemberAndCursor(Pageable pageable, Long notificationId, Member findMember);
 }
