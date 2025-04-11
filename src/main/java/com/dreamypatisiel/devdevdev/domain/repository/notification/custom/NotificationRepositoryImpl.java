@@ -30,7 +30,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     public SliceCustom<Notification> findNotificationsByMemberOrderByCreatedAtDesc(Pageable pageable, Member member) {
         List<Notification> contents = query.selectFrom(notification)
                 .where(notification.member.eq(member))
-                .orderBy(notification.createdAt.desc())
+                .orderBy(notification.createdAt.desc(), notification.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
 
@@ -44,7 +44,7 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         List<Notification> contents = query.selectFrom(notification)
                 .where(notification.member.eq(findMember)
                         .and(getCursorCondition(notificationId)))
-                .orderBy(notification.createdAt.desc())
+                .orderBy(notification.createdAt.desc(), notification.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
 
