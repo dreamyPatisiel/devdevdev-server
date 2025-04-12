@@ -1,7 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.notification;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -12,8 +11,7 @@ public abstract class NotificationPopupResponse {
     private final NotificationType type;
     private final String title;
     private final LocalDate createdAt;
-    @JsonProperty("isRead")
-    private final boolean isRead;
+    private final Boolean isRead;
 
     public NotificationPopupResponse(Long id, NotificationType type, String title, LocalDate createdAt,
                                      boolean isRead) {
