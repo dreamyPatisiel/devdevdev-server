@@ -44,14 +44,6 @@ public class NotificationController {
         return ResponseEntity.ok(BasicResponse.success());
     }
 
-    /**
-     * 알림 팝업 조회(최근 알림 5개 조회)
-     * - 최근 5개로 고정이지만 추후 정책 변경 대응을 위해 Pageable 사용
-     * - 알림 팝업은 읽음 여부 상관하지 않음
-     * - 읽지 않은 알림 총 개수 전달
-     * - input: 유저 정보, pageable
-     * - output: 알림 팝업 리스트
-     */
      @Operation(summary = "알림 팝업 조회")
      @GetMapping("/notifications/popup")
      public ResponseEntity<BasicResponse<SliceCustom<NotificationPopupResponse>>> getNotificationPopup(
@@ -62,12 +54,6 @@ public class NotificationController {
          return ResponseEntity.ok(BasicResponse.success(response));
      }
 
-    /**
-     * 알림 페이지 조회(전체 알림 조회)
-     * - notificationId 무한스크롤 조회, 정렬 옵션 X (최신순)
-     * - 읽음 여부 상관하지 않고 모두 조회
-     * - 읽지 않은 알림 총 개수 전달
-     */
     @Operation(summary = "알림 페이지 조회")
     @GetMapping("/notifications")
     public ResponseEntity<BasicResponse<SliceCustom<NotificationResponse>>> getNotifications(
