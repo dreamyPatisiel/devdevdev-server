@@ -1,6 +1,5 @@
 package com.dreamypatisiel.devdevdev.domain.service.notification;
 
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Notification;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
