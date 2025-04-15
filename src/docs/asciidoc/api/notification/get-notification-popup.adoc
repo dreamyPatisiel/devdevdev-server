@@ -1,0 +1,36 @@
+[[Get-Notification-Popup]]
+== 알림 팝업 조회 API (GET: /devdevdev/api/v1/notifications/popup)
+
+* 회원이 알림 팝업 리스트를 조회한다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/get-notification-popup/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/get-notification-popup/request-headers.adoc[]
+
+==== HTTP Request Query Parameters
+
+include::{snippets}/get-notification-popup/query-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/get-notification-popup/http-response.adoc[]
+
+==== HTTP Response Fields
+
+include::{snippets}/get-notification-popup/response-fields.adoc[]
+
+
+=== 예외
+
+==== HTTP Response
+
+* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
+* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+
+include::{snippets}/not-found-member-exception/response-body.adoc[]

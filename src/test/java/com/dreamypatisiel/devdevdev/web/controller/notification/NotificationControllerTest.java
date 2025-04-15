@@ -123,6 +123,8 @@ class NotificationControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
                 .andExpect(jsonPath("$.data.content.[0].isRead").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].createdAt").isString())
+                .andExpect(jsonPath("$.data.content.[0].companyName").isString())
+                .andExpect(jsonPath("$.data.content.[0].techArticleId").isNumber())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
                 .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
                 .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
@@ -157,8 +159,8 @@ class NotificationControllerTest extends SupportControllerTest {
         TechArticleMainResponse techArticleMainResponse = createTechArticleMainResponse(
                 1L, "elasticId", "http://thumbnailUrl.com", false,
                 "http://techArticleUrl.com", "기술블로그 타이틀", "기술블로그 내용",
-                1L, "기업명", "http://careerUrl.com", LocalDate.now(), "작성자",
-                0L, 0L, 0L, false, 0.34F
+                1L, "기업명", "http://careerUrl.com","http://officialImage.com", LocalDate.now(), "작성자",
+                0L, 0L, 0L, false, null
         );
         List<NotificationResponse> response = List.of(
                 new NotificationNewArticleResponse(1L, LocalDate.now(), false, techArticleMainResponse));
@@ -196,7 +198,6 @@ class NotificationControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].techArticle.commentTotalCount").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.popularScore").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.isBookmarked").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].techArticle.score").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.company").isNotEmpty())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.company.id").isNumber())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.company.name").isString())
@@ -229,7 +230,7 @@ class NotificationControllerTest extends SupportControllerTest {
 
     private TechArticleMainResponse createTechArticleMainResponse(Long id, String elasticId, String thumbnailUrl, Boolean isLogoImage,
                                                                   String techArticleUrl, String title, String contents,
-                                                                  Long companyId, String companyName, String careerUrl,
+                                                                  Long companyId, String companyName, String careerUrl, String officialImageUrl,
                                                                   LocalDate regDate, String author, long recommendCount,
                                                                   long commentCount, long viewCount, Boolean isBookmarked, Float score) {
         return TechArticleMainResponse.builder()
@@ -240,7 +241,7 @@ class NotificationControllerTest extends SupportControllerTest {
                 .techArticleUrl(techArticleUrl)
                 .title(title)
                 .contents(contents)
-                .company(CompanyResponse.of(companyId, companyName, careerUrl))
+                .company(CompanyResponse.of(companyId, companyName, careerUrl, officialImageUrl))
                 .regDate(regDate)
                 .author(author)
                 .viewTotalCount(viewCount)

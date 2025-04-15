@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.docs.format;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
@@ -112,6 +113,11 @@ public interface ApiDocsFormatGenerator {
 
     static Attributes.Attribute commentIdType() {
         return key(FORMAT).value("PICK | TECH");
+    }
+
+    static Attributes.Attribute notificationType() {
+        return key(FORMAT).value(
+                NotificationType.SUBSCRIPTION);
     }
 
     static Attributes.Attribute myWrittenCommentSort() {

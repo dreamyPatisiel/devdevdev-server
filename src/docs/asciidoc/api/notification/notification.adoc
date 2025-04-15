@@ -2,3 +2,5 @@
 
 include::read-notification.adoc[]
 include::read-all-notification.adoc[]
+include::get-notifications.adoc[]
+include::get-notification-popup.adoc[]
