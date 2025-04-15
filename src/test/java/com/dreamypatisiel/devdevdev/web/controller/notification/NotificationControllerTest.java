@@ -168,7 +168,7 @@ class NotificationControllerTest extends SupportControllerTest {
                 .willReturn(new SliceCustom<>(response, pageable, true, 1L));
 
         // when // then
-        mockMvc.perform(get(DEFAULT_PATH_V1 + "/notifications")
+        mockMvc.perform(get(DEFAULT_PATH_V1 + "/notifications/page")
                         .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("notificationId", String.valueOf(2L))

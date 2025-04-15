@@ -53,7 +53,7 @@ public class NotificationController {
      }
 
     @Operation(summary = "알림 페이지 조회")
-    @GetMapping("/notifications")
+    @GetMapping("/notifications/page")
     public ResponseEntity<BasicResponse<SliceCustom<NotificationResponse>>> getNotifications(
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) Long notificationId

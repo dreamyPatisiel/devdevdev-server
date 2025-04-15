@@ -1,5 +1,5 @@
 [[Get-Notifications]]
-== 알림 페이지 조회 API (GET: /devdevdev/api/v1/notifications)
+== 알림 페이지 조회 API (GET: /devdevdev/api/v1/notifications/page)
 
 * 회원은 알림 페이지에서 자신에게 온 알림을 무한스크롤링으로 조회할 수 있다.
 * (추후 추가) 알림 유형에 따라 필터링하여 조회할 수 있다.
