@@ -24,7 +24,7 @@ public class NotificationPopupNewArticleResponse extends NotificationPopupRespon
         return NotificationPopupNewArticleResponse.builder()
                 .id(notification.getId())
                 .createdAt(notification.getCreatedAt().toLocalDate())
-                .isRead(notification.isRead())
+                .isRead(notification.getIsRead())
                 .title(notification.getTechArticle().getTitle().getTitle())
                 .companyName(notification.getTechArticle().getCompany().getName().getCompanyName())
                 .techArticleId(notification.getTechArticle().getId())

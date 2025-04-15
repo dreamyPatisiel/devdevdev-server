@@ -51,7 +51,7 @@ public class NotificationService {
                 .orElseThrow(() -> new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
 
         // 알림 읽기 처리 (이미 읽은 알림의 경우이라도 예외를 발생시키지 않고 처리)
-        if (!findNotification.isRead()) {
+        if (!findNotification.getIsRead()) {
             findNotification.markAsRead();
         }
 

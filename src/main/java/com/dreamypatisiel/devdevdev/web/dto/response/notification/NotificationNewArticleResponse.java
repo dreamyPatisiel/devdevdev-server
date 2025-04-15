@@ -23,7 +23,7 @@ public class NotificationNewArticleResponse extends NotificationResponse {
         return NotificationNewArticleResponse.builder()
                 .notificationId(notification.getId())
                 .createdAt(notification.getCreatedAt().toLocalDate())
-                .isRead(notification.isRead())
+                .isRead(notification.getIsRead())
                 .techArticle(techArticle)
                 .build();
     }

@@ -104,7 +104,7 @@ class NotificationServiceTest {
 
         // then
         Notification findNotification = notificationRepository.findById(notification.getId()).orElseThrow();
-        assertThat(findNotification.isRead()).isTrue();
+        assertThat(findNotification.getIsRead()).isTrue();
 
         assertAll(
                 () -> assertThat(notificationReadResponse.getId()).isEqualTo(notification.getId()),
@@ -174,7 +174,7 @@ class NotificationServiceTest {
         List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
         assertThat(allNotifications)
                 .hasSize(3)
-                .allMatch(Notification::isRead);
+                .allMatch(Notification::getIsRead);
     }
 
     @Test
@@ -210,7 +210,7 @@ class NotificationServiceTest {
         List<Notification> allNotifications = notificationRepository.findAllByMemberId(member.getId());
         assertThat(allNotifications)
                 .hasSize(2)
-                .allMatch(Notification::isRead); // 여전히 모두 읽음 상태
+                .allMatch(Notification::getIsRead); // 여전히 모두 읽음 상태
     }
 
     @Test
