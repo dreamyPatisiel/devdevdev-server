@@ -46,7 +46,7 @@ public class Notification extends BasicTime {
     private PickComment pickComment;
 
     @Column(nullable = false)
-    private boolean isRead = false;
+    private Boolean isRead = false;
 
     @Builder
     private Notification(String message, NotificationType type, Member member,

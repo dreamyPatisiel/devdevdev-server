@@ -22,7 +22,7 @@ public class Bookmark extends BasicTime {
     private Long id;
 
     @Column(nullable = false)
-    private boolean status;
+    private Boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
