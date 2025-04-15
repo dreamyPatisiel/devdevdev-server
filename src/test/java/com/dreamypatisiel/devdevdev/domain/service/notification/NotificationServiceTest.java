@@ -25,8 +25,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationNe
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -71,6 +70,13 @@ class NotificationServiceTest {
     String password = "password";
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
+
+    @AfterAll
+    static void tearDown(@Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                         @Autowired TechArticleRepository techArticleRepository) {
+        elasticTechArticleRepository.deleteAll();
+        techArticleRepository.deleteAllInBatch();
+    }
 
     @Test
     @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된다.")
