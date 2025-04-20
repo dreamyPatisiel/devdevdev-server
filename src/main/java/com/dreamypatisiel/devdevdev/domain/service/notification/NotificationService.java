@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -211,13 +210,7 @@ public class NotificationService {
         });
     }
 
-    public <T extends RedisPublishRequest> Long publish(Authentication authentication, NotificationType channel, T message) {
-        // 회원 조회
-        Member findMember = memberProvider.getMemberByAuthentication(authentication);
-        if (!findMember.isAdmin()) {
-            throw new AccessDeniedException(ACCESS_DENIED_MESSAGE);
-        }
-
+    public <T extends RedisPublishRequest> Long publish(NotificationType channel, T message) {
         return notificationPublisher.publish(channel, message);
     }
 }

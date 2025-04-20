@@ -1,28 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
-import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
-import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
-import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
-import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
-import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
-import java.time.LocalDateTime;
-import java.util.List;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
-
-import java.nio.charset.StandardCharsets;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.web.docs.custom.CustomPreprocessors.modifyResponseBody;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.notificationType;
@@ -32,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
@@ -39,8 +17,14 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
-import static org.springframework.restdocs.payload.JsonFieldType.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
+import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
+import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
+import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
+import static org.springframework.restdocs.payload.JsonFieldType.STRING;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseBody;
@@ -52,10 +36,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
+import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.service.ApiKeyService;
+import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
+import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 class NotificationControllerDocsTest extends SupportControllerDocsTest {
 
     @MockBean
     NotificationService notificationService;
+    @MockBean
+    ApiKeyService apiKeyService;
 
     @Test
     @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된 응답을 받는다.")
@@ -66,10 +76,11 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                 .willReturn(new NotificationReadResponse(notificationId, true));
 
         // when
-        ResultActions actions = mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/{notificationId}/read", notificationId)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8))
+        ResultActions actions = mockMvc.perform(
+                        patch(DEFAULT_PATH_V1 + "/notifications/{notificationId}/read", notificationId)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk());
 
@@ -101,10 +112,11 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                 .willThrow(new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_MESSAGE));
 
         // when
-        ResultActions actions = mockMvc.perform(patch(DEFAULT_PATH_V1 + "/notifications/{notificationId}/read", notificationId)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8))
+        ResultActions actions = mockMvc.perform(
+                        patch(DEFAULT_PATH_V1 + "/notifications/{notificationId}/read", notificationId)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isNotFound());
 
@@ -207,11 +219,13 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
         accessToken = token.getAccessToken();
 
         // when // then
-        ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", NotificationType.SUBSCRIPTION)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
-                        .content(om.writeValueAsBytes(request)))
+        ResultActions actions = mockMvc.perform(
+                        post("/devdevdev/api/v1/notifications/{channel}", NotificationType.SUBSCRIPTION)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header("service-name", "test-service")
+                                .header("api-key", "test-key")
+                                .content(om.writeValueAsBytes(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()));
@@ -221,7 +235,8 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(SecurityConstant.AUTHORIZATION_HEADER).description("Bearer Token")
+                        headerWithName("service-name").description("서비스 이름"),
+                        headerWithName("api-key").description("api key")
                 ),
                 pathParameters(
                         parameterWithName("channel").description("알림 채널").attributes(notificationType())
@@ -255,7 +270,8 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
         ResultActions actions = mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", "INVALID_CHANNEL")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .header("service-name", "test-service")
+                        .header("api-key", "test-key")
                         .content(om.writeValueAsBytes(request)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())
@@ -268,7 +284,8 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(SecurityConstant.AUTHORIZATION_HEADER).description("Bearer Token")
+                        headerWithName("service-name").description("서비스 이름"),
+                        headerWithName("api-key").description("api key")
                 ),
                 requestFields(
                         fieldWithPath("companyId").type(NUMBER).description("회사 아이디"),
@@ -277,5 +294,32 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                 ),
                 exceptionResponseFields()
         ));
+    }
+
+    @Test
+    @DisplayName("알림을 생성할 때 API Key가 없으면 예외가 발생한다.")
+    void publishNotificationsNotFoundException() throws Exception {
+        // given
+        PublishTechArticleRequest request = new PublishTechArticleRequest(
+                1L,
+                List.of(new PublishTechArticle(1L),
+                        new PublishTechArticle(2L))
+        );
+
+        doThrow(new NotFoundException("not found")).when(apiKeyService).validateApiKey(any(), any());
+
+        // when // then
+        mockMvc.perform(
+                        MockMvcRequestBuilders.post("/devdevdev/api/v1/notifications/{channel}", NotificationType.SUBSCRIPTION)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header("service-name", "test-service")
+                                .header("api-key", "test-key")
+                                .content(om.writeValueAsBytes(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").isNumber());
     }
 }

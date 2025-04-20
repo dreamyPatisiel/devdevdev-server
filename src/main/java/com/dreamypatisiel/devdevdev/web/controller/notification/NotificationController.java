@@ -1,8 +1,10 @@
 package com.dreamypatisiel.devdevdev.web.controller.notification;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
+import com.dreamypatisiel.devdevdev.domain.service.ApiKeyService;
 import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.global.validator.ValidEnum;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -29,6 +32,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final ApiKeyService apiKeyService;
 
     @Operation(summary = "알림 단건 읽음 처리")
     @PatchMapping("/notifications/{notificationId}/read")
@@ -58,11 +62,16 @@ public class NotificationController {
     @Operation(summary = "알림 생성", description = "알림을 생성 합니다.")
     @PostMapping("/notifications/{channel}")
     public ResponseEntity<BasicResponse<Void>> publish(
-            @PathVariable NotificationType channel,
-            @RequestBody @Validated PublishTechArticleRequest publishTechArticleRequest) {
+            @PathVariable @ValidEnum(enumClass = NotificationType.class) String channel,
+            @RequestBody @Validated PublishTechArticleRequest publishTechArticleRequest,
+            @RequestHeader(name = "service-name") String serviceName,
+            @RequestHeader(name = "api-key") String apiKey) {
 
-        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        notificationService.publish(authentication, channel, publishTechArticleRequest);
+        // API Key 검증
+        apiKeyService.validateApiKey(serviceName, apiKey);
+
+        // 알림 발행
+        notificationService.publish(NotificationType.valueOf(channel), publishTechArticleRequest);
 
         return ResponseEntity.ok(BasicResponse.success());
     }

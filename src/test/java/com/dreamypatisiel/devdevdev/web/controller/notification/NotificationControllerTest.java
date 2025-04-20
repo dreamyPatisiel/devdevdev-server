@@ -1,7 +1,25 @@
 package com.dreamypatisiel.devdevdev.web.controller.notification;
 
+import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.service.ApiKeyService;
 import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
@@ -12,29 +30,14 @@ import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-
-import java.nio.charset.StandardCharsets;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class NotificationControllerTest extends SupportControllerTest {
 
@@ -43,6 +46,8 @@ class NotificationControllerTest extends SupportControllerTest {
 
     @MockBean
     NotificationPublisher notificationPublisher;
+    @MockBean
+    ApiKeyService apiKeyService;
 
     @Test
     @DisplayName("회원이 단건 알림을 읽으면 isRead가 true로 변경된 응답을 받는다.")
@@ -141,20 +146,20 @@ class NotificationControllerTest extends SupportControllerTest {
     @DisplayName("알림을 생성한다.")
     void publishNotifications() throws Exception {
         // given
-        NotificationMessageDto notificationMessageDto = new NotificationMessageDto("트이다에서 새로운 글이 올라왔어요!",
-                LocalDateTime.of(2025, 4, 6, 0, 0, 0));
-
         PublishTechArticleRequest request = new PublishTechArticleRequest(
                 1L,
                 List.of(new PublishTechArticle(1L),
                         new PublishTechArticle(2L))
         );
 
+        doNothing().when(apiKeyService).validateApiKey(any(), any());
+
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", NotificationType.SUBSCRIPTION)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .header("service-name", "test-service")
+                        .header("api-key", "test-key")
                         .content(om.writeValueAsBytes(request)))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -165,20 +170,46 @@ class NotificationControllerTest extends SupportControllerTest {
     @DisplayName("알림을 생성할 때 잘못된 채널을 입력하면 예외가 발생한다.")
     void publishNotificationsException() throws Exception {
         // given
-        NotificationMessageDto notificationMessageDto = new NotificationMessageDto("트이다에서 새로운 글이 올라왔어요!",
-                LocalDateTime.of(2025, 4, 6, 0, 0, 0));
-
         PublishTechArticleRequest request = new PublishTechArticleRequest(
                 1L,
                 List.of(new PublishTechArticle(1L),
                         new PublishTechArticle(2L))
         );
 
+        doNothing().when(apiKeyService).validateApiKey(any(), any());
+
         // when // then
         mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", "INVALID_CHANNEL")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8)
-                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .header("service-name", "test-service")
+                        .header("api-key", "test-key")
+                        .content(om.writeValueAsBytes(request)))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.resultType").value(FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.errorCode").isNumber());
+    }
+
+    @Test
+    @DisplayName("알림을 생성할 때 API Key가 없으면 예외가 발생한다.")
+    void publishNotificationsNotFoundException() throws Exception {
+        // given
+        PublishTechArticleRequest request = new PublishTechArticleRequest(
+                1L,
+                List.of(new PublishTechArticle(1L),
+                        new PublishTechArticle(2L))
+        );
+
+        doThrow(new NotFoundException("not found")).when(apiKeyService).validateApiKey(any(), any());
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/notifications/{channel}", NotificationType.SUBSCRIPTION)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header("service-name", "test-service")
+                        .header("api-key", "test-key")
                         .content(om.writeValueAsBytes(request)))
                 .andDo(print())
                 .andExpect(status().is4xxClientError())

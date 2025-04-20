@@ -1,7 +1,8 @@
 [[Publish-Notifications]]
 == 알림 생성 API(POST: /devdevdev/api/v1/notifications/{channel})
 
-* 어드민이 알림을 생성한다.
+* 알림을 생성한다.
+** service-name, api-key 가 일치 하지 않으면 호출 할 수 없다.
 
 === 정상 요청/응답
 
@@ -33,8 +34,8 @@ include::{snippets}/publish-notifications/response-fields.adoc[]
 
 ==== HTTP Response
 
-* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
-* `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
-* `유효하지 않은 회원 입니다.`: 회원이 유효하지 않은 경우
+* `올바른 입력 값이 아닙니다.`: 잘못된 알림 채널을 입력한 경우
+* `접근할 수 없는 권한 입니다.`: 서비스 이름과 api-key가 일치하지 않는 경우
+* `지원하는 서비스가 아닙니다.`: 지원하는 서비스가 아닌 경우
 
-include::{snippets}/not-found-member-exception/response-body.adoc[]
+include::{snippets}/publish-notifications-exception/response-body.adoc[]

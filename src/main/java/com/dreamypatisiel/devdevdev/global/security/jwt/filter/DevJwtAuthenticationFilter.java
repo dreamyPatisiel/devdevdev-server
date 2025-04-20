@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -36,9 +37,8 @@ public class DevJwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("DevJwtAuthenticationFilter 시작");
-        String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
+        String accessToken = tokenService.getAccessTokenByHttpRequest(request);
         User sentryUser = new User();
 
         // JWT 토큰이 유효한 경우에만, Authentication 객체 셋팅
@@ -73,6 +73,12 @@ public class DevJwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     public boolean shouldNotFilter(HttpServletRequest request) {
         String requestURI = request.getRequestURI();
+        String method = request.getMethod();
+
+        if (requestURI.contains("/notifications") && method.equals(HttpMethod.POST.name())) {
+            return true;
+        }
+
         return Arrays.stream(SecurityConstant.DEV_JWT_FILTER_WHITELIST_URL)
                 .anyMatch(whiteList -> StringUtils.startsWithIgnoreCase(requestURI, whiteList));
     }

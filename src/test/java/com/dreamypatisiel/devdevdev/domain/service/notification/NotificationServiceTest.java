@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -241,7 +242,8 @@ class NotificationServiceTest {
         Notification notification = findNotifications.get(0);
         assertAll(
                 () -> AssertionsForClassTypes.assertThat(notification.getMember()).isEqualTo(member),
-                () -> AssertionsForClassTypes.assertThat(notification.getTechArticle().getId()).isEqualTo(techArticle.getId()),
+                () -> AssertionsForClassTypes.assertThat(notification.getTechArticle().getId())
+                        .isEqualTo(techArticle.getId()),
                 () -> AssertionsForClassTypes.assertThat(notification.getMessage()).isNotBlank(),
                 () -> AssertionsForClassTypes.assertThat(notification.getIsRead()).isFalse()
         );
@@ -279,20 +281,9 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("어드민이 알림을 생성한다.")
-    void publishIsAdmin() {
+    @DisplayName("알림을 생성한다.")
+    void publish() {
         // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType,
-                Role.ROLE_ADMIN.name());
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         // 회사 생성
         Company company = createCompany("트이다");
         companyRepository.save(company);
@@ -306,12 +297,13 @@ class NotificationServiceTest {
                 company.getId(), List.of(new PublishTechArticle(techArticle.getId())));
 
         // when
-        Long publish = notificationService.publish(authentication, NotificationType.SUBSCRIPTION, publishTechArticleRequest);
+        Long publish = notificationService.publish(NotificationType.SUBSCRIPTION, publishTechArticleRequest);
 
         // then
         AssertionsForClassTypes.assertThat(publish).isGreaterThan(0);
     }
 
+    @Disabled
     @Test
     @DisplayName("알림을 생성 할 때 회원이 어드민 권한이 아니면 예외가 발생한다.")
     void publishIsNotAdmin() {
@@ -341,7 +333,8 @@ class NotificationServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> notificationService.publish(authentication, NotificationType.SUBSCRIPTION, publishTechArticleRequest))
+                () -> notificationService.publish(NotificationType.SUBSCRIPTION,
+                        publishTechArticleRequest))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(ACCESS_DENIED_MESSAGE);
     }
