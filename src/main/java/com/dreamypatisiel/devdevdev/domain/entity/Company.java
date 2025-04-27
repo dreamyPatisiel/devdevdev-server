@@ -69,6 +69,10 @@ public class Company extends BasicTime {
         this.description = description;
     }
 
+    public Company(Long id) {
+        this.id = id;
+    }
+
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
     }

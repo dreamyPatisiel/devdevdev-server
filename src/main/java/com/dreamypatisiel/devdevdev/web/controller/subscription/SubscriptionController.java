@@ -34,11 +34,6 @@ public class SubscriptionController {
 
     private final TechArticleServiceStrategy techArticleServiceStrategy;
 
-    /**
-     * @Note: 기업 구독하기
-     * @Author: 장세웅
-     * @Since: 2025-02-24
-     */
     @Operation(summary = "기업 구독하기", description = "구독 가능한 기업을 구독합니다.")
     @PostMapping("/subscriptions")
     public ResponseEntity<BasicResponse<SubscriptionResponse>> subscribe(
@@ -51,11 +46,6 @@ public class SubscriptionController {
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    /**
-     * @Note: 기업 구독 취소
-     * @Author: 장세웅
-     * @Since: 2025-02-24
-     */
     @Operation(summary = "기업 구독 취소", description = "구독한 기업을 구독 취소 합니다.")
     @DeleteMapping("/subscriptions")
     public ResponseEntity<BasicResponse<Void>> unsubscribe(@RequestBody @Validated SubscribeCompanyRequest request) {
@@ -67,11 +57,6 @@ public class SubscriptionController {
         return ResponseEntity.ok(BasicResponse.success());
     }
 
-    /**
-     * @Note: 구독한 가능한 기업 목록 조회
-     * @Author: 장세웅
-     * @Since: 2025-03-09
-     */
     @Operation(summary = "구독한 가능한 기업 목록 조회", description = "구독 가능한 기업 목록을 조회합니다.")
     @GetMapping("/subscriptions/companies")
     public ResponseEntity<BasicResponse<Slice<SubscriableCompanyResponse>>> getSubscriptions(

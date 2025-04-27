@@ -139,9 +139,11 @@ class MyPageControllerTest extends SupportControllerTest {
 
     @AfterAll
     static void tearDown(@Autowired ElasticTechArticleRepository elasticTechArticleRepository,
-                         @Autowired TechArticleRepository techArticleRepository) {
+                         @Autowired TechArticleRepository techArticleRepository,
+                         @Autowired CompanyRepository companyRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
+        companyRepository.deleteAllInBatch();
     }
 
     @Test

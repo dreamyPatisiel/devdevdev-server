@@ -1,0 +1,41 @@
+[[Publish-Notifications]]
+== 알림 생성 API(POST: /devdevdev/api/v1/notifications/{channel})
+
+* 알림을 생성한다.
+** service-name, api-key 가 일치 하지 않으면 호출 할 수 없다.
+
+=== 정상 요청/응답
+
+==== HTTP Request
+
+include::{snippets}/publish-notifications/http-request.adoc[]
+
+==== HTTP Request Header Fields
+
+include::{snippets}/publish-notifications/request-headers.adoc[]
+
+==== HTTP Request Fields
+
+include::{snippets}/publish-notifications/request-fields.adoc[]
+
+==== HTTP Request Path Parameters Fields
+
+include::{snippets}/publish-notifications/path-parameters.adoc[]
+
+==== HTTP Response
+
+include::{snippets}/publish-notifications/http-response.adoc[]
+
+==== HTTP Response Body Fields
+
+include::{snippets}/publish-notifications/response-fields.adoc[]
+
+=== 예외
+
+==== HTTP Response
+
+* `올바른 입력 값이 아닙니다.`: 잘못된 알림 채널을 입력한 경우
+* `접근할 수 없는 권한 입니다.`: 서비스 이름과 api-key가 일치하지 않는 경우
+* `지원하는 서비스가 아닙니다.`: 지원하는 서비스가 아닌 경우
+
+include::{snippets}/publish-notifications-exception/response-body.adoc[]

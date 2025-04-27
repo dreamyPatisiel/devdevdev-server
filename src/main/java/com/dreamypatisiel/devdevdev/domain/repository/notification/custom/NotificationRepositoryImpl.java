@@ -5,13 +5,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.Notification;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.querydsl.core.types.dsl.BooleanExpression;
+
+import static com.dreamypatisiel.devdevdev.domain.entity.QNotification.notification;
+import static com.querydsl.core.types.dsl.Expressions.stringTemplate;
+
 import com.querydsl.jpa.JPQLQueryFactory;
+import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
-
-import static com.dreamypatisiel.devdevdev.domain.entity.QNotification.notification;
 
 @RequiredArgsConstructor
 public class NotificationRepositoryImpl implements NotificationRepositoryCustom {
@@ -58,6 +62,16 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
 
         return new SliceCustom<>(contents, pageable, unReadNotificationTotalCount);
     }
+  
+    @Override
+    public List<Notification> findByMemberInAndTechArticleIdInOrderByNull(Set<Member> members, Set<Long> techArticleIds) {
+
+        return query.selectFrom(notification)
+                .where(notification.member.in(members)
+                        .and(notification.techArticle.id.in(techArticleIds)))
+                .orderBy(stringTemplate("null").asc())
+                .fetch();
+    }
 
     private Long countByMemberAndIsReadFalse(Member member) {
         return query.select(notification.count())
@@ -73,5 +87,4 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         }
 
         return notification.id.lt(notificationId);
-    }
 }
