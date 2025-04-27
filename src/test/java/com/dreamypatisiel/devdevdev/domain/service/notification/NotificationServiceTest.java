@@ -226,7 +226,7 @@ class NotificationServiceTest {
     }
 
     @Test
-    @DisplayName("회원이 알림 팝업을 조회하면 최신 5개의 알림이 반환된다.")
+    @DisplayName("회원이 알림 팝업을 조회하면 최신 알림이 반환된다.")
     void getNotificationPopup() {
         // given
         SocialMemberDto socialMemberDto = createSocialDto(
@@ -242,7 +242,7 @@ class NotificationServiceTest {
         ));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // 알림 6개 저장 (최신순 5개만 반환되는지 확인하기 위해)
+        // 알림 6개 저장
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
