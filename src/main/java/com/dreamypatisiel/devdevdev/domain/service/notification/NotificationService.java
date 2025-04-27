@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,22 +86,32 @@ public class NotificationService {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 최근 5개 알림 조회
-        SliceCustom<Notification> notifications = notificationRepository.findNotificationsByMemberOrderByCreatedAtDesc(pageable, findMember);
+        // 최근 알림 조회(default: 5개)
+        SliceCustom<Notification> notifications =
+                notificationRepository.findNotificationsByMemberAndTypeOrderByCreatedAtDesc(pageable,
+                        NotificationType.getEnabledTypes(), findMember);
 
         // 데이터 가공
         // NotificationType 에 따라 다른 DTO로 변환
         List<NotificationPopupResponse> response = notifications.getContent().stream()
-                .map(notification -> {
-                    if (notification.getType() == NotificationType.SUBSCRIPTION) {
-                        return (NotificationPopupResponse) NotificationPopupNewArticleResponse.from(notification);
-                    } else {
-                        throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
-                    }
-                })
+                .map(this::mapToPopupResponse)
                 .toList();
 
         return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
+    }
+
+    private static final Map<NotificationType, Function<Notification, NotificationPopupResponse>> POPUP_RESPONSE_MAPPER =
+            Map.of(
+                    // TODO: 현재는 SUBSCRIPTION 타입만 제공, 알림 타입이 추가될 경우 각 타입에 맞는 응답 DTO 변환 매핑 필요
+                    NotificationType.SUBSCRIPTION, NotificationPopupNewArticleResponse::from
+            );
+
+    private NotificationPopupResponse mapToPopupResponse(Notification notification) {
+        return POPUP_RESPONSE_MAPPER
+                .getOrDefault(notification.getType(), n -> {
+                    throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
+                })
+                .apply(notification);
     }
 
     /**

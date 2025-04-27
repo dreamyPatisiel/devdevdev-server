@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.repository.notification.custom;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Notification;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -27,9 +28,12 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     }
 
     @Override
-    public SliceCustom<Notification> findNotificationsByMemberOrderByCreatedAtDesc(Pageable pageable, Member member) {
+    public SliceCustom<Notification> findNotificationsByMemberAndTypeOrderByCreatedAtDesc(Pageable pageable,
+                                                                                   List<NotificationType> notificationTypes,
+                                                                                   Member member) {
         List<Notification> contents = query.selectFrom(notification)
-                .where(notification.member.eq(member))
+                .where(notification.member.eq(member)
+                        .and(notification.type.in(notificationTypes)))
                 .orderBy(notification.createdAt.desc(), notification.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -37,24 +41,22 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         // 회원이 읽지 않은 알림 개수
         long unReadNotificationTotalCount = countByMemberAndIsReadFalse(member);
 
-        return new SliceCustom<>(contents, pageable, false, unReadNotificationTotalCount);    }
+        return new SliceCustom<>(contents, pageable, false, unReadNotificationTotalCount);
+    }
 
     @Override
-    public SliceCustom<Notification> findNotificationsByMemberAndCursor(Pageable pageable, Long notificationId, Member findMember) {
+    public SliceCustom<Notification> findNotificationsByMemberAndCursor(Pageable pageable, Long notificationId, Member member) {
         List<Notification> contents = query.selectFrom(notification)
-                .where(notification.member.eq(findMember)
+                .where(notification.member.eq(member)
                         .and(getCursorCondition(notificationId)))
                 .orderBy(notification.createdAt.desc(), notification.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
 
         // 회원이 읽지 않은 알림 개수
-        long unReadNotificationTotalCount = countByMemberAndIsReadFalse(findMember);
+        long unReadNotificationTotalCount = countByMemberAndIsReadFalse(member);
 
-        // hasNextPage
-        boolean hasNextPage = contents.size() >= pageable.getPageSize();
-
-        return new SliceCustom<>(contents, pageable, hasNextPage, unReadNotificationTotalCount);
+        return new SliceCustom<>(contents, pageable, unReadNotificationTotalCount);
     }
 
     private Long countByMemberAndIsReadFalse(Member member) {

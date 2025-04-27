@@ -24,6 +24,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationNewArticleResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
@@ -261,17 +263,29 @@ class NotificationServiceTest {
         assertThat(response.getContent()).hasSize(5);
         assertThat(response.getTotalElements()).isEqualTo(6); // 읽지 않은 알림 총 개수
 
-        response.getContent().forEach(popup -> {
-            assertThat(popup).isInstanceOf(NotificationPopupNewArticleResponse.class);
-            NotificationPopupNewArticleResponse articlePopup = (NotificationPopupNewArticleResponse) popup;
-            assertThat(articlePopup.getId()).isNotNull();
-            assertThat(articlePopup.getTitle()).isNotNull();
-            assertThat(articlePopup.getCreatedAt()).isNotNull();
-            assertThat(articlePopup.getCompanyName()).isNotNull();
-            assertThat(articlePopup.getTechArticleId()).isNotNull();
-            assertThat(articlePopup.getType()).isEqualTo(NotificationType.SUBSCRIPTION);
-            assertThat(articlePopup.getIsRead()).isFalse();
+        List<NotificationPopupNewArticleResponse> content = response.getContent().stream()
+                .map(p -> (NotificationPopupNewArticleResponse) p)
+                .toList();
+
+        assertThat(content).allSatisfy(popup -> {
+            assertThat(popup.getId()).isInstanceOf(Long.class);
+            assertThat(popup.getTechArticleId()).isInstanceOf(Long.class);
         });
+
+        assertThat(content).hasSize(5)
+                .extracting(
+                        NotificationPopupNewArticleResponse::getTitle,
+                        NotificationPopupNewArticleResponse::getCompanyName,
+                        NotificationPopupNewArticleResponse::getType,
+                        NotificationPopupNewArticleResponse::getIsRead
+                )
+                .containsExactly(
+                        tuple("기술블로그 제목 5", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false),
+                        tuple("기술블로그 제목 4", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false),
+                        tuple("기술블로그 제목 3", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false),
+                        tuple("기술블로그 제목 2", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false),
+                        tuple("기술블로그 제목 1", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false)
+                );
     }
 
     @Test
@@ -334,31 +348,62 @@ class NotificationServiceTest {
         assertThat(response.getTotalElements()).isEqualTo(10); // 읽지 않은 알림 총 개수
         assertThat(response.hasNext()).isTrue(); // 다음 페이지가 존재하는지 확인
 
-        response.getContent().forEach(notification -> {
-            assertThat(notification).isInstanceOf(NotificationNewArticleResponse.class);
-            NotificationNewArticleResponse newArticleResponse = (NotificationNewArticleResponse) notification;
-            assertThat(newArticleResponse.getNotificationId()).isNotNull();
-            assertThat(newArticleResponse.getType()).isEqualTo(NotificationType.SUBSCRIPTION);
-            assertThat(newArticleResponse.getIsRead()).isFalse();
-            assertThat(newArticleResponse.getCreatedAt()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getId()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getElasticId()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getThumbnailUrl()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getIsLogoImage()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getTechArticleUrl()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getTitle()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getContents()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getCompany().getId()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getCompany().getName()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getCompany().getCareerUrl()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getCompany().getOfficialImageUrl()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getRegDate()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getViewTotalCount()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getRecommendTotalCount()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getCommentTotalCount()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getPopularScore()).isNotNull();
-            assertThat(newArticleResponse.getTechArticle().getIsBookmarked()).isNotNull();
+        List<NotificationNewArticleResponse> content = response.getContent().stream()
+                .map(n -> (NotificationNewArticleResponse) n)
+                .toList();
+
+        assertThat(content).allSatisfy(notificationNewArticleResponse -> {
+                    assertThat(notificationNewArticleResponse.getNotificationId()).isInstanceOf(Long.class);
+                    assertThat(notificationNewArticleResponse.getTechArticle().getId()).isInstanceOf(Long.class);
+                    assertThat(notificationNewArticleResponse.getTechArticle().getElasticId()).isInstanceOf(String.class);
+                    assertThat(notificationNewArticleResponse.getTechArticle().getCompany().getId()).isInstanceOf(Long.class);
         });
+
+        assertThat(content).hasSize(5)
+                .extracting(
+                        NotificationNewArticleResponse::getNotificationId,
+                        NotificationNewArticleResponse::getType,
+                        NotificationNewArticleResponse::getIsRead,
+                        r -> r.getTechArticle().getThumbnailUrl(),
+                        r -> r.getTechArticle().getIsLogoImage(),
+                        r -> r.getTechArticle().getTechArticleUrl(),
+                        r -> r.getTechArticle().getTitle(),
+                        r -> r.getTechArticle().getContents(),
+                        r -> r.getTechArticle().getViewTotalCount(),
+                        r -> r.getTechArticle().getRecommendTotalCount(),
+                        r -> r.getTechArticle().getCommentTotalCount(),
+                        r -> r.getTechArticle().getPopularScore(),
+                        r -> r.getTechArticle().getIsBookmarked(),
+                        r -> r.getTechArticle().getCompany().getName(),
+                        r -> r.getTechArticle().getCompany().getCareerUrl(),
+                        r -> r.getTechArticle().getCompany().getOfficialImageUrl()
+                )
+                .containsExactly(
+                        tuple(
+                                notifications.get(9).getId(), NotificationType.SUBSCRIPTION, false,
+                                "https://example.com/thumbnail.png", false, "https://example.com", "기술블로그 제목 9", "기술블로그 내용",
+                                1L, 1L, 1L, 1L, false, "꿈빛 파티시엘", "https://example.com", "https://example.com/company.png"
+                        ),
+                        tuple(
+                                notifications.get(8).getId(), NotificationType.SUBSCRIPTION, false,
+                                "https://example.com/thumbnail.png", false, "https://example.com", "기술블로그 제목 8", "기술블로그 내용",
+                                1L, 1L, 1L, 1L, false, "꿈빛 파티시엘", "https://example.com", "https://example.com/company.png"
+                        ),
+                        tuple(
+                                notifications.get(7).getId(), NotificationType.SUBSCRIPTION, false,
+                                "https://example.com/thumbnail.png", false, "https://example.com", "기술블로그 제목 7", "기술블로그 내용",
+                                1L, 1L, 1L, 1L, false, "꿈빛 파티시엘", "https://example.com", "https://example.com/company.png"
+                        ),
+                        tuple(
+                                notifications.get(6).getId(), NotificationType.SUBSCRIPTION, false,
+                                "https://example.com/thumbnail.png", false, "https://example.com", "기술블로그 제목 6", "기술블로그 내용",
+                                1L, 1L, 1L, 1L, false, "꿈빛 파티시엘", "https://example.com", "https://example.com/company.png"
+                        ),
+                        tuple(
+                                notifications.get(5).getId(), NotificationType.SUBSCRIPTION, false,
+                                "https://example.com/thumbnail.png", false, "https://example.com", "기술블로그 제목 5", "기술블로그 내용",
+                                1L, 1L, 1L, 1L, false, "꿈빛 파티시엘", "https://example.com", "https://example.com/company.png"
+                        )                );
     }
 
     private Notification createNotification(Member member, boolean isRead) {
