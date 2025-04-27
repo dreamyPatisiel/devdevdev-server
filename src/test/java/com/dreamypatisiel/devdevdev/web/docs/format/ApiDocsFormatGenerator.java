@@ -116,11 +116,6 @@ public interface ApiDocsFormatGenerator {
         return key(FORMAT).value("PICK | TECH");
     }
 
-    static Attributes.Attribute notificationType() {
-        return key(FORMAT).value(
-                NotificationType.SUBSCRIPTION);
-    }
-
     static Attributes.Attribute myWrittenCommentSort() {
         String blamePathType = Arrays.stream(MyWrittenCommentFilter.values())
                 .map(Enum::name)

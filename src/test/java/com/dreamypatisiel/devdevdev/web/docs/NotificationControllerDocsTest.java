@@ -1,61 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
-import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
-import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.*;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
-
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.util.List;
-
-import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.notificationType;
-
-import static com.dreamypatisiel.devdevdev.web.docs.custom.CustomPreprocessors.modifyResponseBody;
-import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.resultType;
-import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
-import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
-import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.JsonFieldType.ARRAY;
-import static org.springframework.restdocs.payload.JsonFieldType.BOOLEAN;
-import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
-import static org.springframework.restdocs.payload.JsonFieldType.OBJECT;
-import static org.springframework.restdocs.payload.JsonFieldType.STRING;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseBody;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
@@ -65,20 +9,46 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.*;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.custom.CustomPreprocessors.modifyResponseBody;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.notificationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.resultType;
+import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class NotificationControllerDocsTest extends SupportControllerDocsTest {
 

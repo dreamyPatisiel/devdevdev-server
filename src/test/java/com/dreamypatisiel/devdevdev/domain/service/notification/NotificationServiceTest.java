@@ -1,22 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.notification;
 
 
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Notification;
-import com.dreamypatisiel.devdevdev.domain.entity.Subscription;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
-
-import static com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService.ACCESS_DENIED_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertAll;
-
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
@@ -24,39 +13,30 @@ import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessag
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
-
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationNewArticleResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
-
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
-
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationNewArticleResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
 import jakarta.persistence.EntityManager;
-
-import org.junit.jupiter.api.*;
+import org.assertj.core.api.AssertionsForClassTypes;
+import org.assertj.core.api.AssertionsForInterfaceTypes;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
-import java.util.Set;
-import org.assertj.core.api.AssertionsForClassTypes;
-import org.assertj.core.api.AssertionsForInterfaceTypes;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -66,9 +46,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService.ACCESS_DENIED_MESSAGE;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.junit.jupiter.api.Assertions.assertAll;
 

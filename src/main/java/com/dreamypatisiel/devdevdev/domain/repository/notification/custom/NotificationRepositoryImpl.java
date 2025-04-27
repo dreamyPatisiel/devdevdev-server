@@ -87,4 +87,5 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
         }
 
         return notification.id.lt(notificationId);
+    }
 }

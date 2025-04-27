@@ -1,22 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.controller.notification;
 
-import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
-import static org.hamcrest.Matchers.containsString;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.service.ApiKeyService;
@@ -26,41 +9,36 @@ import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.redis.pub.NotificationPublisher;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
-
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
+import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.*;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
-
-import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
-import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.List;
-
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class NotificationControllerTest extends SupportControllerTest {
 

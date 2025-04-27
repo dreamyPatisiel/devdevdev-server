@@ -3,7 +3,6 @@ package com.dreamypatisiel.devdevdev.domain.entity.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Getter
