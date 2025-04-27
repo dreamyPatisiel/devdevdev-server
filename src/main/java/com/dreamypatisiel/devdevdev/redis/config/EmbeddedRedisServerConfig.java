@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.global.config;
+package com.dreamypatisiel.devdevdev.redis.config;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;

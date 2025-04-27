@@ -18,7 +18,7 @@ public class NotificationReadResponse {
     public static NotificationReadResponse from(Notification notification) {
         return NotificationReadResponse.builder()
                 .id(notification.getId())
-                .isRead(notification.isRead())
+                .isRead(notification.getIsRead())
                 .build();
     }
 }

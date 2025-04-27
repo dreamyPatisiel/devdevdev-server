@@ -16,7 +16,7 @@ import org.springframework.util.ObjectUtils;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
-public class PickMultiServiceHandler {
+public class PickFacadeService {
 
     private PickService pickService;
     private final EmbeddingsService embeddingsService;
