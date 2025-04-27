@@ -72,7 +72,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(status().isOk());
 
         // docs
-        actions.andDo(document("addClient-company",
+        actions.andDo(document("subscribe-company",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
@@ -106,7 +106,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
                 .andExpect(status().is4xxClientError());
 
         // docs
-        actions.andDo(document("addClient-company-not-found-company",
+        actions.andDo(document("subscribe-company-not-found-company",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(

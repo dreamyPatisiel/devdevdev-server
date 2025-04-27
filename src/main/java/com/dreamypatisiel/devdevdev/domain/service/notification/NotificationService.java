@@ -95,7 +95,7 @@ public class NotificationService {
     }
 
     /**
-     * @Note: 실시간 알림을 받을 구독자 추가 및
+     * @Note: 실시간 알림을 받을 구독자 추가 및 알림 전송
      * @Author: 장세웅
      * @Since: 2025.03.31
      */
@@ -105,13 +105,14 @@ public class NotificationService {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 구독자 생성
-        SseEmitter sseEmitter = createSseEmitter(TIMEOUT);
-        sseEmitterRepository.save(findMember, sseEmitter);
+        SseEmitter sseEmitter = addClient(findMember);
 
-        sseEmitter.onCompletion(() -> sseEmitterRepository.remove(findMember));
-        sseEmitter.onTimeout(() -> sseEmitterRepository.remove(findMember));
+        sendUnreadNotifications(findMember, sseEmitter);
 
+        return sseEmitter;
+    }
+
+    private void sendUnreadNotifications(Member findMember, SseEmitter sseEmitter) {
         // 회원에게 안읽은 알림이 있는지 조회
         Long unreadNotificationCount = notificationRepository.countByMemberAndIsReadIsFalse(findMember);
 
@@ -130,7 +131,15 @@ public class NotificationService {
                 sseEmitterRepository.remove(findMember);
             }
         }
+    }
 
+    private SseEmitter addClient(Member findMember) {
+        // 구독자 생성
+        SseEmitter sseEmitter = createSseEmitter(TIMEOUT);
+        sseEmitterRepository.save(findMember, sseEmitter);
+
+        sseEmitter.onCompletion(() -> sseEmitterRepository.remove(findMember));
+        sseEmitter.onTimeout(() -> sseEmitterRepository.remove(findMember));
         return sseEmitter;
     }
 
