@@ -184,7 +184,7 @@ public class NotificationService {
                 .collect(Collectors.toSet());
 
         // 회원들의 기술블로그 구독 알림 이력 조회
-        List<Notification> findSubscriptionNotifications = notificationRepository.findByMemberInAndTechArticleIdInOrderByMemberDesc(
+        List<Notification> findSubscriptionNotifications = notificationRepository.findByMemberInAndTechArticleIdInOrderByNull(
                 members, techArticleIds);
 
         // 구독한 기업에 대해서 새로운 글 알림이 존재하지 않은 회원 추출

@@ -237,7 +237,7 @@ class NotificationServiceTest {
                 .doesNotThrowAnyException();
 
         // 알림 이력 확인
-        List<Notification> findNotifications = notificationRepository.findByMemberInAndTechArticleIdInOrderByMemberDesc(
+        List<Notification> findNotifications = notificationRepository.findByMemberInAndTechArticleIdInOrderByNull(
                 Set.of(member), Set.of(techArticle.getId()));
         Notification notification = findNotifications.get(0);
         assertAll(
@@ -275,7 +275,7 @@ class NotificationServiceTest {
                 .doesNotThrowAnyException();
 
         // 알림 이력 확인
-        List<Notification> findNotifications = notificationRepository.findByMemberInAndTechArticleIdInOrderByMemberDesc(
+        List<Notification> findNotifications = notificationRepository.findByMemberInAndTechArticleIdInOrderByNull(
                 Set.of(member), Set.of(techArticle.getId()));
         AssertionsForInterfaceTypes.assertThat(findNotifications).isEmpty();
     }
