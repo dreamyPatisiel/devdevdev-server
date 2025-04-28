@@ -15,7 +15,7 @@ public class TechArticleRecommend extends BasicTime {
     private Long id;
 
     @Column(nullable = false)
-    private boolean status;
+    private Boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -30,7 +30,7 @@ public class TechArticleRecommend extends BasicTime {
     private TechArticle techArticle;
 
     @Builder
-    private TechArticleRecommend(boolean status, Member member, AnonymousMember anonymousMember, TechArticle techArticle) {
+    private TechArticleRecommend(Boolean status, Member member, AnonymousMember anonymousMember, TechArticle techArticle) {
         this.status = status;
         this.member = member;
         this.anonymousMember = anonymousMember;

@@ -4,13 +4,26 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.service.ApiKeyService;
 import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+
 import com.dreamypatisiel.devdevdev.global.validator.ValidEnum;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
+
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 
 @Tag(name = "알림 API", description = "알림 관련 API")
 @RestController
@@ -52,6 +66,28 @@ public class NotificationController {
         return ResponseEntity.ok(BasicResponse.success());
     }
 
+     @Operation(summary = "알림 팝업 조회")
+     @GetMapping("/notifications/popup")
+     public ResponseEntity<BasicResponse<SliceCustom<NotificationPopupResponse>>> getNotificationPopup(
+             @PageableDefault(size = 5) Pageable pageable
+     ) {
+         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+         SliceCustom<NotificationPopupResponse> response = notificationService.getNotificationPopup(pageable, authentication);
+         return ResponseEntity.ok(BasicResponse.success(response));
+     }
+
+    @Operation(summary = "알림 페이지 조회")
+    @GetMapping("/notifications/page")
+    public ResponseEntity<BasicResponse<SliceCustom<NotificationResponse>>> getNotifications(
+            @PageableDefault Pageable pageable,
+            @RequestParam(required = false) Long notificationId
+    ) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        SliceCustom<NotificationResponse> response = notificationService.getNotifications(pageable, notificationId,
+                authentication);
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+  
     @Operation(summary = "실시간 알림 수신 활성화", description = "실시간 알림 수신을 활성화 합니다.")
     @GetMapping(value = "/notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter notifications() {

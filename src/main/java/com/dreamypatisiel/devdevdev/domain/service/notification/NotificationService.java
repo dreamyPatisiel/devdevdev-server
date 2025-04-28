@@ -9,6 +9,16 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
+
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
+import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.*;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
@@ -23,12 +33,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -45,6 +62,8 @@ public class NotificationService {
     private final TimeProvider timeProvider;
     private final NotificationPublisher notificationPublisher;
 
+    private final TechArticleCommonService techArticleCommonService;
+
     private final NotificationRepository notificationRepository;
     private final SseEmitterRepository sseEmitterRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -52,6 +71,7 @@ public class NotificationService {
     public SseEmitter createSseEmitter(Long timeout) {
         return new SseEmitter(timeout);
     }
+
 
     /**
      * @param notificationId 알림 ID
@@ -92,6 +112,116 @@ public class NotificationService {
 
         // 읽지 않은 모든 알림 조회
         notificationRepository.bulkMarkAllAsReadByMemberId(findMember.getId());
+    }
+
+    /**
+     * @Note: 알림 팝업 조회
+     * @Author: 유소영
+     * @Since: 2025.04.09
+     * @param pageable 페이징 정보
+     * @param authentication 회원 인증 정보
+     */
+    public SliceCustom<NotificationPopupResponse> getNotificationPopup(Pageable pageable, Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 최근 알림 조회(default: 5개)
+        SliceCustom<Notification> notifications =
+                notificationRepository.findNotificationsByMemberAndTypeOrderByCreatedAtDesc(pageable,
+                        NotificationType.getEnabledTypes(), findMember);
+
+        // 데이터 가공
+        // NotificationType 에 따라 다른 DTO로 변환
+        List<NotificationPopupResponse> response = notifications.getContent().stream()
+                .map(this::mapToPopupResponse)
+                .toList();
+
+        return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
+    }
+
+    private static final Map<NotificationType, Function<Notification, NotificationPopupResponse>> POPUP_RESPONSE_MAPPER =
+            Map.of(
+                    // TODO: 현재는 SUBSCRIPTION 타입만 제공, 알림 타입이 추가될 경우 각 타입에 맞는 응답 DTO 변환 매핑 필요
+                    NotificationType.SUBSCRIPTION, NotificationPopupNewArticleResponse::from
+            );
+
+    private NotificationPopupResponse mapToPopupResponse(Notification notification) {
+        return POPUP_RESPONSE_MAPPER
+                .getOrDefault(notification.getType(), n -> {
+                    throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
+                })
+                .apply(notification);
+    }
+
+    /**
+     * @Note: 알림 페이지 조회
+     * @Author: 유소영
+     * @Since: 2025.04.11
+     * @param pageable 페이징 정보
+     * @param notificationId 커서용 알림 ID
+     * @param authentication 회원 인증 정보
+     */
+    public SliceCustom<NotificationResponse> getNotifications(Pageable pageable, Long notificationId,
+                                                              Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원 알림 페이징 조회
+        SliceCustom<Notification> notifications = notificationRepository.findNotificationsByMemberAndCursor(pageable,
+                notificationId, findMember);
+
+        // 데이터 가공
+        // NotificationType 에 따라 다른 DTO로 변환
+        Map<Long, ElasticTechArticle> elasticTechArticles = getTechArticleIdToElastic(notifications.getContent());
+
+        List<NotificationResponse> response = notifications.getContent().stream()
+                .map(notification -> {
+                    if (notification.getType() == NotificationType.SUBSCRIPTION) {
+                        return (NotificationResponse) NotificationNewArticleResponse.from(notification,
+                                getTechArticleMainResponse(notification, elasticTechArticles));
+                    } else {
+                        throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
+                    }
+                })
+                .toList();
+
+        return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
+    }
+
+    // NotificationType.SUBSCRIPTION 알림의 경우 TechArticleMainResponse 생성
+    private TechArticleMainResponse getTechArticleMainResponse(Notification notification,
+                                                                Map<Long, ElasticTechArticle> elasticTechArticles) {
+        TechArticle techArticle = notification.getTechArticle();
+        CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
+        ElasticTechArticle elasticTechArticle = elasticTechArticles.get(notification.getId());
+
+        return TechArticleMainResponse.of(techArticle, elasticTechArticle, companyResponse);
+    }
+
+    // 알림 ID를 키로 하고, ElasticTechArticle 을 값으로 가지는 맵을 반환
+    private Map<Long, ElasticTechArticle> getTechArticleIdToElastic(List<Notification> notifications) {
+        // 1. NotificationType.SUBSCRIPTION 알림만 필터링하여 ElasticTechArticle 리스트 생성
+        List<TechArticle> techArticles = notifications.stream()
+                .filter(notification -> notification.getType() == NotificationType.SUBSCRIPTION)
+                .map(Notification::getTechArticle)
+                .toList();
+
+        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByTechArticles(techArticles);
+
+        // 2. ElasticID → ElasticTechArticle 매핑
+        Map<String, ElasticTechArticle> elasticIdToElastic = elasticTechArticles.stream()
+                .collect(Collectors.toMap(
+                        ElasticTechArticle::getId,
+                        elasticTechArticle -> elasticTechArticle
+                ));
+
+        // 3. Notification ID → ElasticTechArticle 매핑
+        return notifications.stream()
+                .filter(notification -> notification.getType() == NotificationType.SUBSCRIPTION)
+                .collect(Collectors.toMap(
+                        Notification::getId,
+                        notification -> elasticIdToElastic.get(notification.getTechArticle().getElasticId())
+                ));
     }
 
     /**

@@ -4,4 +4,5 @@ include::notifications.adoc[]
 include::publish-notifications.adoc[]
 include::read-notification.adoc[]
 include::read-all-notification.adoc[]
-
+include::get-notifications.adoc[]
+include::get-notification-popup.adoc[]
