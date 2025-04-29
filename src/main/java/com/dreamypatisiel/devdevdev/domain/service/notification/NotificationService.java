@@ -9,31 +9,31 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.exception.NotificationExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
-
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.response.notification.*;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
-
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.redis.pub.NotificationPublisher;
 import com.dreamypatisiel.devdevdev.redis.sub.NotificationMessageDto;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticle;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.publish.RedisPublishRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationNewArticleResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -42,17 +42,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class NotificationService {
 
-    public static final long TIMEOUT = 60 * 1000L;
+    public static final long TIMEOUT = 5 * 60 * 1000L;
+    public static final long HEARTBEAT_INTERVAL = 5 * 60 * 1000L;
     public static final String UNREAD_NOTIFICATION_FORMAT = "읽지 않은 알림이 %d개가 있어요.";
     public static final String MAIN_TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 기슬블로그 %d개가 올라왔어요!";
     public static final String TECH_ARTICLE_NOTIFICATION_FORMAT = "%s에서 새로운 글이 올라왔어요!";
@@ -115,11 +111,11 @@ public class NotificationService {
     }
 
     /**
+     * @param pageable       페이징 정보
+     * @param authentication 회원 인증 정보
      * @Note: 알림 팝업 조회
      * @Author: 유소영
      * @Since: 2025.04.09
-     * @param pageable 페이징 정보
-     * @param authentication 회원 인증 정보
      */
     public SliceCustom<NotificationPopupResponse> getNotificationPopup(Pageable pageable, Authentication authentication) {
         // 회원 조회
@@ -154,12 +150,12 @@ public class NotificationService {
     }
 
     /**
+     * @param pageable       페이징 정보
+     * @param notificationId 커서용 알림 ID
+     * @param authentication 회원 인증 정보
      * @Note: 알림 페이지 조회
      * @Author: 유소영
      * @Since: 2025.04.11
-     * @param pageable 페이징 정보
-     * @param notificationId 커서용 알림 ID
-     * @param authentication 회원 인증 정보
      */
     public SliceCustom<NotificationResponse> getNotifications(Pageable pageable, Long notificationId,
                                                               Authentication authentication) {
@@ -181,7 +177,8 @@ public class NotificationService {
         return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
     }
 
-    private NotificationResponse mapToNotificationResponse(Notification notification, Map<Long, ElasticTechArticle> elasticTechArticles) {
+    private NotificationResponse mapToNotificationResponse(Notification notification,
+                                                           Map<Long, ElasticTechArticle> elasticTechArticles) {
         // TODO: 현재는 SUBSCRIPTION 타입만 제공, 알림 타입이 추가될 경우 각 타입에 맞는 응답 DTO 변환 매핑 필요
         if (notification.getType() == NotificationType.SUBSCRIPTION) {
             return NotificationNewArticleResponse.from(notification,
@@ -192,7 +189,7 @@ public class NotificationService {
 
     // NotificationType.SUBSCRIPTION 알림의 경우 TechArticleMainResponse 생성
     private TechArticleMainResponse getTechArticleMainResponse(Notification notification,
-                                                                Map<Long, ElasticTechArticle> elasticTechArticles) {
+                                                               Map<Long, ElasticTechArticle> elasticTechArticles) {
         TechArticle techArticle = notification.getTechArticle();
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
         ElasticTechArticle elasticTechArticle = elasticTechArticles.get(notification.getId());
@@ -208,7 +205,8 @@ public class NotificationService {
                 .map(Notification::getTechArticle)
                 .toList();
 
-        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByTechArticles(techArticles);
+        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByTechArticles(
+                techArticles);
 
         // 2. ElasticID → ElasticTechArticle 매핑
         Map<String, ElasticTechArticle> elasticIdToElastic = elasticTechArticles.stream()
@@ -272,6 +270,8 @@ public class NotificationService {
 
         sseEmitter.onCompletion(() -> sseEmitterRepository.remove(findMember));
         sseEmitter.onTimeout(() -> sseEmitterRepository.remove(findMember));
+        sseEmitter.onError(throwable -> sseEmitterRepository.remove(findMember));
+
         return sseEmitter;
     }
 
