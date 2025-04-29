@@ -557,6 +557,58 @@ class NotificationServiceTest {
                 .hasMessage(ACCESS_DENIED_MESSAGE);
     }
 
+    @Test
+    @DisplayName("회원이 알림 개수를 조회하면 회원이 아직 읽지 않은 알림의 총 개수가 반환된다.")
+    void getUnreadNotificationCount() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(
+                "dreamy", "꿈빛파티시엘", "행복한 꿈빛", "pass123", "dreamy@kakao.com", "KAKAO", "ROLE_USER"
+        );
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal principal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(
+                principal, principal.getAuthorities(), principal.getSocialType().name()
+        ));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 알림 10개 저장
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        List<TechArticle> techArticles = new ArrayList<>();
+        List<Notification> notifications = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목 "+i), new Url("https://example.com"),
+                    new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+
+            techArticles.add(techArticle);
+            notifications.add(createNotification(member, "알림 메시지 " + i, NotificationType.SUBSCRIPTION, false, techArticle));
+        }
+
+        // 3개 읽기 처리
+        for (int i = 0; i < 3; i++) {
+            Notification notification = notifications.get(i);
+            notification.markAsRead();
+        }
+
+        techArticleRepository.saveAll(techArticles);
+        notificationRepository.saveAll(notifications);
+
+        em.flush();
+        em.clear();
+
+        // when
+        Long response = notificationService.getUnreadNotificationCount(authentication);
+
+        // then
+        assertThat(response).isEqualTo(7);
+    }
+
     private static Subscription createSubscription(Company company, Member member) {
         return Subscription.builder()
                 .company(company)

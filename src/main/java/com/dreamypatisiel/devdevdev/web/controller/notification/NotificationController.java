@@ -87,6 +87,14 @@ public class NotificationController {
                 authentication);
         return ResponseEntity.ok(BasicResponse.success(response));
     }
+
+    @Operation(summary = "알림 전체 개수 조회")
+    @GetMapping("/notifications/unread-count")
+    public ResponseEntity<BasicResponse<Long>> getUnreadNotificationCount() {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        Long response = notificationService.getUnreadNotificationCount(authentication);
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
   
     @Operation(summary = "실시간 알림 수신 활성화", description = "실시간 알림 수신을 활성화 합니다.")
     @GetMapping(value = "/notifications", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

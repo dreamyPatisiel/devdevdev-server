@@ -38,8 +38,8 @@ import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
@@ -215,6 +215,39 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 요소 수"),
                         fieldWithPath("data.empty").type(BOOLEAN).description("비어있는 페이지인지 여부")
                   
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 알림 개수를 조회하면 회원이 아직 읽지 않은 알림의 총 개수가 반환된다.")
+    void getUnreadNotificationCount() throws Exception {
+        // given
+        Long unreadNotificationCount = 12L;
+        given(notificationService.getUnreadNotificationCount(any()))
+                .willReturn(unreadNotificationCount);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get(DEFAULT_PATH_V1 + "/notifications/unread-count")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isNumber());
+
+        // docs
+        actions.andDo(document("get-notification-unread-count",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(NUMBER).description("응답 데이터(읽지 않은 알림 개수)")
                 )
         ));
     }

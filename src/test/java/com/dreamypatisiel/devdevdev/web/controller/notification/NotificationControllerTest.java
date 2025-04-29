@@ -268,6 +268,29 @@ class NotificationControllerTest extends SupportControllerTest {
                 .build();
     }
 
+    @Test
+    @DisplayName("회원이 알림 개수를 조회하면 회원이 아직 읽지 않은 알림의 총 개수가 반환된다.")
+    void getUnreadNotificationCount() throws Exception {
+        // given
+        Long unreadNotificationCount = 12L;
+        given(notificationService.getUnreadNotificationCount(any()))
+                .willReturn(unreadNotificationCount);
+
+        // when // then
+        mockMvc.perform(get(DEFAULT_PATH_V1 + "/notifications/unread-count")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isNumber());
+
+        // 호출 여부 확인
+        verify(notificationService, times(1)).getUnreadNotificationCount(any());
+    }
+
     /**
      * SseEmitter는 내부적으로 HttpServletResponse.getOutputStream() 또는 getWriter()를 직접 사용해서 데이터를 보냄 그래서
      * MockMvc.perform().characterEncoding("UTF-8")이 무시되는 거고, ISO-8859-1로 처리됨

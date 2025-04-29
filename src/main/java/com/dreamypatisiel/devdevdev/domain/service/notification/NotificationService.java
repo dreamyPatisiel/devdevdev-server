@@ -354,4 +354,17 @@ public class NotificationService {
     public <T extends RedisPublishRequest> Long publish(NotificationType channel, T message) {
         return notificationPublisher.publish(channel, message);
     }
+
+    /**
+     * @Note: 회원이 읽지 않은 알림 총 개수 조회
+     * @Author: 유소영
+     * @Since: 2025.04.29
+     */
+    public Long getUnreadNotificationCount(Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원이 읽지 않은 알림 개수 조회
+        return notificationRepository.countByMemberAndIsReadFalse(findMember);
+    }
 }
