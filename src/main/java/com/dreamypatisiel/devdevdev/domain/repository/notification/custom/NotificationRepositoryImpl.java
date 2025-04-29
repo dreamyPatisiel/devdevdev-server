@@ -73,7 +73,8 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
                 .fetch();
     }
 
-    private Long countByMemberAndIsReadFalse(Member member) {
+    @Override
+    public Long countByMemberAndIsReadFalse(Member member) {
         return query.select(notification.count())
                 .from(notification)
                 .where(notification.member.eq(member)

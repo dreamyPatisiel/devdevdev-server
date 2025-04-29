@@ -117,7 +117,7 @@ class NotificationControllerTest extends SupportControllerTest {
         // given
         PageRequest pageable = PageRequest.of(0, 1);
         List<NotificationPopupResponse> response = List.of(
-                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDate.now(), false,
+                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDateTime.now(), false,
                         "기업명", 1L));
         given(notificationService.getNotificationPopup(any(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, false, 1L));
@@ -178,7 +178,7 @@ class NotificationControllerTest extends SupportControllerTest {
                 0L, 0L, 0L, false, null
         );
         List<NotificationResponse> response = List.of(
-                new NotificationNewArticleResponse(1L, LocalDate.now(), false, techArticleMainResponse));
+                new NotificationNewArticleResponse(1L, LocalDateTime.now(), false, techArticleMainResponse));
         given(notificationService.getNotifications(any(), anyLong(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, true, 1L));
 
@@ -266,6 +266,29 @@ class NotificationControllerTest extends SupportControllerTest {
                 .isBookmarked(isBookmarked)
                 .score(score)
                 .build();
+    }
+
+    @Test
+    @DisplayName("회원이 알림 개수를 조회하면 회원이 아직 읽지 않은 알림의 총 개수가 반환된다.")
+    void getUnreadNotificationCount() throws Exception {
+        // given
+        Long unreadNotificationCount = 12L;
+        given(notificationService.getUnreadNotificationCount(any()))
+                .willReturn(unreadNotificationCount);
+
+        // when // then
+        mockMvc.perform(get(DEFAULT_PATH_V1 + "/notifications/unread-count")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isNumber());
+
+        // 호출 여부 확인
+        verify(notificationService, times(1)).getUnreadNotificationCount(any());
     }
 
     /**

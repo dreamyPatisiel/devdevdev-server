@@ -175,17 +175,19 @@ public class NotificationService {
         Map<Long, ElasticTechArticle> elasticTechArticles = getTechArticleIdToElastic(notifications.getContent());
 
         List<NotificationResponse> response = notifications.getContent().stream()
-                .map(notification -> {
-                    if (notification.getType() == NotificationType.SUBSCRIPTION) {
-                        return (NotificationResponse) NotificationNewArticleResponse.from(notification,
-                                getTechArticleMainResponse(notification, elasticTechArticles));
-                    } else {
-                        throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
-                    }
-                })
+                .map(notification -> mapToNotificationResponse(notification, elasticTechArticles))
                 .toList();
 
         return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
+    }
+
+    private NotificationResponse mapToNotificationResponse(Notification notification, Map<Long, ElasticTechArticle> elasticTechArticles) {
+        // TODO: 현재는 SUBSCRIPTION 타입만 제공, 알림 타입이 추가될 경우 각 타입에 맞는 응답 DTO 변환 매핑 필요
+        if (notification.getType() == NotificationType.SUBSCRIPTION) {
+            return NotificationNewArticleResponse.from(notification,
+                    getTechArticleMainResponse(notification, elasticTechArticles));
+        }
+        throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
     }
 
     // NotificationType.SUBSCRIPTION 알림의 경우 TechArticleMainResponse 생성
@@ -351,5 +353,18 @@ public class NotificationService {
 
     public <T extends RedisPublishRequest> Long publish(NotificationType channel, T message) {
         return notificationPublisher.publish(channel, message);
+    }
+
+    /**
+     * @Note: 회원이 읽지 않은 알림 총 개수 조회
+     * @Author: 유소영
+     * @Since: 2025.04.29
+     */
+    public Long getUnreadNotificationCount(Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원이 읽지 않은 알림 개수 조회
+        return notificationRepository.countByMemberAndIsReadFalse(findMember);
     }
 }

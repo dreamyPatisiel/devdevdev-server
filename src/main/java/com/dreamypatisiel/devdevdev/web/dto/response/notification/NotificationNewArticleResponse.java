@@ -7,13 +7,14 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 public class NotificationNewArticleResponse extends NotificationResponse {
     private final TechArticleMainResponse techArticle;
 
     @Builder
-    public NotificationNewArticleResponse(Long notificationId, LocalDate createdAt,
+    public NotificationNewArticleResponse(Long notificationId, LocalDateTime createdAt,
                                           boolean isRead, TechArticleMainResponse techArticle) {
         super(notificationId, NotificationType.SUBSCRIPTION, createdAt, isRead);
         this.techArticle = techArticle;
@@ -22,7 +23,7 @@ public class NotificationNewArticleResponse extends NotificationResponse {
     public static NotificationNewArticleResponse from(Notification notification, TechArticleMainResponse techArticle) {
         return NotificationNewArticleResponse.builder()
                 .notificationId(notification.getId())
-                .createdAt(notification.getCreatedAt().toLocalDate())
+                .createdAt(notification.getCreatedAt())
                 .isRead(notification.getIsRead())
                 .techArticle(techArticle)
                 .build();

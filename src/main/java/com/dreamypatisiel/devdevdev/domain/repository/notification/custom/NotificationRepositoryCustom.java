@@ -16,4 +16,5 @@ public interface NotificationRepositoryCustom {
 
     SliceCustom<Notification> findNotificationsByMemberAndCursor(Pageable pageable, Long notificationId, Member member);
     List<Notification> findByMemberInAndTechArticleIdInOrderByNull(Set<Member> members, Set<Long> techArticleIds);
+    Long countByMemberAndIsReadFalse(Member member);
 }

@@ -38,8 +38,8 @@ import static io.lettuce.core.BitFieldArgs.OverflowType.FAIL;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
@@ -158,7 +158,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
         // given
         PageRequest pageable = PageRequest.of(0, 1);
         List<NotificationPopupResponse> response = List.of(
-                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDate.now(), false,
+                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDateTime.now(), false,
                         "기업명", 1L));
         given(notificationService.getNotificationPopup(any(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, false, 1L));
@@ -190,7 +190,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].type").type(STRING).description("알림 타입").attributes(notificationType()),
                         fieldWithPath("data.content[].title").type(STRING).description("알림 제목"),
                         fieldWithPath("data.content[].isRead").type(BOOLEAN).description("회원의 읽음 여부"),
-                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성일"),
+                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성 일시"),
                         fieldWithPath("data.content[].companyName").type(STRING).description("기업 이름"),
                         fieldWithPath("data.content[].techArticleId").type(NUMBER).description("기술블로그 id"),
                         fieldWithPath("data.pageable").type(OBJECT).description("페이지 정보"),
@@ -215,6 +215,39 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.numberOfElements").type(NUMBER).description("현재 페이지 요소 수"),
                         fieldWithPath("data.empty").type(BOOLEAN).description("비어있는 페이지인지 여부")
                   
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 알림 개수를 조회하면 회원이 아직 읽지 않은 알림의 총 개수가 반환된다.")
+    void getUnreadNotificationCount() throws Exception {
+        // given
+        Long unreadNotificationCount = 12L;
+        given(notificationService.getUnreadNotificationCount(any()))
+                .willReturn(unreadNotificationCount);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get(DEFAULT_PATH_V1 + "/notifications/unread-count")
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isNumber());
+
+        // docs
+        actions.andDo(document("get-notification-unread-count",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(NUMBER).description("응답 데이터(읽지 않은 알림 개수)")
                 )
         ));
     }
@@ -323,7 +356,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
         );
 
         List<NotificationResponse> response = List.of(
-                new NotificationNewArticleResponse(1L, LocalDate.now(), false, techArticleMainResponse)
+                new NotificationNewArticleResponse(1L, LocalDateTime.now(), false, techArticleMainResponse)
         );
         given(notificationService.getNotifications(any(), anyLong(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, true, 1L));
@@ -355,7 +388,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content").type(ARRAY).description("알림 목록"),
                         fieldWithPath("data.content[].notificationId").type(NUMBER).description("알림 ID"),
                         fieldWithPath("data.content[].type").type(STRING).description("알림 타입").attributes(notificationType()),
-                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성일"),
+                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성 일시"),
                         fieldWithPath("data.content[].isRead").type(BOOLEAN).description("회원의 알림 읽음 여부"),
                         fieldWithPath("data.content[].techArticle").type(OBJECT).description("기술블로그 정보"),
                         fieldWithPath("data.content[].techArticle.id").type(NUMBER).description("기술블로그 ID"),
