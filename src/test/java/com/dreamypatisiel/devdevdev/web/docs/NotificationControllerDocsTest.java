@@ -158,7 +158,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
         // given
         PageRequest pageable = PageRequest.of(0, 1);
         List<NotificationPopupResponse> response = List.of(
-                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDate.now(), false,
+                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDateTime.now(), false,
                         "기업명", 1L));
         given(notificationService.getNotificationPopup(any(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, false, 1L));
@@ -190,7 +190,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content[].type").type(STRING).description("알림 타입").attributes(notificationType()),
                         fieldWithPath("data.content[].title").type(STRING).description("알림 제목"),
                         fieldWithPath("data.content[].isRead").type(BOOLEAN).description("회원의 읽음 여부"),
-                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성일"),
+                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성 일시"),
                         fieldWithPath("data.content[].companyName").type(STRING).description("기업 이름"),
                         fieldWithPath("data.content[].techArticleId").type(NUMBER).description("기술블로그 id"),
                         fieldWithPath("data.pageable").type(OBJECT).description("페이지 정보"),
@@ -323,7 +323,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
         );
 
         List<NotificationResponse> response = List.of(
-                new NotificationNewArticleResponse(1L, LocalDate.now(), false, techArticleMainResponse)
+                new NotificationNewArticleResponse(1L, LocalDateTime.now(), false, techArticleMainResponse)
         );
         given(notificationService.getNotifications(any(), anyLong(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, true, 1L));
@@ -355,7 +355,7 @@ class NotificationControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content").type(ARRAY).description("알림 목록"),
                         fieldWithPath("data.content[].notificationId").type(NUMBER).description("알림 ID"),
                         fieldWithPath("data.content[].type").type(STRING).description("알림 타입").attributes(notificationType()),
-                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성일"),
+                        fieldWithPath("data.content[].createdAt").type(STRING).description("알림 생성 일시"),
                         fieldWithPath("data.content[].isRead").type(BOOLEAN).description("회원의 알림 읽음 여부"),
                         fieldWithPath("data.content[].techArticle").type(OBJECT).description("기술블로그 정보"),
                         fieldWithPath("data.content[].techArticle.id").type(NUMBER).description("기술블로그 ID"),

@@ -25,6 +25,7 @@ import com.dreamypatisiel.devdevdev.web.dto.request.publish.PublishTechArticleRe
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationNewArticleResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupNewArticleResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.assertj.core.api.AssertionsForInterfaceTypes;
@@ -44,6 +45,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -296,6 +298,10 @@ class NotificationServiceTest {
                         tuple("기술블로그 제목 2", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false),
                         tuple("기술블로그 제목 1", "꿈빛 파티시엘", NotificationType.SUBSCRIPTION, false)
                 );
+
+        assertThat(content)
+                .extracting(NotificationPopupNewArticleResponse::getCreatedAt)
+                .allSatisfy(createdAt -> assertThat(createdAt).isInstanceOf(LocalDateTime.class));
     }
 
     @Test
@@ -414,6 +420,10 @@ class NotificationServiceTest {
                                 "https://example.com/thumbnail.png", false, "https://example.com", "기술블로그 제목 5", "기술블로그 내용",
                                 1L, 1L, 1L, 1L, false, "꿈빛 파티시엘", "https://example.com", "https://example.com/company.png"
                         )                );
+
+        assertThat(content)
+                .extracting(NotificationResponse::getCreatedAt)
+                .allSatisfy(createdAt -> assertThat(createdAt).isInstanceOf(LocalDateTime.class));
     }
 
     @DisplayName("구독자에게 메인 알림을 전송할 때 알림이 없으면 알림 이력을 저장하고 전송한다.")

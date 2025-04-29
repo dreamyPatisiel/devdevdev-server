@@ -117,7 +117,7 @@ class NotificationControllerTest extends SupportControllerTest {
         // given
         PageRequest pageable = PageRequest.of(0, 1);
         List<NotificationPopupResponse> response = List.of(
-                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDate.now(), false,
+                new NotificationPopupNewArticleResponse(1L, "기술블로그 타이틀", LocalDateTime.now(), false,
                         "기업명", 1L));
         given(notificationService.getNotificationPopup(any(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, false, 1L));
@@ -178,7 +178,7 @@ class NotificationControllerTest extends SupportControllerTest {
                 0L, 0L, 0L, false, null
         );
         List<NotificationResponse> response = List.of(
-                new NotificationNewArticleResponse(1L, LocalDate.now(), false, techArticleMainResponse));
+                new NotificationNewArticleResponse(1L, LocalDateTime.now(), false, techArticleMainResponse));
         given(notificationService.getNotifications(any(), anyLong(), any()))
                 .willReturn(new SliceCustom<>(response, pageable, true, 1L));
 

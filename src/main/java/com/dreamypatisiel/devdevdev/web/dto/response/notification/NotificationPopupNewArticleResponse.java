@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 public class NotificationPopupNewArticleResponse extends NotificationPopupResponse {
@@ -13,7 +14,7 @@ public class NotificationPopupNewArticleResponse extends NotificationPopupRespon
     private final Long techArticleId;
 
     @Builder
-    public NotificationPopupNewArticleResponse(Long id, String title, LocalDate createdAt,
+    public NotificationPopupNewArticleResponse(Long id, String title, LocalDateTime createdAt,
                                                boolean isRead, String companyName, Long techArticleId) {
         super(id, NotificationType.SUBSCRIPTION, title, createdAt, isRead);
         this.companyName = companyName;
@@ -23,7 +24,7 @@ public class NotificationPopupNewArticleResponse extends NotificationPopupRespon
     public static NotificationPopupNewArticleResponse from(Notification notification) {
         return NotificationPopupNewArticleResponse.builder()
                 .id(notification.getId())
-                .createdAt(notification.getCreatedAt().toLocalDate())
+                .createdAt(notification.getCreatedAt())
                 .isRead(notification.getIsRead())
                 .title(notification.getTechArticle().getTitle().getTitle())
                 .companyName(notification.getTechArticle().getCompany().getName().getCompanyName())
