@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.repository;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Repository;
@@ -20,5 +21,9 @@ public class SseEmitterRepository {
 
     public SseEmitter findByMemberId(Member member) {
         return sseEmitters.get(member.getId());
+    }
+
+    public Collection<SseEmitter> findAll() {
+        return sseEmitters.values();
     }
 }
