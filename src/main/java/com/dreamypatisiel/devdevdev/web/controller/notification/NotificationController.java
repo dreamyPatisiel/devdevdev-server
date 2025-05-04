@@ -119,4 +119,13 @@ public class NotificationController {
 
         return ResponseEntity.ok(BasicResponse.success());
     }
+
+    // TODO: 개발용 API -> 추후 제거 필요
+    @Operation(summary = "알림 제거", description = "회원에게 생성된 모든 알림을 제거")
+    @DeleteMapping("/notifications")
+    public ResponseEntity<BasicResponse<Void>> delete() {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        notificationService.deleteAllByMember(authentication);
+        return ResponseEntity.ok(BasicResponse.success());
+    }
 }

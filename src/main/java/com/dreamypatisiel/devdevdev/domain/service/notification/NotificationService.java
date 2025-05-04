@@ -367,4 +367,17 @@ public class NotificationService {
         // 회원이 읽지 않은 알림 개수 조회
         return notificationRepository.countByMemberAndIsReadFalse(findMember);
     }
+
+    /**
+     * @Note: 회원의 모든 알림 삭제
+     * @Author: 유소영
+     */
+    @Transactional
+    public void deleteAllByMember(Authentication authentication) {
+        // 회원 조회
+        Member findMember = memberProvider.getMemberByAuthentication(authentication);
+
+        // 회원의 모든 알림 삭제
+        notificationRepository.deleteAllByMember(findMember);
+    }
 }
