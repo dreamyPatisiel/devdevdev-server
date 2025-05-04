@@ -25,8 +25,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -117,15 +115,6 @@ public class NotificationController {
         // 알림 발행
         notificationService.publish(NotificationType.valueOf(channel), publishTechArticleRequest);
 
-        return ResponseEntity.ok(BasicResponse.success());
-    }
-
-    // TODO: 개발용 API -> 추후 제거 필요
-    @Operation(summary = "알림 제거", description = "회원에게 생성된 모든 알림을 제거")
-    @DeleteMapping("/notifications")
-    public ResponseEntity<BasicResponse<Void>> delete() {
-        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        notificationService.deleteAllByMember(authentication);
         return ResponseEntity.ok(BasicResponse.success());
     }
 }

@@ -1,9 +1,14 @@
 package com.dreamypatisiel.devdevdev.test;
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService;
+import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import java.util.List;
+
+import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,6 +33,16 @@ public class TestController {
     private final EmbeddingRequestHandler embeddingRequestHandler;
     private final EmbeddingsService embeddingsService;
     private final PickRepository pickRepository;
+    private final NotificationService notificationService;
+
+    @Operation(summary = "알림 제거", description = "회원에게 생성된 모든 알림을 제거")
+    @DeleteMapping("/notifications")
+    @Profile("dev")
+    public ResponseEntity<com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse<Void>> delete() {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        notificationService.deleteAllByMember(authentication);
+        return ResponseEntity.ok(com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse.success());
+    }
 
     @GetMapping("/members")
     public BasicResponse<Member> getMembers() {
