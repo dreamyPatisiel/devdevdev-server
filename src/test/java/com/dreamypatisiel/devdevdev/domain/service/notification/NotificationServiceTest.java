@@ -609,6 +609,53 @@ class NotificationServiceTest {
         assertThat(response).isEqualTo(7);
     }
 
+    @Test
+    @DisplayName("회원이 알림을 전체 삭제한다.")
+    void deleteAllByMember() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(
+                "dreamy", "꿈빛파티시엘", "행복한 꿈빛", "pass123", "dreamy@kakao.com", "KAKAO", "ROLE_USER"
+        );
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal principal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(
+                principal, principal.getAuthorities(), principal.getSocialType().name()
+        ));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 알림 10개 저장
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        List<TechArticle> techArticles = new ArrayList<>();
+        List<Notification> notifications = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목 "+i), new Url("https://example.com"),
+                    new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+
+            techArticles.add(techArticle);
+            notifications.add(createNotification(member, "알림 메시지 " + i, NotificationType.SUBSCRIPTION, false, techArticle));
+        }
+
+        techArticleRepository.saveAll(techArticles);
+        notificationRepository.saveAll(notifications);
+
+        em.flush();
+        em.clear();
+
+        // when
+        notificationService.deleteAllByMember(authentication);
+
+        // then
+        long response = notificationService.getUnreadNotificationCount(authentication);
+        assertThat(response).isEqualTo(0);
+    }
+
     private static Subscription createSubscription(Company company, Member member) {
         return Subscription.builder()
                 .company(company)
