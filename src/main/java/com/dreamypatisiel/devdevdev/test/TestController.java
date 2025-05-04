@@ -37,7 +37,6 @@ public class TestController {
 
     @Operation(summary = "알림 제거", description = "회원에게 생성된 모든 알림을 제거")
     @DeleteMapping("/notifications")
-    @Profile("dev")
     public ResponseEntity<com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse<Void>> delete() {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         notificationService.deleteAllByMember(authentication);
