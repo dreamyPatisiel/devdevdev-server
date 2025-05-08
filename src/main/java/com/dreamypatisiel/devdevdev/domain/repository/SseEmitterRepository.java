@@ -26,4 +26,8 @@ public class SseEmitterRepository {
     public Collection<SseEmitter> findAll() {
         return sseEmitters.values();
     }
+
+    public boolean existByMember(Member member) {
+        return sseEmitters.containsKey(member.getId());
+    }
 }

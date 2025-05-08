@@ -68,7 +68,6 @@ public class NotificationService {
         return new SseEmitter(timeout);
     }
 
-
     /**
      * @param notificationId 알림 ID
      * @param authentication 회원 정보
@@ -264,6 +263,13 @@ public class NotificationService {
     }
 
     private SseEmitter addClient(Member findMember) {
+        // 구독자 존재 여부 확인
+        boolean isExists = sseEmitterRepository.existByMember(findMember);
+
+        if (isExists) {
+            return sseEmitterRepository.findByMemberId(findMember);
+        }
+
         // 구독자 생성
         SseEmitter sseEmitter = createSseEmitter(TIMEOUT);
         sseEmitterRepository.save(findMember, sseEmitter);

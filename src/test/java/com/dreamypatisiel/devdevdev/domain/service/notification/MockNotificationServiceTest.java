@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.notification;
 
 import static com.dreamypatisiel.devdevdev.domain.service.notification.NotificationService.UNREAD_NOTIFICATION_FORMAT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -133,6 +134,29 @@ class MockNotificationServiceTest {
         verify(notificationRepository).countByMemberAndIsReadIsFalse(mockMember);
         verify(spyEmitter).send(notificationMessageDto);
         verify(sseEmitterRepository).remove(mockMember);
+    }
+
+    @ParameterizedTest
+    @ValueSource(longs = {1, 2, 10, 50, 100})
+    @DisplayName("구독자가 이미 존재하는 경우 기존의 SSEmitter 를 반환합니다.")
+    void addClientAndSendNotificationIsExistMember(Long unreadNotificationCount) throws IOException {
+        // given
+        Authentication mockAuthentication = mock(Authentication.class);
+        Member mockMember = mock(Member.class);
+        SseEmitter realEmitter = new SseEmitter();
+        SseEmitter spyEmitter = spy(realEmitter);
+
+        given(timeProvider.getLocalDateTimeNow()).willReturn(LocalDateTime.of(2025, 1, 1, 0, 0, 0));
+        given(memberProvider.getMemberByAuthentication(mockAuthentication)).willReturn(mockMember);
+        given(sseEmitterRepository.save(mockMember, spyEmitter)).willReturn(spyEmitter);
+        given(sseEmitterRepository.existByMember(mockMember)).willReturn(true);
+        given(sseEmitterRepository.findByMemberId(mockMember)).willReturn(spyEmitter);
+
+        // when
+        SseEmitter sseEmitter = notificationService.addClientAndSendNotification(mockAuthentication);
+
+        // then
+        assertThat(sseEmitter).isEqualTo(spyEmitter);
     }
 
     @Test
