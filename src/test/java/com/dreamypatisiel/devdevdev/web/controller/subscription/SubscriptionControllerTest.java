@@ -78,7 +78,7 @@ class SubscriptionControllerTest extends SupportControllerTest {
     @DisplayName("구독 가능한 기업 목록을 조회한다.")
     void getSubscriptions() throws Exception {
         // given
-        SubscriableCompanyResponse response = new SubscriableCompanyResponse(1L,
+        SubscriableCompanyResponse response = new SubscriableCompanyResponse(1L, "트이다",
                 "https://www.teuida.net/public/src/img/teuida_logo.png", true);
         given(memberSubscriptionService.getSubscribableCompany(any(), anyLong(), any()))
                 .willReturn(new SliceImpl<>(List.of(response), PageRequest.of(0, 20), false));
@@ -95,6 +95,7 @@ class SubscriptionControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content.[0].companyId").isNumber())
+                .andExpect(jsonPath("$.data.content.[0].companyName").isString())
                 .andExpect(jsonPath("$.data.content.[0].companyImageUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].isSubscribed").isBoolean())
                 .andExpect(jsonPath("$.data.pageable").isNotEmpty())
