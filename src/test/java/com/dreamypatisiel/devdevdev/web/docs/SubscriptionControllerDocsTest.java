@@ -214,7 +214,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("구독 가능한 기업 목록을 조회한다.")
     void getSubscriptions() throws Exception {
         // given
-        SubscriableCompanyResponse response = new SubscriableCompanyResponse(1L,
+        SubscriableCompanyResponse response = new SubscriableCompanyResponse(1L, "트이다",
                 "https://www.teuida.net/public/src/img/teuida_logo.png", true);
         given(memberSubscriptionService.getSubscribableCompany(any(), anyLong(), any()))
                 .willReturn(new SliceImpl<>(List.of(response), PageRequest.of(0, 20), false));
@@ -247,6 +247,7 @@ class SubscriptionControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.content").type(ARRAY).description("구독 가능한 기업 목록 메인 배열"),
                         fieldWithPath("data.content[].companyId").type(NUMBER).description("기업 아이디"),
+                        fieldWithPath("data.content[].companyName").type(STRING).description("기업명"),
                         fieldWithPath("data.content[].companyImageUrl").type(STRING).description("기업 로고 이미지 url"),
                         fieldWithPath("data.content[].isSubscribed").type(JsonFieldType.BOOLEAN)
                                 .description("회원의 구독 여부"),

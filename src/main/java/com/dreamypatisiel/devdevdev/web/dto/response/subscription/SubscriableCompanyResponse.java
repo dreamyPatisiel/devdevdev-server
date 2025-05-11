@@ -7,12 +7,14 @@ import lombok.Data;
 @Data
 public class SubscriableCompanyResponse {
     private final Long companyId;
+    private final String companyName;
     private final String companyImageUrl;
     private final Boolean isSubscribed;
 
     @Builder
-    public SubscriableCompanyResponse(Long companyId, String companyImageUrl, Boolean isSubscribed) {
+    public SubscriableCompanyResponse(Long companyId, String companyName, String companyImageUrl, Boolean isSubscribed) {
         this.companyId = companyId;
+        this.companyName = companyName;
         this.companyImageUrl = companyImageUrl;
         this.isSubscribed = isSubscribed;
     }
@@ -20,6 +22,7 @@ public class SubscriableCompanyResponse {
     public static SubscriableCompanyResponse create(Company company) {
         return SubscriableCompanyResponse.builder()
                 .companyId(company.getId())
+                .companyName(company.getName().getCompanyName())
                 .companyImageUrl(company.getOfficialImageUrl().getUrl())
                 .isSubscribed(false)
                 .build();
@@ -28,6 +31,7 @@ public class SubscriableCompanyResponse {
     public static SubscriableCompanyResponse createWithIsSubscribed(Company company, Boolean isSubscribed) {
         return SubscriableCompanyResponse.builder()
                 .companyId(company.getId())
+                .companyName(company.getName().getCompanyName())
                 .companyImageUrl(company.getOfficialImageUrl().getUrl())
                 .isSubscribed(isSubscribed)
                 .build();
