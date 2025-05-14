@@ -64,7 +64,7 @@ public class TechArticle extends BasicTime {
 
     @Embedded
     @AttributeOverride(name = "url",
-            column = @Column(name = "tech_article_url", length = 255)
+            column = @Column(name = "tech_article_url")
     )
     private Url techArticleUrl;
 
@@ -80,6 +80,10 @@ public class TechArticle extends BasicTime {
 
     @OneToMany(mappedBy = "techArticle")
     private List<TechArticleRecommend> recommends = new ArrayList<>();
+
+    public TechArticle(Long id) {
+        this.id = id;
+    }
 
     @Builder
     private TechArticle(Title title, Count viewTotalCount, Count recommendTotalCount, Count commentTotalCount,

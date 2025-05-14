@@ -1,12 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick.custom;
 
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickComment.pickComment;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
-
-import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
@@ -120,7 +119,7 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                         .and(pickComment.deletedAt.isNull()))
                 .fetchCount();
 
-        return new SliceCustom<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()), totalElements);
+        return new SliceCustom<>(contents, pageable, totalElements);
     }
 
     private static BooleanExpression pickOptionTypeIn(EnumSet<PickOptionType> pickOptionTypes) {

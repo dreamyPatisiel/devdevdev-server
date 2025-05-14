@@ -20,11 +20,12 @@ public class CompanyResponse {
         this.officialImageUrl = officialImageUrl;
     }
 
-    public static CompanyResponse of(Long id, String name, String careerUrl) {
+    public static CompanyResponse of(Long id, String name, String careerUrl, String officialImageUrl) {
         return CompanyResponse.builder()
                 .id(id)
                 .name(name)
                 .careerUrl(careerUrl)
+                .officialImageUrl(officialImageUrl)
                 .build();
     }
 
@@ -33,7 +34,7 @@ public class CompanyResponse {
                 .id(company.getId())
                 .name(company.getName().getCompanyName())
                 .careerUrl(company.getCareerUrl().getUrl())
-                .officialImageUrl(company.getOfficialImageUrl())
+                .officialImageUrl(company.getOfficialImageUrl().getUrl())
                 .build();
     }
 }

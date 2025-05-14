@@ -1,28 +1,16 @@
 package com.dreamypatisiel.devdevdev;
 
-import com.dreamypatisiel.devdevdev.domain.entity.BlameType;
-import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
-import com.dreamypatisiel.devdevdev.domain.entity.Company;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.MemberNicknameDictionary;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
-import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Word;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.WordType;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.*;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.BlameTypeRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
@@ -82,6 +70,7 @@ public class LocalInitData {
     private final CompanyRepository companyRepository;
     private final MemberNicknameDictionaryRepository memberNicknameDictionaryRepository;
     private final BlameTypeRepository blameTypeRepository;
+    private final NotificationRepository notificationRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     public void dataInsert() {
@@ -118,6 +107,27 @@ public class LocalInitData {
 
         List<BlameType> blameTypes = createBlameTypes();
         blameTypeRepository.saveAll(blameTypes);
+
+        List<Notification> notifications = createNotifications(member, techArticles);
+        notificationRepository.saveAll(notifications);
+    }
+
+    private List<Notification> createNotifications(Member member, List<TechArticle> techArticles) {
+        List<Notification> notifications = new ArrayList<>();
+        techArticles.forEach(techArticle -> {
+            notifications.add(createNotification(member, techArticle));
+        });
+        return notifications;
+    }
+
+    private static Notification createNotification(Member member, TechArticle techArticle) {
+        return Notification.builder()
+                .isRead(false)
+                .type(NotificationType.SUBSCRIPTION)
+                .member(member)
+                .message("새로운 글 등록되었습니다.")
+                .techArticle(techArticle)
+                .build();
     }
 
     private List<MemberNicknameDictionary> createNicknameDictionaryWords() {
@@ -154,13 +164,13 @@ public class LocalInitData {
     private List<Company> createCompanies() {
         List<Company> companies = new ArrayList<>();
         companies.add(createCompany("Toss", "https://toss.tech",
-                "https://toss.im/career/jobs"));
+                "https://toss.im/career/jobs", "https://company.net/image.png", "토스", "금융"));
         companies.add(createCompany("우아한 형제들", "https://techblog.woowahan.com",
-                "https://career.woowahan.com"));
+                "https://career.woowahan.com", "https://company.net/image.png", "우아한 형제들", "푸드"));
         companies.add(createCompany("AWS", "https://aws.amazon.com/ko/blogs/tech",
-                "https://aws.amazon.com/ko/careers"));
+                "https://aws.amazon.com/ko/careers", "https://company.net/image.png", "AWS", "클라우드"));
         companies.add(createCompany("채널톡", "https://channel.io/ko/blog",
-                "https://channel.io/ko/jobs"));
+                "https://channel.io/ko/jobs", "https://company.net/image.png", "채널톡", "채팅"));
         return companies;
     }
 
@@ -172,11 +182,15 @@ public class LocalInitData {
                 ));
     }
 
-    private static Company createCompany(String companyName, String officialUrl, String careerUrl) {
+    private static Company createCompany(String companyName, String officialUrl, String careerUrl,
+                                         String imageUrl, String description, String industry) {
         return Company.builder()
                 .name(new CompanyName(companyName))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
+                .officialImageUrl(new Url(imageUrl))
+                .description(description)
+                .industry(industry)
                 .build();
     }
 

@@ -22,4 +22,5 @@ echo "> Build Docker image"
 docker build -t "$APP_NAME" "$REPOSITORY"
 
 echo "> Run the Docker container"
+
 docker run -d -p 8080:8080 --name "$APP_NAME" -v /home/ubuntu/pinpoint-agent-3.0.0:/pinpoint-agent "$APP_NAME"

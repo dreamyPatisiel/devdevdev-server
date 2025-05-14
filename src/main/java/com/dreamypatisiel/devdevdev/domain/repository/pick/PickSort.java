@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick;
 
+
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
@@ -15,7 +16,7 @@ public enum PickSort {
 
     LATEST("최신순") {
         @Override
-        public OrderSpecifier getOrderSpecifierByPickSort() {
+        public OrderSpecifier<?> getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.createdAt);
         }
 
@@ -26,7 +27,7 @@ public enum PickSort {
     },
     POPULAR("인기순") {
         @Override
-        public OrderSpecifier getOrderSpecifierByPickSort() {
+        public OrderSpecifier<?> getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.popularScore.count);
         }
 
@@ -39,7 +40,7 @@ public enum PickSort {
     },
     MOST_VIEWED("조회수") {
         @Override
-        public OrderSpecifier getOrderSpecifierByPickSort() {
+        public OrderSpecifier<?> getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.viewTotalCount.count);
         }
 
@@ -52,7 +53,7 @@ public enum PickSort {
     },
     MOST_COMMENTED("댓글순") {
         @Override
-        public OrderSpecifier getOrderSpecifierByPickSort() {
+        public OrderSpecifier<?> getOrderSpecifierByPickSort() {
             return new OrderSpecifier<>(Order.DESC, pick.commentTotalCount.count);
         }
 
@@ -65,7 +66,8 @@ public enum PickSort {
     };
 
 
-    abstract public OrderSpecifier getOrderSpecifierByPickSort();
+    abstract public OrderSpecifier<?> getOrderSpecifierByPickSort();
+
     abstract public BooleanExpression getCursorCondition(Pick pick);
 
     private final String description;

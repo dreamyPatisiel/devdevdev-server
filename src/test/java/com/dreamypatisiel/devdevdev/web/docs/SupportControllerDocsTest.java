@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.resultType;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
 import static org.springframework.restdocs.payload.JsonFieldType.STRING;
@@ -94,7 +95,7 @@ public class SupportControllerDocsTest {
 
     protected ResponseFieldsSnippet exceptionResponseFields() {
         return responseFields(
-                fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                fieldWithPath("resultType").type(STRING).description("응답 결과").attributes(resultType()),
                 fieldWithPath("message").type(STRING).description("에러 메시지"),
                 fieldWithPath("errorCode").type(NUMBER).description("에러 코드")
         );

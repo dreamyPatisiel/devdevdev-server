@@ -36,8 +36,7 @@ public class ProdJwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        log.info("ProdJwtAuthenticationFilter 시작");
+        
         String accessToken = tokenService.getAccessTokenByHttpRequest(request);
 
         // 센트리 회원

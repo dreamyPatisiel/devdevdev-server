@@ -3,3 +3,7 @@ jwt:
   secret: devdevdevtestdevdevdevtestdevdevdevtestdevdevdevtest
   redirectUri:
     path: /
+
+  expire:
+    access: 1800000 # 30분
+    refresh: 604800000 # 7일

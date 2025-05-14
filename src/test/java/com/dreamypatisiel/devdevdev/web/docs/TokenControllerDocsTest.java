@@ -194,6 +194,7 @@ public class TokenControllerDocsTest extends SupportControllerDocsTest {
         // when // then
         Member findMember = memberRepository.findMemberByEmailAndSocialTypeAndIsDeletedIsFalse(new Email(adminEmail),
                 SocialType.valueOf(socialType)).get();
+        
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/token/test/admin")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())

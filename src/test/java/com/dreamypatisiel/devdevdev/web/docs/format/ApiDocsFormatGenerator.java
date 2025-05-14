@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.web.docs.format;
 import static org.springframework.restdocs.snippet.Attributes.key;
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.NotificationType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
@@ -12,6 +13,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSor
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickService;
 import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentFilter;
 import com.dreamypatisiel.devdevdev.web.dto.request.common.BlamePathType;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.restdocs.snippet.Attributes;
@@ -120,5 +122,21 @@ public interface ApiDocsFormatGenerator {
                 .collect(Collectors.joining(COMMA));
 
         return key(FORMAT).value(blamePathType);
+    }
+
+    static Attributes.Attribute notificationType() {
+        String notificationType = Arrays.stream(NotificationType.values())
+                .map(Enum::name)
+                .collect(Collectors.joining(COMMA));
+
+        return key(FORMAT).value(notificationType);
+    }
+
+    static Attributes.Attribute resultType() {
+        String resultType = Arrays.stream(ResultType.values())
+                .map(Enum::name)
+                .collect(Collectors.joining(COMMA));
+
+        return key(FORMAT).value(resultType);
     }
 }

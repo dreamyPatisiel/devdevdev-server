@@ -32,9 +32,11 @@ public class SecurityConstant {
             "/devdevdev/api/v1/token/**",
             "/devdevdev/api/v1/picks/**",
             "/devdevdev/api/v1/articles/**",
-            "/devdevdev/api/v1/keywords/**"
+            "/devdevdev/api/v1/keywords/**",
+            "/devdevdev/api/v1/subscriptions/**",
+            "/devdevdev/api/v1/notifications/**"
     };
-    
+
     public static final String[] DEV_JWT_FILTER_WHITELIST_URL = new String[]{
             "/docs/index.html",
             "/swagger-ui",
@@ -45,7 +47,8 @@ public class SecurityConstant {
             "/devdevdev/api/v1/oauth2/authorization",
             "/devdevdev/api/v1/login/oauth2/code",
             "/devdevdev/api/v1/test",
-            "/devdevdev/api/v1/token"
+            "/devdevdev/api/v1/token",
+            "/devdevdev/api/v1/notifications/SUBSCRIPTION"
     };
 
     public static final String[] PROD_WHITELIST_URL = new String[]{
@@ -66,7 +69,9 @@ public class SecurityConstant {
             "/devdevdev/api/v1/token/**",
             "/devdevdev/api/v1/picks/**",
             "/devdevdev/api/v1/articles/**",
-            "/devdevdev/api/v1/keywords/**"
+            "/devdevdev/api/v1/keywords/**",
+            "/devdevdev/api/v1/subscriptions/**",
+            "/devdevdev/api/v1/notifications/**"
     };
 
     public static final String[] PROD_JWT_FILTER_WHITELIST_URL = new String[]{

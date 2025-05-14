@@ -70,7 +70,8 @@ class TechArticleControllerTest extends SupportControllerTest {
     static void setup(@Autowired TechArticleRepository techArticleRepository,
                       @Autowired CompanyRepository companyRepository,
                       @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
-        company = createCompany("꿈빛 파티시엘", "https://example.png", "https://example.com", "https://example.com");
+        company = createCompany("꿈빛 파티시엘",
+                "https://example.com/company.png", "https://example.com", "https://example.com");
         companyRepository.save(company);
 
         // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
@@ -99,9 +100,11 @@ class TechArticleControllerTest extends SupportControllerTest {
 
     @AfterAll
     static void tearDown(@Autowired TechArticleRepository techArticleRepository,
-                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
+                         @Autowired CompanyRepository companyRepository) {
         elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
+        companyRepository.deleteAllInBatch();
     }
 
     @Test
@@ -690,7 +693,7 @@ class TechArticleControllerTest extends SupportControllerTest {
                                          String careerUrl) {
         return Company.builder()
                 .name(new CompanyName(companyName))
-                .officialImageUrl(officialImageUrl)
+                .officialImageUrl(new Url(officialImageUrl))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
                 .build();

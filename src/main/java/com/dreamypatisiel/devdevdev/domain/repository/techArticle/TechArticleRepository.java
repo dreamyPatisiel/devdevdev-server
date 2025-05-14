@@ -5,4 +5,5 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom.TechArt
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TechArticleRepository extends JpaRepository<TechArticle, Long>, TechArticleRepositoryCustom {
+    Long countByCompanyId(Long companyId);
 }
