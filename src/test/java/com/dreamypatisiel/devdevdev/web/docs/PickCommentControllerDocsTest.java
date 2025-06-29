@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickCommentSortType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickOptionType;
@@ -60,6 +61,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.web.WebConstant;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
@@ -115,7 +117,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
     AmazonS3 amazonS3Client;
 
     @Test
-    @DisplayName("회원이 승인 상태의 픽픽픽에 댓글을 작성한다.")
+    @DisplayName("승인 상태의 픽픽픽에 댓글을 작성한다.")
     void registerPickComment() throws Exception {
         // given
         // 회원 생성
@@ -165,7 +167,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
@@ -645,7 +648,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 new Count(0), member5, pick, null);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
-        originParentPickComment6.changeDeletedAt(LocalDateTime.now(), member6);
+        originParentPickComment6.changeDeletedAtByMember(LocalDateTime.now(), member6);
         pickCommentRepository.saveAll(
                 List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
                         originParentPickComment3, originParentPickComment2, originParentPickComment1));
@@ -659,7 +662,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 originParentPickComment2, originParentPickComment2);
         PickComment pickReply4 = createReplidPickComment(new CommentContents("벌써 9월이당"), member5, pick,
                 originParentPickComment2, originParentPickComment2);
-        pickReply4.changeDeletedAt(LocalDateTime.now(), member5);
+        pickReply4.changeDeletedAtByMember(LocalDateTime.now(), member5);
         pickCommentRepository.saveAll(List.of(pickReply4, pickReply3, pickReply2, pickReply1));
 
         em.flush();
@@ -959,7 +962,7 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 originParentPickComment1, originParentPickComment1);
         PickComment pickReply2 = createReplidPickComment(new CommentContents("너무 행복하다"), member6, pick,
                 originParentPickComment1, pickReply1);
-        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("사랑해요~"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));

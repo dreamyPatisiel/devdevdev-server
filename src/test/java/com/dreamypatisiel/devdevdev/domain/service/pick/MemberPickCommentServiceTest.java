@@ -43,6 +43,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageReposi
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -51,7 +52,6 @@ import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
@@ -171,11 +171,10 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        PickCommentDto pickCommentDto = new PickCommentDto("안녕하세웅", true, "anonymousMemberId");
 
         // when
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(),
-                request,
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(), pickCommentDto,
                 authentication);
 
         // then
@@ -239,11 +238,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅", false);
+        PickCommentDto pickCommentDto = new PickCommentDto("안녕하세웅", false, "anonymousMemberId");
 
         // when
-        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(),
-                registerPickCommentDto, authentication);
+        PickCommentResponse pickCommentResponse = memberPickCommentService.registerPickComment(pick.getId(), pickCommentDto,
+                authentication);
 
         // then
         assertThat(pickCommentResponse.getPickCommentId()).isNotNull();
@@ -276,9 +275,10 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        PickCommentDto pickCommentDto = new PickCommentDto("안녕하세웅", true, "anonymousMemberId");
+
         // then
-        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(0L, request, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.registerPickComment(0L, pickCommentDto, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -302,10 +302,11 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when
-        RegisterPickCommentRequest registerPickCommentDto = new RegisterPickCommentRequest("안녕하세웅", true);
+        PickCommentDto pickCommentDto = new PickCommentDto("안녕하세웅", true, "anonymousMemberId");
+
         // then
         assertThatThrownBy(
-                () -> memberPickCommentService.registerPickComment(1L, registerPickCommentDto, authentication))
+                () -> memberPickCommentService.registerPickComment(1L, pickCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
@@ -347,11 +348,11 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
+        PickCommentDto pickCommentDto = new PickCommentDto("안녕하세웅", true, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
+                () -> memberPickCommentService.registerPickComment(pick.getId(), pickCommentDto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
     }
@@ -392,11 +393,10 @@ class MemberPickCommentServiceTest {
         em.flush();
         em.clear();
 
-        RegisterPickCommentRequest request = new RegisterPickCommentRequest("안녕하세웅", true);
-
+        PickCommentDto pickCommentDto = new PickCommentDto("안녕하세웅", true, "anonymousMemberId");
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.registerPickComment(pick.getId(), request, authentication))
+                () -> memberPickCommentService.registerPickComment(pick.getId(), pickCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE);
     }
@@ -575,7 +575,7 @@ class MemberPickCommentServiceTest {
 
         // 삭제상태의 픽픽픽 댓글 생성
         PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
-        pickComment.changeDeletedAt(LocalDateTime.now(), member);
+        pickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
         pickCommentRepository.save(pickComment);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
@@ -616,7 +616,7 @@ class MemberPickCommentServiceTest {
         // 삭제상태의 픽픽픽 댓글의 답글 생성
         PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
                 pickComment, pickComment);
-        replidPickComment.changeDeletedAt(LocalDateTime.now(), member);
+        replidPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
         pickCommentRepository.save(replidPickComment);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
@@ -846,7 +846,7 @@ class MemberPickCommentServiceTest {
 
         // 삭제 상태의 픽픽픽 댓글 생성
         PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, member, pick);
-        pickComment.changeDeletedAt(LocalDateTime.now(), member);
+        pickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
         pickCommentRepository.save(pickComment);
 
         em.flush();
@@ -1201,7 +1201,7 @@ class MemberPickCommentServiceTest {
 
         // 삭제 상태의 픽픽픽 댓글 생성
         PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, member, pick);
-        pickComment.changeDeletedAt(LocalDateTime.now(), member);
+        pickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
         pickCommentRepository.save(pickComment);
 
         em.flush();
@@ -1287,7 +1287,7 @@ class MemberPickCommentServiceTest {
                 originParentPickComment1, originParentPickComment1);
         PickComment pickReply2 = createReplidPickComment(new CommentContents("답글1 답글1"), member6, pick,
                 originParentPickComment1, pickReply1);
-        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
@@ -2349,7 +2349,7 @@ class MemberPickCommentServiceTest {
 
         // 픽픽픽 댓글 생성
         PickComment pickComment = createPickComment(new CommentContents("픽픽픽 댓글"), true, member, pick);
-        pickComment.changeDeletedAt(LocalDateTime.now(), member);
+        pickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
         pickCommentRepository.save(pickComment);
 
         // when // then
@@ -2431,7 +2431,7 @@ class MemberPickCommentServiceTest {
                 originParentPickComment1, originParentPickComment1);
         PickComment pickReply2 = createReplidPickComment(new CommentContents("답글1 답글1"), member6, pick,
                 originParentPickComment1, pickReply1);
-        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));

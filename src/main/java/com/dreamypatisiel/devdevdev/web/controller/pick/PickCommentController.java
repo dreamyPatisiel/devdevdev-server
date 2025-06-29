@@ -1,10 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
+
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
@@ -42,17 +46,21 @@ public class PickCommentController {
 
     private final PickServiceStrategy pickServiceStrategy;
 
-    @Operation(summary = "픽픽픽 댓글 작성", description = "회원은 픽픽픽 댓글을 작성할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글 작성", description = "픽픽픽 댓글을 작성할 수 있습니다.")
     @PostMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
             @PathVariable Long pickId,
             @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto registerCommentDto = PickCommentDto.createRegisterCommentDto(registerPickCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
-        PickCommentResponse pickCommentResponse = pickCommentService.registerPickComment(pickId,
-                registerPickCommentRequest, authentication);
+        PickCommentResponse pickCommentResponse = pickCommentService.registerPickComment(
+                pickId, registerCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
