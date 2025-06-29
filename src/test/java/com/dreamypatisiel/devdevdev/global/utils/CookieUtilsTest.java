@@ -183,6 +183,7 @@ class CookieUtilsTest {
         int maxAge = 100;
         boolean isHttpOnly = true;
         boolean isSecure = false;
+        String sameSite = "None";
 
         // when
         CookieUtils.addCookieToResponse(response, name, value, maxAge, isHttpOnly, isSecure);
@@ -195,7 +196,8 @@ class CookieUtilsTest {
                 () -> assertThat(cookie.getValue()).isEqualTo(value),
                 () -> assertThat(cookie.getMaxAge()).isEqualTo(maxAge),
                 () -> assertThat(cookie.isHttpOnly()).isEqualTo(isHttpOnly),
-                () -> assertThat(cookie.getSecure()).isEqualTo(isSecure)
+                () -> assertThat(cookie.getSecure()).isEqualTo(isSecure),
+                () -> assertThat(cookie.getAttribute("SameSite")).isEqualTo(sameSite)
         );
     }
 

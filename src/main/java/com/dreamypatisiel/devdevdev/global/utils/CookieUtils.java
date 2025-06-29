@@ -11,10 +11,12 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.SerializationUtils;
 
-public class CookieUtils {
+public abstract class CookieUtils {
 
     public static final int DEFAULT_MAX_AGE = 180;
     public static final int REFRESH_MAX_AGE = 60 * 60 * 24 * 7;
@@ -27,6 +29,7 @@ public class CookieUtils {
     public static final String DEVDEVDEV_DOMAIN = "devdevdev.co.kr";
     public static final String ACTIVE = "active";
     public static final String INACTIVE = "inactive";
+    public static final String NONE = "None";
 
 
     public static Cookie getRequestCookieByName(HttpServletRequest request, String name) {
@@ -48,14 +51,16 @@ public class CookieUtils {
 
     public static void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge,
                                            boolean isHttpOnly, boolean isSecure) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setPath(DEFAULT_PATH);
-        cookie.setHttpOnly(isHttpOnly);
-        cookie.setSecure(isSecure);
-        cookie.setMaxAge(maxAge);
-        cookie.setDomain(DEVDEVDEV_DOMAIN);
+        ResponseCookie accessCookie = ResponseCookie.from(name, value)
+                .path(DEFAULT_PATH)
+                .domain(DEVDEVDEV_DOMAIN)
+                .maxAge(maxAge)
+                .httpOnly(isHttpOnly)
+                .secure(isSecure)
+                .sameSite(NONE)
+                .build();
 
-        response.addCookie(cookie);
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
     }
 
     // 쿠키를 삭제하려면 클라이언트에게 해당 쿠키가 더 이상 유효하지 않음을 알려야 합니다.
