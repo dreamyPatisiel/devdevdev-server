@@ -34,7 +34,8 @@ public class SecurityConstant {
             "/devdevdev/api/v1/articles/**",
             "/devdevdev/api/v1/keywords/**",
             "/devdevdev/api/v1/subscriptions/**",
-            "/devdevdev/api/v1/notifications/**"
+            "/devdevdev/api/v1/notifications/**",
+            "/devdevdev/api/v1/nickname/**"
     };
 
     public static final String[] DEV_JWT_FILTER_WHITELIST_URL = new String[]{
@@ -71,7 +72,8 @@ public class SecurityConstant {
             "/devdevdev/api/v1/articles/**",
             "/devdevdev/api/v1/keywords/**",
             "/devdevdev/api/v1/subscriptions/**",
-            "/devdevdev/api/v1/notifications/**"
+            "/devdevdev/api/v1/notifications/**",
+            "/devdevdev/api/v1/nickname/**"
     };
 
     public static final String[] PROD_JWT_FILTER_WHITELIST_URL = new String[]{
