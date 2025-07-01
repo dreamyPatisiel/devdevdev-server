@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller.member;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
+import com.dreamypatisiel.devdevdev.domain.service.member.MemberNicknameDictionaryService;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -42,6 +43,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MypageController {
 
     private final MemberService memberService;
+    private final MemberNicknameDictionaryService memberNicknameDictionaryService;
 
     @Operation(summary = "북마크 목록 조회")
     @GetMapping("/mypage/bookmarks")
@@ -132,5 +134,12 @@ public class MypageController {
                 pageable, companyId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(mySubscribedCompanies));
+    }
+
+    @Operation(summary = "랜덤 닉네임 생성", description = "랜덤 닉네임을 생성합니다.")
+    @GetMapping("/mypage/nickname/random")
+    public ResponseEntity<BasicResponse<String>> getRandomNickname() {
+        String response = memberNicknameDictionaryService.createRandomNickname();
+        return ResponseEntity.ok(BasicResponse.success(response));
     }
 }
