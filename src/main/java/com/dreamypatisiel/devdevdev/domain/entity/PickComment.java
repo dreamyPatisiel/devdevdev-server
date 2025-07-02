@@ -149,6 +149,7 @@ public class PickComment extends BasicTime {
     public static PickComment createRepliedCommentByMember(CommentContents content, PickComment parent,
                                                            PickComment originParent, Member createdBy, Pick pick) {
         PickComment pickComment = createPickComment(content, parent, originParent);
+        pickComment.isPublic = false;
         pickComment.createdBy = createdBy;
         pickComment.changePick(pick);
 
@@ -182,6 +183,7 @@ public class PickComment extends BasicTime {
                                                                     PickComment originParent, AnonymousMember createdAnonymousBy,
                                                                     Pick pick) {
         PickComment pickComment = createPickComment(content, parent, originParent);
+        pickComment.isPublic = false;
         pickComment.createdAnonymousBy = createdAnonymousBy;
         pickComment.changePick(pick);
 
