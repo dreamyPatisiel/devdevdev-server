@@ -30,6 +30,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.service.member.MemberNicknameDictionaryService;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -57,6 +58,39 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
     MemberRepository memberRepository;
     @MockBean
     MemberService memberService;
+    @MockBean
+    MemberNicknameDictionaryService memberNicknameDictionaryService;
+
+    @Test
+    @DisplayName("회원은 랜덤 닉네임을 생성할 수 있다.")
+    void getRandomNickname() throws Exception {
+        // given
+        String result = "주말에 공부하는 토마토";
+
+        // when
+        when(memberNicknameDictionaryService.createRandomNickname()).thenReturn(result);
+
+        // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/mypage/nickname/random")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("random-nickname",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                        fieldWithPath("data").type(JsonFieldType.STRING).description("응답 데이터(생성된 랜덤 닉네임)")
+                )
+        ));
+    }
 
     @Test
     @DisplayName("회원이 내가 썼어요 댓글을 조회한다.")

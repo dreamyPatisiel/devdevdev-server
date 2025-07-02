@@ -208,15 +208,12 @@ public class LocalInitData {
     private List<TechArticle> createTechArticles(Map<Long, Company> companyIdMap) {
         List<TechArticle> techArticles = new ArrayList<>();
         Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findTop10By();
-        int count = 0;
         for (ElasticTechArticle elasticTechArticle : elasticTechArticles) {
-            count++;
             Company company = companyIdMap.get(elasticTechArticle.getCompanyId());
-            if (company == null) {
-                log.info("company가 null 이다. elasticTechArticleId={} count={}", elasticTechArticle.getId(), count);
+            if (company != null) {
+                TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
+                techArticles.add(techArticle);
             }
-            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
-            techArticles.add(techArticle);
         }
         return techArticles;
     }
