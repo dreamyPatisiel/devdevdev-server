@@ -187,4 +187,8 @@ public class Member extends BasicTime {
         this.isDeleted = true;
         this.deletedAt = now;
     }
+
+    public void changeNickname(String nickname) {
+        this.nickname = new Nickname(nickname);
+    }
 }

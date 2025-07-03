@@ -286,4 +286,15 @@ public class MemberService {
 
         return new SliceCustom<>(subscribedCompanyResponses, pageable, subscribedCompanies.getTotalElements());
     }
+
+    /**
+     * @Note: 유저의 닉네임을 변경합니다.
+     * @Author: 유소영
+     * @Since: 2025.07.03
+     */
+    @Transactional
+    public void changeNickname(String nickname, Authentication authentication) {
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+        member.changeNickname(nickname);
+    }
 }
