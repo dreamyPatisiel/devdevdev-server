@@ -1177,6 +1177,28 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
 
+    @Test
+    @DisplayName("회원은 닉네임을 변경할 수 있다.")
+    void changeNickname() {
+        // given
+        String oldNickname = "이전 닉네임";
+        String newNickname = "변경된 닉네임";
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        memberService.changeNickname(newNickname, authentication);
+
+        // then
+        assertThat(member.getNickname().getNickname()).isEqualTo(newNickname);
+    }
+
     private static Company createCompany(String companyName, String officialUrl, String careerUrl,
                                          String imageUrl, String description, String industry) {
         return Company.builder()

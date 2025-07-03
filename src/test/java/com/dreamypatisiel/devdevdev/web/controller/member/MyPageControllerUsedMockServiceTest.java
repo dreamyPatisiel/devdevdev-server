@@ -3,9 +3,9 @@ package com.dreamypatisiel.devdevdev.web.controller.member;
 import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,6 +21,7 @@ import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.member.ChangeNicknameRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +49,8 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
     MemberService memberService;
     @MockBean
     MemberNicknameDictionaryService memberNicknameDictionaryService;
+    @Autowired
+    EntityManager em;
 
     @Test
     @DisplayName("회원은 랜덤 닉네임을 생성할 수 있다.")
@@ -67,6 +71,32 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data").isString());
+    }
+
+    @Test
+    @DisplayName("회원은 닉네임을 변경할 수 있다.")
+    void changeNickname() throws Exception {
+        // given
+        String newNickname = "변경된 닉네임";
+        ChangeNicknameRequest request = createChangeNicknameRequest(newNickname);
+        request.setNickname(newNickname);
+
+        // when
+        doNothing().when(memberService).changeNickname(any(), any());
+
+        // then
+        mockMvc.perform(patch("/devdevdev/api/v1/mypage/nickname")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(om.writeValueAsString(request))
+                                .characterEncoding(StandardCharsets.UTF_8)
+                                .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()));
+
+        // 서비스 메서드가 호출되었는지 검증
+        verify(memberService).changeNickname(eq(newNickname), any());
     }
 
     @Test
@@ -300,6 +330,12 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    private ChangeNicknameRequest createChangeNicknameRequest(String nickname) {
+        return ChangeNicknameRequest.builder()
+                .nickname(nickname)
                 .build();
     }
 }
