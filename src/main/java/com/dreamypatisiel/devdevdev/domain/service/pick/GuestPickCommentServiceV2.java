@@ -1,14 +1,26 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
@@ -27,22 +39,74 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class GuestPickCommentService extends PickCommonService implements PickCommentService {
+public class GuestPickCommentServiceV2 extends PickCommonService implements PickCommentService {
 
+    private final AnonymousMemberService anonymousMemberService;
+    private final PickPopularScorePolicy pickPopularScorePolicy;
 
-    public GuestPickCommentService(EmbeddingsService embeddingsService,
-                                   PickBestCommentsPolicy pickBestCommentsPolicy,
-                                   PickRepository pickRepository,
-                                   PickCommentRepository pickCommentRepository,
-                                   PickCommentRecommendRepository pickCommentRecommendRepository) {
+    private final PickVoteRepository pickVoteRepository;
+
+    public GuestPickCommentServiceV2(EmbeddingsService embeddingsService,
+                                     PickBestCommentsPolicy pickBestCommentsPolicy,
+                                     PickRepository pickRepository,
+                                     PickCommentRepository pickCommentRepository,
+                                     PickCommentRecommendRepository pickCommentRecommendRepository,
+                                     AnonymousMemberService anonymousMemberService,
+                                     PickPopularScorePolicy pickPopularScorePolicy,
+                                     PickVoteRepository pickVoteRepository) {
         super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
                 pickCommentRecommendRepository);
+        this.anonymousMemberService = anonymousMemberService;
+        this.pickPopularScorePolicy = pickPopularScorePolicy;
+        this.pickVoteRepository = pickVoteRepository;
     }
 
     @Override
+    @Transactional
     public PickCommentResponse registerPickComment(Long pickId, PickCommentDto pickCommentDto, Authentication authentication) {
 
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        String anonymousMemberId = pickCommentDto.getAnonymousMemberId();
+        String contents = pickCommentDto.getContents();
+        Boolean isPickVotePublic = pickCommentDto.getIsPickVotePublic();
+
+        // 익명 회원 추출
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 픽픽픽 조회
+        Pick findPick = pickRepository.findById(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 댓글 갯수 증가 및 인기점수 반영
+        findPick.incrementCommentTotalCount();
+        findPick.changePopularScore(pickPopularScorePolicy);
+
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, REGISTER);
+
+        // 픽픽픽 선택지 투표 공개인 경우
+        if (isPickVotePublic) {
+            // 익명회원이 투표한 픽픽픽 투표 조회
+            PickVote findPickVote = pickVoteRepository.findWithPickAndPickOptionByPickIdAndAnonymousMemberAndDeletedAtIsNull(
+                            pickId, anonymousMember)
+                    .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
+
+            // 픽픽픽 투표한 픽 옵션의 댓글 작성
+            PickComment pickComment = PickComment.createPublicVoteCommentByAnonymousMember(new CommentContents(contents),
+                    anonymousMember, findPick, findPickVote);
+            pickCommentRepository.save(pickComment);
+
+            return new PickCommentResponse(pickComment.getId());
+        }
+
+        // 픽픽픽 선택지 투표 비공개인 경우
+        PickComment pickComment = PickComment.createPrivateVoteCommentByAnonymousMember(new CommentContents(contents),
+                anonymousMember, findPick);
+        pickCommentRepository.save(pickComment);
+
+        return new PickCommentResponse(pickComment.getId());
     }
 
     @Override

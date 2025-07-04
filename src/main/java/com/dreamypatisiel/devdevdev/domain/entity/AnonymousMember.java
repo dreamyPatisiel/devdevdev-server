@@ -27,19 +27,30 @@ public class AnonymousMember extends BasicTime {
     @Column(length = 30, nullable = false, unique = true)
     private String anonymousMemberId;
 
+    private String nickname;
+
     @Builder
     private AnonymousMember(String anonymousMemberId) {
         this.anonymousMemberId = anonymousMemberId;
     }
 
-    public static AnonymousMember create(String anonymousMemberId) {
+    public static AnonymousMember create(String anonymousMemberId, String nickname) {
         AnonymousMember anonymousMember = new AnonymousMember();
         anonymousMember.anonymousMemberId = anonymousMemberId;
+        anonymousMember.nickname = nickname;
 
         return anonymousMember;
     }
 
     public boolean isEqualAnonymousMemberId(Long id) {
         return this.id.equals(id);
+    }
+
+    public boolean hasNickName() {
+        return nickname == null || nickname.isBlank();
+    }
+
+    public void changeNickname(String nickname) {
+        this.nickname = nickname;
     }
 }

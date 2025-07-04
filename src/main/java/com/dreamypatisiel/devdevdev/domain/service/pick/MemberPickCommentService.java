@@ -22,13 +22,13 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
@@ -44,11 +44,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class MemberPickCommentService extends PickCommonService implements PickCommentService {
-
-    public static final String MODIFY = "수정";
-    public static final String REGISTER = "작성";
-    public static final String DELETE = "삭제";
-    public static final String RECOMMEND = "추천";
 
     private final TimeProvider timeProvider;
     private final MemberProvider memberProvider;
@@ -80,12 +75,10 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Since: 2024.08.23
      */
     @Transactional
-    public PickCommentResponse registerPickComment(Long pickId,
-                                                   RegisterPickCommentRequest pickMainCommentRequest,
-                                                   Authentication authentication) {
+    public PickCommentResponse registerPickComment(Long pickId, PickCommentDto pickCommentDto, Authentication authentication) {
 
-        String contents = pickMainCommentRequest.getContents();
-        Boolean isPickVotePublic = pickMainCommentRequest.getIsPickVotePublic();
+        String contents = pickCommentDto.getContents();
+        Boolean isPickVotePublic = pickCommentDto.getIsPickVotePublic();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -93,6 +86,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         // 픽픽픽 조회
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
         // 댓글 갯수 증가 및 인기점수 반영
         findPick.incrementCommentTotalCount();
         findPick.changePopularScore(pickPopularScorePolicy);
@@ -108,7 +102,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
-            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContents(contents),
+            PickComment pickComment = PickComment.createPublicVoteCommentByMember(new CommentContents(contents),
                     findMember, findPick, findPickVote);
             pickCommentRepository.save(pickComment);
 
@@ -116,7 +110,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         }
 
         // 픽픽픽 선택지 투표 비공개인 경우
-        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContents(contents), findMember,
+        PickComment pickComment = PickComment.createPrivateVoteCommentByMember(new CommentContents(contents), findMember,
                 findPick);
         pickCommentRepository.save(pickComment);
 
@@ -159,7 +153,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         findOriginParentPickComment.incrementReplyTotalCount();
 
         // 픽픽픽 서브 댓글(답글) 생성
-        PickComment pickRepliedComment = PickComment.createRepliedComment(new CommentContents(contents),
+        PickComment pickRepliedComment = PickComment.createRepliedCommentByMember(new CommentContents(contents),
                 findParentPickComment, findOriginParentPickComment, findMember, findPick);
         pickCommentRepository.save(pickRepliedComment);
 
@@ -237,7 +231,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
             // 소프트 삭제
-            findPickComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
+            findPickComment.changeDeletedAtByMember(timeProvider.getLocalDateTimeNow(), findMember);
 
             return new PickCommentResponse(findPickComment.getId());
         }
@@ -252,7 +246,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                 DELETE);
 
         // 소프트 삭제
-        findPickComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
+        findPickComment.changeDeletedAtByMember(timeProvider.getLocalDateTimeNow(), findMember);
 
         return new PickCommentResponse(findPickComment.getId());
     }
