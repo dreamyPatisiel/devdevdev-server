@@ -65,7 +65,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 답글 작성", description = "회원은 픽픽픽 댓글에 답글을 작성할 수 있습니다.")
+    @Operation(summary = "픽픽픽 답글 작성", description = "픽픽픽 댓글에 답글을 작성할 수 있습니다.")
     @PostMapping("/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickRepliedComment(
             @PathVariable Long pickId,
@@ -74,10 +74,14 @@ public class PickCommentController {
             @RequestBody @Validated RegisterPickRepliedCommentRequest registerPickRepliedCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(registerPickRepliedCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.registerPickRepliedComment(
-                pickParentCommentId, pickOriginParentCommentId, pickId, registerPickRepliedCommentRequest,
+                pickParentCommentId, pickOriginParentCommentId, pickId, repliedCommentDto,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));

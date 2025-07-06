@@ -1,9 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
@@ -29,7 +27,6 @@ import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
@@ -47,7 +44,6 @@ public class MemberPickCommentService extends PickCommonService implements PickC
 
     private final TimeProvider timeProvider;
     private final MemberProvider memberProvider;
-    private final PickPopularScorePolicy pickPopularScorePolicy;
 
     private final PickRepository pickRepository;
     private final PickVoteRepository pickVoteRepository;
@@ -59,11 +55,10 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                                     PickRepository pickRepository, PickVoteRepository pickVoteRepository,
                                     PickCommentRepository pickCommentRepository,
                                     PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository, pickCommentRepository,
                 pickCommentRecommendRepository);
         this.timeProvider = timeProvider;
         this.memberProvider = memberProvider;
-        this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickRepository = pickRepository;
         this.pickVoteRepository = pickVoteRepository;
         this.pickCommentRepository = pickCommentRepository;
@@ -126,31 +121,20 @@ public class MemberPickCommentService extends PickCommonService implements PickC
     public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId,
                                                           Long pickCommentOriginParentId,
                                                           Long pickId,
-                                                          RegisterPickRepliedCommentRequest pickSubCommentRequest,
+                                                          PickCommentDto pickCommentDto,
                                                           Authentication authentication) {
 
-        String contents = pickSubCommentRequest.getContents();
+        String contents = pickCommentDto.getContents();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 답글 대상의 픽픽픽 댓글 조회
-        PickComment findParentPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickParentCommentId, pickId)
-                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+        // 픽픽픽 댓글 로직 수행
+        PickReplyContext pickReplyContext = prepareForReplyRegistration(pickParentCommentId, pickCommentOriginParentId, pickId);
 
-        // 픽픽픽 게시글의 승인 상태 검증
-        Pick findPick = findParentPickComment.getPick();
-        validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
-                REGISTER);
-        // 댓글 총 갯수 증가 및 인기점수 반영
-        findPick.incrementCommentTotalCount();
-        findPick.changePopularScore(pickPopularScorePolicy);
-
-        // 픽픽픽 최초 댓글 검증 및 반환
-        PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
-                pickCommentOriginParentId, findParentPickComment);
-        // 픽픽픽 최초 댓글의 답글 갯수 증가
-        findOriginParentPickComment.incrementReplyTotalCount();
+        PickComment findParentPickComment = pickReplyContext.parentPickComment();
+        PickComment findOriginParentPickComment = pickReplyContext.originParentPickComment();
+        Pick findPick = pickReplyContext.pick();
 
         // 픽픽픽 서브 댓글(답글) 생성
         PickComment pickRepliedComment = PickComment.createRepliedCommentByMember(new CommentContents(contents),
@@ -158,28 +142,6 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         pickCommentRepository.save(pickRepliedComment);
 
         return new PickCommentResponse(pickRepliedComment.getId());
-    }
-
-    private PickComment getAndValidateOriginParentPickComment(Long pickCommentOriginParentId,
-                                                              PickComment parentPickComment) {
-
-        // 픽픽픽 답글 대상의 댓글이 삭제 상태이면
-        validateIsDeletedPickComment(parentPickComment, INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
-
-        // 픽픽픽 답글 대상의 댓글이 최초 댓글이면
-        if (parentPickComment.isEqualsId(pickCommentOriginParentId)) {
-            return parentPickComment;
-        }
-
-        // 픽픽픽 답글 대상의 댓글의 메인 댓글 조회
-        PickComment findOriginParentPickComment = pickCommentRepository.findById(pickCommentOriginParentId)
-                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
-
-        // 픽픽픽 최초 댓글이 삭제 상태이면
-        validateIsDeletedPickComment(findOriginParentPickComment, INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE,
-                REGISTER);
-
-        return findOriginParentPickComment;
     }
 
     /**

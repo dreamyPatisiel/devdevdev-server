@@ -85,7 +85,7 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final PickOptionRepository pickOptionRepository;
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
-    private final PickPopularScorePolicy pickPopularScorePolicy;
+
     private final TimeProvider timeProvider;
 
     public MemberPickService(EmbeddingsService embeddingsService, PickRepository pickRepository,
@@ -96,7 +96,7 @@ public class MemberPickService extends PickCommonService implements PickService 
                              PickCommentRecommendRepository pickCommentRecommendRepository,
                              PickPopularScorePolicy pickPopularScorePolicy,
                              PickBestCommentsPolicy pickBestCommentsPolicy, TimeProvider timeProvider) {
-        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository, pickCommentRepository,
                 pickCommentRecommendRepository);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
@@ -104,7 +104,6 @@ public class MemberPickService extends PickCommonService implements PickService 
         this.pickOptionRepository = pickOptionRepository;
         this.pickOptionImageRepository = pickOptionImageRepository;
         this.pickVoteRepository = pickVoteRepository;
-        this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.timeProvider = timeProvider;
     }
 
@@ -129,14 +128,12 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     /**
-     * @Note: 이미지 업로드와 DB 저장을 하나의 작업(Transcation)으로 묶어서, 데이터 정합성을 유지한다.<br/> 이때 pick_option_id는 null 인 상태
-     * 입니다.<br/><br/>
+     * @Note: 이미지 업로드와 DB 저장을 하나의 작업(Transcation)으로 묶어서, 데이터 정합성을 유지한다.<br/> 이때 pick_option_id는 null 인 상태 입니다.<br/><br/>
      * <p>
-     * 이미지 업로드 실패시 IOException이 발생할 수 있는데, 이때 catch로 처리하여 데이터 정합성 유지합니다.<br/> 즉, IOException이 발생해도 rollback하지 않는다는 의미
-     * 입니다. <br/><br/>
+     * 이미지 업로드 실패시 IOException이 발생할 수 있는데, 이때 catch로 처리하여 데이터 정합성 유지합니다.<br/> 즉, IOException이 발생해도 rollback하지 않는다는 의미 입니다.
+     * <br/><br/>
      * <p>
-     * 단, Transcation이 길게 유지되면 추후 DB Connection을 오랫동안 유지하기 때문에 많은 트래픽이 발생할 때 DB Connection이 부족해지는 현상이 발생할 수
-     * 있습니다.<br/><br/>
+     * 단, Transcation이 길게 유지되면 추후 DB Connection을 오랫동안 유지하기 때문에 많은 트래픽이 발생할 때 DB Connection이 부족해지는 현상이 발생할 수 있습니다.<br/><br/>
      * <p>
      * (Transcation은 기본적으로 RuntimeException에 대해서만 Rollback 합니다. AmazonClient의 putObject(...)는 RuntimeException을
      * 발생시킵니다.)<br/><br/>
@@ -282,8 +279,8 @@ public class MemberPickService extends PickCommonService implements PickService 
     }
 
     /**
-     * @Note: member 1:N pick 1:N pickOption 1:N pickVote <br/> pick 1:N pickVote N:1 member <br/> 연관관계가 다소 복잡하니, 직접
-     * ERD를 확인하는 것을 권장합니다. <br/> 투표 이력이 있는 경우 - 투표 이력이 없는 경우
+     * @Note: member 1:N pick 1:N pickOption 1:N pickVote <br/> pick 1:N pickVote N:1 member <br/> 연관관계가 다소 복잡하니, 직접 ERD를 확인하는 것을
+     * 권장합니다. <br/> 투표 이력이 있는 경우 - 투표 이력이 없는 경우
      * @Author: ralph
      * @Since: 2024.05.29
      */

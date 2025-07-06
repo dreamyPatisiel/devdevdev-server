@@ -1,7 +1,11 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentService.REGISTER;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
@@ -9,6 +13,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
@@ -45,6 +50,7 @@ public class PickCommonService {
 
     private final EmbeddingsService embeddingsService;
     private final PickBestCommentsPolicy pickBestCommentsPolicy;
+    protected final PickPopularScorePolicy pickPopularScorePolicy;
 
     protected final PickRepository pickRepository;
     protected final PickCommentRepository pickCommentRepository;
@@ -230,5 +236,55 @@ public class PickCommonService {
                 .map(originParentPickComment -> getPickCommentsResponse(member, originParentPickComment,
                         pickBestCommentReplies))
                 .toList();
+    }
+
+    protected PickComment getAndValidateOriginParentPickComment(Long pickCommentOriginParentId,
+                                                                PickComment parentPickComment) {
+
+        // 픽픽픽 답글 대상의 댓글이 삭제 상태이면
+        validateIsDeletedPickComment(parentPickComment, INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
+
+        // 픽픽픽 답글 대상의 댓글이 최초 댓글이면
+        if (parentPickComment.isEqualsId(pickCommentOriginParentId)) {
+            return parentPickComment;
+        }
+
+        // 픽픽픽 답글 대상의 댓글의 메인 댓글 조회
+        PickComment findOriginParentPickComment = pickCommentRepository.findById(pickCommentOriginParentId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+
+        // 픽픽픽 최초 댓글이 삭제 상태이면
+        validateIsDeletedPickComment(findOriginParentPickComment, INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE,
+                REGISTER);
+
+        return findOriginParentPickComment;
+    }
+
+    @Transactional
+    protected PickReplyContext prepareForReplyRegistration(Long pickParentCommentId, Long pickCommentOriginParentId,
+                                                           Long pickId) {
+        // 답글 대상의 픽픽픽 댓글 조회
+        PickComment findParentPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickParentCommentId, pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태 검증
+        Pick findPick = findParentPickComment.getPick();
+        validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, REGISTER);
+
+        // 댓글 총 갯수 증가 및 인기점수 반영
+        findPick.incrementCommentTotalCount();
+        findPick.changePopularScore(pickPopularScorePolicy);
+
+        // 픽픽픽 최초 댓글 검증 및 반환
+        PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
+                pickCommentOriginParentId, findParentPickComment);
+
+        // 픽픽픽 최초 댓글의 답글 갯수 증가
+        findOriginParentPickComment.incrementReplyTotalCount();
+
+        return new PickReplyContext(findPick, findOriginParentPickComment, findParentPickComment);
+    }
+
+    public record PickReplyContext(Pick pick, PickComment originParentPickComment, PickComment parentPickComment) {
     }
 }

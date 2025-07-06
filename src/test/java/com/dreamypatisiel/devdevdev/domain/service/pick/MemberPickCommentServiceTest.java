@@ -441,10 +441,11 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when
         PickCommentResponse response = memberPickCommentService.registerPickRepliedComment(
-                replidPickComment.getId(), pickComment.getId(), pick.getId(), request, authentication);
+                replidPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication);
 
         em.flush();
         em.clear();
@@ -482,10 +483,11 @@ class MemberPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.registerPickRepliedComment(0L, 0L, 0L, request, authentication))
+                () -> memberPickCommentService.registerPickRepliedComment(0L, 0L, 0L, repliedCommentDto, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -510,10 +512,11 @@ class MemberPickCommentServiceTest {
         pickRepository.save(pick);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.registerPickRepliedComment(0L, 0L, 0L, request, authentication))
+                () -> memberPickCommentService.registerPickRepliedComment(0L, 0L, 0L, repliedCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }
@@ -543,11 +546,12 @@ class MemberPickCommentServiceTest {
         pickCommentRepository.save(pickComment);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
                 () -> memberPickCommentService.registerPickRepliedComment(
-                        pickComment.getId(), pickComment.getId(), pick.getId(), request, authentication))
+                        pickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, REGISTER);
     }
@@ -579,11 +583,12 @@ class MemberPickCommentServiceTest {
         pickCommentRepository.save(pickComment);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
                 () -> memberPickCommentService.registerPickRepliedComment(
-                        pickComment.getId(), pickComment.getId(), pick.getId(), request, authentication))
+                        pickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
     }
@@ -620,11 +625,12 @@ class MemberPickCommentServiceTest {
         pickCommentRepository.save(replidPickComment);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
                 () -> memberPickCommentService.registerPickRepliedComment(
-                        replidPickComment.getId(), pickComment.getId(), pick.getId(), request, authentication))
+                        replidPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
     }
@@ -653,16 +659,19 @@ class MemberPickCommentServiceTest {
         PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
         pickCommentRepository.save(pickComment);
 
-        // 삭제상태의 픽픽픽 댓글의 답글
+        // 삭제상태의 픽픽픽 댓글의 답글(삭제 상태)
         PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
                 pickComment, pickComment);
+        pickCommentRepository.save(replidPickComment);
+        replidPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
 
         // when // then
         assertThatThrownBy(
                 () -> memberPickCommentService.registerPickRepliedComment(
-                        0L, pickComment.getId(), pick.getId(), request, authentication))
+                        0L, pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }

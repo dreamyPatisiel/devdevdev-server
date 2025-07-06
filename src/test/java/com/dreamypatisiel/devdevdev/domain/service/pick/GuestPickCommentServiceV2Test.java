@@ -1,13 +1,18 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentService.REGISTER;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPick;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickComment;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickOption;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickOptionImage;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickVote;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createReplidPickComment;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createSocialDto;
 import static com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +31,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -47,15 +53,18 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.EnumSource.Mode;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
@@ -359,5 +368,282 @@ class GuestPickCommentServiceV2Test {
                 () -> guestPickCommentServiceV2.registerPickComment(pick.getId(), pickCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName("익명회원이 승인상태의 픽픽픽의 삭제상태가 아닌 댓글에 답글을 작성한다.")
+    void registerPickRepliedComment(Boolean isPublic) {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), isPublic, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 픽픽픽 답글 생성
+        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글1"), anonymousMember, pick,
+                pickComment, pickComment);
+        pickCommentRepository.save(replidPickComment);
+
+        em.flush();
+        em.clear();
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when
+        PickCommentResponse response = guestPickCommentServiceV2.registerPickRepliedComment(
+                replidPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication);
+
+        em.flush();
+        em.clear();
+
+        // then
+        assertThat(response.getPickCommentId()).isNotNull();
+
+        PickComment findPickComment = pickCommentRepository.findById(response.getPickCommentId()).get();
+        assertAll(
+                () -> assertThat(findPickComment.getContents().getCommentContents()).isEqualTo("댓글1의 답글1의 답글"),
+                () -> assertThat(findPickComment.getIsPublic()).isFalse(),
+                () -> assertThat(findPickComment.getDeletedAt()).isNull(),
+                () -> assertThat(findPickComment.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findPickComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findPickComment.getPick().getId()).isEqualTo(pick.getId()),
+                () -> assertThat(findPickComment.getCreatedAnonymousBy().getId()).isEqualTo(anonymousMember.getId()),
+                () -> assertThat(findPickComment.getParent().getId()).isEqualTo(replidPickComment.getId()),
+                () -> assertThat(findPickComment.getOriginParent().getId()).isEqualTo(pickComment.getId()),
+                () -> assertThat(findPickComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 익명회원 전용 픽픽픽 답글을 작성할 때 예외가 발생한다.")
+    void registerPickRepliedCommentMemberException() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestPickCommentServiceV2.registerPickRepliedComment(0L, 0L, 0L, repliedCommentDto, authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원이 픽픽픽 답글을 작성할 때, 답글 대상의 댓글이 존재하지 않으면 예외가 발생한다.")
+    void registerPickRepliedCommentNotFoundExceptionParent() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestPickCommentServiceV2.registerPickRepliedComment(0L, 0L, 0L, repliedCommentDto, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
+    @DisplayName("익명회원이 픽픽픽 답글을 작성할 때, 픽픽픽이 승인상태가 아니면 예외가 발생한다.")
+    void registerPickRepliedCommentPickIsNotApproval(ContentStatus contentStatus) {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestPickCommentServiceV2.registerPickRepliedComment(
+                        pickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE, REGISTER);
+    }
+
+    @Test
+    @DisplayName("익명회원이 픽픽픽 답글을 작성할 때 답글 대상의 댓글이 삭제 상태 이면 예외가 발생한다."
+            + "(최초 댓글이 삭제상태이고 해당 댓글에 답글을 작성하는 경우)")
+    void registerPickRepliedCommentDeleted() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), member);
+        pickRepository.save(pick);
+
+        // 삭제상태의 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
+        pickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
+        pickCommentRepository.save(pickComment);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestPickCommentServiceV2.registerPickRepliedComment(
+                        pickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
+    }
+
+    @Test
+    @DisplayName("익명회원이 픽픽픽 답글을 작성할 때 답글 대상의 댓글이 삭제 상태 이면 예외가 발생한다."
+            + "(최초 댓글의 답글이 삭제상태이고 그 답글에 답글을 작성하는 경우)")
+    void registerPickRepliedCommentRepliedDeleted() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(0L), new Count(0L),
+                new Count(0L), new Count(0L), member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 삭제상태의 픽픽픽 댓글의 답글 생성
+        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
+                pickComment, pickComment);
+        replidPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
+        pickCommentRepository.save(replidPickComment);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestPickCommentServiceV2.registerPickRepliedComment(
+                        replidPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
+    }
+
+    @Test
+    @DisplayName("익명회원이 픽픽픽 답글을 작성할 때 답글 대상의 댓글이 존재하지 않으면 예외가 발생한다."
+            + "(최초 댓글의 답글이 존재하지 않고 그 답글에 답글을 작성하는 경우)")
+    void registerPickRepliedCommentRepliedNotFoundException() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, member);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("댓글1"), false, member, pick);
+        pickCommentRepository.save(pickComment);
+
+        // 삭제상태의 픽픽픽 댓글의 답글(삭제 상태)
+        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
+                pickComment, pickComment);
+        pickCommentRepository.save(replidPickComment);
+        replidPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
+
+        RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestPickCommentServiceV2.registerPickRepliedComment(
+                        0L, pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }
 }
