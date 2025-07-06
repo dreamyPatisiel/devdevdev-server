@@ -1186,9 +1186,11 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         // given
         String oldNickname = "이전 닉네임";
         String newNickname = "변경된 닉네임";
+
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
+
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
@@ -1215,10 +1217,13 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         // given
         String oldNickname = "이전 닉네임";
         String newNickname = "새 닉네임";
+
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
+
         member.changeNickname(oldNickname, LocalDateTime.now().minusHours(hoursAgo));
         memberRepository.save(member);
+
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         SecurityContext context = SecurityContextHolder.getContext();
         context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),

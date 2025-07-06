@@ -298,10 +298,10 @@ public class MemberService {
     public void changeNickname(String nickname, Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
-        if (member.isAvailableToChangeNickname()) {
-            member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
-        } else {
+        if (!member.isAvailableToChangeNickname()) {
             throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
         }
+
+        member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
     }
 }
