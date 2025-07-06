@@ -61,7 +61,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.web.WebConstant;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickOptionRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
@@ -421,7 +420,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
@@ -477,7 +477,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디"),
