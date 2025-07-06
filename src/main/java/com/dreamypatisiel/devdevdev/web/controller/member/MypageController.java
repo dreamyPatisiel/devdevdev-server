@@ -8,6 +8,7 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.member.ChangeNicknameRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
@@ -30,6 +31,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -141,5 +143,15 @@ public class MypageController {
     public ResponseEntity<BasicResponse<String>> getRandomNickname() {
         String response = memberNicknameDictionaryService.createRandomNickname();
         return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다.")
+    @PatchMapping("/mypage/nickname")
+    public ResponseEntity<BasicResponse<Void>> changeNickname(
+            @RequestBody @Valid ChangeNicknameRequest request
+    ) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        memberService.changeNickname(request.getNickname(), authentication);
+        return ResponseEntity.ok(BasicResponse.success());
     }
 }
