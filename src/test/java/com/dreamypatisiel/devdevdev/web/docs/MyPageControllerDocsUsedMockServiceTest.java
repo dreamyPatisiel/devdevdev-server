@@ -6,35 +6,40 @@ import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerato
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.myWrittenCommentSort;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.uniqueCommentIdType;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessRequest;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.preprocessResponse;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.JsonFieldType.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberNicknameDictionaryService;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.member.ChangeNicknameRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -48,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -90,6 +96,110 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
                         fieldWithPath("data").type(JsonFieldType.STRING).description("응답 데이터(생성된 랜덤 닉네임)")
                 )
         ));
+    }
+
+    @Test
+    @DisplayName("회원은 닉네임을 변경할 수 있다.")
+    void changeNickname() throws Exception {
+        // given
+        String newNickname = "변경된 닉네임";
+        ChangeNicknameRequest request = createChangeNicknameRequest(newNickname);
+
+        // when
+        doNothing().when(memberService).changeNickname(any(), any());
+
+        // then
+        mockMvc.perform(patch("/devdevdev/api/v1/mypage/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(request))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andExpect(status().isOk())
+                .andDo(document("change-nickname",
+                        requestFields(
+                                fieldWithPath("nickname").description("변경할 닉네임")
+                        ),
+                        requestHeaders(
+                                headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("resultType").description("성공 여부")
+                        )
+                ));
+
+        verify(memberService).changeNickname(eq(newNickname), any());
+    }
+
+    @Test
+    @DisplayName("회원이 24시간 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
+    void changeNicknameThrowsExceptionWhenChangedWithin24Hours() throws Exception {
+        // given
+        String newNickname = "변경된 닉네임";
+        ChangeNicknameRequest request = createChangeNicknameRequest(newNickname);
+        request.setNickname(newNickname);
+
+        // when
+        doThrow(new NicknameException(NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE))
+                .when(memberService).changeNickname(any(), any());
+
+        // then
+        mockMvc.perform(patch("/devdevdev/api/v1/mypage/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(request))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.message").value(NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()))
+
+                .andDo(document("change-nickname-within-24hours-exception",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
+                                fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("회원은 닉네임 변경 가능 여부를 확인할 수 있다.")
+    void canChangeNickname() throws Exception {
+        // given
+        boolean result = true;
+
+        // when
+        when(memberService.canChangeNickname(any())).thenReturn(result);
+
+        // then
+        mockMvc.perform(get("/devdevdev/api/v1/mypage/nickname/changeable")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isBoolean())
+
+                .andDo(document("can-change-nickname",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                                fieldWithPath("data").type(JsonFieldType.BOOLEAN).description("응답 데이터(변경 가능 여부)")
+                        )
+                ));
     }
 
     @Test
@@ -421,6 +531,12 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
                 .email(email)
                 .socialType(SocialType.valueOf(socialType))
                 .role(Role.valueOf(role))
+                .build();
+    }
+
+    private ChangeNicknameRequest createChangeNicknameRequest(String nickname) {
+        return ChangeNicknameRequest.builder()
+                .nickname(nickname)
                 .build();
     }
 }
