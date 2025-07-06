@@ -710,10 +710,11 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(request, null);
 
         // when
         PickCommentResponse response = memberPickCommentService.modifyPickComment(pickComment.getId(),
-                pick.getId(), request, authentication);
+                pick.getId(), modifyCommentDto, authentication);
 
         // then
         PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
@@ -742,9 +743,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(request, null);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(0L, 0L, request,
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(0L, 0L, modifyCommentDto,
                 authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
@@ -779,9 +781,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(request, null);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(0L, pick.getId(), request,
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(0L, pick.getId(), modifyCommentDto,
                 authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
@@ -820,9 +823,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(request, null);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), request,
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), modifyCommentDto,
                 authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
@@ -862,9 +866,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(request, null);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), request,
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), modifyCommentDto,
                 authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
@@ -904,9 +909,10 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         ModifyPickCommentRequest request = new ModifyPickCommentRequest("주무세웅");
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(request, null);
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), request,
+        assertThatThrownBy(() -> memberPickCommentService.modifyPickComment(pickComment.getId(), pick.getId(), modifyCommentDto,
                 authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, MODIFY);

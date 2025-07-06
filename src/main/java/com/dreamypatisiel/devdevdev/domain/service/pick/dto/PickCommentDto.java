@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick.dto;
 
+import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import lombok.Builder;
@@ -31,6 +32,14 @@ public class PickCommentDto {
                                                          String anonymousMemberId) {
         return PickCommentDto.builder()
                 .contents(registerPickRepliedCommentRequest.getContents())
+                .anonymousMemberId(anonymousMemberId)
+                .build();
+    }
+
+    public static PickCommentDto createModifyCommentDto(ModifyPickCommentRequest modifyPickCommentRequest,
+                                                        String anonymousMemberId) {
+        return PickCommentDto.builder()
+                .contents(modifyPickCommentRequest.getContents())
                 .anonymousMemberId(anonymousMemberId)
                 .build();
     }

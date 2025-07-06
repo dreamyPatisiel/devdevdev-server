@@ -20,6 +20,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.exception.InternalServerException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.data.response.PickWithSimilarityDto;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
@@ -52,6 +53,7 @@ public class PickCommonService {
     private final PickBestCommentsPolicy pickBestCommentsPolicy;
     protected final PickPopularScorePolicy pickPopularScorePolicy;
 
+    protected final TimeProvider timeProvider;
     protected final PickRepository pickRepository;
     protected final PickCommentRepository pickCommentRepository;
     protected final PickCommentRecommendRepository pickCommentRecommendRepository;

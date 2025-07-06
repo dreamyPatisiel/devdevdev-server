@@ -2,7 +2,9 @@
 == 픽픽픽 댓글/답글 수정 API(PATCH: /devdevdev/api/v1/picks/{pickId}/comments/{pickCommentId})
 
 * 픽픽픽 댓글/답글을 수정한다.
-* 회원 본인이 작성한 픽픽픽 댓글/답글을 수정 할 수 있다.
+** 회원인 경우 토큰을 `Authorization` 헤더에 포함시켜야 한다.
+** 익명 회원인 경우 `Anonymous-Member-Id` 헤더에 익명 회원 아이디를 포함시켜야 한다.
+* 회원 또는 익명회원 본인이 작성한 픽픽픽 댓글/답글 만 수정 할 수 있다.
 * 픽픽픽 공개 여부는 수정 할 수 없다.
 * 삭제된 댓글/답글을 수정 할 수 없다.
 
@@ -41,5 +43,6 @@ include::{snippets}/modify-pick-comment/response-fields.adoc[]
 * `승인 상태가 아닌 픽픽픽에는 댓글을 수정할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
 * `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
 * `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+* `익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.`: 회원이 익명 회원 메소드를 호출한 경우
 
 include::{snippets}/modify-pick-comment-bind-exception/response-body.adoc[]

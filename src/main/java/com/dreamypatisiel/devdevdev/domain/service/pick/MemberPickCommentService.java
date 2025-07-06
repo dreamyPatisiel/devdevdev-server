@@ -26,7 +26,6 @@ import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
@@ -42,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class MemberPickCommentService extends PickCommonService implements PickCommentService {
 
-    private final TimeProvider timeProvider;
     private final MemberProvider memberProvider;
 
     private final PickRepository pickRepository;
@@ -55,9 +53,8 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                                     PickRepository pickRepository, PickVoteRepository pickVoteRepository,
                                     PickCommentRepository pickCommentRepository,
                                     PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository, pickCommentRepository,
-                pickCommentRecommendRepository);
-        this.timeProvider = timeProvider;
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, timeProvider, pickRepository,
+                pickCommentRepository, pickCommentRecommendRepository);
         this.memberProvider = memberProvider;
         this.pickRepository = pickRepository;
         this.pickVoteRepository = pickVoteRepository;
@@ -151,10 +148,10 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      */
     @Transactional
     public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
-                                                 ModifyPickCommentRequest modifyPickCommentRequest,
+                                                 PickCommentDto pickModifyCommentDto,
                                                  Authentication authentication) {
 
-        String contents = modifyPickCommentRequest.getContents();
+        String contents = pickModifyCommentDto.getContents();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);

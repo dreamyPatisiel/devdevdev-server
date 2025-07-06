@@ -16,6 +16,10 @@ public interface PickCommentRepository extends JpaRepository<PickComment, Long>,
     Optional<PickComment> findWithPickByIdAndPickIdAndCreatedByIdAndDeletedAtIsNull(Long id, Long pickId,
                                                                                     Long createdById);
 
+    @EntityGraph(attributePaths = {"pick"})
+    Optional<PickComment> findWithPickByIdAndPickIdAndCreatedAnonymousByIdAndDeletedAtIsNull(Long id, Long pickId,
+                                                                                             Long createdAnonymousById);
+
     Optional<PickComment> findByIdAndPickIdAndDeletedAtIsNull(Long id, Long pickId);
 
     @EntityGraph(attributePaths = {"pick"})

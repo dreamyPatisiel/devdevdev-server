@@ -87,7 +87,7 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 수정", description = "회원은 자신이 작성한 픽픽픽 댓글/답글을 수정할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글/답글 수정", description = "회원/익명회원 본인이 작성한 픽픽픽 댓글/답글만 수정할 수 있습니다.")
     @PatchMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> modifyPickComment(
             @PathVariable Long pickId,
@@ -95,15 +95,19 @@ public class PickCommentController {
             @RequestBody @Validated ModifyPickCommentRequest modifyPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(modifyPickCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.modifyPickComment(pickCommentId, pickId,
-                modifyPickCommentRequest, authentication);
+                modifyCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 조회", description = "회원은 픽픽픽 댓글/답글을 조회할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글/답글 조회", description = "픽픽픽 댓글/답글을 조회할 수 있습니다.")
     @GetMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<SliceCustom<PickCommentsResponse>>> getPickComments(
             @PageableDefault(size = 5, sort = "id", direction = Direction.DESC) Pageable pageable,
