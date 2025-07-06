@@ -1,4 +1,4 @@
-[[ChangeNickname]]
+[[CanChangeNickname]]
 == 닉네임 변경 가능 여부 API(GET: /devdevdev/api/v1/mypage/nickname/changeable)
 * 회원은 닉네임 변경 가능 여부를 확인할 수 있다.
 * 비회원은 닉네임 변경 가능 여부를 확인할 수 없다.
