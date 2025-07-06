@@ -8,6 +8,7 @@ import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
 import com.dreamypatisiel.devdevdev.openai.data.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
@@ -63,10 +64,10 @@ public class PickController {
     public ResponseEntity<BasicResponse<Slice<PickMainResponse>>> getPicksMain(
             @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable,
             @RequestParam(required = false) Long pickId,
-            @RequestParam(required = false) PickSort pickSort,
-            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
+            @RequestParam(required = false) PickSort pickSort) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickService pickService = pickServiceStrategy.getPickService();
         Slice<PickMainResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, anonymousMemberId,
@@ -158,10 +159,10 @@ public class PickController {
     @Operation(summary = "픽픽픽 선택지 투표", description = "픽픽픽 상세 페이지에서 픽픽픽 선택지에 투표합니다.")
     @PostMapping("/picks/vote")
     public ResponseEntity<BasicResponse<VotePickResponse>> votePickOption(
-            @RequestBody @Validated VotePickOptionRequest votePickOptionRequest,
-            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
+            @RequestBody @Validated VotePickOptionRequest votePickOptionRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickService pickService = pickServiceStrategy.getPickService();
 

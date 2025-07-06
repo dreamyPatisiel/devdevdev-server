@@ -4,6 +4,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessag
 
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
+import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
@@ -13,7 +14,6 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
@@ -33,9 +33,10 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
     public GuestPickCommentService(EmbeddingsService embeddingsService,
                                    PickBestCommentsPolicy pickBestCommentsPolicy,
                                    PickRepository pickRepository,
+                                   PickPopularScorePolicy pickPopularScorePolicy,
                                    PickCommentRepository pickCommentRepository,
                                    PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository, pickCommentRepository,
                 pickCommentRecommendRepository);
     }
 
@@ -47,7 +48,7 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
 
     @Override
     public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId, Long pickCommentOriginParentId,
-                                                          Long pickId, RegisterPickRepliedCommentRequest pickSubCommentRequest,
+                                                          Long pickId, PickCommentDto pickCommentDto,
                                                           Authentication authentication) {
 
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);

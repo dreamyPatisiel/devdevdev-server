@@ -25,7 +25,6 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
@@ -42,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuestPickCommentServiceV2 extends PickCommonService implements PickCommentService {
 
     private final AnonymousMemberService anonymousMemberService;
-    private final PickPopularScorePolicy pickPopularScorePolicy;
 
     private final PickVoteRepository pickVoteRepository;
 
@@ -54,10 +52,9 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
                                      AnonymousMemberService anonymousMemberService,
                                      PickPopularScorePolicy pickPopularScorePolicy,
                                      PickVoteRepository pickVoteRepository) {
-        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
-                pickCommentRecommendRepository);
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository,
+                pickCommentRepository, pickCommentRecommendRepository);
         this.anonymousMemberService = anonymousMemberService;
-        this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickVoteRepository = pickVoteRepository;
     }
 
@@ -110,11 +107,33 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
     }
 
     @Override
+    @Transactional
     public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId, Long pickCommentOriginParentId,
-                                                          Long pickId, RegisterPickRepliedCommentRequest pickSubCommentRequest,
+                                                          Long pickId, PickCommentDto pickCommentDto,
                                                           Authentication authentication) {
 
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        String contents = pickCommentDto.getContents();
+        String anonymousMemberId = pickCommentDto.getAnonymousMemberId();
+
+        // 익명 회원 추출
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 픽픽픽 댓글 로직 수행
+        PickReplyContext pickReplyContext = prepareForReplyRegistration(pickParentCommentId, pickCommentOriginParentId, pickId);
+
+        PickComment findParentPickComment = pickReplyContext.parentPickComment();
+        PickComment findOriginParentPickComment = pickReplyContext.originParentPickComment();
+        Pick findPick = pickReplyContext.pick();
+
+        // 픽픽픽 서브 댓글(답글) 생성
+        PickComment pickRepliedComment = PickComment.createRepliedCommentByAnonymousMember(new CommentContents(contents),
+                findParentPickComment, findOriginParentPickComment, anonymousMember, findPick);
+        pickCommentRepository.save(pickRepliedComment);
+
+        return new PickCommentResponse(pickRepliedComment.getId());
     }
 
     @Override

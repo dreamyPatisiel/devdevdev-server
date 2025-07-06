@@ -5,7 +5,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
@@ -26,7 +25,7 @@ public interface PickCommentService {
 
     PickCommentResponse registerPickRepliedComment(Long pickParentCommentId,
                                                    Long pickCommentOriginParentId,
-                                                   Long pickId, RegisterPickRepliedCommentRequest pickSubCommentRequest,
+                                                   Long pickId, PickCommentDto pickCommentDto,
                                                    Authentication authentication);
 
     PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
