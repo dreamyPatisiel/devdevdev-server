@@ -86,8 +86,6 @@ public class MemberPickService extends PickCommonService implements PickService 
     private final PickOptionImageRepository pickOptionImageRepository;
     private final PickVoteRepository pickVoteRepository;
 
-    private final TimeProvider timeProvider;
-
     public MemberPickService(EmbeddingsService embeddingsService, PickRepository pickRepository,
                              AwsS3Properties awsS3Properties, AwsS3Uploader awsS3Uploader,
                              MemberProvider memberProvider, PickOptionRepository pickOptionRepository,
@@ -96,7 +94,8 @@ public class MemberPickService extends PickCommonService implements PickService 
                              PickCommentRecommendRepository pickCommentRecommendRepository,
                              PickPopularScorePolicy pickPopularScorePolicy,
                              PickBestCommentsPolicy pickBestCommentsPolicy, TimeProvider timeProvider) {
-        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository, pickCommentRepository,
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, timeProvider, pickRepository,
+                pickCommentRepository,
                 pickCommentRecommendRepository);
         this.awsS3Properties = awsS3Properties;
         this.awsS3Uploader = awsS3Uploader;
@@ -104,7 +103,6 @@ public class MemberPickService extends PickCommonService implements PickService 
         this.pickOptionRepository = pickOptionRepository;
         this.pickOptionImageRepository = pickOptionImageRepository;
         this.pickVoteRepository = pickVoteRepository;
-        this.timeProvider = timeProvider;
     }
 
     /**

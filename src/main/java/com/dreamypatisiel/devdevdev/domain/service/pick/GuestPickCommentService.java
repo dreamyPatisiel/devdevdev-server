@@ -10,10 +10,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
@@ -32,12 +32,13 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
 
     public GuestPickCommentService(EmbeddingsService embeddingsService,
                                    PickBestCommentsPolicy pickBestCommentsPolicy,
+                                   TimeProvider timeProvider,
                                    PickRepository pickRepository,
                                    PickPopularScorePolicy pickPopularScorePolicy,
                                    PickCommentRepository pickCommentRepository,
                                    PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, pickRepository, pickCommentRepository,
-                pickCommentRecommendRepository);
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, timeProvider, pickRepository,
+                pickCommentRepository, pickCommentRecommendRepository);
     }
 
     @Override
@@ -56,7 +57,7 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
 
     @Override
     public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
-                                                 ModifyPickCommentRequest modifyPickCommentRequest,
+                                                 PickCommentDto pickModifyCommentDto,
                                                  Authentication authentication) {
 
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);

@@ -156,6 +156,21 @@ public abstract class PickTestUtils {
         return pickComment;
     }
 
+    public static PickComment createPickComment(CommentContents contents, Boolean isPublic, AnonymousMember anonymousMember,
+                                                Pick pick) {
+        PickComment pickComment = PickComment.builder()
+                .contents(contents)
+                .isPublic(isPublic)
+                .createdAnonymousBy(anonymousMember)
+                .replyTotalCount(new Count(0))
+                .pick(pick)
+                .build();
+
+        pickComment.changePick(pick);
+
+        return pickComment;
+    }
+
     public static Pick createPick(Title title, ContentStatus contentStatus, Member member) {
         return Pick.builder()
                 .title(title)

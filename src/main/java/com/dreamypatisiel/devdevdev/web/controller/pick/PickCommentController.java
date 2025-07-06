@@ -95,10 +95,14 @@ public class PickCommentController {
             @RequestBody @Validated ModifyPickCommentRequest modifyPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(modifyPickCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.modifyPickComment(pickCommentId, pickId,
-                modifyPickCommentRequest, authentication);
+                modifyCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
