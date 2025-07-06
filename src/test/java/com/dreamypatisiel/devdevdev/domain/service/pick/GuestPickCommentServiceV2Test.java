@@ -398,9 +398,9 @@ class GuestPickCommentServiceV2Test {
         pickCommentRepository.save(pickComment);
 
         // 픽픽픽 답글 생성
-        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글1"), anonymousMember, pick,
+        PickComment repliedPickComment = createReplidPickComment(new CommentContents("댓글1의 답글1"), anonymousMember, pick,
                 pickComment, pickComment);
-        pickCommentRepository.save(replidPickComment);
+        pickCommentRepository.save(repliedPickComment);
 
         em.flush();
         em.clear();
@@ -410,7 +410,7 @@ class GuestPickCommentServiceV2Test {
 
         // when
         PickCommentResponse response = guestPickCommentServiceV2.registerPickRepliedComment(
-                replidPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication);
+                repliedPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication);
 
         em.flush();
         em.clear();
@@ -427,7 +427,7 @@ class GuestPickCommentServiceV2Test {
                 () -> assertThat(findPickComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
                 () -> assertThat(findPickComment.getPick().getId()).isEqualTo(pick.getId()),
                 () -> assertThat(findPickComment.getCreatedAnonymousBy().getId()).isEqualTo(anonymousMember.getId()),
-                () -> assertThat(findPickComment.getParent().getId()).isEqualTo(replidPickComment.getId()),
+                () -> assertThat(findPickComment.getParent().getId()).isEqualTo(repliedPickComment.getId()),
                 () -> assertThat(findPickComment.getOriginParent().getId()).isEqualTo(pickComment.getId()),
                 () -> assertThat(findPickComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(1L)
         );
@@ -589,10 +589,10 @@ class GuestPickCommentServiceV2Test {
         pickCommentRepository.save(pickComment);
 
         // 삭제상태의 픽픽픽 댓글의 답글 생성
-        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
+        PickComment repliedPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
                 pickComment, pickComment);
-        replidPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
-        pickCommentRepository.save(replidPickComment);
+        repliedPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
+        pickCommentRepository.save(repliedPickComment);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
         PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
@@ -600,7 +600,7 @@ class GuestPickCommentServiceV2Test {
         // when // then
         assertThatThrownBy(
                 () -> guestPickCommentServiceV2.registerPickRepliedComment(
-                        replidPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
+                        repliedPickComment.getId(), pickComment.getId(), pick.getId(), repliedCommentDto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
     }
@@ -631,10 +631,10 @@ class GuestPickCommentServiceV2Test {
         pickCommentRepository.save(pickComment);
 
         // 삭제상태의 픽픽픽 댓글의 답글(삭제 상태)
-        PickComment replidPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
+        PickComment repliedPickComment = createReplidPickComment(new CommentContents("댓글1의 답글"), member, pick,
                 pickComment, pickComment);
-        pickCommentRepository.save(replidPickComment);
-        replidPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
+        pickCommentRepository.save(repliedPickComment);
+        repliedPickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
 
         RegisterPickRepliedCommentRequest request = new RegisterPickRepliedCommentRequest("댓글1의 답글1의 답글");
         PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(request, "anonymousMemberId");
