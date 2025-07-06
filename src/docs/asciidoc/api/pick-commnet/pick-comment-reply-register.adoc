@@ -2,7 +2,8 @@
 == 픽픽픽 답글 작성 API(POST: /devdevdev/api/v1/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId})
 
 * 픽픽픽 답글을 작성한다.
-* 회원만 픽픽픽 답글을 작성 할 수 있다.
+** 회원인 경우 토큰을 `Authorization` 헤더에 포함시켜야 한다.
+** 익명 회원인 경우 `Anonymous-Member-Id` 헤더에 익명 회원 아이디를 포함시켜야 한다.
 * #픽픽픽 댓글이 삭제 상태# 이면 답글을 작성 할 수 없다.
 * 최초 댓글에 대한 답글을 작성할 경우 `pickCommentOriginParentId` 값과 `pickParentCommentId` 값이 동일하다.
 
@@ -40,7 +41,7 @@ include::{snippets}/register-pick-comment-reply/response-fields.adoc[]
 * `픽픽픽 댓글이 없습니다.`: 픽픽픽 댓글이 존재하지 않는 경우
 * `삭제된 픽픽픽 댓글에는 답글을 작성할 수 없습니다.`: 픽픽픽 댓글이 삭제된 경우
 * `승인 상태가 아닌 픽픽픽에는 답글을 작성할 수 없습니다.`: 픽픽픽이 승인 상태가 아닌 경우
-* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
 * `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+* `익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.`: 회원이 익명 회원 메소드를 호출한 경우
 
 include::{snippets}/register-pick-comment-reply-bind-exception/response-body.adoc[]
