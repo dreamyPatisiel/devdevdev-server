@@ -6,6 +6,7 @@ import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerato
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.myWrittenCommentSort;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.stringOrNull;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.uniqueCommentIdType;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -164,6 +165,39 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
                                 fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                                 fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
                                 fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
+                        )
+                ));
+    }
+
+    @Test
+    @DisplayName("회원은 닉네임 변경 가능 여부를 확인할 수 있다.")
+    void canChangeNickname() throws Exception {
+        // given
+        boolean result = true;
+
+        // when
+        when(memberService.canChangeNickname(any())).thenReturn(result);
+
+        // then
+        mockMvc.perform(get("/devdevdev/api/v1/mypage/nickname/changeable")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isBoolean())
+
+                .andDo(document("can-change-nickname",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        ),
+                        responseFields(
+                                fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
+                                fieldWithPath("data").type(JsonFieldType.BOOLEAN).description("응답 데이터(변경 가능 여부)")
                         )
                 ));
     }

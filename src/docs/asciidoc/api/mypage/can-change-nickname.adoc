@@ -1,0 +1,19 @@
+[[ChangeNickname]]
+== 닉네임 변경 가능 여부 API(GET: /devdevdev/api/v1/mypage/nickname/changeable)
+* 회원은 닉네임 변경 가능 여부를 확인할 수 있다.
+* 비회원은 닉네임 변경 가능 여부를 확인할 수 없다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/can-change-nickname/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/can-change-nickname/request-headers.adoc[]
+
+==== HTTP Response
+include::{snippets}/can-change-nickname/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/can-change-nickname/response-fields.adoc[]
+
+=== 예외
+==== HTTP Response
+include::{snippets}/not-found-member-exception/response-body.adoc[]
