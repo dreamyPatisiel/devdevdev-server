@@ -19,3 +19,4 @@ include::{snippets}/change-nickname/response-fields.adoc[]
 === 예외
 ==== HTTP Response
 include::{snippets}/not-found-member-exception/response-body.adoc[]
+include::{snippets}/change-nickname-within-24hours-exception/response-body.adoc[]

@@ -5,6 +5,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,7 +16,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
@@ -33,6 +34,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -51,12 +53,13 @@ import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedComp
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.auditing.AuditingHandler;
@@ -1197,6 +1200,41 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
         // then
         assertThat(member.getNickname().getNickname()).isEqualTo(newNickname);
+    }
+
+    @DisplayName("회원이 24시간 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
+    @ParameterizedTest
+    @CsvSource({
+            "0, true",
+            "1, true",
+            "23, true",
+            "24, false", // 변경 허용
+            "25, false" // 변경 허용
+    })
+    void changeNicknameThrowsExceptionWhenChangedWithin24Hours(long hoursAgo, boolean shouldThrowException) {
+        // given
+        String oldNickname = "이전 닉네임";
+        String newNickname = "새 닉네임";
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.changeNickname(oldNickname, LocalDateTime.now().minusHours(hoursAgo));
+        memberRepository.save(member);
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        if (shouldThrowException) {
+            assertThatThrownBy(() -> memberService.changeNickname(newNickname, authentication))
+                    .isInstanceOf(NicknameException.class)
+                    .hasMessageContaining(NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
+        } else {
+            assertThatCode(() -> memberService.changeNickname(newNickname, authentication))
+                    .doesNotThrowAnyException();
+            assertThat(member.getNickname().getNickname()).isEqualTo(newNickname);
+        }
     }
 
     private static Company createCompany(String companyName, String officialUrl, String careerUrl,

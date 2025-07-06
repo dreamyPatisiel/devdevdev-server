@@ -14,6 +14,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -288,13 +290,18 @@ public class MemberService {
     }
 
     /**
-     * @Note: 유저의 닉네임을 변경합니다.
+     * @Note: 유저의 닉네임을 변경합니다. 최근 24시간 이내에 변경한 이력이 있다면 닉네임 변경이 불가능합니다.
      * @Author: 유소영
      * @Since: 2025.07.03
      */
     @Transactional
     public void changeNickname(String nickname, Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
-        member.changeNickname(nickname);
+
+        if (member.isAvailableToChangeNickname()) {
+            member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
+        } else {
+            throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
+        }
     }
 }

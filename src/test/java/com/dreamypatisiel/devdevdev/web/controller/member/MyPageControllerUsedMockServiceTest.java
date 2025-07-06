@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.member;
 
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.FAIL;
 import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,9 +15,11 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberNicknameDictionaryService;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
@@ -94,6 +97,35 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultType").value(SUCCESS.name()));
+
+        // 서비스 메서드가 호출되었는지 검증
+        verify(memberService).changeNickname(eq(newNickname), any());
+    }
+
+    @Test
+    @DisplayName("회원이 24시간 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
+    void changeNicknameThrowsExceptionWhenChangedWithin24Hours() throws Exception {
+        // given
+        String newNickname = "변경된 닉네임";
+        ChangeNicknameRequest request = createChangeNicknameRequest(newNickname);
+        request.setNickname(newNickname);
+
+        // when
+        doThrow(new NicknameException(NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE))
+                .when(memberService).changeNickname(any(), any());
+
+        // then
+        mockMvc.perform(patch("/devdevdev/api/v1/mypage/nickname")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(request))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.resultType").value(ResultType.FAIL.name()))
+                .andExpect(jsonPath("$.message").isString())
+                .andExpect(jsonPath("$.message").value(NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE))
+                .andExpect(jsonPath("$.errorCode").value(HttpStatus.BAD_REQUEST.value()));
 
         // 서비스 메서드가 호출되었는지 검증
         verify(memberService).changeNickname(eq(newNickname), any());
