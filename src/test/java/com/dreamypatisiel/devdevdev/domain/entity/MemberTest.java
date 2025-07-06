@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.api.Test;
 
 class MemberTest {
 
@@ -19,14 +18,14 @@ class MemberTest {
             "25, true",        // 24시간 초과
     })
     @DisplayName("닉네임 변경 가능 여부 파라미터 테스트")
-    void isAvailableToChangeNickname_Parameterized(Long hoursAgo, boolean expected) {
+    void canChangeNickname(Long hoursAgo, boolean expected) {
         // given
         Member member = new Member();
         if (hoursAgo != null) {
             member.changeNickname("닉네임", LocalDateTime.now().minusHours(hoursAgo));
         }
         // when
-        boolean result = member.isAvailableToChangeNickname();
+        boolean result = member.canChangeNickname();
         // then
         assertThat(result).isEqualTo(expected);
     }

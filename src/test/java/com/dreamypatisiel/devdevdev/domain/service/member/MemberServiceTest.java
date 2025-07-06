@@ -1242,6 +1242,39 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         }
     }
 
+    @DisplayName("회원의 닉네임 변경 가능 여부를 반환한다.")
+    @ParameterizedTest
+    @CsvSource({
+            "0, false",
+            "1, false",
+            "23, false",
+            "24, true",
+            "25, true"
+    })
+    void canChangeNickname(long hoursAgo, boolean expected) {
+        // given
+        String oldNickname = "이전 닉네임";
+        String newNickname = "새 닉네임";
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        member.changeNickname(newNickname, LocalDateTime.now().minusHours(hoursAgo));
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        boolean result = memberService.canChangeNickname(authentication);
+
+        // then
+        assertThat(result).isEqualTo(expected);
+    }
+
     private static Company createCompany(String companyName, String officialUrl, String careerUrl,
                                          String imageUrl, String description, String industry) {
         return Company.builder()

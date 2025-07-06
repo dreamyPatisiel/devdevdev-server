@@ -132,6 +132,27 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
     }
 
     @Test
+    @DisplayName("회원은 닉네임 변경 가능 여부를 확인할 수 있다.")
+    void canChangeNickname() throws Exception {
+        // given
+        boolean result = true;
+
+        // when
+        when(memberService.canChangeNickname(any())).thenReturn(result);
+
+        // then
+        mockMvc.perform(get("/devdevdev/api/v1/mypage/nickname/changeable")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(SecurityConstant.AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isBoolean());
+    }
+
+    @Test
     @DisplayName("회원이 내가 썼어요 댓글을 조회한다.")
     void getMyWrittenComments() throws Exception {
         // given

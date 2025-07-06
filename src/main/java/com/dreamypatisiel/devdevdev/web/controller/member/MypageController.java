@@ -154,4 +154,12 @@ public class MypageController {
         memberService.changeNickname(request.getNickname(), authentication);
         return ResponseEntity.ok(BasicResponse.success());
     }
+
+    @Operation(summary = "닉네임 변경 가능 여부 조회", description = "닉네임 변경 가능 여부를 true/false로 반환합니다.")
+    @GetMapping("/mypage/nickname/changeable")
+    public ResponseEntity<BasicResponse<Boolean>> canChangeNickname() {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        boolean result = memberService.canChangeNickname(authentication);
+        return ResponseEntity.ok(BasicResponse.success(result));
+    }
 }

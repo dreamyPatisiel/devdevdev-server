@@ -298,10 +298,20 @@ public class MemberService {
     public void changeNickname(String nickname, Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
-        if (!member.isAvailableToChangeNickname()) {
+        if (!member.canChangeNickname()) {
             throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
         }
 
         member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
+    }
+
+    /**
+     * @Note: 유저가 닉네임을 변경할 수 있는지 여부를 반환합니다.
+     * @Author: 유소영
+     * @Since: 2025.07.06
+     */
+    public boolean canChangeNickname(Authentication authentication) {
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+        return member.canChangeNickname();
     }
 }
