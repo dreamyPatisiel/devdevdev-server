@@ -3,15 +3,19 @@ package com.dreamypatisiel.devdevdev.global.security.oauth2.handler;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.JwtMemberService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.service.TokenService;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.OAuth2UserProvider;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.global.utils.UriUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collection;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,8 +57,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CookieUtils.configJwtCookie(response, token);
 
         // 유저 정보 쿠키에 저장
+        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         Member member = memberProvider.getMemberByAuthentication(authentication);
-        CookieUtils.configMemberCookie(response, member);
+        CookieUtils.configMemberCookie(response, member, userPrincipal.isNewMember());
 
         // 리다이렉트 설정
         String redirectUri = UriUtils.createUriByDomainAndEndpoint(domain, endpoint);

@@ -7,4 +7,5 @@ public class JwtCookieConstant {
     public static final String DEVDEVDEV_MEMBER_NICKNAME = "DEVDEVDEV_MEMBER_NICKNAME";
     public static final String DEVDEVDEV_MEMBER_EMAIL = "DEVDEVDEV_MEMBER_EMAIL";
     public static final String DEVDEVDEV_MEMBER_IS_ADMIN = "DEVDEVDEV_MEMBER_IS_ADMIN";
+    public static final String DEVDEVDEV_MEMBER_IS_NEW = "DEVDEVDEV_MEMBER_IS_NEW";
 }

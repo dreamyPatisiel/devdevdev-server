@@ -99,7 +99,7 @@ public abstract class CookieUtils {
                 ACTIVE, DEFAULT_MAX_AGE, false, true);
     }
 
-    public static void configMemberCookie(HttpServletResponse response, Member member) {
+    public static void configMemberCookie(HttpServletResponse response, Member member, boolean isNewMember) {
         // 닉네임 UTF-8 인코딩 필요
         String nickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
 
@@ -109,6 +109,8 @@ public abstract class CookieUtils {
                 member.getEmailAsString(), DEFAULT_MAX_AGE, false, true);
         addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN,
                 String.valueOf(member.isAdmin()), DEFAULT_MAX_AGE, false, true);
+        addCookieToResponse(response, JwtCookieConstant.DEVDEVDEV_MEMBER_IS_NEW,
+                String.valueOf(isNewMember), DEFAULT_MAX_AGE, false, true);
     }
 
     private static void validationCookieEmpty(Cookie[] cookies) {
