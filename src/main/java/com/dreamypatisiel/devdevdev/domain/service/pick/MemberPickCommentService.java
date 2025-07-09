@@ -32,6 +32,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -177,7 +178,8 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Since: 2024.08.11
      */
     @Transactional
-    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication) {
+    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, @Nullable String anonymousMemberId,
+                                                 Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);

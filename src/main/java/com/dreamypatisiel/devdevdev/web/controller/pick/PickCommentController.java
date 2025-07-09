@@ -132,10 +132,11 @@ public class PickCommentController {
             @PathVariable Long pickCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.deletePickComment(pickCommentId, pickId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
