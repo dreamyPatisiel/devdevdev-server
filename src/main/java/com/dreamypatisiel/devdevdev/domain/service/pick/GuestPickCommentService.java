@@ -19,6 +19,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import java.util.EnumSet;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -64,7 +65,8 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
     }
 
     @Override
-    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication) {
+    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId,
+                                                 @Nullable String anonymousMemberId, Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
@@ -88,8 +90,7 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
     }
 
     @Override
-    public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
-                                                             Authentication authentication) {
+    public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId, Authentication authentication) {
 
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
