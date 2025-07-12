@@ -126,11 +126,10 @@ public class PickCommentController {
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 삭제", description = "회원은 자신이 작성한 픽픽픽 댓글/답글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
+    @Operation(summary = "픽픽픽 댓글/답글 삭제", description = "회원/익명회원 본인이 작성한 픽픽픽 댓글/답글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
     @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}")
-    public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(
-            @PathVariable Long pickId,
-            @PathVariable Long pickCommentId) {
+    public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(@PathVariable Long pickId,
+                                                                                @PathVariable Long pickCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
