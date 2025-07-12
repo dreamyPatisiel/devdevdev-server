@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +72,12 @@ class AppOAuth2MemberServiceTest {
         memberNicknameDictionaryRepository.saveAll(nicknameDictionaryWords);
 
         // when
-        oAuth2MemberService.register(mockOAuth2UserProvider, mockOAuth2User);
+        UserPrincipal userPrincipal = oAuth2MemberService.register(mockOAuth2UserProvider, mockOAuth2User);
 
         // then
         Member member = memberRepository.findMemberByUserIdAndSocialType(userId, socialType).get();
         assertThat(member).isNotNull();
+        assertThat(userPrincipal.isNewMember()).isEqualTo(true);
     }
 
     @Test
