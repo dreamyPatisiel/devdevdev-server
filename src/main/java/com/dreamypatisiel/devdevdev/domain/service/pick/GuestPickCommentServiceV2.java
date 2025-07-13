@@ -31,7 +31,6 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import java.util.EnumSet;
 import java.util.List;
-import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -232,8 +231,8 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 익명 회원 추출
-        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
-        return super.findPickBestComments(size, pickId, null, anonymousMember);
+        return super.findPickBestComments(size, pickId, null, findAnonymousMember);
     }
 }
