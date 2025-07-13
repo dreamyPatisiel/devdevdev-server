@@ -85,7 +85,7 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
         request.setNickname(newNickname);
 
         // when
-        doNothing().when(memberService).changeNickname(any(), any());
+        when(memberService.changeNickname(any(), any())).thenReturn(newNickname);
 
         // then
         mockMvc.perform(patch("/devdevdev/api/v1/mypage/nickname")
@@ -96,7 +96,8 @@ public class MyPageControllerUsedMockServiceTest extends SupportControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()));
+                .andExpect(jsonPath("$.resultType").value(SUCCESS.name()))
+                .andExpect(jsonPath("$.data").value(newNickname));
 
         // 서비스 메서드가 호출되었는지 검증
         verify(memberService).changeNickname(eq(newNickname), any());

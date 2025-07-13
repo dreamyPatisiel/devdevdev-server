@@ -147,12 +147,12 @@ public class MypageController {
 
     @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다.")
     @PatchMapping("/mypage/nickname")
-    public ResponseEntity<BasicResponse<Void>> changeNickname(
+    public ResponseEntity<BasicResponse<String>> changeNickname(
             @RequestBody @Valid ChangeNicknameRequest request
     ) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        memberService.changeNickname(request.getNickname(), authentication);
-        return ResponseEntity.ok(BasicResponse.success());
+        String response = memberService.changeNickname(request.getNickname(), authentication);
+        return ResponseEntity.ok(BasicResponse.success(response));
     }
 
     @Operation(summary = "닉네임 변경 가능 여부 조회", description = "닉네임 변경 가능 여부를 true/false로 반환합니다.")
