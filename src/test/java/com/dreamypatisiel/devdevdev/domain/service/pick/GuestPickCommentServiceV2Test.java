@@ -885,248 +885,6 @@ class GuestPickCommentServiceV2Test {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    @DisplayName("승인 상태의 픽픽픽에 포함되어 있는 삭제 상태가 아닌 댓글을 익명회원 본인이 삭제한다.")
-    void deletePickComment(boolean isPublic) {
-        // given
-        // 익명회원 생성
-        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
-        anonymousMemberRepository.save(anonymousMember);
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, anonymousMember, pick);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        // when
-        PickCommentResponse response = guestPickCommentServiceV2.deletePickComment(pickComment.getId(),
-                pick.getId(), anonymousMember.getAnonymousMemberId(), authentication);
-
-        // then
-        PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
-        assertAll(
-                () -> assertThat(response.getPickCommentId()).isEqualTo(pickComment.getId()),
-                () -> assertThat(findPickComment.getDeletedAt()).isNotNull(),
-                () -> assertThat(findPickComment.getDeletedAnonymousBy().getId()).isEqualTo(anonymousMember.getId())
-        );
-    }
-
-    @Test
-    @DisplayName("익명회원 전용 댓글을 삭제할 때 익명회원이 아니면 예외가 발생한다.")
-    void deletePickComment() {
-        // given
-        // 회원 생성
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        em.flush();
-        em.clear();
-
-        // when // then
-        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
-                0L, 0L, "anonymousMemberId", authentication))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 픽픽픽 댓글이 존재하지 않으면 예외가 발생한다.")
-    void deletePickCommentNotFoundPickComment() {
-        // given
-        // 익명회원 생성
-        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
-        anonymousMemberRepository.save(anonymousMember);
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        em.flush();
-        em.clear();
-
-        // when // then
-        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
-                0L, pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 본인이 작성한 픽픽픽 댓글이 아니면 예외가 발생한다.")
-    void deletePickCommentNotFoundPickCommentByMember() {
-        // given
-        // 익명회원 생성
-        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
-        anonymousMemberRepository.save(anonymousMember);
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 다른 회원이 직성한 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, author, pick);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        // when // then
-        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
-                pickComment.getId(), pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 픽픽픽이 존재하지 않으면 예외가 발생한다.")
-    void deletePickCommentNotFoundPick(boolean isPublic) {
-        // given
-        // 익명회원 생성
-        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
-        anonymousMemberRepository.save(anonymousMember);
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 다른 회원이 직성한 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, anonymousMember, pick);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        // when // then
-        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
-                pickComment.getId(), 0L, anonymousMember.getAnonymousMemberId(), authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
-    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 승인상태의 픽픽픽이 존재하지 않으면 예외가 발생한다.")
-    void deletePickCommentNotFoundApprovalPick(ContentStatus contentStatus) {
-        // given
-        // 익명회원 생성
-        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
-        anonymousMemberRepository.save(anonymousMember);
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
-        pickRepository.save(pick);
-
-        // 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, anonymousMember, pick);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        // when // then
-        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
-                pickComment.getId(), pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, DELETE);
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 삭제 상태인 픽픽픽 댓글을 삭제하려고 하면 예외가 발생한다.")
-    void deletePickCommentNotFoundPickCommentByDeletedAtIsNull(boolean isPublic) {
-        // given
-        // 익명회원 생성
-        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
-        anonymousMemberRepository.save(anonymousMember);
-
-        Authentication authentication = mock(Authentication.class);
-        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
-
-        // 픽픽픽 작성자 생성
-        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
-                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
-        Member author = Member.createMemberBy(authorSocialMemberDto);
-        memberRepository.save(author);
-
-        // 픽픽픽 생성
-        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
-        pickRepository.save(pick);
-
-        // 삭제 상태의 픽픽픽 댓글 생성
-        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, anonymousMember, pick);
-        pickComment.changeDeletedAtByAnonymousMember(LocalDateTime.now(), anonymousMember);
-        pickCommentRepository.save(pickComment);
-
-        em.flush();
-        em.clear();
-
-        // when // then
-        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
-                pickComment.getId(), pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
-    }
-
-    @ParameterizedTest
     @EnumSource(PickCommentSort.class)
     @DisplayName("익명회원이 픽픽픽 모든 댓글/답글을 알맞게 정렬하여 커서 방식으로 조회한다.")
     void findPickCommentsByPickCommentSort(PickCommentSort pickCommentSort) {
@@ -2091,5 +1849,247 @@ class GuestPickCommentServiceV2Test {
                                 null,
                                 pickReply3.getParent().getCreatedBy().getNicknameAsString())
                 );
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName("승인 상태의 픽픽픽에 포함되어 있는 삭제 상태가 아닌 댓글을 익명회원 본인이 삭제한다.")
+    void deletePickComment(boolean isPublic) {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, anonymousMember, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickCommentResponse response = guestPickCommentServiceV2.deletePickComment(pickComment.getId(),
+                pick.getId(), anonymousMember.getAnonymousMemberId(), authentication);
+
+        // then
+        PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
+        assertAll(
+                () -> assertThat(response.getPickCommentId()).isEqualTo(pickComment.getId()),
+                () -> assertThat(findPickComment.getDeletedAt()).isNotNull(),
+                () -> assertThat(findPickComment.getDeletedAnonymousBy().getId()).isEqualTo(anonymousMember.getId())
+        );
+    }
+
+    @Test
+    @DisplayName("익명회원 전용 댓글을 삭제할 때 익명회원이 아니면 예외가 발생한다.")
+    void deletePickComment() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
+                0L, 0L, "anonymousMemberId", authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 픽픽픽 댓글이 존재하지 않으면 예외가 발생한다.")
+    void deletePickCommentNotFoundPickComment() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
+                0L, pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 본인이 작성한 픽픽픽 댓글이 아니면 예외가 발생한다.")
+    void deletePickCommentNotFoundPickCommentByMember() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 다른 회원이 직성한 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, author, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
+                pickComment.getId(), pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 픽픽픽이 존재하지 않으면 예외가 발생한다.")
+    void deletePickCommentNotFoundPick(boolean isPublic) {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 다른 회원이 직성한 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, anonymousMember, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
+                pickComment.getId(), 0L, anonymousMember.getAnonymousMemberId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = ContentStatus.class, mode = Mode.EXCLUDE, names = {"APPROVAL"})
+    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 승인상태의 픽픽픽이 존재하지 않으면 예외가 발생한다.")
+    void deletePickCommentNotFoundApprovalPick(ContentStatus contentStatus) {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), contentStatus, author);
+        pickRepository.save(pick);
+
+        // 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), false, anonymousMember, pick);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
+                pickComment.getId(), pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, DELETE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    @DisplayName("익명회원이 픽픽픽 댓글을 삭제할 때 삭제 상태인 픽픽픽 댓글을 삭제하려고 하면 예외가 발생한다.")
+    void deletePickCommentNotFoundPickCommentByDeletedAtIsNull(boolean isPublic) {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 픽픽픽 작성자 생성
+        SocialMemberDto authorSocialMemberDto = createSocialDto("authorId", "author",
+                nickname, password, "authorDreamy5patisiel@kakao.com", socialType, role);
+        Member author = Member.createMemberBy(authorSocialMemberDto);
+        memberRepository.save(author);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, author);
+        pickRepository.save(pick);
+
+        // 삭제 상태의 픽픽픽 댓글 생성
+        PickComment pickComment = createPickComment(new CommentContents("안녕하세웅"), isPublic, anonymousMember, pick);
+        pickComment.changeDeletedAtByAnonymousMember(LocalDateTime.now(), anonymousMember);
+        pickCommentRepository.save(pickComment);
+
+        em.flush();
+        em.clear();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.deletePickComment(
+                pickComment.getId(), pick.getId(), anonymousMember.getAnonymousMemberId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }
 }
