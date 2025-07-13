@@ -47,7 +47,7 @@ public class AnonymousMember extends BasicTime {
     }
 
     public boolean hasNickName() {
-        return nickname == null || nickname.isBlank();
+        return nickname != null && !nickname.isBlank();
     }
 
     public void changeNickname(String nickname) {

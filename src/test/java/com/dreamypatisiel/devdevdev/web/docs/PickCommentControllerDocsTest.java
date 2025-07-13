@@ -691,7 +691,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명 회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
@@ -711,7 +712,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                         fieldWithPath("data.content").type(ARRAY).description("픽픽픽 댓글/답글 메인 배열"),
                         fieldWithPath("data.content[].pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디"),
                         fieldWithPath("data.content[].createdAt").type(STRING).description("픽픽픽 댓글 작성일시"),
-                        fieldWithPath("data.content[].memberId").type(NUMBER).description("픽픽픽 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].memberId").optional().description("픽픽픽 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].anonymousMemberId").optional().description("픽픽픽 댓글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].author").type(STRING).description("픽픽픽 댓글 작성자 닉네임"),
                         fieldWithPath("data.content[].isCommentOfPickAuthor").type(BOOLEAN)
                                 .description("댓글 작성자가 픽픽픽 작성자인지 여부"),
@@ -736,7 +738,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.content[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("data.content[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
-                        fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].memberId").type(NUMBER).optional().description("픽픽픽 답글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].anonymousMemberId").type(NUMBER).optional()
+                                .description("픽픽픽 답글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].pickParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].pickOriginParentCommentId").type(NUMBER)
@@ -758,8 +762,10 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 답글 삭제 여부"),
                         fieldWithPath("data.content[].replies[].isModified").type(BOOLEAN)
                                 .description("픽픽픽 답글 수정 여부"),
-                        fieldWithPath("data.content[].replies[].pickParentCommentMemberId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].pickParentCommentMemberId").optional()
                                 .description("픽픽픽 부모 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].pickParentCommentAnonymousMemberId").optional()
+                                .description("픽픽픽 부모 댓글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].pickParentCommentAuthor").type(STRING)
                                 .description("픽픽픽 부모 댓글 작성자 닉네임"),
 
@@ -993,7 +999,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명 회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
@@ -1007,7 +1014,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("datas.[].pickCommentId").type(NUMBER).description("픽픽픽 댓글 아이디"),
                         fieldWithPath("datas.[].createdAt").type(STRING).description("픽픽픽 댓글 작성일시"),
-                        fieldWithPath("datas.[].memberId").type(NUMBER).description("픽픽픽 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].memberId").optional().description("픽픽픽 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].anonymousMemberId").optional().description("픽픽픽 댓글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].author").type(STRING).description("픽픽픽 댓글 작성자 닉네임"),
                         fieldWithPath("datas.[].isCommentOfPickAuthor").type(BOOLEAN)
                                 .description("댓글 작성자가 픽픽픽 작성자인지 여부"),
@@ -1032,7 +1040,8 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("datas.[].replies").type(ARRAY).description("픽픽픽 답글 배열"),
                         fieldWithPath("datas.[].replies[].pickCommentId").type(NUMBER).description("픽픽픽 답글 아이디"),
-                        fieldWithPath("datas.[].replies[].memberId").type(NUMBER).description("픽픽픽 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].memberId").optional().description("픽픽픽 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].anonymousMemberId").optional().description("픽픽픽 답글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].replies[].pickParentCommentId").type(NUMBER)
                                 .description("픽픽픽 답글의 부모 댓글 아이디"),
                         fieldWithPath("datas.[].replies[].pickOriginParentCommentId").type(NUMBER)
@@ -1054,8 +1063,9 @@ public class PickCommentControllerDocsTest extends SupportControllerDocsTest {
                                 .description("픽픽픽 답글 삭제 여부"),
                         fieldWithPath("datas.[].replies[].isModified").type(BOOLEAN)
                                 .description("픽픽픽 답글 수정 여부"),
-                        fieldWithPath("datas.[].replies[].pickParentCommentMemberId").type(NUMBER)
-                                .description("픽픽픽 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].pickParentCommentMemberId").optional().description("픽픽픽 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].pickParentCommentAnonymousMemberId").optional()
+                                .description("픽픽픽 부모 댓글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].replies[].pickParentCommentAuthor").type(STRING)
                                 .description("픽픽픽 부모 댓글 작성자 닉네임")
                 )

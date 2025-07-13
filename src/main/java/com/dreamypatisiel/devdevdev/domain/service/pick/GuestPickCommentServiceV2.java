@@ -139,6 +139,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
     }
 
     @Override
+    @Transactional
     public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId, PickCommentDto pickCommentDto,
                                                  Authentication authentication) {
 
@@ -174,19 +175,24 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
     /**
      * @Note: 정렬 조건에 따라서 커서 방식으로 픽픽픽 댓글/답글을 조회한다.
      * @Author: 장세웅
-     * @Since: 2024.10.02
+     * @Since: 2025.07.13
      */
     @Override
+    @Transactional
     public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId, Long pickCommentId,
                                                               PickCommentSort pickCommentSort,
                                                               EnumSet<PickOptionType> pickOptionTypes,
+                                                              String anonymousMemberId,
                                                               Authentication authentication) {
 
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
+        // 익명 회원 추출
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
         // 픽픽픽 댓글/답글 조회
-        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, null);
+        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, null, anonymousMember);
     }
 
     @Override
@@ -202,11 +208,15 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId,
+    @Transactional
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, String anonymousMemberId,
                                                            Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        return super.findPickBestComments(size, pickId, null);
+        // 익명 회원 추출
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        return super.findPickBestComments(size, pickId, null, anonymousMember);
     }
 }

@@ -77,13 +77,14 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
     public SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId, Long pickCommentId,
                                                               PickCommentSort pickCommentSort,
                                                               EnumSet<PickOptionType> pickOptionTypes,
+                                                              String anonymousMemberId,
                                                               Authentication authentication) {
 
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 픽픽픽 댓글/답글 조회
-        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, null);
+        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, null, null);
     }
 
     @Override
@@ -99,11 +100,11 @@ public class GuestPickCommentService extends PickCommonService implements PickCo
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId,
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, String anonymousMemberId,
                                                            Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        return super.findPickBestComments(size, pickId, null);
+        return super.findPickBestComments(size, pickId, null, null);
     }
 }

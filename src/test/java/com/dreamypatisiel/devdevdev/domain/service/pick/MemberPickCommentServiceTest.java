@@ -1317,7 +1317,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, null, authentication);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, null, null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -1610,8 +1610,7 @@ class MemberPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.firstPickOption),
-                authentication);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.firstPickOption), null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -1842,7 +1841,7 @@ class MemberPickCommentServiceTest {
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption),
-                authentication);
+                null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -1975,7 +1974,7 @@ class MemberPickCommentServiceTest {
         SliceCustom<PickCommentsResponse> response = memberPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort,
                 EnumSet.of(PickOptionType.firstPickOption, PickOptionType.secondPickOption),
-                authentication);
+                null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -2460,7 +2459,7 @@ class MemberPickCommentServiceTest {
 
         // when
         List<PickCommentsResponse> response = memberPickCommentService.findPickBestComments(3, pick.getId(),
-                authentication);
+                null, authentication);
 
         // then
         // 최상위 댓글 검증

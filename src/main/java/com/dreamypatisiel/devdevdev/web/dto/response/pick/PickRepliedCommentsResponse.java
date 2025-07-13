@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.pick;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -16,7 +17,9 @@ import lombok.Data;
 public class PickRepliedCommentsResponse {
     private Long pickCommentId;
     private Long memberId;
+    private Long anonymousMemberId;
     private Long pickParentCommentMemberId; // 부모 댓글의 작성자 회원 아이디
+    private Long pickParentCommentAnonymousMemberId; // 부모 댓글의 작성자 익명회원 아이디
     private Long pickParentCommentId;
     private Long pickOriginParentCommentId;
 
@@ -35,17 +38,20 @@ public class PickRepliedCommentsResponse {
     private Boolean isDeleted;
 
     @Builder
-    public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long pickParentCommentMemberId,
+    public PickRepliedCommentsResponse(Long pickCommentId, Long memberId, Long anonymousMemberId, Long pickParentCommentMemberId,
                                        Long pickParentCommentId, Long pickOriginParentCommentId,
-                                       LocalDateTime createdAt, Boolean isCommentOfPickAuthor, Boolean isCommentAuthor,
+                                       Long pickParentCommentAnonymousMemberId, LocalDateTime createdAt,
+                                       Boolean isCommentOfPickAuthor, Boolean isCommentAuthor,
                                        Boolean isRecommended, String pickParentCommentAuthor, String author,
                                        String maskedEmail, String contents, Long recommendTotalCount,
                                        Boolean isModified, Boolean isDeleted) {
         this.pickCommentId = pickCommentId;
         this.memberId = memberId;
+        this.anonymousMemberId = anonymousMemberId;
         this.pickParentCommentMemberId = pickParentCommentMemberId;
         this.pickParentCommentId = pickParentCommentId;
         this.pickOriginParentCommentId = pickOriginParentCommentId;
+        this.pickParentCommentAnonymousMemberId = pickParentCommentAnonymousMemberId;
         this.createdAt = createdAt;
         this.isCommentOfPickAuthor = isCommentOfPickAuthor;
         this.isCommentAuthor = isCommentAuthor;
@@ -58,26 +64,137 @@ public class PickRepliedCommentsResponse {
         this.isModified = isModified;
         this.isDeleted = isDeleted;
     }
+    
+    public static PickRepliedCommentsResponse of(@Nullable Member member, @Nullable AnonymousMember anonymousMember,
+                                                 PickComment repliedPickComment) {
 
-    // member 가 null 인 경우 익명회원 응답
-    public static PickRepliedCommentsResponse of(@Nullable Member member, PickComment repliedPickComment) {
+        // 댓글
+        Member repliedCreatedBy = repliedPickComment.getCreatedBy();
+        AnonymousMember repliedCreatedAnonymousBy = repliedPickComment.getCreatedAnonymousBy();
 
-        Member createdBy = repliedPickComment.getCreatedBy();
+        // 부모 댓글
         PickComment parentPickComment = repliedPickComment.getParent();
+        Member parentCreatedBy = parentPickComment.getCreatedBy();
+        AnonymousMember parentCreatedAnonymousBy = parentPickComment.getCreatedAnonymousBy();
 
+        // 댓글을 익명회원이 작성한 경우
+        if (repliedCreatedBy == null) {
+            // 부모 댓글을 익명회원이 작성한 경우
+            if (parentCreatedBy == null) {
+                return createResponseForAnonymousReplyToAnonymous(member, anonymousMember, repliedPickComment,
+                        repliedCreatedAnonymousBy, parentCreatedAnonymousBy, parentPickComment);
+            }
+            // 부모 댓글을 회원이 작성한 경우
+            return createResponseForAnonymousReplyToMember(member, anonymousMember, repliedPickComment, repliedCreatedAnonymousBy,
+                    parentCreatedBy, parentPickComment);
+        }
+
+        // 댓글을 회원이 작성한 경우
+        // 부모 댓글을 익명회원이 작성한 경우
+        if (parentCreatedBy == null) {
+            return createResponseForMemberReplyToAnonymous(member, anonymousMember, repliedPickComment, repliedCreatedBy,
+                    parentCreatedAnonymousBy, parentPickComment);
+        }
+
+        // 부모 댓글을 회원이 작성한 경우
+        return createResponseForMemberReplyToMember(member, anonymousMember, repliedPickComment, repliedCreatedBy,
+                parentPickComment);
+    }
+
+    private static PickRepliedCommentsResponse createResponseForMemberReplyToMember(Member member,
+                                                                                    AnonymousMember anonymousMember,
+                                                                                    PickComment repliedPickComment,
+                                                                                    Member repliedCreatedBy,
+                                                                                    PickComment parentPickComment) {
         return PickRepliedCommentsResponse.builder()
                 .pickCommentId(repliedPickComment.getId())
-                .memberId(createdBy.getId())
+                .memberId(repliedCreatedBy.getId())
                 .pickParentCommentMemberId(parentPickComment.getCreatedBy().getId())
-                .author(createdBy.getNickname().getNickname())
+                .author(repliedCreatedBy.getNickname().getNickname())
                 .pickParentCommentAuthor(parentPickComment.getCreatedBy().getNicknameAsString())
                 .pickParentCommentId(parentPickComment.getId())
                 .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
                 .createdAt(repliedPickComment.getCreatedAt())
-                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(createdBy, repliedPickComment.getPick()))
-                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, repliedPickComment))
+                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(repliedCreatedBy, repliedPickComment.getPick()))
+                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, anonymousMember, repliedPickComment))
                 .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, repliedPickComment))
-                .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(createdBy.getEmail().getEmail()))
+                .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(repliedCreatedBy.getEmail().getEmail()))
+                .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
+                .recommendTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
+                .isModified(repliedPickComment.isModified())
+                .isDeleted(repliedPickComment.isDeleted())
+                .build();
+    }
+
+    private static PickRepliedCommentsResponse createResponseForMemberReplyToAnonymous(Member member,
+                                                                                       AnonymousMember anonymousMember,
+                                                                                       PickComment repliedPickComment,
+                                                                                       Member repliedCreatedBy,
+                                                                                       AnonymousMember parentCreatedAnonymousBy,
+                                                                                       PickComment parentPickComment) {
+        return PickRepliedCommentsResponse.builder()
+                .pickCommentId(repliedPickComment.getId())
+                .memberId(repliedCreatedBy.getId())
+                .pickParentCommentAnonymousMemberId(parentCreatedAnonymousBy.getId())
+                .author(repliedCreatedBy.getNickname().getNickname())
+                .pickParentCommentAuthor(parentCreatedAnonymousBy.getNickname())
+                .pickParentCommentId(parentPickComment.getId())
+                .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
+                .createdAt(repliedPickComment.getCreatedAt())
+                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(repliedCreatedBy, repliedPickComment.getPick()))
+                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, anonymousMember, repliedPickComment))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, repliedPickComment))
+                .maskedEmail(CommonResponseUtil.sliceAndMaskEmail(repliedCreatedBy.getEmail().getEmail()))
+                .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
+                .recommendTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
+                .isModified(repliedPickComment.isModified())
+                .isDeleted(repliedPickComment.isDeleted())
+                .build();
+    }
+
+    private static PickRepliedCommentsResponse createResponseForAnonymousReplyToMember(Member member,
+                                                                                       AnonymousMember anonymousMember,
+                                                                                       PickComment repliedPickComment,
+                                                                                       AnonymousMember repliedCreatedAnonymousBy,
+                                                                                       Member parentCreatedBy,
+                                                                                       PickComment parentPickComment) {
+        return PickRepliedCommentsResponse.builder()
+                .pickCommentId(repliedPickComment.getId())
+                .anonymousMemberId(repliedCreatedAnonymousBy.getId())
+                .pickParentCommentAnonymousMemberId(parentCreatedBy.getId())
+                .author(repliedCreatedAnonymousBy.getNickname())
+                .pickParentCommentAuthor(parentCreatedBy.getNicknameAsString())
+                .pickParentCommentId(parentPickComment.getId())
+                .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
+                .createdAt(repliedPickComment.getCreatedAt())
+                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(null, repliedPickComment.getPick()))
+                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, anonymousMember, repliedPickComment))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, repliedPickComment))
+                .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
+                .recommendTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
+                .isModified(repliedPickComment.isModified())
+                .isDeleted(repliedPickComment.isDeleted())
+                .build();
+    }
+
+    private static PickRepliedCommentsResponse createResponseForAnonymousReplyToAnonymous(Member member,
+                                                                                          AnonymousMember anonymousMember,
+                                                                                          PickComment repliedPickComment,
+                                                                                          AnonymousMember repliedCreatedAnonymousBy,
+                                                                                          AnonymousMember parentCreatedAnonymousBy,
+                                                                                          PickComment parentPickComment) {
+        return PickRepliedCommentsResponse.builder()
+                .pickCommentId(repliedPickComment.getId())
+                .anonymousMemberId(repliedCreatedAnonymousBy.getId())
+                .pickParentCommentAnonymousMemberId(parentCreatedAnonymousBy.getId())
+                .author(repliedCreatedAnonymousBy.getNickname())
+                .pickParentCommentAuthor(parentCreatedAnonymousBy.getNickname())
+                .pickParentCommentId(parentPickComment.getId())
+                .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
+                .createdAt(repliedPickComment.getCreatedAt())
+                .isCommentOfPickAuthor(CommentResponseUtil.isPickAuthor(null, repliedPickComment.getPick()))
+                .isCommentAuthor(CommentResponseUtil.isPickCommentAuthor(member, anonymousMember, repliedPickComment))
+                .isRecommended(CommentResponseUtil.isPickCommentRecommended(member, repliedPickComment))
                 .contents(CommentResponseUtil.getCommentByPickCommentStatus(repliedPickComment))
                 .recommendTotalCount(repliedPickComment.getRecommendTotalCount().getCount())
                 .isModified(repliedPickComment.isModified())

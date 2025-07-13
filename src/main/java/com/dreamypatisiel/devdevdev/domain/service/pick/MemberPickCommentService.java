@@ -66,6 +66,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.23
      */
+    @Override
     @Transactional
     public PickCommentResponse registerPickComment(Long pickId, PickCommentDto pickCommentDto, Authentication authentication) {
 
@@ -114,6 +115,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.24
      */
+    @Override
     @Transactional
     public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId,
                                                           Long pickCommentOriginParentId,
@@ -146,6 +148,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.10
      */
+    @Override
     @Transactional
     public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
                                                  PickCommentDto pickModifyCommentDto,
@@ -176,6 +179,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.11
      */
+    @Override
     @Transactional
     public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication) {
 
@@ -216,17 +220,19 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
+    @Override
     public SliceCommentCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
                                                                      Long pickCommentId,
                                                                      PickCommentSort pickCommentSort,
                                                                      EnumSet<PickOptionType> pickOptionTypes,
+                                                                     String anonymousMemberId,
                                                                      Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 댓글/답글 조회
-        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, findMember);
+        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, findMember, null);
     }
 
     /**
@@ -234,6 +240,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.09.07
      */
+    @Override
     @Transactional
     public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
                                                              Authentication authentication) {
@@ -260,12 +267,13 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication) {
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, String anonymousMemberId,
+                                                           Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        return super.findPickBestComments(size, pickId, findMember);
+        return super.findPickBestComments(size, pickId, findMember, null);
     }
 
     private PickCommentRecommendResponse toggleOrCreatePickCommentRecommend(PickComment pickComment, Member member) {

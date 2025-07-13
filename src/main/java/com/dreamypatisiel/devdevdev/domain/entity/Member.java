@@ -113,7 +113,7 @@ public class Member extends BasicTime {
 
     @OneToMany(mappedBy = "member")
     private List<TechArticleRecommend> recommends = new ArrayList<>();
-    
+
     public Member(Long id) {
         this.id = id;
     }

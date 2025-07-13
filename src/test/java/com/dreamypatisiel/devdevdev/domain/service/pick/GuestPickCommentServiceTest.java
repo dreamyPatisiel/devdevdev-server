@@ -172,7 +172,7 @@ class GuestPickCommentServiceTest {
         // when
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = guestPickCommentService.findPickComments(pageable,
-                pick.getId(), Long.MAX_VALUE, pickCommentSort, null, authentication);
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, null, null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -459,7 +459,7 @@ class GuestPickCommentServiceTest {
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = guestPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.firstPickOption),
-                authentication);
+                null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -683,7 +683,7 @@ class GuestPickCommentServiceTest {
         Pageable pageable = PageRequest.of(0, 5);
         SliceCustom<PickCommentsResponse> response = guestPickCommentService.findPickComments(pageable,
                 pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption),
-                authentication);
+                null, authentication);
 
         // then
         // 최상위 댓글 검증
@@ -746,7 +746,7 @@ class GuestPickCommentServiceTest {
 
         // when // then
         assertThatThrownBy(() -> guestPickCommentService.findPickComments(pageable,
-                1L, Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption), authentication))
+                1L, Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption), null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }
@@ -766,7 +766,7 @@ class GuestPickCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestPickCommentService.findPickBestComments(3, 1L, authentication))
+        assertThatThrownBy(() -> guestPickCommentService.findPickBestComments(3, 1L, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }
@@ -854,8 +854,7 @@ class GuestPickCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        List<PickCommentsResponse> response = guestPickCommentService.findPickBestComments(3, pick.getId(),
-                authentication);
+        List<PickCommentsResponse> response = guestPickCommentService.findPickBestComments(3, pick.getId(), null, authentication);
 
         // then
         // 최상위 댓글 검증

@@ -117,10 +117,11 @@ public class PickCommentController {
             @RequestParam(required = false) EnumSet<PickOptionType> pickOptionTypes) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
-        SliceCustom<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickComments(pageable,
-                pickId, pickCommentId, pickCommentSort, pickOptionTypes, authentication);
+        SliceCustom<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickComments(
+                pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }
@@ -158,14 +159,14 @@ public class PickCommentController {
     @Operation(summary = "픽픽픽 베스트 댓글 조회", description = "픽픽픽 베스트 댓글을 조회할 수 있습니다.")
     @GetMapping("/picks/{pickId}/comments/best")
     public ResponseEntity<BasicResponse<PickCommentsResponse>> getPickBestComments(
-            @RequestParam(defaultValue = "3") int size,
-            @PathVariable Long pickId) {
+            @RequestParam(defaultValue = "3") int size, @PathVariable Long pickId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         List<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickBestComments(size, pickId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }

@@ -31,9 +31,10 @@ public interface PickCommentService {
 
     SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId, Long pickCommentId,
                                                        PickCommentSort pickCommentSort, EnumSet<PickOptionType> pickOptionTypes,
-                                                       Authentication authentication);
+                                                       String anonymousMemberId, Authentication authentication);
 
     PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId, Authentication authentication);
 
-    List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication);
+    List<PickCommentsResponse> findPickBestComments(int size, Long pickId, String anonymousMemberId,
+                                                    Authentication authentication);
 }
