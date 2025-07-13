@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import java.util.EnumSet;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
@@ -27,7 +28,8 @@ public interface PickCommentService {
     PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId, PickCommentDto pickModifyCommentDto,
                                           Authentication authentication);
 
-    PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication);
+    PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, @Nullable String anonymousMemberId,
+                                          Authentication authentication);
 
     SliceCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId, Long pickCommentId,
                                                        PickCommentSort pickCommentSort, EnumSet<PickOptionType> pickOptionTypes,

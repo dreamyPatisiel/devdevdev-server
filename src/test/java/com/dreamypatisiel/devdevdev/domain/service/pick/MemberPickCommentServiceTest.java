@@ -953,7 +953,7 @@ class MemberPickCommentServiceTest {
 
         // when
         PickCommentResponse response = memberPickCommentService.deletePickComment(pickComment.getId(),
-                pick.getId(), authentication);
+                pick.getId(), null, authentication);
 
         // then
         PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
@@ -1000,7 +1000,7 @@ class MemberPickCommentServiceTest {
 
         // when
         PickCommentResponse response = memberPickCommentService.deletePickComment(pickComment.getId(),
-                pick.getId(), authentication);
+                pick.getId(), null, authentication);
 
         // then
         PickComment findPickComment = pickCommentRepository.findById(pickComment.getId()).get();
@@ -1029,7 +1029,7 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.deletePickComment(0L, 0L, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.deletePickComment(0L, 0L, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -1064,7 +1064,7 @@ class MemberPickCommentServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.deletePickComment(0L, pick.getId(), authentication))
+                () -> memberPickCommentService.deletePickComment(0L, pick.getId(), null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }
@@ -1103,7 +1103,7 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.deletePickComment(pickComment.getId(), pick.getId(),
+        assertThatThrownBy(() -> memberPickCommentService.deletePickComment(pickComment.getId(), pick.getId(), null,
                 authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
@@ -1143,7 +1143,7 @@ class MemberPickCommentServiceTest {
         em.clear();
 
         // when // then
-        assertThatThrownBy(() -> memberPickCommentService.deletePickComment(pickComment.getId(), 0L, authentication))
+        assertThatThrownBy(() -> memberPickCommentService.deletePickComment(pickComment.getId(), 0L, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }
@@ -1183,7 +1183,7 @@ class MemberPickCommentServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.deletePickComment(pickComment.getId(), pick.getId(), authentication))
+                () -> memberPickCommentService.deletePickComment(pickComment.getId(), pick.getId(), null, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, DELETE);
     }
@@ -1224,7 +1224,7 @@ class MemberPickCommentServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> memberPickCommentService.deletePickComment(pickComment.getId(), pick.getId(), authentication))
+                () -> memberPickCommentService.deletePickComment(pickComment.getId(), pick.getId(), null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE);
     }

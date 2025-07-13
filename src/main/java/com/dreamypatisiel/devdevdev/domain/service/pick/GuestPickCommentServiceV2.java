@@ -31,6 +31,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import java.util.EnumSet;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -72,7 +73,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
         Boolean isPickVotePublic = pickCommentDto.getIsPickVotePublic();
 
         // 익명 회원 추출
-        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 조회
         Pick findPick = pickRepository.findById(pickId)
@@ -89,12 +90,12 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
         if (isPickVotePublic) {
             // 익명회원이 투표한 픽픽픽 투표 조회
             PickVote findPickVote = pickVoteRepository.findWithPickAndPickOptionByPickIdAndAnonymousMemberAndDeletedAtIsNull(
-                            pickId, anonymousMember)
+                            pickId, findAnonymousMember)
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
             PickComment pickComment = PickComment.createPublicVoteCommentByAnonymousMember(new CommentContents(contents),
-                    anonymousMember, findPick, findPickVote);
+                    findAnonymousMember, findPick, findPickVote);
             pickCommentRepository.save(pickComment);
 
             return new PickCommentResponse(pickComment.getId());
@@ -102,7 +103,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
 
         // 픽픽픽 선택지 투표 비공개인 경우
         PickComment pickComment = PickComment.createPrivateVoteCommentByAnonymousMember(new CommentContents(contents),
-                anonymousMember, findPick);
+                findAnonymousMember, findPick);
         pickCommentRepository.save(pickComment);
 
         return new PickCommentResponse(pickComment.getId());
@@ -121,7 +122,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
         String anonymousMemberId = pickRegisterRepliedCommentDto.getAnonymousMemberId();
 
         // 익명 회원 추출
-        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 댓글 로직 수행
         PickReplyContext pickReplyContext = prepareForReplyRegistration(pickParentCommentId, pickCommentOriginParentId, pickId);
@@ -132,7 +133,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
 
         // 픽픽픽 서브 댓글(답글) 생성
         PickComment pickRepliedComment = PickComment.createRepliedCommentByAnonymousMember(new CommentContents(contents),
-                findParentPickComment, findOriginParentPickComment, anonymousMember, findPick);
+                findParentPickComment, findOriginParentPickComment, findAnonymousMember, findPick);
         pickCommentRepository.save(pickRepliedComment);
 
         return new PickCommentResponse(pickRepliedComment.getId());
@@ -149,16 +150,15 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
         String anonymousMemberId = pickCommentDto.getAnonymousMemberId();
 
         // 익명 회원 추출
-        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
 
         // 픽픽픽 댓글 조회(익명 회원 본인이 댓글 작성, 삭제되지 않은 댓글)
         PickComment findPickComment = pickCommentRepository.findWithPickByIdAndPickIdAndCreatedAnonymousByIdAndDeletedAtIsNull(
-                        pickCommentId, pickId, anonymousMember.getId())
+                        pickCommentId, pickId, findAnonymousMember.getId())
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
         // 픽픽픽 게시글의 승인 상태 검증
-        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE,
-                MODIFY);
+        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, MODIFY);
 
         // 댓글 수정
         findPickComment.modifyCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
@@ -167,8 +167,26 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
     }
 
     @Override
-    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, @Nullable String anonymousMemberId,
+                                                 Authentication authentication) {
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 익명 회원 추출
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 픽픽픽 댓글 조회(회원 본인이 댓글 작성, 삭제되지 않은 댓글)
+        PickComment findPickComment = pickCommentRepository.findWithPickByIdAndPickIdAndCreatedAnonymousByIdAndDeletedAtIsNull(
+                        pickCommentId, pickId, findAnonymousMember.getId())
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태 검증
+        validateIsApprovalPickContentStatus(findPickComment.getPick(), INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, DELETE);
+
+        // 소프트 삭제
+        findPickComment.changeDeletedAtByAnonymousMember(timeProvider.getLocalDateTimeNow(), findAnonymousMember);
+
+        return new PickCommentResponse(findPickComment.getId());
     }
 
     /**
@@ -190,8 +208,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
     }
 
     @Override
-    public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
-                                                             Authentication authentication) {
+    public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId, Authentication authentication) {
 
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -202,8 +219,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId,
-                                                           Authentication authentication) {
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
