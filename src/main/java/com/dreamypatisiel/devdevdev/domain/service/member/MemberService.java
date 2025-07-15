@@ -295,7 +295,7 @@ public class MemberService {
      * @Since: 2025.07.03
      */
     @Transactional
-    public void changeNickname(String nickname, Authentication authentication) {
+    public String changeNickname(String nickname, Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         if (!member.canChangeNickname()) {
@@ -303,6 +303,7 @@ public class MemberService {
         }
 
         member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
+        return member.getNicknameAsString();
     }
 
     /**

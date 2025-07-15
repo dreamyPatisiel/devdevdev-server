@@ -106,7 +106,7 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
         ChangeNicknameRequest request = createChangeNicknameRequest(newNickname);
 
         // when
-        doNothing().when(memberService).changeNickname(any(), any());
+        when(memberService.changeNickname(any(), any())).thenReturn(newNickname);
 
         // then
         mockMvc.perform(patch("/devdevdev/api/v1/mypage/nickname")
@@ -123,7 +123,8 @@ public class MyPageControllerDocsUsedMockServiceTest extends SupportControllerDo
                                 headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
                         ),
                         responseFields(
-                                fieldWithPath("resultType").description("성공 여부")
+                                fieldWithPath("resultType").description("성공 여부"),
+                                fieldWithPath("data").description("변경된 닉네임")
                         )
                 ));
 

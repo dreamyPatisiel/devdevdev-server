@@ -1198,10 +1198,11 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when
-        memberService.changeNickname(newNickname, authentication);
+        String changedNickname = memberService.changeNickname(newNickname, authentication);
 
         // then
         assertThat(member.getNickname().getNickname()).isEqualTo(newNickname);
+        assertThat(changedNickname).isEqualTo(newNickname);
     }
 
     @DisplayName("회원이 24시간 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
