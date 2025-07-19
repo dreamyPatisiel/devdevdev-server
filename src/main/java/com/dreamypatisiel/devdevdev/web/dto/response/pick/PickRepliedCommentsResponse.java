@@ -64,39 +64,38 @@ public class PickRepliedCommentsResponse {
         this.isModified = isModified;
         this.isDeleted = isDeleted;
     }
-    
+
     public static PickRepliedCommentsResponse of(@Nullable Member member, @Nullable AnonymousMember anonymousMember,
                                                  PickComment repliedPickComment) {
-
-        // 댓글
-        Member repliedCreatedBy = repliedPickComment.getCreatedBy();
-        AnonymousMember repliedCreatedAnonymousBy = repliedPickComment.getCreatedAnonymousBy();
 
         // 부모 댓글
         PickComment parentPickComment = repliedPickComment.getParent();
         Member parentCreatedBy = parentPickComment.getCreatedBy();
         AnonymousMember parentCreatedAnonymousBy = parentPickComment.getCreatedAnonymousBy();
 
-        // 댓글을 익명회원이 작성한 경우
-        if (repliedCreatedBy == null) {
-            // 부모 댓글을 익명회원이 작성한 경우
-            if (parentCreatedBy == null) {
-                return createResponseForAnonymousReplyToAnonymous(member, anonymousMember, repliedPickComment,
-                        repliedCreatedAnonymousBy, parentCreatedAnonymousBy, parentPickComment);
-            }
-            // 부모 댓글을 회원이 작성한 경우
-            return createResponseForAnonymousReplyToMember(member, anonymousMember, repliedPickComment, repliedCreatedAnonymousBy,
-                    parentCreatedBy, parentPickComment);
+        // 댓글
+        Member repliedCreatedBy = repliedPickComment.getCreatedBy();
+        AnonymousMember repliedCreatedAnonymousBy = repliedPickComment.getCreatedAnonymousBy();
+
+        // 부모 댓글/답글 익명회원이 작성한 경우
+        if (parentPickComment.isCreatedAnonymousMember() && repliedPickComment.isCreatedAnonymousMember()) {
+            return createResponseForAnonymousReplyToAnonymous(member, anonymousMember, repliedPickComment,
+                    repliedCreatedAnonymousBy, parentCreatedAnonymousBy, parentPickComment);
         }
 
-        // 댓글을 회원이 작성한 경우
-        // 부모 댓글을 익명회원이 작성한 경우
-        if (parentCreatedBy == null) {
+        // 부모 댓글은 익명회원이 작성하고 답글은 회원이 작성한 경우
+        if (parentPickComment.isCreatedAnonymousMember() && repliedPickComment.isCreatedMember()) {
             return createResponseForMemberReplyToAnonymous(member, anonymousMember, repliedPickComment, repliedCreatedBy,
                     parentCreatedAnonymousBy, parentPickComment);
         }
 
-        // 부모 댓글을 회원이 작성한 경우
+        // 부모 댓글은 회원이 작성하고 답글은 익명회원이 작성한 경우
+        if (parentPickComment.isCreatedMember() && repliedPickComment.isCreatedAnonymousMember()) {
+            return createResponseForAnonymousReplyToMember(member, anonymousMember, repliedPickComment,
+                    repliedCreatedAnonymousBy, parentCreatedBy, parentPickComment);
+        }
+
+        // 부모 댓글/답글 회원이 작성한 경우
         return createResponseForMemberReplyToMember(member, anonymousMember, repliedPickComment, repliedCreatedBy,
                 parentPickComment);
     }

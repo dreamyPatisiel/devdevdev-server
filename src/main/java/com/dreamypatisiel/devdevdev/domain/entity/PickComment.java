@@ -265,4 +265,12 @@ public class PickComment extends BasicTime {
     public boolean isVotePrivate() {
         return this.isPublic.equals(false);
     }
+
+    public boolean isCreatedAnonymousMember() {
+        return this.createdBy == null && this.createdAnonymousBy != null;
+    }
+
+    public boolean isCreatedMember() {
+        return this.createdBy != null && this.createdAnonymousBy == null;
+    }
 }
