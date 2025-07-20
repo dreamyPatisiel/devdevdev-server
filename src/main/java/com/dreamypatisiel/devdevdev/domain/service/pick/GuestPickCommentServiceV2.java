@@ -168,6 +168,7 @@ public class GuestPickCommentServiceV2 extends PickCommonService implements Pick
     }
 
     @Override
+    @Transactional
     public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, @Nullable String anonymousMemberId,
                                                  Authentication authentication) {
         // 익명 회원인지 검증
