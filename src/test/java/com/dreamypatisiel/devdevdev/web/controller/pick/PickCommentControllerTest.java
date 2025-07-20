@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -939,6 +940,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].pickCommentId").isNumber())
                 .andExpect(jsonPath("$.datas.[0].createdAt").isString())
                 .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].anonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].author").isString())
                 .andExpect(jsonPath("$.datas.[0].isCommentOfPickAuthor").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
@@ -966,6 +968,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAnonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAuthor").isString());
     }
 
@@ -1055,6 +1058,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                         pick.getId())
                         .queryParam("size", "3")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_ANONYMOUS_MEMBER_ID, "anonymousMemberId")
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -1064,6 +1068,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].pickCommentId").isNumber())
                 .andExpect(jsonPath("$.datas.[0].createdAt").isString())
                 .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].anonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].author").isString())
                 .andExpect(jsonPath("$.datas.[0].isCommentOfPickAuthor").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
@@ -1091,6 +1096,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAnonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAuthor").isString());
     }
 

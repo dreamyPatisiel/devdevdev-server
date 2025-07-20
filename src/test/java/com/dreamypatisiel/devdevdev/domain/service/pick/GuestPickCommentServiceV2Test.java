@@ -11,6 +11,7 @@ import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentServic
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentService.REGISTER;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPick;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickComment;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickCommentRecommend;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickOption;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickOptionImage;
 import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickVote;
@@ -30,6 +31,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import com.dreamypatisiel.devdevdev.domain.entity.PickCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
 import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
@@ -46,6 +48,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepo
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
@@ -55,13 +58,20 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickRepliedCommentsResponse;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommentResponseUtil;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,6 +80,8 @@ import org.junit.jupiter.params.provider.EnumSource.Mode;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -870,6 +882,973 @@ class GuestPickCommentServiceV2Test {
                 authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE, MODIFY);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PickCommentSort.class)
+    @DisplayName("익명회원이 픽픽픽 모든 댓글/답글을 알맞게 정렬하여 커서 방식으로 조회한다.")
+    void findPickCommentsByPickCommentSort(PickCommentSort pickCommentSort) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, Role.ROLE_ADMIN.name());
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", name, "nickname2", password, "user2@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", name, "nickname3", password, "user3@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", name, "nickname4", password, "user4@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", name, "nickname5", password, "user5@gmail.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5));
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("픽픽픽 옵션1"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("픽픽픽 옵션2"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
+                new Count(2), member1, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("댓글1 수정"), LocalDateTime.now());
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
+                new Count(1), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
+                new Count(0), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("익명회원이 작성한 댓글5"), false, new Count(0),
+                new Count(0), anonymousMember, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("익명회원이 작성한 댓글6"), false, new Count(0),
+                new Count(0), anonymousMember, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("댓글1 답글1"), member1, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("익명회원이 작성한 답글1 답글1"), anonymousMember, pick,
+                originParentPickComment1, pickReply1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1); // 삭제 상태로 변경
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("익명회원이 작성한 댓글2 답글1"), anonymousMember, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
+
+        em.flush();
+        em.clear();
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 5);
+        SliceCustom<PickCommentsResponse> response = guestPickCommentServiceV2.findPickComments(pageable,
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, null, anonymousMember.getAnonymousMemberId(), authentication);
+
+        // then
+        // 최상위 댓글 검증
+        assertThat(response).hasSize(5)
+                .extracting(
+                        "pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "author",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "maskedEmail",
+                        "votedPickOption",
+                        "votedPickOptionTitle",
+                        "contents",
+                        "replyTotalCount",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified")
+                .containsExactly(
+                        Tuple.tuple(originParentPickComment1.getId(),
+                                originParentPickComment1.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment1.getCreatedBy().getNickname().getNickname(),
+                                true,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment1.getCreatedBy().getEmail().getEmail()),
+                                originParentPickComment1.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment1.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment1.getContents().getCommentContents(),
+                                originParentPickComment1.getReplyTotalCount().getCount(),
+                                originParentPickComment1.getRecommendTotalCount().getCount(),
+                                false,
+                                true),
+
+                        Tuple.tuple(originParentPickComment2.getId(),
+                                originParentPickComment2.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment2.getCreatedBy().getNickname().getNickname(),
+                                false,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment2.getCreatedBy().getEmail().getEmail()),
+                                originParentPickComment2.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment2.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment2.getContents().getCommentContents(),
+                                originParentPickComment2.getReplyTotalCount().getCount(),
+                                originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
+                                false),
+
+                        Tuple.tuple(originParentPickComment3.getId(),
+                                originParentPickComment3.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment3.getCreatedBy().getNickname().getNickname(),
+                                false,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment3.getCreatedBy().getEmail().getEmail()),
+                                originParentPickComment3.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment3.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment3.getContents().getCommentContents(),
+                                originParentPickComment3.getReplyTotalCount().getCount(),
+                                originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false,
+                                false),
+
+                        Tuple.tuple(originParentPickComment4.getId(),
+                                originParentPickComment4.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment4.getCreatedBy().getNickname().getNickname(),
+                                false,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment4.getCreatedBy().getEmail().getEmail()),
+                                null,
+                                null,
+                                originParentPickComment4.getContents().getCommentContents(),
+                                originParentPickComment4.getReplyTotalCount().getCount(),
+                                originParentPickComment4.getRecommendTotalCount().getCount(),
+                                false,
+                                false),
+
+                        Tuple.tuple(originParentPickComment5.getId(),
+                                null,
+                                originParentPickComment5.getCreatedAnonymousBy().getId(),
+                                originParentPickComment5.getCreatedAnonymousBy().getNickname(),
+                                false,
+                                true,
+                                false,
+                                null,
+                                null,
+                                null,
+                                originParentPickComment5.getContents().getCommentContents(),
+                                originParentPickComment5.getReplyTotalCount().getCount(),
+                                originParentPickComment5.getRecommendTotalCount().getCount(),
+                                false,
+                                false)
+                );
+
+        // 첫 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse1 = response.getContent().get(0);
+        List<PickRepliedCommentsResponse> replies1 = pickCommentsResponse1.getReplies();
+        assertThat(replies1).hasSize(2)
+                .extracting("pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified",
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAnonymousMemberId",
+                        "pickParentCommentAuthor")
+                .containsExactly(
+                        Tuple.tuple(pickReply1.getId(),
+                                pickReply1.getCreatedBy().getId(),
+                                null,
+                                pickReply1.getParent().getId(),
+                                pickReply1.getOriginParent().getId(),
+                                true,
+                                false,
+                                false,
+                                pickReply1.getCreatedBy().getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(pickReply1.getCreatedBy().getEmail().getEmail()),
+                                pickReply1.getContents().getCommentContents(),
+                                pickReply1.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                pickReply1.getParent().getCreatedBy().getId(),
+                                null,
+                                pickReply1.getParent().getCreatedBy().getNickname().getNickname()),
+
+                        Tuple.tuple(pickReply2.getId(),
+                                null,
+                                pickReply2.getCreatedAnonymousBy().getId(),
+                                pickReply2.getParent().getId(),
+                                pickReply2.getOriginParent().getId(),
+                                false,
+                                true,
+                                false,
+                                pickReply2.getCreatedAnonymousBy().getNickname(),
+                                null,
+                                CommentResponseUtil.getCommentByPickCommentStatus(pickReply2),
+                                pickReply2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                null,
+                                pickReply2.getParent().getCreatedBy().getId(),
+                                pickReply2.getParent().getCreatedBy().getNickname().getNickname())
+                );
+
+        // 두 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse2 = response.getContent().get(1);
+        List<PickRepliedCommentsResponse> replies2 = pickCommentsResponse2.getReplies();
+        assertThat(replies2).hasSize(1)
+                .extracting("pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified",
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAnonymousMemberId",
+                        "pickParentCommentAuthor")
+                .containsExactly(
+                        Tuple.tuple(pickReply3.getId(),
+                                null,
+                                pickReply3.getCreatedAnonymousBy().getId(),
+                                pickReply3.getParent().getId(),
+                                pickReply3.getOriginParent().getId(),
+                                false,
+                                true,
+                                false,
+                                pickReply3.getCreatedAnonymousBy().getNickname(),
+                                null,
+                                pickReply3.getContents().getCommentContents(),
+                                pickReply3.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                null,
+                                pickReply3.getParent().getCreatedBy().getId(),
+                                pickReply3.getParent().getCreatedBy().getNickname().getNickname())
+                );
+
+        // 세 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse3 = response.getContent().get(2);
+        List<PickRepliedCommentsResponse> replies3 = pickCommentsResponse3.getReplies();
+        assertThat(replies3).hasSize(0);
+
+        // 네 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse4 = response.getContent().get(3);
+        List<PickRepliedCommentsResponse> replies4 = pickCommentsResponse4.getReplies();
+        assertThat(replies4).hasSize(0);
+
+        // 다섯 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse5 = response.getContent().get(4);
+        List<PickRepliedCommentsResponse> replies5 = pickCommentsResponse5.getReplies();
+        assertThat(replies5).hasSize(0);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PickCommentSort.class)
+    @DisplayName("익명회원이 픽픽픽 모든 첫 번째 픽픽픽 옵션에 투표한 댓글/답글을 알맞게 정렬하여 커서 방식으로 조회한다.")
+    void findPickCommentsByPickCommentSortAndFirstPickOption(PickCommentSort pickCommentSort) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", name, "nickname2", password, "user2@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", name, "nickname3", password, "user3@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", name, "nickname4", password, "user4@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", name, "nickname5", password, "user5@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", name, "nickname6", password, "user6@gmail.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(9), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("픽픽픽 옵션1"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("픽픽픽 옵션2"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
+                new Count(2), anonymousMember, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("댓글1 수정"), LocalDateTime.now());
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
+                new Count(1), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
+                new Count(0), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("댓글1 답글1"), anonymousMember, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("답글1 답글1"), member6, pick,
+                originParentPickComment1, pickReply1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
+
+        em.flush();
+        em.clear();
+
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // when
+        Pageable pageable = PageRequest.of(0, 5);
+        SliceCustom<PickCommentsResponse> response = guestPickCommentServiceV2.findPickComments(pageable,
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.firstPickOption),
+                anonymousMember.getAnonymousMemberId(), authentication);
+
+        // then
+        // 최상위 댓글 검증
+        assertThat(response).hasSize(2)
+                .extracting(
+                        "pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "author",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "maskedEmail",
+                        "votedPickOption",
+                        "votedPickOptionTitle",
+                        "contents",
+                        "replyTotalCount",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified")
+                .containsExactly(
+                        Tuple.tuple(originParentPickComment1.getId(),
+                                null,
+                                originParentPickComment1.getCreatedAnonymousBy().getId(),
+                                originParentPickComment1.getCreatedAnonymousBy().getNickname(),
+                                false,
+                                true,
+                                false,
+                                null,
+                                originParentPickComment1.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment1.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment1.getContents().getCommentContents(),
+                                originParentPickComment1.getReplyTotalCount().getCount(),
+                                originParentPickComment1.getRecommendTotalCount().getCount(),
+                                false,
+                                true),
+
+                        Tuple.tuple(originParentPickComment2.getId(),
+                                originParentPickComment2.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment2.getCreatedBy().getNickname().getNickname(),
+                                false,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment2.getCreatedBy().getEmail().getEmail()),
+                                originParentPickComment2.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment2.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment2.getContents().getCommentContents(),
+                                originParentPickComment2.getReplyTotalCount().getCount(),
+                                originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
+                                false)
+                );
+
+        // 첫 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse1 = response.getContent().get(0);
+        List<PickRepliedCommentsResponse> replies1 = pickCommentsResponse1.getReplies();
+        assertThat(replies1).hasSize(2)
+                .extracting("pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified",
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAnonymousMemberId",
+                        "pickParentCommentAuthor")
+                .containsExactly(
+                        Tuple.tuple(pickReply1.getId(),
+                                null,
+                                pickReply1.getCreatedAnonymousBy().getId(),
+                                pickReply1.getParent().getId(),
+                                pickReply1.getOriginParent().getId(),
+                                false,
+                                true,
+                                false,
+                                pickReply1.getCreatedAnonymousBy().getNickname(),
+                                null,
+                                pickReply1.getContents().getCommentContents(),
+                                pickReply1.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                null,
+                                pickReply1.getParent().getCreatedAnonymousBy().getId(),
+                                pickReply1.getParent().getCreatedAnonymousBy().getNickname()),
+
+                        Tuple.tuple(pickReply2.getId(),
+                                pickReply2.getCreatedBy().getId(),
+                                null,
+                                pickReply2.getParent().getId(),
+                                pickReply2.getOriginParent().getId(),
+                                false,
+                                false,
+                                false,
+                                pickReply2.getCreatedBy().getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
+                                pickReply2.getContents().getCommentContents(),
+                                pickReply2.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                null,
+                                pickReply2.getParent().getCreatedAnonymousBy().getId(),
+                                pickReply2.getParent().getCreatedAnonymousBy().getNickname())
+                );
+
+        // 두 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse2 = response.getContent().get(1);
+        List<PickRepliedCommentsResponse> replies2 = pickCommentsResponse2.getReplies();
+        assertThat(replies2).hasSize(1)
+                .extracting("pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified",
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAnonymousMemberId",
+                        "pickParentCommentAuthor")
+                .containsExactly(
+                        Tuple.tuple(pickReply3.getId(),
+                                pickReply3.getCreatedBy().getId(),
+                                null,
+                                pickReply3.getParent().getId(),
+                                pickReply3.getOriginParent().getId(),
+                                false,
+                                false,
+                                false,
+                                pickReply3.getCreatedBy().getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
+                                pickReply3.getContents().getCommentContents(),
+                                pickReply3.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                pickReply3.getParent().getCreatedBy().getId(),
+                                null,
+                                pickReply3.getParent().getCreatedBy().getNickname().getNickname())
+                );
+    }
+
+    @ParameterizedTest
+    @EnumSource(PickCommentSort.class)
+    @DisplayName("익명회원이 픽픽픽 모든 두 번째 픽픽픽 옵션에 투표한 댓글/답글을 알맞게 정렬하여 커서 방식으로 조회한다.")
+    void findPickCommentsByPickCommentSortAndSecondPickOption(PickCommentSort pickCommentSort) {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", name, "nickname2", password, "user2@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", name, "nickname3", password, "user3@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", name, "nickname4", password, "user4@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", name, "nickname5", password, "user5@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", name, "nickname6", password, "user6@gmail.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("픽픽픽 옵션1"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("픽픽픽 옵션2"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
+                new Count(2), anonymousMember, pick, member1PickVote);
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
+                new Count(1), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
+                new Count(0), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("댓글1 답글1"), member1, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("답글1 답글1"), member6, pick,
+                originParentPickComment1, pickReply1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply3, pickReply2, pickReply1));
+
+        em.flush();
+        em.clear();
+
+        // when
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        Pageable pageable = PageRequest.of(0, 5);
+        SliceCustom<PickCommentsResponse> response = guestPickCommentServiceV2.findPickComments(pageable,
+                pick.getId(), Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption),
+                anonymousMember.getAnonymousMemberId(), authentication);
+
+        // then
+        // 최상위 댓글 검증
+        assertThat(response).hasSize(1)
+                .extracting(
+                        "pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "author",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "maskedEmail",
+                        "votedPickOption",
+                        "votedPickOptionTitle",
+                        "contents",
+                        "replyTotalCount",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified")
+                .containsExactly(
+                        Tuple.tuple(originParentPickComment3.getId(),
+                                originParentPickComment3.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment3.getCreatedBy().getNickname().getNickname(),
+                                false,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment3.getCreatedBy().getEmail().getEmail()),
+                                originParentPickComment3.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment3.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment3.getContents().getCommentContents(),
+                                originParentPickComment3.getReplyTotalCount().getCount(),
+                                originParentPickComment3.getRecommendTotalCount().getCount(),
+                                false,
+                                false)
+                );
+
+        // 첫 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse1 = response.getContent().get(0);
+        List<PickRepliedCommentsResponse> replies1 = pickCommentsResponse1.getReplies();
+        assertThat(replies1).hasSize(0);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PickCommentSort.class)
+    @DisplayName("익명회원이 아닌 경우 익명회원 전용 픽픽픽 댓글/답글 조회 메소드를 호출하면 예외가 발생한다.")
+    void findPickCommentsNotAnonymousMember(PickCommentSort pickCommentSort) {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Pageable pageable = PageRequest.of(0, 5);
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.findPickComments(pageable,
+                1L, Long.MAX_VALUE, pickCommentSort, EnumSet.of(PickOptionType.secondPickOption), null, authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명 회원이 아닌 경우 익명회원 전용 픽픽픽 베스트 댓글 조회 메소드를 호출하면 예외가 발생한다.")
+    void findPickBestCommentsNotAnonymousMember() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> guestPickCommentServiceV2.findPickBestComments(3, 1L, "anonymousMemberId", authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명 회원이 offset에 정책에 맞게 픽픽픽 베스트 댓글을 조회한다.(추천수가 1개 이상인 댓글 부터 최대 3개가 조회된다.)")
+    void findPickBestComments() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto1 = createSocialDto("user1", name, "nickname1", password, "user1@gmail.com",
+                socialType, Role.ROLE_ADMIN.name());
+        SocialMemberDto socialMemberDto2 = createSocialDto("user2", name, "nickname2", password, "user2@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto3 = createSocialDto("user3", name, "nickname3", password, "user3@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto4 = createSocialDto("user4", name, "nickname4", password, "user4@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto5 = createSocialDto("user5", name, "nickname5", password, "user5@gmail.com",
+                socialType, role);
+        SocialMemberDto socialMemberDto6 = createSocialDto("user6", name, "nickname6", password, "user6@gmail.com",
+                socialType, role);
+        Member member1 = Member.createMemberBy(socialMemberDto1);
+        Member member2 = Member.createMemberBy(socialMemberDto2);
+        Member member3 = Member.createMemberBy(socialMemberDto3);
+        Member member4 = Member.createMemberBy(socialMemberDto4);
+        Member member5 = Member.createMemberBy(socialMemberDto5);
+        Member member6 = Member.createMemberBy(socialMemberDto6);
+        memberRepository.saveAll(List.of(member1, member2, member3, member4, member5, member6));
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 픽픽픽 생성
+        Pick pick = createPick(new Title("픽픽픽 타이틀"), ContentStatus.APPROVAL, new Count(6), member1);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(new Title("픽픽픽 옵션1"), new Count(0), pick,
+                PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(new Title("픽픽픽 옵션2"), new Count(0), pick,
+                PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 투표 생성
+        PickVote member1PickVote = createPickVote(member1, firstPickOption, pick);
+        PickVote member2PickVote = createPickVote(member2, firstPickOption, pick);
+        PickVote member3PickVote = createPickVote(member3, secondPickOption, pick);
+        PickVote member4PickVote = createPickVote(member4, secondPickOption, pick);
+        pickVoteRepository.saveAll(List.of(member1PickVote, member2PickVote, member3PickVote, member4PickVote));
+
+        // 픽픽픽 최초 댓글 생성
+        PickComment originParentPickComment1 = createPickComment(new CommentContents("댓글1"), true, new Count(2),
+                new Count(3), anonymousMember, pick, member1PickVote);
+        originParentPickComment1.modifyCommentContents(new CommentContents("수정된 댓글1"), LocalDateTime.now());
+        PickComment originParentPickComment2 = createPickComment(new CommentContents("댓글2"), true, new Count(1),
+                new Count(2), member2, pick, member2PickVote);
+        PickComment originParentPickComment3 = createPickComment(new CommentContents("댓글3"), true, new Count(0),
+                new Count(0), member3, pick, member3PickVote);
+        PickComment originParentPickComment4 = createPickComment(new CommentContents("댓글4"), false, new Count(0),
+                new Count(0), member4, pick, member4PickVote);
+        PickComment originParentPickComment5 = createPickComment(new CommentContents("댓글5"), false, new Count(0),
+                new Count(0), member5, pick, null);
+        PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
+                new Count(0), member6, pick, null);
+        pickCommentRepository.saveAll(
+                List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
+                        originParentPickComment3, originParentPickComment2, originParentPickComment1));
+
+        // 픽픽픽 답글 생성
+        PickComment pickReply1 = createReplidPickComment(new CommentContents("댓글1 답글1"), anonymousMember, pick,
+                originParentPickComment1, originParentPickComment1);
+        PickComment pickReply2 = createReplidPickComment(new CommentContents("답글1 답글1"), member6, pick,
+                originParentPickComment1, pickReply1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1);
+        PickComment pickReply3 = createReplidPickComment(new CommentContents("댓글2 답글1"), member6, pick,
+                originParentPickComment2, originParentPickComment2);
+        pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
+
+        // 추천 생성
+        PickCommentRecommend pickCommentRecommend = createPickCommentRecommend(originParentPickComment1, member1, true);
+        pickCommentRecommendRepository.save(pickCommentRecommend);
+
+        em.flush();
+        em.clear();
+
+        // when
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        List<PickCommentsResponse> response = guestPickCommentServiceV2.findPickBestComments(3, pick.getId(),
+                anonymousMember.getAnonymousMemberId(), authentication);
+
+        // then
+        // 최상위 댓글 검증
+        assertThat(response).hasSize(2)
+                .extracting(
+                        "pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "author",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "maskedEmail",
+                        "votedPickOption",
+                        "votedPickOptionTitle",
+                        "contents",
+                        "replyTotalCount",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified")
+                .containsExactly(
+                        Tuple.tuple(originParentPickComment1.getId(),
+                                null,
+                                originParentPickComment1.getCreatedAnonymousBy().getId(),
+                                originParentPickComment1.getCreatedAnonymousBy().getNickname(),
+                                false,
+                                true,
+                                false,
+                                null,
+                                originParentPickComment1.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment1.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment1.getContents().getCommentContents(),
+                                originParentPickComment1.getReplyTotalCount().getCount(),
+                                originParentPickComment1.getRecommendTotalCount().getCount(),
+                                false,
+                                true),
+
+                        Tuple.tuple(originParentPickComment2.getId(),
+                                originParentPickComment2.getCreatedBy().getId(),
+                                null,
+                                originParentPickComment2.getCreatedBy().getNickname().getNickname(),
+                                false,
+                                false,
+                                false,
+                                CommonResponseUtil.sliceAndMaskEmail(
+                                        originParentPickComment2.getCreatedBy().getEmail().getEmail()),
+                                originParentPickComment2.getPickVote().getPickOption().getPickOptionType(),
+                                originParentPickComment2.getPickVote().getPickOption().getTitle().getTitle(),
+                                originParentPickComment2.getContents().getCommentContents(),
+                                originParentPickComment2.getReplyTotalCount().getCount(),
+                                originParentPickComment2.getRecommendTotalCount().getCount(),
+                                false,
+                                false)
+                );
+
+        // 첫 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse1 = response.get(0);
+        List<PickRepliedCommentsResponse> replies1 = pickCommentsResponse1.getReplies();
+        assertThat(replies1).hasSize(2)
+                .extracting("pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified",
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAnonymousMemberId",
+                        "pickParentCommentAuthor")
+                .containsExactly(
+                        Tuple.tuple(pickReply1.getId(),
+                                null,
+                                pickReply1.getCreatedAnonymousBy().getId(),
+                                pickReply1.getParent().getId(),
+                                pickReply1.getOriginParent().getId(),
+                                false,
+                                true,
+                                false,
+                                pickReply1.getCreatedAnonymousBy().getNickname(),
+                                null,
+                                pickReply1.getContents().getCommentContents(),
+                                pickReply1.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                null,
+                                pickReply1.getParent().getCreatedAnonymousBy().getId(),
+                                pickReply1.getParent().getCreatedAnonymousBy().getNickname()),
+
+                        Tuple.tuple(pickReply2.getId(),
+                                pickReply2.getCreatedBy().getId(),
+                                null,
+                                pickReply2.getParent().getId(),
+                                pickReply2.getOriginParent().getId(),
+                                false,
+                                false,
+                                false,
+                                pickReply2.getCreatedBy().getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(pickReply2.getCreatedBy().getEmail().getEmail()),
+                                CommentResponseUtil.getCommentByPickCommentStatus(pickReply2),
+                                pickReply2.getRecommendTotalCount().getCount(),
+                                true,
+                                false,
+                                null,
+                                pickReply1.getParent().getCreatedAnonymousBy().getId(),
+                                pickReply1.getParent().getCreatedAnonymousBy().getNickname())
+                );
+
+        // 두 번째 최상위 댓글의 답글 검증
+        PickCommentsResponse pickCommentsResponse2 = response.get(1);
+        List<PickRepliedCommentsResponse> replies2 = pickCommentsResponse2.getReplies();
+        assertThat(replies2).hasSize(1)
+                .extracting("pickCommentId",
+                        "memberId",
+                        "anonymousMemberId",
+                        "pickParentCommentId",
+                        "pickOriginParentCommentId",
+                        "isCommentOfPickAuthor",
+                        "isCommentAuthor",
+                        "isRecommended",
+                        "author",
+                        "maskedEmail",
+                        "contents",
+                        "recommendTotalCount",
+                        "isDeleted",
+                        "isModified",
+                        "pickParentCommentMemberId",
+                        "pickParentCommentAnonymousMemberId",
+                        "pickParentCommentAuthor")
+                .containsExactly(
+                        Tuple.tuple(pickReply3.getId(),
+                                pickReply3.getCreatedBy().getId(),
+                                null,
+                                pickReply3.getParent().getId(),
+                                pickReply3.getOriginParent().getId(),
+                                false,
+                                false,
+                                false,
+                                pickReply3.getCreatedBy().getNickname().getNickname(),
+                                CommonResponseUtil.sliceAndMaskEmail(pickReply3.getCreatedBy().getEmail().getEmail()),
+                                pickReply3.getContents().getCommentContents(),
+                                pickReply3.getRecommendTotalCount().getCount(),
+                                false,
+                                false,
+                                pickReply3.getParent().getCreatedBy().getId(),
+                                null,
+                                pickReply3.getParent().getCreatedBy().getNicknameAsString())
+                );
     }
 
     @ParameterizedTest

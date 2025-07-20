@@ -227,11 +227,19 @@ public class PickComment extends BasicTime {
     }
 
     public boolean isModified() {
-        return contentsLastModifiedAt != null;
+        return this.contentsLastModifiedAt != null;
     }
 
     public boolean isDeleted() {
-        return deletedAt != null;
+        return this.deletedAt != null;
+    }
+
+    public boolean isDeletedByMember() {
+        return this.deletedBy != null;
+    }
+
+    public boolean isDeletedByAnonymousMember() {
+        return this.deletedAnonymousBy != null;
     }
 
     public boolean isEqualsId(Long id) {
@@ -256,5 +264,13 @@ public class PickComment extends BasicTime {
 
     public boolean isVotePrivate() {
         return this.isPublic.equals(false);
+    }
+
+    public boolean isCreatedAnonymousMember() {
+        return this.createdBy == null && this.createdAnonymousBy != null;
+    }
+
+    public boolean isCreatedMember() {
+        return this.createdBy != null && this.createdAnonymousBy == null;
     }
 }

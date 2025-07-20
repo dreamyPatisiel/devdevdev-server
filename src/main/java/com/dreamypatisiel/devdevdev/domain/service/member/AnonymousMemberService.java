@@ -14,7 +14,7 @@ import org.springframework.util.StringUtils;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class AnonymousMemberService {
-    
+
     private final AnonymousMemberRepository anonymousMemberRepository;
 
     @Transactional
