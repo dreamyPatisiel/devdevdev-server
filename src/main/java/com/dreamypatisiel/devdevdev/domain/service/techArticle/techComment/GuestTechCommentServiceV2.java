@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
@@ -22,13 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
-public class GuestTechCommentService extends TechCommentCommonService implements TechCommentService {
+public class GuestTechCommentServiceV2 extends TechCommentCommonService implements TechCommentService {
 
     private final AnonymousMemberService anonymousMemberService;
 
-    public GuestTechCommentService(TechCommentRepository techCommentRepository,
-                                   TechBestCommentsPolicy techBestCommentsPolicy,
-                                   AnonymousMemberService anonymousMemberService) {
+    public GuestTechCommentServiceV2(TechCommentRepository techCommentRepository,
+                                     TechBestCommentsPolicy techBestCommentsPolicy,
+                                     AnonymousMemberService anonymousMemberService) {
         super(techCommentRepository, techBestCommentsPolicy);
         this.anonymousMemberService = anonymousMemberService;
     }
@@ -61,15 +62,24 @@ public class GuestTechCommentService extends TechCommentCommonService implements
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
+    /**
+     * @Note: 익명 회원이 기술블로그 댓글/답글을 조회한다.
+     * @Author: 장세웅
+     * @Since: 2025.07.20
+     */
     @Override
     public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
                                                                     TechCommentSort techCommentSort, Pageable pageable,
-                                                                    String anonymousMemberId, Authentication authentication) {
+                                                                    String anonymousMemberId,
+                                                                    Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
+        // 익명회원 추출
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
         // 기술블로그 댓글/답글 조회
-        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, null, null);
+        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, null, anonymousMember);
     }
 
     @Override
@@ -81,15 +91,18 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     /**
      * @Note: 익명 회원이 기술블로그 베스트 댓글을 조회한다.
      * @Author: 장세웅
-     * @Since: 2024.10.27
+     * @Since: 2025.07.20
      */
     @Override
-    public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, String anonymousMemberId,
-                                                           Authentication authentication) {
+    public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId,
+                                                           String anonymousMemberId, Authentication authentication) {
 
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        return super.findTechBestComments(size, techArticleId, null, null);
+        // 익명회원 추출
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        return super.findTechBestComments(size, techArticleId, null, anonymousMember);
     }
 }

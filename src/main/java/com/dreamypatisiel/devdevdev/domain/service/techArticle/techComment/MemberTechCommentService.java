@@ -1,5 +1,10 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_RECOMMEND_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
@@ -20,16 +25,12 @@ import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechComm
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.*;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
 
 @Service
 @Transactional(readOnly = true)
@@ -224,12 +225,13 @@ public class MemberTechCommentService extends TechCommentCommonService implement
      */
     public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
                                                                     TechCommentSort techCommentSort, Pageable pageable,
+                                                                    String anonymousMemberId,
                                                                     Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 기술블로그 댓글/답글 조회
-        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, findMember);
+        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, findMember, null);
     }
 
     /**
@@ -263,12 +265,12 @@ public class MemberTechCommentService extends TechCommentCommonService implement
      */
     @Override
     public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId,
-                                                           Authentication authentication) {
+                                                           String anonymousMemberId, Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        return super.findTechBestComments(size, techArticleId, findMember);
+        return super.findTechBestComments(size, techArticleId, findMember, null);
     }
 
     private TechCommentRecommendResponse toggleTechCommentRecommend(TechComment techComment, Member member) {

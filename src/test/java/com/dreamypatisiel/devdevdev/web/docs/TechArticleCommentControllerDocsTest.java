@@ -837,53 +837,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                                 .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.content").isArray())
-                .andExpect(jsonPath("$.data.content.[0].techCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].createdAt").isString())
-                .andExpect(jsonPath("$.data.content.[0].memberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].author").isString())
-                .andExpect(jsonPath("$.data.content.[0].maskedEmail").isString())
-                .andExpect(jsonPath("$.data.content.[0].contents").isString())
-                .andExpect(jsonPath("$.data.content.[0].replyTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].recommendTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].isRecommended").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techOriginParentCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].createdAt").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentMemberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentAuthor").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].recommendTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].isRecommended").isBoolean())
-                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
-                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
-                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
-                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
-                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
-                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
-                .andExpect(jsonPath("$.data.first").isBoolean())
-                .andExpect(jsonPath("$.data.last").isBoolean())
-                .andExpect(jsonPath("$.data.size").isNumber())
-                .andExpect(jsonPath("$.data.number").isNumber())
-                .andExpect(jsonPath("$.data.sort").isNotEmpty())
-                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
-                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
-                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
-                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
-                .andExpect(jsonPath("$.data.empty").isBoolean());
+                .andExpect(status().isOk());
 
         // docs
         actions.andDo(document("get-tech-comments",
@@ -908,7 +862,9 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content").type(ARRAY).description("기술블로그 댓글/답글 메인 배열"),
                         fieldWithPath("data.content[].techCommentId").type(NUMBER).description("기술블로그 댓글 아이디"),
                         fieldWithPath("data.content[].createdAt").type(STRING).description("기술블로그 댓글 작성일시"),
-                        fieldWithPath("data.content[].memberId").type(NUMBER).description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].memberId").optional().type(NUMBER).description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].anonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 댓글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].author").type(STRING).description("기술블로그 댓글 작성자 닉네임"),
                         fieldWithPath("data.content[].maskedEmail").type(STRING).description("기술블로그 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].contents").type(STRING).description("기술블로그 댓글 내용"),
@@ -929,13 +885,17 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER)
                                 .description("기술블로그 답글 아이디"),
                         fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("기술블로그 답글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].anonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 답글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].techParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].techOriginParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("기술블로그 답글 작성일시"),
-                        fieldWithPath("data.content[].replies[].techParentCommentMemberId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].techParentCommentMemberId").optional().type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].techParentCommentAnonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 답글의 부모 댓글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].techParentCommentAuthor").type(STRING)
                                 .description("기술블로그 답글의 부모 댓글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("기술블로그 답글 작성자 닉네임"),
@@ -1170,7 +1130,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
 
                         fieldWithPath("datas.[].techCommentId").type(NUMBER).description("기술블로그 댓글 아이디"),
                         fieldWithPath("datas.[].createdAt").type(STRING).description("기술블로그 댓글 작성일시"),
-                        fieldWithPath("datas.[].memberId").type(NUMBER).description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].memberId").type(NUMBER).optional().description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].anonymousMemberId").type(NUMBER).optional().description("기술블로그 댓글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].author").type(STRING).description("기술블로그 댓글 작성자 닉네임"),
                         fieldWithPath("datas.[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 댓글 작성자인지 여부"),
@@ -1189,7 +1150,9 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
 
                         fieldWithPath("datas.[].replies").type(ARRAY).description("기술블로그 답글 배열"),
                         fieldWithPath("datas.[].replies[].techCommentId").type(NUMBER).description("기술블로그 답글 아이디"),
-                        fieldWithPath("datas.[].replies[].memberId").type(NUMBER).description("기술블로그 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].memberId").optional().type(NUMBER).description("기술블로그 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].anonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 답글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].replies[].techParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 아이디"),
                         fieldWithPath("datas.[].replies[].techOriginParentCommentId").type(NUMBER)
@@ -1209,16 +1172,17 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 답글 삭제 여부"),
                         fieldWithPath("datas.[].replies[].isModified").type(BOOLEAN)
                                 .description("기술블로그 답글 수정 여부"),
-                        fieldWithPath("datas.[].replies[].techParentCommentMemberId").type(NUMBER)
-                                .description("기술블로그 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].techParentCommentMemberId").optional().type(NUMBER).description(
+                                "기술블로그 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].techParentCommentAnonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 부모 댓글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].replies[].techParentCommentAuthor").type(STRING)
                                 .description("기술블로그 부모 댓글 작성자 닉네임")
                 )
         ));
     }
 
-    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment,
-                                                            Member member) {
+    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment, Member member) {
         TechCommentRecommend techCommentRecommend = TechCommentRecommend.builder()
                 .recommendedStatus(recommendedStatus)
                 .techComment(techComment)

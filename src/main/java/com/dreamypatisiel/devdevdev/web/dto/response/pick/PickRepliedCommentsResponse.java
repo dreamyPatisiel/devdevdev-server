@@ -70,47 +70,39 @@ public class PickRepliedCommentsResponse {
 
         // 부모 댓글
         PickComment parentPickComment = repliedPickComment.getParent();
-        Member parentCreatedBy = parentPickComment.getCreatedBy();
-        AnonymousMember parentCreatedAnonymousBy = parentPickComment.getCreatedAnonymousBy();
-
-        // 댓글
-        Member repliedCreatedBy = repliedPickComment.getCreatedBy();
-        AnonymousMember repliedCreatedAnonymousBy = repliedPickComment.getCreatedAnonymousBy();
 
         // 부모 댓글/답글 익명회원이 작성한 경우
         if (parentPickComment.isCreatedAnonymousMember() && repliedPickComment.isCreatedAnonymousMember()) {
-            return createResponseForAnonymousReplyToAnonymous(member, anonymousMember, repliedPickComment,
-                    repliedCreatedAnonymousBy, parentCreatedAnonymousBy, parentPickComment);
+            return createResponseForAnonymousReplyToAnonymous(member, anonymousMember, repliedPickComment, parentPickComment);
         }
 
         // 부모 댓글은 익명회원이 작성하고 답글은 회원이 작성한 경우
         if (parentPickComment.isCreatedAnonymousMember() && repliedPickComment.isCreatedMember()) {
-            return createResponseForMemberReplyToAnonymous(member, anonymousMember, repliedPickComment, repliedCreatedBy,
-                    parentCreatedAnonymousBy, parentPickComment);
+            return createResponseForMemberReplyToAnonymous(member, anonymousMember, repliedPickComment, parentPickComment);
         }
 
         // 부모 댓글은 회원이 작성하고 답글은 익명회원이 작성한 경우
         if (parentPickComment.isCreatedMember() && repliedPickComment.isCreatedAnonymousMember()) {
-            return createResponseForAnonymousReplyToMember(member, anonymousMember, repliedPickComment,
-                    repliedCreatedAnonymousBy, parentCreatedBy, parentPickComment);
+            return createResponseForAnonymousReplyToMember(member, anonymousMember, repliedPickComment, parentPickComment);
         }
 
         // 부모 댓글/답글 회원이 작성한 경우
-        return createResponseForMemberReplyToMember(member, anonymousMember, repliedPickComment, repliedCreatedBy,
-                parentPickComment);
+        return createResponseForMemberReplyToMember(member, anonymousMember, repliedPickComment, parentPickComment);
     }
 
     private static PickRepliedCommentsResponse createResponseForMemberReplyToMember(Member member,
                                                                                     AnonymousMember anonymousMember,
                                                                                     PickComment repliedPickComment,
-                                                                                    Member repliedCreatedBy,
                                                                                     PickComment parentPickComment) {
+        Member parentCreatedBy = parentPickComment.getCreatedBy();
+        Member repliedCreatedBy = repliedPickComment.getCreatedBy();
+
         return PickRepliedCommentsResponse.builder()
                 .pickCommentId(repliedPickComment.getId())
                 .memberId(repliedCreatedBy.getId())
-                .pickParentCommentMemberId(parentPickComment.getCreatedBy().getId())
+                .pickParentCommentMemberId(parentCreatedBy.getId())
                 .author(repliedCreatedBy.getNickname().getNickname())
-                .pickParentCommentAuthor(parentPickComment.getCreatedBy().getNicknameAsString())
+                .pickParentCommentAuthor(parentCreatedBy.getNicknameAsString())
                 .pickParentCommentId(parentPickComment.getId())
                 .pickOriginParentCommentId(repliedPickComment.getOriginParent().getId())
                 .createdAt(repliedPickComment.getCreatedAt())
@@ -128,9 +120,11 @@ public class PickRepliedCommentsResponse {
     private static PickRepliedCommentsResponse createResponseForMemberReplyToAnonymous(Member member,
                                                                                        AnonymousMember anonymousMember,
                                                                                        PickComment repliedPickComment,
-                                                                                       Member repliedCreatedBy,
-                                                                                       AnonymousMember parentCreatedAnonymousBy,
                                                                                        PickComment parentPickComment) {
+
+        AnonymousMember parentCreatedAnonymousBy = parentPickComment.getCreatedAnonymousBy();
+        Member repliedCreatedBy = repliedPickComment.getCreatedBy();
+
         return PickRepliedCommentsResponse.builder()
                 .pickCommentId(repliedPickComment.getId())
                 .memberId(repliedCreatedBy.getId())
@@ -154,9 +148,11 @@ public class PickRepliedCommentsResponse {
     private static PickRepliedCommentsResponse createResponseForAnonymousReplyToMember(Member member,
                                                                                        AnonymousMember anonymousMember,
                                                                                        PickComment repliedPickComment,
-                                                                                       AnonymousMember repliedCreatedAnonymousBy,
-                                                                                       Member parentCreatedBy,
                                                                                        PickComment parentPickComment) {
+
+        Member parentCreatedBy = parentPickComment.getCreatedBy();
+        AnonymousMember repliedCreatedAnonymousBy = repliedPickComment.getCreatedAnonymousBy();
+
         return PickRepliedCommentsResponse.builder()
                 .pickCommentId(repliedPickComment.getId())
                 .anonymousMemberId(repliedCreatedAnonymousBy.getId())
@@ -179,9 +175,11 @@ public class PickRepliedCommentsResponse {
     private static PickRepliedCommentsResponse createResponseForAnonymousReplyToAnonymous(Member member,
                                                                                           AnonymousMember anonymousMember,
                                                                                           PickComment repliedPickComment,
-                                                                                          AnonymousMember repliedCreatedAnonymousBy,
-                                                                                          AnonymousMember parentCreatedAnonymousBy,
                                                                                           PickComment parentPickComment) {
+
+        AnonymousMember parentCreatedAnonymousBy = parentPickComment.getCreatedAnonymousBy();
+        AnonymousMember repliedCreatedAnonymousBy = repliedPickComment.getCreatedAnonymousBy();
+
         return PickRepliedCommentsResponse.builder()
                 .pickCommentId(repliedPickComment.getId())
                 .anonymousMemberId(repliedCreatedAnonymousBy.getId())

@@ -894,7 +894,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.OLDEST, pageable, authentication);
+                null, TechCommentSort.OLDEST, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1191,7 +1191,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.LATEST, pageable, authentication);
+                null, TechCommentSort.LATEST, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1363,7 +1363,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.MOST_COMMENTED, pageable, authentication);
+                null, TechCommentSort.MOST_COMMENTED, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1640,7 +1640,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.MOST_LIKED, pageable, authentication);
+                null, TechCommentSort.MOST_LIKED, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1793,7 +1793,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                originParentTechComment6.getId(), null, pageable, authentication);
+                originParentTechComment6.getId(), null, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(5L); // 삭제된 댓글은 카운트하지 않는다
@@ -2084,7 +2084,7 @@ public class MemberTechCommentServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when // then
-        assertThatThrownBy(() -> memberTechCommentService.findTechBestComments(3, 0L, authentication))
+        assertThatThrownBy(() -> memberTechCommentService.findTechBestComments(3, 0L, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -2145,7 +2145,7 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(repliedTechComment);
 
         // when
-        List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(),
+        List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(), null,
                 authentication);
 
         // then
@@ -2296,7 +2296,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(),
-                authentication);
+                null, authentication);
 
         // then
         assertThat(response).hasSize(1)

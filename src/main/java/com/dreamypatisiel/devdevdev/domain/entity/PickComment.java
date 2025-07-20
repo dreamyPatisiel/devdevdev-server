@@ -235,11 +235,11 @@ public class PickComment extends BasicTime {
     }
 
     public boolean isDeletedByMember() {
-        return this.deletedBy != null;
+        return this.deletedBy != null && this.deletedAnonymousBy == null;
     }
 
     public boolean isDeletedByAnonymousMember() {
-        return this.deletedAnonymousBy != null;
+        return this.deletedBy == null && this.deletedAnonymousBy != null;
     }
 
     public boolean isEqualsId(Long id) {
@@ -272,5 +272,13 @@ public class PickComment extends BasicTime {
 
     public boolean isCreatedMember() {
         return this.createdBy != null && this.createdAnonymousBy == null;
+    }
+
+    public boolean isDeletedMemberByMySelf() {
+        return this.createdBy.isEqualsId(this.deletedBy.getId());
+    }
+
+    public boolean isDeletedAnonymousMemberByMySelf() {
+        return this.createdAnonymousBy.isEqualsId(this.deletedAnonymousBy.getId());
     }
 }

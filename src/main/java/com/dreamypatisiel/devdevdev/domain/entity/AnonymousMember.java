@@ -53,4 +53,8 @@ public class AnonymousMember extends BasicTime {
     public void changeNickname(String nickname) {
         this.nickname = nickname;
     }
+
+    public boolean isEqualsId(Long id) {
+        return this.id.equals(id);
+    }
 }

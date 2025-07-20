@@ -2,12 +2,23 @@ package com.dreamypatisiel.devdevdev.domain.entity;
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
-import jakarta.persistence.*;
-
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,23 +64,31 @@ public class TechComment extends BasicTime {
     private LocalDateTime contentsLastModifiedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", referencedColumnName = "id")
+    @JoinColumn(name = "parent_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_tech_comment_01"))
     private TechComment parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "origin_parent_id", referencedColumnName = "id")
+    @JoinColumn(name = "origin_parent_id", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_tech_comment_02"))
     private TechComment originParent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
+    @JoinColumn(name = "created_by", foreignKey = @ForeignKey(name = "fk_tech_comment_03"))
     private Member createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "deleted_by")
+    @JoinColumn(name = "deleted_by", foreignKey = @ForeignKey(name = "fk_tech_comment_04"))
     private Member deletedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tech_article_id", nullable = false)
+    @JoinColumn(name = "created_anonymous_by", foreignKey = @ForeignKey(name = "fk_tech_comment_05"))
+    private AnonymousMember createdAnonymousBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deleted_anonymous_by", foreignKey = @ForeignKey(name = "fk_tech_comment_06"))
+    private AnonymousMember deletedAnonymousBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tech_article_id", nullable = false, foreignKey = @ForeignKey(name = "fk_tech_comment_07"))
     private TechArticle techArticle;
 
     @OneToMany(mappedBy = "techComment")
@@ -78,7 +97,8 @@ public class TechComment extends BasicTime {
     @Builder
     private TechComment(CommentContents contents, Count blameTotalCount, Count recommendTotalCount, Count replyTotalCount,
                         TechComment parent, TechComment originParent, Member createdBy, Member deletedBy,
-                        TechArticle techArticle, LocalDateTime deletedAt) {
+                        AnonymousMember createdAnonymousBy, AnonymousMember deletedAnonymousBy, TechArticle techArticle,
+                        LocalDateTime deletedAt) {
         this.contents = contents;
         this.blameTotalCount = blameTotalCount;
         this.recommendTotalCount = recommendTotalCount;
@@ -87,6 +107,8 @@ public class TechComment extends BasicTime {
         this.originParent = originParent;
         this.createdBy = createdBy;
         this.deletedBy = deletedBy;
+        this.createdAnonymousBy = createdAnonymousBy;
+        this.deletedAnonymousBy = deletedAnonymousBy;
         this.techArticle = techArticle;
         this.deletedAt = deletedAt;
     }
@@ -158,5 +180,13 @@ public class TechComment extends BasicTime {
 
     public boolean isEqualsId(Long id) {
         return this.id.equals(id);
+    }
+
+    public boolean isCreatedAnonymousMember() {
+        return this.createdBy == null && this.createdAnonymousBy != null;
+    }
+
+    public boolean isCreatedMember() {
+        return this.createdBy != null && this.createdAnonymousBy == null;
     }
 }
