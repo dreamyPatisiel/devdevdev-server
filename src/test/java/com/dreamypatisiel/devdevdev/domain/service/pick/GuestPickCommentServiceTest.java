@@ -1,5 +1,12 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPick;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickComment;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickCommentRecommend;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickOption;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createPickVote;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createReplidPickComment;
+import static com.dreamypatisiel.devdevdev.domain.service.pick.PickTestUtils.createSocialDto;
 import static com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -995,122 +1002,5 @@ class GuestPickCommentServiceTest {
                                 pickReply3.getParent().getCreatedBy().getId(),
                                 pickReply3.getParent().getCreatedBy().getNicknameAsString())
                 );
-    }
-
-    private PickVote createPickVote(Member member, PickOption pickOption, Pick pick) {
-        PickVote pickVote = PickVote.builder()
-                .member(member)
-                .build();
-
-        pickVote.changePickOption(pickOption);
-        pickVote.changePick(pick);
-
-        return pickVote;
-    }
-
-    private Pick createPick(Title title, ContentStatus contentStatus, Count viewTotalCount, Count voteTotalCount,
-                            Count commentTotalCount, Count popularScore, Member member) {
-        return Pick.builder()
-                .title(title)
-                .contentStatus(contentStatus)
-                .viewTotalCount(viewTotalCount)
-                .voteTotalCount(voteTotalCount)
-                .commentTotalCount(commentTotalCount)
-                .popularScore(popularScore)
-                .member(member)
-                .build();
-    }
-
-    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count recommendTotalCount,
-                                          Member member, Pick pick) {
-        PickComment pickComment = PickComment.builder()
-                .contents(contents)
-                .isPublic(isPublic)
-                .createdBy(member)
-                .recommendTotalCount(recommendTotalCount)
-                .pick(pick)
-                .build();
-
-        pickComment.changePick(pick);
-
-        return pickComment;
-    }
-
-    private PickCommentRecommend createPickCommentRecommend(PickComment pickComment, Member member,
-                                                            Boolean recommendedStatus) {
-        return PickCommentRecommend.builder()
-                .pickComment(pickComment)
-                .member(member)
-                .recommendedStatus(recommendedStatus)
-                .build();
-    }
-
-    private Pick createPick(Title title, ContentStatus contentStatus, Count commentTotalCount, Member member) {
-        return Pick.builder()
-                .title(title)
-                .contentStatus(contentStatus)
-                .commentTotalCount(commentTotalCount)
-                .member(member)
-                .build();
-    }
-
-    private PickComment createPickComment(CommentContents contents, Boolean isPublic, Count replyTotalCount,
-                                          Count recommendTotalCount, Member member, Pick pick, PickVote pickVote) {
-        PickComment pickComment = PickComment.builder()
-                .contents(contents)
-                .isPublic(isPublic)
-                .createdBy(member)
-                .replyTotalCount(replyTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .pick(pick)
-                .pickVote(pickVote)
-                .build();
-
-        pickComment.changePick(pick);
-
-        return pickComment;
-    }
-
-    private PickComment createReplidPickComment(CommentContents contents, Member member, Pick pick,
-                                                PickComment originParent, PickComment parent) {
-        PickComment pickComment = PickComment.builder()
-                .contents(contents)
-                .createdBy(member)
-                .pick(pick)
-                .originParent(originParent)
-                .isPublic(false)
-                .parent(parent)
-                .recommendTotalCount(new Count(0))
-                .replyTotalCount(new Count(0))
-                .build();
-
-        pickComment.changePick(pick);
-
-        return pickComment;
-    }
-
-    private PickOption createPickOption(Title title, Count voteTotalCount, Pick pick, PickOptionType pickOptionType) {
-        PickOption pickOption = PickOption.builder()
-                .title(title)
-                .voteTotalCount(voteTotalCount)
-                .pickOptionType(pickOptionType)
-                .build();
-
-        pickOption.changePick(pick);
-
-        return pickOption;
-    }
-
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
-                                            String socialType, String role) {
-        return SocialMemberDto.builder()
-                .userId(userId)
-                .name(name)
-                .nickname(nickName)
-                .password(password)
-                .email(email)
-                .socialType(SocialType.valueOf(socialType))
-                .role(Role.valueOf(role))
-                .build();
     }
 }

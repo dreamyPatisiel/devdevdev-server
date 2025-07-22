@@ -1,6 +1,5 @@
-package com.dreamypatisiel.devdevdev.domain.service.techArticle;
+package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createCompany;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createMainTechComment;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createRepliedTechComment;
@@ -12,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -24,18 +24,17 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.GuestTechCommentService;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
@@ -49,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -58,29 +56,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-public class GuestTechCommentServiceTest {
+class GuestTechCommentServiceV2Test {
 
     @Autowired
-    GuestTechCommentService guestTechCommentService;
-
+    GuestTechCommentServiceV2 guestTechCommentServiceV2;
     @Autowired
     TechArticleRepository techArticleRepository;
-
     @Autowired
     TechCommentRepository techCommentRepository;
-
     @Autowired
     CompanyRepository companyRepository;
-
     @Autowired
     MemberRepository memberRepository;
-
     @Autowired
     TechCommentRecommendRepository techCommentRecommendRepository;
-
+    @Autowired
+    AnonymousMemberRepository anonymousMemberRepository;
     @Autowired
     TimeProvider timeProvider;
-
     @Autowired
     EntityManager em;
 
@@ -91,146 +84,56 @@ public class GuestTechCommentServiceTest {
     String password = "password";
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
-
-    @Test
-    @DisplayName("익명 회원은 기술블로그 댓글을 작성할 수 없다.")
-    void registerTechComment() {
-        // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        Authentication authentication = mock(Authentication.class);
-
-        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
-                "https://example.com");
-        companyRepository.save(company);
-
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
-
-        // when // then
-        assertThatThrownBy(() -> guestTechCommentService.registerMainTechComment(
-                id, registerTechCommentRequest, authentication))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("익명 회원은 기술블로그 댓글에 답글을 작성할 수 없다.")
-    void registerRepliedTechComment() {
-        // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        Authentication authentication = mock(Authentication.class);
-
-        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
-                "https://example.com");
-        companyRepository.save(company);
-
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
-        techArticleRepository.save(techArticle);
-        Long techArticleId = techArticle.getId();
-
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
-                techArticle);
-        techCommentRepository.save(parentTechComment);
-        Long parentTechCommentId = parentTechComment.getId();
-
-        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
-
-        // when // then
-        assertThatThrownBy(() -> guestTechCommentService.registerRepliedTechComment(
-                techArticleId, parentTechCommentId, parentTechCommentId, registerRepliedTechComment, authentication))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("익명 회원은 기술블로그 댓글을 추천할 수 없다.")
-    void recommendTechComment() {
-        // given
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        Authentication authentication = mock(Authentication.class);
-
-        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
-                "https://example.com");
-        companyRepository.save(company);
-
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(2L), new Count(1L), null, company);
-        techArticleRepository.save(techArticle);
-        Long techArticleId = techArticle.getId();
-
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
-        techCommentRepository.save(techComment);
-
-        // when // then
-        assertThatThrownBy(() -> guestTechCommentService.recommendTechComment(
-                techArticleId, techComment.getId(), authentication))
-                .isInstanceOf(AccessDeniedException.class)
-                .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
-    }
+    String author = "운영자";
 
     @Test
     @DisplayName("익명 회원은 커서 방식으로 기술블로그 댓글/답글을 조회할 수 있다. (등록순)")
     void getTechCommentsSortByOLDEST() {
         // given
+        // 회원 생성
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
+        // 회사 생성
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
+        // 기술블로그 생성
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
-                techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
-                techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
-                techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member,
-                techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
-                techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
-                techArticle, new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), anonymousMember, techArticle,
+                new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member, techArticle,
+                new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member, techArticle,
+                new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment4 = createMainTechComment(new CommentContents("최상위 댓글4"), member, techArticle,
+                new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member, techArticle,
+                new Count(0L), new Count(0L), new Count(0L));
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member, techArticle,
+                new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
+        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), anonymousMember,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
         TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
         TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
-                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
         TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
-                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
                 techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
@@ -250,8 +153,8 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.OLDEST, pageable, null, authentication);
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentServiceV2.getTechComments(techArticleId,
+                null, TechCommentSort.OLDEST, pageable, anonymousMember.getAnonymousMemberId(), authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -267,20 +170,22 @@ public class GuestTechCommentServiceTest {
                         "isCommentAuthor",
                         "isRecommended",
                         "isModified",
-                        "isDeleted"
+                        "isDeleted",
+                        "anonymousMemberId"
                 )
                 .containsExactly(
                         Tuple.tuple(originParentTechComment1.getId(),
-                                member.getId(),
-                                member.getNickname().getNickname(),
-                                CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
+                                null,
+                                anonymousMember.getNickname(),
+                                null,
                                 originParentTechComment1.getContents().getCommentContents(),
                                 originParentTechComment1.getReplyTotalCount().getCount(),
                                 originParentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
                                 false,
                                 false,
                                 false,
-                                false
+                                anonymousMember.getId()
                         ),
                         Tuple.tuple(originParentTechComment2.getId(),
                                 member.getId(),
@@ -292,7 +197,8 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null
                         ),
                         Tuple.tuple(originParentTechComment3.getId(),
                                 member.getId(),
@@ -304,7 +210,8 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null
                         ),
                         Tuple.tuple(originParentTechComment4.getId(),
                                 member.getId(),
@@ -316,7 +223,8 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null
                         ),
                         Tuple.tuple(originParentTechComment5.getId(),
                                 member.getId(),
@@ -328,7 +236,8 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null
                         )
                 );
 
@@ -349,29 +258,33 @@ public class GuestTechCommentServiceTest {
                         "isCommentAuthor",
                         "isRecommended",
                         "isModified",
-                        "isDeleted"
+                        "isDeleted",
+                        "anonymousMemberId",
+                        "techParentCommentAnonymousMemberId"
                 )
                 .containsExactly(
                         Tuple.tuple(parentTechComment1.getId(),
-                                member.getId(),
+                                null,
                                 originParentTechComment1.getId(),
-                                originParentTechComment1.getCreatedBy().getId(),
-                                member.getNicknameAsString(),
+                                null,
+                                anonymousMember.getNickname(),
                                 originParentTechComment1.getId(),
-                                member.getNicknameAsString(),
-                                CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
+                                anonymousMember.getNickname(),
+                                null,
                                 parentTechComment1.getContents().getCommentContents(),
                                 parentTechComment1.getRecommendTotalCount().getCount(),
+                                true,
                                 false,
                                 false,
                                 false,
-                                false
+                                anonymousMember.getId(),
+                                originParentTechComment1.getCreatedAnonymousBy().getId()
                         ),
                         Tuple.tuple(parentTechComment2.getId(),
                                 member.getId(),
                                 originParentTechComment1.getId(),
-                                originParentTechComment1.getCreatedBy().getId(),
-                                member.getNicknameAsString(),
+                                null,
+                                anonymousMember.getNickname(),
                                 originParentTechComment1.getId(),
                                 member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
@@ -380,13 +293,15 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null,
+                                originParentTechComment1.getCreatedAnonymousBy().getId()
                         ),
                         Tuple.tuple(techcomment1.getId(),
                                 member.getId(),
                                 parentTechComment1.getId(),
-                                parentTechComment1.getCreatedBy().getId(),
-                                member.getNicknameAsString(),
+                                null,
+                                anonymousMember.getNickname(),
                                 originParentTechComment1.getId(),
                                 member.getNicknameAsString(),
                                 CommonResponseUtil.sliceAndMaskEmail(member.getEmailAsString()),
@@ -395,7 +310,9 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null,
+                                originParentTechComment1.getCreatedAnonymousBy().getId()
                         ),
                         Tuple.tuple(techcomment2.getId(),
                                 member.getId(),
@@ -410,7 +327,9 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null,
+                                null
                         )
                 );
 
@@ -431,7 +350,9 @@ public class GuestTechCommentServiceTest {
                         "isCommentAuthor",
                         "isRecommended",
                         "isModified",
-                        "isDeleted"
+                        "isDeleted",
+                        "anonymousMemberId",
+                        "techParentCommentAnonymousMemberId"
                 )
                 .containsExactly(
                         Tuple.tuple(parentTechComment3.getId(),
@@ -447,7 +368,9 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null,
+                                null
                         ),
                         Tuple.tuple(parentTechComment4.getId(),
                                 member.getId(),
@@ -462,7 +385,9 @@ public class GuestTechCommentServiceTest {
                                 false,
                                 false,
                                 false,
-                                false
+                                false,
+                                null,
+                                null
                         )
                 );
 
@@ -487,6 +412,10 @@ public class GuestTechCommentServiceTest {
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
@@ -495,8 +424,7 @@ public class GuestTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -513,18 +441,14 @@ public class GuestTechCommentServiceTest {
         TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
 
-        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
-        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
-        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
-                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
-                new Count(0L));
-        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
-                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
-                new Count(0L));
+        TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member, techArticle,
+                originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member, techArticle,
+                originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member, techArticle,
+                originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member, techArticle,
+                originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
                 techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
@@ -544,7 +468,7 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentServiceV2.getTechComments(techArticleId,
                 null, TechCommentSort.LATEST, pageable, null, authentication);
 
         // then
@@ -553,6 +477,7 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -713,7 +638,7 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentServiceV2.getTechComments(techArticleId,
                 null, TechCommentSort.MOST_COMMENTED, pageable, null, authentication);
 
         // then
@@ -722,6 +647,7 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -801,8 +727,10 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "techParentCommentId",
                         "techParentCommentMemberId",
+                        "techParentCommentAnonymousMemberId",
                         "techParentCommentAuthor",
                         "techOriginParentCommentId",
                         "author",
@@ -883,8 +811,10 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "techParentCommentId",
                         "techParentCommentMemberId",
+                        "techParentCommentAnonymousMemberId",
                         "techParentCommentAuthor",
                         "techOriginParentCommentId",
                         "author",
@@ -987,7 +917,7 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentServiceV2.getTechComments(techArticleId,
                 null, TechCommentSort.MOST_LIKED, pageable, null, authentication);
 
         // then
@@ -996,6 +926,7 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1136,7 +1067,7 @@ public class GuestTechCommentServiceTest {
         em.clear();
 
         // when
-        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
+        SliceCommentCustom<TechCommentsResponse> response = guestTechCommentServiceV2.getTechComments(techArticleId,
                 originParentTechComment6.getId(), null, pageable, null, authentication);
 
         // then
@@ -1145,6 +1076,7 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1254,7 +1186,7 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestTechCommentService.findTechBestComments(3, 1L, null, authentication))
+        assertThatThrownBy(() -> guestTechCommentServiceV2.findTechBestComments(3, 1L, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }
@@ -1311,7 +1243,7 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        List<TechCommentsResponse> response = guestTechCommentService.findTechBestComments(3, techArticle.getId(), null,
+        List<TechCommentsResponse> response = guestTechCommentServiceV2.findTechBestComments(3, techArticle.getId(), null,
                 authentication);
 
         // then
@@ -1319,6 +1251,7 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
+                        "anonymousMemberId",
                         "author",
                         "maskedEmail",
                         "contents",
@@ -1374,10 +1307,12 @@ public class GuestTechCommentServiceTest {
                 .extracting(
                         "techCommentId",
                         "memberId",
-                        "techParentCommentMemberId",
+                        "anonymousMemberId",
                         "techParentCommentId",
-                        "techOriginParentCommentId",
+                        "techParentCommentMemberId",
+                        "techParentCommentAnonymousMemberId",
                         "techParentCommentAuthor",
+                        "techOriginParentCommentId",
                         "author",
                         "maskedEmail",
                         "contents",
