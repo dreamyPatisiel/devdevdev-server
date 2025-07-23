@@ -24,8 +24,9 @@ class MemberTest {
         if (hoursAgo != null) {
             member.changeNickname("닉네임", LocalDateTime.now().minusHours(hoursAgo));
         }
+        int nicknameChangeIntervalHours = 24;
         // when
-        boolean result = member.canChangeNickname();
+        boolean result = member.canChangeNickname(nicknameChangeIntervalHours);
         // then
         assertThat(result).isEqualTo(expected);
     }
