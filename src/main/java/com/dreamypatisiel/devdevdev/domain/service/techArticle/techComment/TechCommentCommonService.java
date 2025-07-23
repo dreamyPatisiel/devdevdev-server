@@ -53,7 +53,7 @@ public class TechCommentCommonService {
 
         // 최상위 댓글 아이디들의 댓글 답글 조회(최상위 댓글의 아이디가 key)
         Map<Long, List<TechComment>> techCommentReplies = techCommentRepository
-                .findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+                .findWithDetailsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
                         originParentIds).stream()
                 .collect(Collectors.groupingBy(techCommentReply -> techCommentReply.getOriginParent().getId()));
 
@@ -134,7 +134,7 @@ public class TechCommentCommonService {
                 .collect(Collectors.toSet());
 
         // 베스트 댓글의 답글 조회(베스트 댓글의 아이디가 key)
-        Map<Long, List<TechComment>> techBestCommentReplies = techCommentRepository.findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+        Map<Long, List<TechComment>> techBestCommentReplies = techCommentRepository.findWithDetailsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
                         originParentIds).stream()
                 .collect(Collectors.groupingBy(techCommentReply -> techCommentReply.getOriginParent().getId()));
 

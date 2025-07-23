@@ -53,7 +53,7 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
 
         return query.selectFrom(techComment)
                 .innerJoin(techComment.techArticle, techArticle).on(techArticle.id.eq(techArticleId))
-                .innerJoin(techComment.createdBy, member).fetchJoin()
+                .leftJoin(techComment.createdBy, member).fetchJoin()
                 .leftJoin(techComment.createdAnonymousBy, anonymousMember).fetchJoin()
                 .where(techComment.parent.isNull()
                         .and(techComment.originParent.isNull())
