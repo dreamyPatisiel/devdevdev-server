@@ -37,6 +37,7 @@ import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
@@ -62,6 +63,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.PageRequest;
@@ -119,6 +121,8 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     PickCommentRepository pickCommentRepository;
     @Autowired
     SubscriptionRepository subscriptionRepository;
+    @MockBean
+    TimeProvider timeProvider;
 
     @Test
     @DisplayName("회원이 회원탈퇴 설문조사를 완료하지 않으면 탈퇴가 불가능하다.")
@@ -458,6 +462,8 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원탈퇴 서베이 이력을 기록한다.")
     void recordMemberExitSurveyAnswer() {
         // given
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0));
+        
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
@@ -1205,24 +1211,27 @@ class MemberServiceTest extends ElasticsearchSupportTest {
         assertThat(changedNickname).isEqualTo(newNickname);
     }
 
-    @DisplayName("회원이 24시간 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
+    @DisplayName("회원이 1440분(24시간) 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
     @ParameterizedTest
     @CsvSource({
             "0, true",
-            "1, true",
-            "23, true",
-            "24, false", // 변경 허용
-            "25, false" // 변경 허용
+            "60, true", // 1시간
+            "1439, true", // 23.9시간
+            "1440, false", // 24시간, 변경 허용
+            "1500, false" // 25시간, 변경 허용
     })
-    void changeNicknameThrowsExceptionWhenChangedWithin24Hours(long hoursAgo, boolean shouldThrowException) {
+    void changeNicknameThrowsExceptionWhenChangedWithin24Hours(long minutesAgo, boolean shouldThrowException) {
         // given
+        LocalDateTime fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(fixedNow);
+        
         String oldNickname = "이전 닉네임";
         String newNickname = "새 닉네임";
 
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
 
-        member.changeNickname(oldNickname, LocalDateTime.now().minusHours(hoursAgo));
+        member.changeNickname(oldNickname, fixedNow.minusMinutes(minutesAgo));
         memberRepository.save(member);
 
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
@@ -1247,20 +1256,23 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     @ParameterizedTest
     @CsvSource({
             "0, false",
-            "1, false",
-            "23, false",
-            "24, true",
-            "25, true"
+            "60, false", // 1시간
+            "1439, false", // 23.9시간
+            "1440, true", // 24시간
+            "1500, true" // 25시간
     })
-    void canChangeNickname(long hoursAgo, boolean expected) {
+    void canChangeNickname(long minutesAgo, boolean expected) {
         // given
+        LocalDateTime fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(fixedNow);
+        
         String oldNickname = "이전 닉네임";
         String newNickname = "새 닉네임";
 
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
 
-        member.changeNickname(newNickname, LocalDateTime.now().minusHours(hoursAgo));
+        member.changeNickname(newNickname, fixedNow.minusMinutes(minutesAgo));
         memberRepository.save(member);
 
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);

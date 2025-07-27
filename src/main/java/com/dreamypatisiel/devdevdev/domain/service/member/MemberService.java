@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.domain.service.member;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
+import com.dreamypatisiel.devdevdev.domain.policy.NicknameChangePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.CommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
@@ -47,6 +48,8 @@ import java.util.stream.Stream;
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -63,6 +66,7 @@ public class MemberService {
     private final SurveyAnswerJdbcTemplateRepository surveyAnswerJdbcTemplateRepository;
     private final CommentRepository commentRepository;
     private final CompanyRepository companyRepository;
+    private final NicknameChangePolicy nicknameChangePolicy;
 
     /**
      * 회원 탈퇴 회원의 북마크와 회원 정보를 삭제합니다.
@@ -290,7 +294,7 @@ public class MemberService {
     }
 
     /**
-     * @Note: 유저의 닉네임을 변경합니다. 최근 24시간 이내에 변경한 이력이 있다면 닉네임 변경이 불가능합니다.
+     * @Note: 유저의 닉네임을 변경합니다. 설정된 제한 시간 이내에 변경한 이력이 있다면 닉네임 변경이 불가능합니다.
      * @Author: 유소영
      * @Since: 2025.07.03
      */
@@ -298,7 +302,7 @@ public class MemberService {
     public String changeNickname(String nickname, Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
-        if (!member.canChangeNickname()) {
+        if (!member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow())) {
             throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
         }
 
@@ -313,6 +317,6 @@ public class MemberService {
      */
     public boolean canChangeNickname(Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
-        return member.canChangeNickname();
+        return member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow());
     }
 }
