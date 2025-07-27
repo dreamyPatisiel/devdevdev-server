@@ -302,7 +302,7 @@ public class MemberService {
     public String changeNickname(String nickname, Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
-        if (!member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalHours(), timeProvider.getLocalDateTimeNow())) {
+        if (!member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow())) {
             throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
         }
 
@@ -317,6 +317,6 @@ public class MemberService {
      */
     public boolean canChangeNickname(Authentication authentication) {
         Member member = memberProvider.getMemberByAuthentication(authentication);
-        return member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalHours(), timeProvider.getLocalDateTimeNow());
+        return member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow());
     }
 }

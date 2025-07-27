@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NicknameChangePolicy {
-    @Value("${nickname.change.interval.hours:24}")
-    private int nicknameChangeIntervalHours;
+    @Value("${nickname.change.interval.minutes:1440}")
+    private int nicknameChangeIntervalMinutes;
 
-    public int getNicknameChangeIntervalHours() {
-        return nicknameChangeIntervalHours;
+    public int getNicknameChangeIntervalMinutes() {
+        return nicknameChangeIntervalMinutes;
     }
 }
