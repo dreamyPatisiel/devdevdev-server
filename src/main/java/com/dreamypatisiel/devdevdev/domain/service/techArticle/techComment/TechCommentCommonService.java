@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.BasicTime;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
@@ -37,8 +38,9 @@ public class TechCommentCommonService {
      * @Since: 2024.09.05
      */
     public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
-                                                             TechCommentSort techCommentSort, Pageable pageable,
-                                                             @Nullable Member member) {
+                                                                    TechCommentSort techCommentSort, Pageable pageable,
+                                                                    @Nullable Member member,
+                                                                    @Nullable AnonymousMember anonymousMember) {
         // 기술블로그 최상위 댓글 조회
         Slice<TechComment> findOriginParentTechComments = techCommentRepository.findOriginParentTechCommentsByCursor(
                 techArticleId, techCommentId, techCommentSort, pageable);
@@ -51,13 +53,13 @@ public class TechCommentCommonService {
 
         // 최상위 댓글 아이디들의 댓글 답글 조회(최상위 댓글의 아이디가 key)
         Map<Long, List<TechComment>> techCommentReplies = techCommentRepository
-                .findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+                .findWithDetailsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
                         originParentIds).stream()
                 .collect(Collectors.groupingBy(techCommentReply -> techCommentReply.getOriginParent().getId()));
 
         // 기술블로그 댓글/답글 응답 생성
         List<TechCommentsResponse> techCommentsResponse = originParentTechComments.stream()
-                .map(originParentTechComment -> getTechCommentsResponse(member, originParentTechComment,
+                .map(originParentTechComment -> getTechCommentsResponse(member, anonymousMember, originParentTechComment,
                         techCommentReplies))
                 .toList();
 
@@ -75,14 +77,17 @@ public class TechCommentCommonService {
         long originTechCommentTotalCount = firstTechComment.getTechArticle().getCommentTotalCount().getCount();
 
         // 기술블로그 부모 댓글 개수 추출
-        long originParentTechCommentTotalCount = techCommentRepository.countByTechArticleIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(techArticleId);
+        long originParentTechCommentTotalCount = techCommentRepository.countByTechArticleIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(
+                techArticleId);
 
         // 데이터 가공
         return new SliceCommentCustom<>(techCommentsResponse, pageable, findOriginParentTechComments.hasNext(),
                 originTechCommentTotalCount, originParentTechCommentTotalCount);
     }
 
-    private TechCommentsResponse getTechCommentsResponse(@Nullable Member member, TechComment originParentTechComment,
+    private TechCommentsResponse getTechCommentsResponse(@Nullable Member member,
+                                                         @Nullable AnonymousMember anonymousMember,
+                                                         TechComment originParentTechComment,
                                                          Map<Long, List<TechComment>> techCommentReplies) {
         // 최상위 댓글의 아이디 추출
         Long originParentTechCommentId = originParentTechComment.getId();
@@ -92,18 +97,19 @@ public class TechCommentCommonService {
 
         // 답글이 없을 경우
         if (ObjectUtils.isEmpty(replies)) {
-            return TechCommentsResponse.of(member, originParentTechComment, Collections.emptyList());
+            return TechCommentsResponse.of(member, anonymousMember, originParentTechComment, Collections.emptyList());
         }
 
         // 답글 응답 만들기
-        List<TechRepliedCommentsResponse> techRepliedComments = getTechRepliedComments(member, replies);
-        return TechCommentsResponse.of(member, originParentTechComment, techRepliedComments);
+        List<TechRepliedCommentsResponse> techRepliedComments = getTechRepliedComments(member, anonymousMember, replies);
+        return TechCommentsResponse.of(member, anonymousMember, originParentTechComment, techRepliedComments);
     }
 
-    private List<TechRepliedCommentsResponse> getTechRepliedComments(Member member, List<TechComment> replies) {
+    private List<TechRepliedCommentsResponse> getTechRepliedComments(Member member, AnonymousMember anonymousMember,
+                                                                     List<TechComment> replies) {
         return replies.stream()
                 .sorted(Comparator.comparing(BasicTime::getCreatedAt))
-                .map(repliedTechComment -> TechRepliedCommentsResponse.of(member, repliedTechComment))
+                .map(repliedTechComment -> TechRepliedCommentsResponse.of(member, anonymousMember, repliedTechComment))
                 .toList();
     }
 
@@ -112,7 +118,8 @@ public class TechCommentCommonService {
      * @Author: 장세웅
      * @Since: 2024.10.27
      */
-    protected List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, @Nullable Member member) {
+    protected List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, @Nullable Member member,
+                                                              @Nullable AnonymousMember anonymousMember) {
 
         // 베스트 댓글 offset 정책 적용
         int offset = techBestCommentsPolicy.applySize(size);
@@ -127,13 +134,13 @@ public class TechCommentCommonService {
                 .collect(Collectors.toSet());
 
         // 베스트 댓글의 답글 조회(베스트 댓글의 아이디가 key)
-        Map<Long, List<TechComment>> techBestCommentReplies = techCommentRepository.findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
+        Map<Long, List<TechComment>> techBestCommentReplies = techCommentRepository.findWithDetailsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
                         originParentIds).stream()
                 .collect(Collectors.groupingBy(techCommentReply -> techCommentReply.getOriginParent().getId()));
 
         // 기술블로그 댓글/답글 응답 생성
         return findOriginTechBestComments.stream()
-                .map(originParentTechComment -> getTechCommentsResponse(member, originParentTechComment,
+                .map(originParentTechComment -> getTechCommentsResponse(member, anonymousMember, originParentTechComment,
                         techBestCommentReplies))
                 .toList();
     }

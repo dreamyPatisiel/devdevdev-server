@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom;
 
+import static com.dreamypatisiel.devdevdev.domain.entity.QAnonymousMember.anonymousMember;
 import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
 import static com.dreamypatisiel.devdevdev.domain.entity.QTechArticle.techArticle;
 import static com.dreamypatisiel.devdevdev.domain.entity.QTechComment.techComment;
@@ -34,7 +35,8 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
                                                                    TechCommentSort techCommentSort, Pageable pageable) {
         List<TechComment> contents = query.selectFrom(techComment)
                 .innerJoin(techComment.techArticle, techArticle).on(techArticle.id.eq(techArticleId))
-                .innerJoin(techComment.createdBy, member).fetchJoin()
+                .leftJoin(techComment.createdBy, member).fetchJoin()
+                .leftJoin(techComment.createdAnonymousBy, anonymousMember).fetchJoin()
                 .where(techComment.parent.isNull()
                         .and(techComment.originParent.isNull())
                         .and(getCursorCondition(techCommentSort, techCommentId))
@@ -51,7 +53,8 @@ public class TechCommentRepositoryImpl implements TechCommentRepositoryCustom {
 
         return query.selectFrom(techComment)
                 .innerJoin(techComment.techArticle, techArticle).on(techArticle.id.eq(techArticleId))
-                .innerJoin(techComment.createdBy, member).fetchJoin()
+                .leftJoin(techComment.createdBy, member).fetchJoin()
+                .leftJoin(techComment.createdAnonymousBy, anonymousMember).fetchJoin()
                 .where(techComment.parent.isNull()
                         .and(techComment.originParent.isNull())
                         .and(techComment.deletedAt.isNull())

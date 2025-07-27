@@ -31,7 +31,7 @@ public class RedisNotificationSubscriber implements MessageListener {
         try {
             // 채널 파싱
             String channel = new String(pattern, StandardCharsets.UTF_8);
-
+            
             // 구독 채널인 경우
             if (channel.equals(NotificationType.SUBSCRIPTION.name())) {
                 ObjectMapper om = new ObjectMapper();

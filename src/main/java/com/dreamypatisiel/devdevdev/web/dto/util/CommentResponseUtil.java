@@ -14,37 +14,45 @@ public class CommentResponseUtil {
 
     public static final String DELETE_COMMENT_MESSAGE = "댓글 작성자에 의해 삭제된 댓글입니다.";
     public static final String DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE = "커뮤니티 정책을 위반하여 삭제된 댓글입니다.";
+    public static final String CONTACT_ADMIN_MESSAGE = "오류가 발생 했습니다. 관리자에게 문의 하세요.";
 
     public static String getCommentByPickCommentStatus(PickComment pickComment) {
-        if (pickComment.isDeleted()) {
-            // 익명회원 작성자에 의해 삭제된 경우
+
+        if (!pickComment.isDeleted()) {
+            return pickComment.getContents().getCommentContents();
+        }
+
+        // 익명회원이 작성한 댓글인 경우
+        if (pickComment.isCreatedAnonymousMember()) {
+            // 자기자신이 삭제한 경우
             if (pickComment.isDeletedByAnonymousMember()) {
-                AnonymousMember createdAnonymousBy = pickComment.getCreatedAnonymousBy();
-                AnonymousMember deletedAnonymousBy = pickComment.getDeletedAnonymousBy();
-
-                if (deletedAnonymousBy.isEqualAnonymousMemberId(createdAnonymousBy.getId())) {
-                    return DELETE_COMMENT_MESSAGE;
-                }
-            }
-
-            // 회원 작성자에 의해 삭제된 경우
-            Member createdBy = pickComment.getCreatedBy();
-            Member deletedBy = pickComment.getDeletedBy();
-
-            // 익명회원이 작성한 댓글인 경우
-            if (createdBy == null) {
-                // 어드민이 삭제함
-                return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
-            }
-
-            if (deletedBy.isEqualsId(createdBy.getId())) {
                 return DELETE_COMMENT_MESSAGE;
             }
 
-            return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
+            // 어드민이 삭제한 경우
+            if (pickComment.getDeletedBy().isAdmin()) {
+                return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
+            }
+
+            return CONTACT_ADMIN_MESSAGE;
         }
 
-        return pickComment.getContents().getCommentContents();
+        // 회원이 작성한 댓글인 경우
+        if (pickComment.isCreatedMember()) {
+            // 자기 자신인 경우
+            if (pickComment.isDeletedMemberByMySelf()) {
+                return DELETE_COMMENT_MESSAGE;
+            }
+
+            // 어드민이 삭제한 경우
+            if (pickComment.getDeletedBy().isAdmin()) {
+                return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
+            }
+
+            return CONTACT_ADMIN_MESSAGE;
+        }
+
+        return CONTACT_ADMIN_MESSAGE;
     }
 
     public static String getCommentByTechCommentStatus(TechComment techComment) {
@@ -76,26 +84,15 @@ public class CommentResponseUtil {
     public static boolean isPickCommentAuthor(@Nullable Member member, @Nullable AnonymousMember anonymousMember,
                                               PickComment pickComment) {
 
-        // 회원이 조회한 경우
-        if (member != null) {
-            Member createdBy = pickComment.getCreatedBy();
-            // createdBy가 null인 경우는 익명회원이 작성한 댓글
-            if (createdBy == null) {
-                return false;
-            }
-
-            return createdBy.isEqualsId(member.getId());
+        // 회원이 조회하고 픽픽픽 댓글을 회원이 작성한 경우
+        if (member != null && pickComment.isCreatedMember()) {
+            // 픽픽픽 댓글을 회원이 작성한 경우
+            return pickComment.getCreatedBy().isEqualsId(member.getId());
         }
 
-        // 익명회원이 조회한 경우
-        if (anonymousMember != null) {
-            AnonymousMember createdAnonymousBy = pickComment.getCreatedAnonymousBy();
-            // createdAnonymousBy 가 null인 경우는 회원이 작성한 댓글
-            if (createdAnonymousBy == null) {
-                return false;
-            }
-
-            return createdAnonymousBy.isEqualAnonymousMemberId(anonymousMember.getId());
+        // 익명회원이 조회하고 픽픽픽 댓글을 익명회원이 작성한 경우
+        if (anonymousMember != null && pickComment.isCreatedAnonymousMember()) {
+            return pickComment.getCreatedAnonymousBy().isEqualAnonymousMemberId(anonymousMember.getId());
         }
 
         return false;
@@ -112,12 +109,19 @@ public class CommentResponseUtil {
                 .anyMatch(pickCommentRecommend -> pickCommentRecommend.getMember().isEqualsId(member.getId()));
     }
 
-    public static boolean isTechCommentAuthor(Member member, TechComment techComment) {
-        // member 가 null 인 경우 익명회원이 조회한 것
-        if (member == null) {
-            return false;
+    public static boolean isTechCommentAuthor(@Nullable Member member, @Nullable AnonymousMember anonymousMember,
+                                              TechComment techComment) {
+        // 회원이 조회하고 기술블로그 댓글을 회원이 작성한 경우
+        if (member != null && techComment.isCreatedMember()) {
+            return techComment.getCreatedBy().isEqualsId(member.getId());
         }
-        return techComment.getCreatedBy().isEqualsId(member.getId());
+
+        // 익명회원이 조회하고 기술블로그 댓글을 익명회원이 작성한 경우
+        if (anonymousMember != null && techComment.isCreatedAnonymousMember()) {
+            return techComment.getCreatedAnonymousBy().isEqualAnonymousMemberId(anonymousMember.getId());
+        }
+
+        return false;
     }
 
     public static boolean isTechCommentRecommendedByMember(@Nullable Member member, TechComment techComment) {

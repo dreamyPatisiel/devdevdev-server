@@ -18,9 +18,8 @@ public interface TechCommentRepository extends JpaRepository<TechComment, Long>,
 
     Optional<TechComment> findByIdAndTechArticleIdAndDeletedAtIsNull(Long id, Long techArticleId);
 
-    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "techArticle"})
-    List<TechComment> findWithMemberWithTechArticleByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(
-            Set<Long> originParentIds);
+    @EntityGraph(attributePaths = {"createdBy", "deletedBy", "createdAnonymousBy", "deletedAnonymousBy", "techArticle"})
+    List<TechComment> findWithDetailsByOriginParentIdInAndParentIsNotNullAndOriginParentIsNotNull(Set<Long> originParentIds);
 
     Long countByTechArticleIdAndOriginParentIsNullAndParentIsNullAndDeletedAtIsNull(Long techArticleId);
 

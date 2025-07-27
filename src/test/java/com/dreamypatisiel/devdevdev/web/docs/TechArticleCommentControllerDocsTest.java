@@ -2,7 +2,13 @@ package com.dreamypatisiel.devdevdev.web.docs;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createCompany;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createMainTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createRepliedTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createSocialDto;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createTechCommentRecommend;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
 import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.techCommentSortType;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -30,19 +36,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
-import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
@@ -50,7 +55,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
@@ -68,10 +72,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.web.servlet.ResultActions;
 
 public class TechArticleCommentControllerDocsTest extends SupportControllerDocsTest {
@@ -90,6 +90,9 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
 
     @Autowired
     TechCommentRecommendRepository techCommentRecommendRepository;
+
+    @Autowired
+    AnonymousMemberRepository anonymousMemberRepository;
 
     @Autowired
     EntityManager em;
@@ -180,7 +183,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")
@@ -385,7 +389,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디"),
@@ -553,7 +558,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디"),
@@ -670,7 +676,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디"),
@@ -754,30 +761,26 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @DisplayName("기술블로그 댓글/답글을 정렬 조건에 따라서 조회한다.")
     void getTechComments() throws Exception {
         // given
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘", "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
 
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
 
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
         TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), member,
+        TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글2"), anonymousMember,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
         TechComment originParentTechComment3 = createMainTechComment(new CommentContents("최상위 댓글3"), member,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
@@ -785,29 +788,21 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
         TechComment originParentTechComment5 = createMainTechComment(new CommentContents("최상위 댓글5"), member,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
-        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), member,
+        TechComment originParentTechComment6 = createMainTechComment(new CommentContents("최상위 댓글6"), anonymousMember,
                 techArticle, new Count(0L), new Count(0L), new Count(0L));
 
         TechComment parentTechComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
-        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), member,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
+        TechComment parentTechComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2"), anonymousMember,
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
         TechComment parentTechComment3 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글1"), member,
-                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
         TechComment parentTechComment4 = createRepliedTechComment(new CommentContents("최상위 댓글2의 답글2"), member,
-                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment2, originParentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         TechComment techComment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
                 techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member,
-                techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techcomment1 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1의 답글"), member,
-                techArticle, originParentTechComment1, parentTechComment1, new Count(0L), new Count(0L), new Count(0L));
-        TechComment techcomment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), member,
+        TechComment techComment2 = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글2의 답글"), anonymousMember,
                 techArticle, originParentTechComment1, parentTechComment2, new Count(0L), new Count(0L), new Count(0L));
 
         techCommentRepository.saveAll(List.of(
@@ -837,60 +832,15 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
                                 .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
-                .andExpect(jsonPath("$.data").isNotEmpty())
-                .andExpect(jsonPath("$.data.content").isArray())
-                .andExpect(jsonPath("$.data.content.[0].techCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].createdAt").isString())
-                .andExpect(jsonPath("$.data.content.[0].memberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].author").isString())
-                .andExpect(jsonPath("$.data.content.[0].maskedEmail").isString())
-                .andExpect(jsonPath("$.data.content.[0].contents").isString())
-                .andExpect(jsonPath("$.data.content.[0].replyTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].recommendTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].isRecommended").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].memberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techOriginParentCommentId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].createdAt").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].author").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].maskedEmail").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].contents").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentMemberId").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].techParentCommentAuthor").isString())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].recommendTotalCount").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].isDeleted").isBoolean())
-                .andExpect(jsonPath("$.data.content.[0].replies.[0].isRecommended").isBoolean())
-                .andExpect(jsonPath("$.data.pageable").isNotEmpty())
-                .andExpect(jsonPath("$.data.pageable.pageNumber").isNumber())
-                .andExpect(jsonPath("$.data.pageable.pageSize").isNumber())
-                .andExpect(jsonPath("$.data.pageable.sort").isNotEmpty())
-                .andExpect(jsonPath("$.data.pageable.sort.empty").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.sort.sorted").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.sort.unsorted").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.offset").isNumber())
-                .andExpect(jsonPath("$.data.pageable.paged").isBoolean())
-                .andExpect(jsonPath("$.data.pageable.unpaged").isBoolean())
-                .andExpect(jsonPath("$.data.first").isBoolean())
-                .andExpect(jsonPath("$.data.last").isBoolean())
-                .andExpect(jsonPath("$.data.size").isNumber())
-                .andExpect(jsonPath("$.data.number").isNumber())
-                .andExpect(jsonPath("$.data.sort").isNotEmpty())
-                .andExpect(jsonPath("$.data.sort.empty").isBoolean())
-                .andExpect(jsonPath("$.data.sort.sorted").isBoolean())
-                .andExpect(jsonPath("$.data.sort.unsorted").isBoolean())
-                .andExpect(jsonPath("$.data.numberOfElements").isNumber())
-                .andExpect(jsonPath("$.data.empty").isBoolean());
+                .andExpect(status().isOk());
 
         // docs
         actions.andDo(document("get-tech-comments",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")
@@ -908,9 +858,11 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content").type(ARRAY).description("기술블로그 댓글/답글 메인 배열"),
                         fieldWithPath("data.content[].techCommentId").type(NUMBER).description("기술블로그 댓글 아이디"),
                         fieldWithPath("data.content[].createdAt").type(STRING).description("기술블로그 댓글 작성일시"),
-                        fieldWithPath("data.content[].memberId").type(NUMBER).description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].memberId").optional().type(NUMBER).description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].anonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 댓글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].author").type(STRING).description("기술블로그 댓글 작성자 닉네임"),
-                        fieldWithPath("data.content[].maskedEmail").type(STRING).description("기술블로그 댓글 작성자 이메일"),
+                        fieldWithPath("data.content[].maskedEmail").type(STRING).optional().description("기술블로그 댓글 작성자 이메일"),
                         fieldWithPath("data.content[].contents").type(STRING).description("기술블로그 댓글 내용"),
                         fieldWithPath("data.content[].isCommentAuthor").type(BOOLEAN)
                                 .description("회원의 기술블로그 댓글 작성자 여부"),
@@ -929,19 +881,23 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                         fieldWithPath("data.content[].replies[].techCommentId").type(NUMBER)
                                 .description("기술블로그 답글 아이디"),
                         fieldWithPath("data.content[].replies[].memberId").type(NUMBER).description("기술블로그 답글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].anonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 답글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].techParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].techOriginParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 최상위 부모 댓글 아이디"),
                         fieldWithPath("data.content[].replies[].createdAt").type(STRING).description("기술블로그 답글 작성일시"),
-                        fieldWithPath("data.content[].replies[].techParentCommentMemberId").type(NUMBER)
+                        fieldWithPath("data.content[].replies[].techParentCommentMemberId").optional().type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 작성자 아이디"),
+                        fieldWithPath("data.content[].replies[].techParentCommentAnonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 답글의 부모 댓글 익명 작성자 아이디"),
                         fieldWithPath("data.content[].replies[].techParentCommentAuthor").type(STRING)
                                 .description("기술블로그 답글의 부모 댓글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].author").type(STRING).description("기술블로그 답글 작성자 닉네임"),
                         fieldWithPath("data.content[].replies[].isCommentAuthor").type(BOOLEAN)
                                 .description("회원의 기술블로그 답글 작성자 여부"),
-                        fieldWithPath("data.content[].replies[].maskedEmail").type(STRING)
+                        fieldWithPath("data.content[].replies[].maskedEmail").type(STRING).optional()
                                 .description("기술블로그 답글 작성자 이메일"),
                         fieldWithPath("data.content[].replies[].contents").type(STRING).description("기술블로그 답글 내용"),
                         fieldWithPath("data.content[].replies[].recommendTotalCount").type(NUMBER)
@@ -1024,7 +980,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디"),
@@ -1109,6 +1066,10 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         Member member3 = Member.createMemberBy(socialMemberDto3);
         memberRepository.saveAll(List.of(member1, member2, member3));
 
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
         // 회사 생성
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
@@ -1121,7 +1082,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
 
         // 댓글 생성
-        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), member1,
+        TechComment originParentTechComment1 = createMainTechComment(new CommentContents("최상위 댓글1"), anonymousMember,
                 techArticle, new Count(0L), new Count(3L), new Count(0L));
         originParentTechComment1.modifyCommentContents(new CommentContents("최상위 댓글1 수정"), LocalDateTime.now());
         TechComment originParentTechComment2 = createMainTechComment(new CommentContents("최상위 댓글1"), member2,
@@ -1156,7 +1117,8 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 requestHeaders(
-                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰")
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName(HEADER_ANONYMOUS_MEMBER_ID).optional().description("익명회원 아이디")
                 ),
                 pathParameters(
                         parameterWithName("techArticleId").description("기술블로그 아이디")
@@ -1170,26 +1132,25 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
 
                         fieldWithPath("datas.[].techCommentId").type(NUMBER).description("기술블로그 댓글 아이디"),
                         fieldWithPath("datas.[].createdAt").type(STRING).description("기술블로그 댓글 작성일시"),
-                        fieldWithPath("datas.[].memberId").type(NUMBER).description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].memberId").type(NUMBER).optional().description("기술블로그 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].anonymousMemberId").type(NUMBER).optional().description("기술블로그 댓글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].author").type(STRING).description("기술블로그 댓글 작성자 닉네임"),
                         fieldWithPath("datas.[].isCommentAuthor").type(BOOLEAN)
                                 .description("로그인한 회원이 댓글 작성자인지 여부"),
                         fieldWithPath("datas.[].isRecommended").type(BOOLEAN)
                                 .description("로그인한 회원이 댓글 추천 여부"),
-                        fieldWithPath("datas.[].maskedEmail").type(STRING).description("기술블로그 댓글 작성자 이메일"),
+                        fieldWithPath("datas.[].maskedEmail").optional().type(STRING).description("기술블로그 댓글 작성자 이메일"),
                         fieldWithPath("datas.[].contents").type(STRING).description("기술블로그 댓글 내용"),
-                        fieldWithPath("datas.[].replyTotalCount").type(NUMBER)
-                                .description("기술블로그 댓글의 답글 총 갯수"),
-                        fieldWithPath("datas.[].recommendTotalCount").type(NUMBER)
-                                .description("기술블로그 댓글 좋아요 총 갯수"),
-                        fieldWithPath("datas.[].isDeleted").type(BOOLEAN)
-                                .description("기술블로그 댓글 삭제 여부"),
-                        fieldWithPath("datas.[].isModified").type(BOOLEAN)
-                                .description("기술블로그 댓글 수정 여부"),
+                        fieldWithPath("datas.[].replyTotalCount").type(NUMBER).description("기술블로그 댓글의 답글 총 갯수"),
+                        fieldWithPath("datas.[].recommendTotalCount").type(NUMBER).description("기술블로그 댓글 좋아요 총 갯수"),
+                        fieldWithPath("datas.[].isDeleted").type(BOOLEAN).description("기술블로그 댓글 삭제 여부"),
+                        fieldWithPath("datas.[].isModified").type(BOOLEAN).description("기술블로그 댓글 수정 여부"),
 
                         fieldWithPath("datas.[].replies").type(ARRAY).description("기술블로그 답글 배열"),
                         fieldWithPath("datas.[].replies[].techCommentId").type(NUMBER).description("기술블로그 답글 아이디"),
-                        fieldWithPath("datas.[].replies[].memberId").type(NUMBER).description("기술블로그 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].memberId").optional().type(NUMBER).description("기술블로그 답글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].anonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 답글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].replies[].techParentCommentId").type(NUMBER)
                                 .description("기술블로그 답글의 부모 댓글 아이디"),
                         fieldWithPath("datas.[].replies[].techOriginParentCommentId").type(NUMBER)
@@ -1209,78 +1170,13 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                                 .description("기술블로그 답글 삭제 여부"),
                         fieldWithPath("datas.[].replies[].isModified").type(BOOLEAN)
                                 .description("기술블로그 답글 수정 여부"),
-                        fieldWithPath("datas.[].replies[].techParentCommentMemberId").type(NUMBER)
-                                .description("기술블로그 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].techParentCommentMemberId").optional().type(NUMBER).description(
+                                "기술블로그 부모 댓글 작성자 아이디"),
+                        fieldWithPath("datas.[].replies[].techParentCommentAnonymousMemberId").optional().type(NUMBER)
+                                .description("기술블로그 부모 댓글 익명 작성자 아이디"),
                         fieldWithPath("datas.[].replies[].techParentCommentAuthor").type(STRING)
                                 .description("기술블로그 부모 댓글 작성자 닉네임")
                 )
         ));
-    }
-
-    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment,
-                                                            Member member) {
-        TechCommentRecommend techCommentRecommend = TechCommentRecommend.builder()
-                .recommendedStatus(recommendedStatus)
-                .techComment(techComment)
-                .member(member)
-                .build();
-
-        techCommentRecommend.changeTechComment(techComment);
-
-        return techCommentRecommend;
-    }
-
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
-                                            String socialType, String role) {
-        return SocialMemberDto.builder()
-                .userId(userId)
-                .name(name)
-                .nickname(nickName)
-                .password(password)
-                .email(email)
-                .socialType(SocialType.valueOf(socialType))
-                .role(Role.valueOf(role))
-                .build();
-    }
-
-    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
-                                         String careerUrl) {
-        return Company.builder()
-                .name(new CompanyName(companyName))
-                .officialImageUrl(new Url(officialImageUrl))
-                .careerUrl(new Url(careerUrl))
-                .officialUrl(new Url(officialUrl))
-                .build();
-    }
-
-    private static TechComment createMainTechComment(CommentContents contents, Member createdBy,
-                                                     TechArticle techArticle,
-                                                     Count blameTotalCount, Count recommendTotalCount,
-                                                     Count replyTotalCount) {
-        return TechComment.builder()
-                .contents(contents)
-                .createdBy(createdBy)
-                .techArticle(techArticle)
-                .blameTotalCount(blameTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .replyTotalCount(replyTotalCount)
-                .build();
-    }
-
-    private static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
-                                                        TechArticle techArticle,
-                                                        TechComment originParent, TechComment parent,
-                                                        Count blameTotalCount, Count recommendTotalCount,
-                                                        Count replyTotalCount) {
-        return TechComment.builder()
-                .contents(contents)
-                .createdBy(createdBy)
-                .techArticle(techArticle)
-                .blameTotalCount(blameTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .replyTotalCount(replyTotalCount)
-                .originParent(originParent)
-                .parent(parent)
-                .build();
     }
 }

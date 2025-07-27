@@ -5,6 +5,11 @@ import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleException
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createCompany;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createMainTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createRepliedTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createSocialDto;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createTechCommentRecommend;
 import static com.dreamypatisiel.devdevdev.global.common.MemberProvider.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -18,7 +23,6 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
@@ -894,7 +898,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.OLDEST, pageable, authentication);
+                null, TechCommentSort.OLDEST, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1191,7 +1195,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.LATEST, pageable, authentication);
+                null, TechCommentSort.LATEST, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1363,7 +1367,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.MOST_COMMENTED, pageable, authentication);
+                null, TechCommentSort.MOST_COMMENTED, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1640,7 +1644,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.MOST_LIKED, pageable, authentication);
+                null, TechCommentSort.MOST_LIKED, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1793,7 +1797,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = memberTechCommentService.getTechComments(techArticleId,
-                originParentTechComment6.getId(), null, pageable, authentication);
+                originParentTechComment6.getId(), null, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(5L); // 삭제된 댓글은 카운트하지 않는다
@@ -2084,7 +2088,7 @@ public class MemberTechCommentServiceTest {
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         // when // then
-        assertThatThrownBy(() -> memberTechCommentService.findTechBestComments(3, 0L, authentication))
+        assertThatThrownBy(() -> memberTechCommentService.findTechBestComments(3, 0L, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -2145,7 +2149,7 @@ public class MemberTechCommentServiceTest {
         techCommentRepository.save(repliedTechComment);
 
         // when
-        List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(),
+        List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(), null,
                 authentication);
 
         // then
@@ -2296,7 +2300,7 @@ public class MemberTechCommentServiceTest {
 
         // when
         List<TechCommentsResponse> response = memberTechCommentService.findTechBestComments(3, techArticle.getId(),
-                authentication);
+                null, authentication);
 
         // then
         assertThat(response).hasSize(1)
@@ -2363,72 +2367,5 @@ public class MemberTechCommentServiceTest {
                                 false
                         )
                 );
-    }
-
-    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment,
-                                                            Member member) {
-        TechCommentRecommend techCommentRecommend = TechCommentRecommend.builder()
-                .recommendedStatus(recommendedStatus)
-                .techComment(techComment)
-                .member(member)
-                .build();
-
-        techCommentRecommend.changeTechComment(techComment);
-
-        return techCommentRecommend;
-    }
-
-    private static TechComment createMainTechComment(CommentContents contents, Member createdBy,
-                                                     TechArticle techArticle,
-                                                     Count blameTotalCount, Count recommendTotalCount,
-                                                     Count replyTotalCount) {
-        return TechComment.builder()
-                .contents(contents)
-                .createdBy(createdBy)
-                .techArticle(techArticle)
-                .blameTotalCount(blameTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .replyTotalCount(replyTotalCount)
-                .build();
-    }
-
-    private static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
-                                                        TechArticle techArticle,
-                                                        TechComment originParent, TechComment parent,
-                                                        Count blameTotalCount, Count recommendTotalCount,
-                                                        Count replyTotalCount) {
-        return TechComment.builder()
-                .contents(contents)
-                .createdBy(createdBy)
-                .techArticle(techArticle)
-                .blameTotalCount(blameTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .replyTotalCount(replyTotalCount)
-                .originParent(originParent)
-                .parent(parent)
-                .build();
-    }
-
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
-                                            String socialType, String role) {
-        return SocialMemberDto.builder()
-                .userId(userId)
-                .name(name)
-                .nickname(nickName)
-                .password(password)
-                .email(email)
-                .socialType(SocialType.valueOf(socialType))
-                .role(Role.valueOf(role))
-                .build();
-    }
-
-    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
-                                         String careerUrl) {
-        return Company.builder()
-                .name(new CompanyName(companyName))
-                .officialUrl(new Url(officialUrl))
-                .careerUrl(new Url(careerUrl))
-                .officialImageUrl(new Url(officialImageUrl))
-                .build();
     }
 }

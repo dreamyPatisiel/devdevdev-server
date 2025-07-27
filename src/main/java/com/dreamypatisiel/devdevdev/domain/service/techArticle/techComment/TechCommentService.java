@@ -2,7 +2,6 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
@@ -32,10 +31,12 @@ public interface TechCommentService {
 
     SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
                                                              TechCommentSort techCommentSort, Pageable pageable,
+                                                             String anonymousMemberId,
                                                              Authentication authentication);
 
     TechCommentRecommendResponse recommendTechComment(Long techArticleId, Long techCommentId,
                                                       Authentication authentication);
 
-    List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, Authentication authentication);
+    List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, String anonymousMemberId,
+                                                    Authentication authentication);
 }
