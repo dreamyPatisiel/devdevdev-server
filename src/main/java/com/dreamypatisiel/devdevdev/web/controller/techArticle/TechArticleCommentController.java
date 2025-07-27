@@ -42,7 +42,7 @@ public class TechArticleCommentController {
 
     private final TechArticleServiceStrategy techArticleServiceStrategy;
 
-    @Operation(summary = "기술블로그 댓글 작성")
+    @Operation(summary = "기술블로그 댓글 작성", description = "기술블로그 댓글을 작성할 수 있습니다.")
     @PostMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerMainTechComment(
             @PathVariable Long techArticleId,
@@ -73,8 +73,7 @@ public class TechArticleCommentController {
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.registerRepliedTechComment(techArticleId,
-                originParentTechCommentId,
-                parentTechCommentId, registerRepliedTechCommentRequest, authentication);
+                originParentTechCommentId, parentTechCommentId, registerRepliedTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

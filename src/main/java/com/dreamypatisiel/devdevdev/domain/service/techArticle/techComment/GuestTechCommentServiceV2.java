@@ -126,6 +126,7 @@ public class GuestTechCommentServiceV2 extends TechCommentCommonService implemen
      * @Since: 2025.07.20
      */
     @Override
+    @Transactional
     public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId,
                                                            String anonymousMemberId, Authentication authentication) {
 
