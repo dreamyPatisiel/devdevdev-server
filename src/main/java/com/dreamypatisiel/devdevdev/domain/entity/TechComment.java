@@ -113,8 +113,8 @@ public class TechComment extends BasicTime {
         this.deletedAt = deletedAt;
     }
 
-    public static TechComment createMainTechComment(CommentContents contents, Member createdBy,
-                                                    TechArticle techArticle) {
+    public static TechComment createMainTechCommentByMember(CommentContents contents, Member createdBy,
+                                                            TechArticle techArticle) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)
@@ -125,9 +125,21 @@ public class TechComment extends BasicTime {
                 .build();
     }
 
-    public static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
-                                                       TechArticle techArticle, TechComment originParent,
-                                                       TechComment parent) {
+    public static TechComment createMainTechCommentByAnonymousMember(CommentContents contents, AnonymousMember createdAnonymousBy,
+                                                                     TechArticle techArticle) {
+        return TechComment.builder()
+                .contents(contents)
+                .createdAnonymousBy(createdAnonymousBy)
+                .techArticle(techArticle)
+                .blameTotalCount(Count.defaultCount())
+                .recommendTotalCount(Count.defaultCount())
+                .replyTotalCount(Count.defaultCount())
+                .build();
+    }
+
+    public static TechComment createRepliedTechCommentByMember(CommentContents contents, Member createdBy,
+                                                               TechArticle techArticle, TechComment originParent,
+                                                               TechComment parent) {
         return TechComment.builder()
                 .contents(contents)
                 .createdBy(createdBy)

@@ -29,8 +29,8 @@ import org.springframework.util.ObjectUtils;
 @Transactional(readOnly = true)
 public class TechCommentCommonService {
 
-    private final TechCommentRepository techCommentRepository;
-    private final TechBestCommentsPolicy techBestCommentsPolicy;
+    protected final TechCommentRepository techCommentRepository;
+    protected final TechBestCommentsPolicy techBestCommentsPolicy;
 
     /**
      * @Note: 정렬 조건에 따라 커서 방식으로 기술블로그 댓글 목록을 조회한다.

@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createCompany;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createMainTechComment;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createRepliedTechComment;
@@ -8,6 +9,7 @@ import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUt
 import static com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -30,11 +32,15 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
+import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
@@ -1392,5 +1398,104 @@ class GuestTechCommentServiceV2Test {
                                 repliedTechComment.getParent().getCreatedAnonymousBy().getId()
                         )
                 );
+    }
+
+    @Test
+    @DisplayName("익명회원은 기술블로그 댓글을 작성할 수 있다.")
+    void registerTechComment() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+
+        // 댓글 등록 요청 생성
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest,
+                anonymousMember.getAnonymousMemberId());
+
+        // when
+        TechCommentResponse techCommentResponse = guestTechCommentServiceV2.registerMainTechComment(techArticle.getId(),
+                registerCommentDto, authentication);
+        em.flush();
+
+        // then
+        assertThat(techCommentResponse.getTechCommentId()).isNotNull();
+
+        TechComment findTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
+
+        assertAll(
+                // 댓글 생성 확인
+                () -> assertThat(findTechComment.getContents().getCommentContents()).isEqualTo("댓글입니다."),
+                () -> assertThat(findTechComment.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechComment.getReplyTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findTechComment.getCreatedAnonymousBy().getId()).isEqualTo(anonymousMember.getId()),
+                () -> assertThat(findTechComment.getTechArticle().getId()).isEqualTo(techArticle.getId()),
+                // 기술블로그 댓글 수 증가 확인
+                () -> assertThat(findTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(2L)
+        );
+    }
+
+    @Test
+    @DisplayName("익명회원이 기술블로그 댓글을 작성할 때 존재하지 않는 기술블로그에 댓글을 작성하면 예외가 발생한다.")
+    void registerTechCommentNotFoundTechArticleException() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest,
+                anonymousMember.getAnonymousMemberId());
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechCommentServiceV2.registerMainTechComment(0L, registerCommentDto, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원 전용 기술블로그 댓글을 작성할 때 익명회원이 아니면 예외가 발생한다.")
+    void registerTechCommentIllegalStateException() {
+        // given
+        UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest, null);
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechCommentServiceV2.registerMainTechComment(1L, registerCommentDto, authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }
 }
