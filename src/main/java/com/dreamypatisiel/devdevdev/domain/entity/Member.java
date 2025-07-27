@@ -196,8 +196,8 @@ public class Member extends BasicTime {
         this.nicknameUpdatedAt = now;
     }
 
-    public boolean canChangeNickname(int restrictionHours) {
+    public boolean canChangeNickname(int restrictionHours, LocalDateTime now) {
         return nicknameUpdatedAt == null
-                || ChronoUnit.HOURS.between(nicknameUpdatedAt, LocalDateTime.now()) >= restrictionHours;
+                || ChronoUnit.HOURS.between(nicknameUpdatedAt, now) >= restrictionHours;
     }
 }
