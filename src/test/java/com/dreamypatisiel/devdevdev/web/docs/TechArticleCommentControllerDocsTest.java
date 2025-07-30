@@ -353,8 +353,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         memberRepository.save(member);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -418,8 +417,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         memberRepository.save(member);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -474,8 +472,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         memberRepository.save(member);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -525,8 +522,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         memberRepository.save(member);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -583,8 +579,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         memberRepository.save(member);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -620,7 +615,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     }
 
     @Test
-    @DisplayName("회원은 기술블로그 댓글에 답글을 작성할 수 있다.")
+    @DisplayName("기술블로그 댓글에 답글을 작성할 수 있다.")
     void registerTechReply() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
@@ -628,8 +623,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
