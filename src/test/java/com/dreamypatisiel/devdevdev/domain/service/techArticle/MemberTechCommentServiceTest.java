@@ -619,8 +619,7 @@ public class MemberTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -630,10 +629,11 @@ public class MemberTechCommentServiceTest {
         Long parentTechCommentId = parentTechComment.getId();
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.registerRepliedTechComment(
-                techArticleId, parentTechCommentId, parentTechCommentId, registerRepliedTechComment, authentication);
+                techArticleId, parentTechCommentId, parentTechCommentId, registerRepliedCommentDto, authentication);
         em.flush();
 
         // then
@@ -695,10 +695,11 @@ public class MemberTechCommentServiceTest {
         Long parentTechCommentId = parentTechComment.getId();
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.registerRepliedTechComment(
-                techArticleId, originParentTechCommentId, parentTechCommentId, registerRepliedTechComment,
+                techArticleId, originParentTechCommentId, parentTechCommentId, registerRepliedCommentDto,
                 authentication);
         em.flush();
 
@@ -754,11 +755,12 @@ public class MemberTechCommentServiceTest {
         Long techCommentId = techComment.getId() + 1;
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when // then
         assertThatThrownBy(
                 () -> memberTechCommentService.registerRepliedTechComment(techArticleId, techCommentId, techCommentId,
-                        registerRepliedTechComment, authentication))
+                        registerRepliedCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
@@ -798,11 +800,12 @@ public class MemberTechCommentServiceTest {
         em.clear();
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when // then
         assertThatThrownBy(
                 () -> memberTechCommentService.registerRepliedTechComment(techArticleId, techCommentId, techCommentId,
-                        registerRepliedTechComment, authentication))
+                        registerRepliedCommentDto, authentication))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
     }
@@ -824,11 +827,12 @@ public class MemberTechCommentServiceTest {
         em.clear();
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when // then
         assertThatThrownBy(
                 () -> memberTechCommentService.registerRepliedTechComment(0L, 0L, 0L,
-                        registerRepliedTechComment, authentication))
+                        registerRepliedCommentDto, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }

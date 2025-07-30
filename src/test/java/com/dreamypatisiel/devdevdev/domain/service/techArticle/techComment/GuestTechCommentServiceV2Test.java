@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createCompany;
 import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createMainTechComment;
@@ -1495,6 +1497,263 @@ class GuestTechCommentServiceV2Test {
         // when // then
         assertThatThrownBy(
                 () -> guestTechCommentServiceV2.registerMainTechComment(1L, registerCommentDto, authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원은 기술블로그 댓글에 답글을 작성할 수 있다.")
+    void registerRepliedTechComment() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
+                techArticle);
+        techCommentRepository.save(parentTechComment);
+        Long parentTechCommentId = parentTechComment.getId();
+
+        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment,
+                anonymousMember.getAnonymousMemberId());
+
+        // when
+        TechCommentResponse techCommentResponse = guestTechCommentServiceV2.registerRepliedTechComment(
+                techArticleId, parentTechCommentId, parentTechCommentId, registerRepliedCommentDto, authentication);
+
+        // then
+        assertThat(techCommentResponse.getTechCommentId()).isNotNull();
+
+        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
+
+        assertAll(
+                // 답글 생성 확인
+                () -> assertThat(findRepliedTechComment.getContents().getCommentContents()).isEqualTo("답글입니다."),
+                () -> assertThat(findRepliedTechComment.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findRepliedTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findRepliedTechComment.getReplyTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findRepliedTechComment.getCreatedAnonymousBy().getId()).isEqualTo(anonymousMember.getId()),
+                () -> assertThat(findRepliedTechComment.getParent().getId()).isEqualTo(parentTechCommentId),
+                () -> assertThat(findRepliedTechComment.getOriginParent().getId()).isEqualTo(parentTechCommentId),
+                // 최상단 댓글의 답글 수 증가 확인
+                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(
+                        1L),
+                // 기술블로그 댓글 수 증가 확인
+                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
+                        2L)
+        );
+    }
+
+    @Test
+    @DisplayName("익명회원은 기술블로그 댓글의 답글에 답글을 작성할 수 있다.")
+    void registerRepliedTechCommentToRepliedTechComment() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(2L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        // 댓글 생성
+        TechComment originParentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
+                techArticle);
+        techCommentRepository.save(originParentTechComment);
+        Long originParentTechCommentId = originParentTechComment.getId();
+
+        // 답글 생성
+        TechComment parentTechComment = TechComment.createRepliedTechCommentByAnonymousMember(new CommentContents("답글입니다."),
+                anonymousMember, techArticle, originParentTechComment, originParentTechComment);
+        techCommentRepository.save(parentTechComment);
+        Long parentTechCommentId = parentTechComment.getId();
+
+        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment,
+                anonymousMember.getAnonymousMemberId());
+
+        // when
+        TechCommentResponse techCommentResponse = guestTechCommentServiceV2.registerRepliedTechComment(techArticleId,
+                originParentTechCommentId, parentTechCommentId, registerRepliedCommentDto, authentication);
+
+        // then
+        assertThat(techCommentResponse.getTechCommentId()).isNotNull();
+
+        TechComment findRepliedTechComment = techCommentRepository.findById(techCommentResponse.getTechCommentId())
+                .get();
+
+        assertAll(
+                () -> assertThat(findRepliedTechComment.getContents().getCommentContents()).isEqualTo("답글입니다."),
+                () -> assertThat(findRepliedTechComment.getBlameTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findRepliedTechComment.getRecommendTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findRepliedTechComment.getReplyTotalCount().getCount()).isEqualTo(0L),
+                () -> assertThat(findRepliedTechComment.getCreatedAnonymousBy().getId()).isEqualTo(anonymousMember.getId()),
+                () -> assertThat(findRepliedTechComment.getParent().getId()).isEqualTo(parentTechCommentId),
+                () -> assertThat(findRepliedTechComment.getOriginParent().getId()).isEqualTo(originParentTechCommentId),
+                // 최상단 댓글의 답글 수 증가 확인
+                () -> assertThat(findRepliedTechComment.getOriginParent().getReplyTotalCount().getCount()).isEqualTo(
+                        1L),
+                // 기술블로그 댓글 수 증가 확인
+                () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
+                        3L)
+        );
+    }
+
+    @Test
+    @DisplayName("익명회원이 기술블로그 댓글에 답글을 작성할 때 존재하지 않는 댓글에 답글을 작성하면 예외가 발생한다.")
+    void registerRepliedTechCommentNotFoundTechCommentException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        // 댓글 생성
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long invalidTechCommentId = techComment.getId() + 1;
+
+        // 답글 등록 요청 생성
+        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment,
+                anonymousMember.getAnonymousMemberId());
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechCommentServiceV2.registerRepliedTechComment(techArticleId, invalidTechCommentId,
+                        invalidTechCommentId, registerRepliedCommentDto, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원이 기술블로그 댓글에 답글을 작성할 때 삭제된 댓글에 답글을 작성하면 예외가 발생한다.")
+    void registerRepliedTechCommentDeletedTechCommentException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        // 회사 생성
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        // 기술블로그 생성
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L),
+                new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        // 삭제 상태의 댓글 생성
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        techComment.changeDeletedAt(deletedAt, member);
+
+        em.flush();
+        em.clear();
+
+        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment,
+                anonymousMember.getAnonymousMemberId());
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechCommentServiceV2.registerRepliedTechComment(techArticleId, techCommentId, techCommentId,
+                        registerRepliedCommentDto, authentication))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원이 익명회원 전용 기술블로그 댓글에 답글을 작성하면 예외가 발생한다.")
+    void registerRepliedTechCommentIllegalStateException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        em.flush();
+        em.clear();
+
+        RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechCommentServiceV2.registerRepliedTechComment(0L, 0L, 0L,
+                        registerRepliedCommentDto, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }

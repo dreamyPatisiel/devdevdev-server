@@ -1,12 +1,18 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService.validateIsDeletedTechComment;
+
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.BasicTime;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
@@ -31,6 +37,7 @@ public class TechCommentCommonService {
 
     protected final TechCommentRepository techCommentRepository;
     protected final TechBestCommentsPolicy techBestCommentsPolicy;
+    protected final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
 
     /**
      * @Note: 정렬 조건에 따라 커서 방식으로 기술블로그 댓글 목록을 조회한다.
@@ -143,5 +150,31 @@ public class TechCommentCommonService {
                 .map(originParentTechComment -> getTechCommentsResponse(member, anonymousMember, originParentTechComment,
                         techBestCommentReplies))
                 .toList();
+    }
+
+    /**
+     * @Note: 답글 대상의 댓글을 조회하고, 답글 대상의 댓글이 최초 댓글이면 답글 대상으로 반환한다.
+     * @Author: 유소영
+     * @Since: 2024.09.06
+     */
+    protected TechComment getAndValidateOriginParentTechComment(Long originParentTechCommentId, TechComment parentTechComment) {
+
+        // 삭제된 댓글에는 답글 작성 불가
+        validateIsDeletedTechComment(parentTechComment, INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE, null);
+
+        // 답글 대상의 댓글이 최초 댓글이면 답글 대상으로 반환
+        if (parentTechComment.isEqualsId(originParentTechCommentId)) {
+            return parentTechComment;
+        }
+
+        // 답글 대상의 댓글의 메인 댓글 조회
+        TechComment findOriginParentTechComment = techCommentRepository.findById(originParentTechCommentId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 최초 댓글이 삭제 상태이면 답글 작성 불가
+        validateIsDeletedTechComment(findOriginParentTechComment, INVALID_CAN_NOT_REPLY_DELETED_TECH_COMMENT_MESSAGE,
+                null);
+
+        return findOriginParentTechComment;
     }
 }

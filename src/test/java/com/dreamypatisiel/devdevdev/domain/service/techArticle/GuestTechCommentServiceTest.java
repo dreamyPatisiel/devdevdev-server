@@ -138,8 +138,7 @@ public class GuestTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -149,10 +148,11 @@ public class GuestTechCommentServiceTest {
         Long parentTechCommentId = parentTechComment.getId();
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when // then
         assertThatThrownBy(() -> guestTechCommentService.registerRepliedTechComment(
-                techArticleId, parentTechCommentId, parentTechCommentId, registerRepliedTechComment, authentication))
+                techArticleId, parentTechCommentId, parentTechCommentId, registerCommentDto, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

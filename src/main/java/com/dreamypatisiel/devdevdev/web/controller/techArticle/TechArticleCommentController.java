@@ -61,7 +61,7 @@ public class TechArticleCommentController {
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    @Operation(summary = "기술블로그 답글 작성")
+    @Operation(summary = "기술블로그 답글 작성", description = "기술블로그 답글을 작성할 수 있습니다.")
     @PostMapping("/articles/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerRepliedTechComment(
             @PathVariable Long techArticleId,
@@ -70,10 +70,13 @@ public class TechArticleCommentController {
             @RequestBody @Validated RegisterTechCommentRequest registerRepliedTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechCommentRequest,
+                anonymousMemberId);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.registerRepliedTechComment(techArticleId,
-                originParentTechCommentId, parentTechCommentId, registerRepliedTechCommentRequest, authentication);
+                originParentTechCommentId, parentTechCommentId, registerRepliedCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

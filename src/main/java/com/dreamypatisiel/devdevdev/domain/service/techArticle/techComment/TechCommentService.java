@@ -4,7 +4,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSor
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -15,13 +14,13 @@ import org.springframework.security.core.Authentication;
 public interface TechCommentService {
 
     TechCommentResponse registerMainTechComment(Long techArticleId,
-                                                TechCommentDto techCommentDto,
+                                                TechCommentDto registerTechCommentDto,
                                                 Authentication authentication);
 
     TechCommentResponse registerRepliedTechComment(Long techArticleId,
                                                    Long originParentTechCommentId,
                                                    Long parentTechCommentId,
-                                                   RegisterTechCommentRequest registerRepliedTechCommentRequest,
+                                                   TechCommentDto registerRepliedTechCommentDto,
                                                    Authentication authentication);
 
     TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId,

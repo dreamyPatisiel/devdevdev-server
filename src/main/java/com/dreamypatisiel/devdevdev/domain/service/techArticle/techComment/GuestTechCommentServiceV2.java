@@ -1,21 +1,23 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
+import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -31,29 +33,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuestTechCommentServiceV2 extends TechCommentCommonService implements TechCommentService {
 
     private final AnonymousMemberService anonymousMemberService;
-    private final TechCommentCommonService techCommentCommonService;
     private final TechArticleCommonService techArticleCommonService;
 
     public GuestTechCommentServiceV2(TechCommentRepository techCommentRepository, TechBestCommentsPolicy techBestCommentsPolicy,
                                      AnonymousMemberService anonymousMemberService,
-                                     TechCommentCommonService techCommentCommonService,
+                                     TechArticlePopularScorePolicy techArticlePopularScorePolicy,
                                      TechArticleCommonService techArticleCommonService) {
-        super(techCommentRepository, techBestCommentsPolicy);
+        super(techCommentRepository, techBestCommentsPolicy, techArticlePopularScorePolicy);
         this.anonymousMemberService = anonymousMemberService;
-        this.techCommentCommonService = techCommentCommonService;
         this.techArticleCommonService = techArticleCommonService;
     }
 
     @Override
     @Transactional
-    public TechCommentResponse registerMainTechComment(Long techArticleId, TechCommentDto techCommentDto,
+    public TechCommentResponse registerMainTechComment(Long techArticleId, TechCommentDto registerTechCommentDto,
                                                        Authentication authentication) {
 
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        String anonymousMemberId = techCommentDto.getAnonymousMemberId();
-        String contents = techCommentDto.getContents();
+        String anonymousMemberId = registerTechCommentDto.getAnonymousMemberId();
+        String contents = registerTechCommentDto.getContents();
 
         // 회원 조회 또는 생성
         AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
@@ -74,11 +74,43 @@ public class GuestTechCommentServiceV2 extends TechCommentCommonService implemen
     }
 
     @Override
+    @Transactional
     public TechCommentResponse registerRepliedTechComment(Long techArticleId, Long originParentTechCommentId,
                                                           Long parentTechCommentId,
-                                                          RegisterTechCommentRequest registerRepliedTechCommentRequest,
+                                                          TechCommentDto registerRepliedTechCommentDto,
                                                           Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        String anonymousMemberId = registerRepliedTechCommentDto.getAnonymousMemberId();
+        String contents = registerRepliedTechCommentDto.getContents();
+
+        // 회원 조회 또는 생성
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 답글 대상의 기술블로그 댓글 조회
+        TechComment findParentTechComment = techCommentRepository.findWithTechArticleByIdAndTechArticleId(
+                        parentTechCommentId, techArticleId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 답글 엔티티 생성 및 저장
+        TechComment findOriginParentTechComment = super.getAndValidateOriginParentTechComment(originParentTechCommentId,
+                findParentTechComment);
+        TechArticle findTechArticle = findParentTechComment.getTechArticle();
+
+        TechComment repliedTechComment = TechComment.createRepliedTechCommentByAnonymousMember(new CommentContents(contents),
+                findAnonymousMember, findTechArticle, findOriginParentTechComment, findParentTechComment);
+        techCommentRepository.save(repliedTechComment);
+
+        // 아티클의 댓글수 증가
+        findTechArticle.incrementCommentCount();
+        findTechArticle.changePopularScore(techArticlePopularScorePolicy);
+
+        // origin 댓글의 답글수 증가
+        findOriginParentTechComment.incrementReplyTotalCount();
+
+        // 데이터 가공
+        return new TechCommentResponse(repliedTechComment.getId());
     }
 
     @Override

@@ -2,15 +2,14 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 
+import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
-import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -25,13 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GuestTechCommentService extends TechCommentCommonService implements TechCommentService {
 
-    private final AnonymousMemberService anonymousMemberService;
-
     public GuestTechCommentService(TechCommentRepository techCommentRepository,
                                    TechBestCommentsPolicy techBestCommentsPolicy,
-                                   AnonymousMemberService anonymousMemberService) {
-        super(techCommentRepository, techBestCommentsPolicy);
-        this.anonymousMemberService = anonymousMemberService;
+                                   TechArticlePopularScorePolicy techArticlePopularScorePolicy) {
+        super(techCommentRepository, techBestCommentsPolicy, techArticlePopularScorePolicy);
     }
 
     @Override
@@ -44,7 +40,7 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     @Override
     public TechCommentResponse registerRepliedTechComment(Long techArticleId, Long originParentTechCommentId,
                                                           Long parentTechCommentId,
-                                                          RegisterTechCommentRequest registerRepliedTechCommentRequest,
+                                                          TechCommentDto registerRepliedTechCommentRequest,
                                                           Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
