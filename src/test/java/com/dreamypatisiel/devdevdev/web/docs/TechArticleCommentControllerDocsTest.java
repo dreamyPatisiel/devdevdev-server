@@ -62,6 +62,7 @@ import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -97,6 +98,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     @Autowired
     EntityManager em;
 
+    @Disabled("GuestTechCommentServiceV2는 테스트가 불가능하다. 익명 회원은 댓글 작성이 가능 하기 때문")
     @Test
     @DisplayName("익명 사용자는 기술블로그 댓글을 작성할 수 없다.")
     void registerTechCommentByAnonymous() throws Exception {
@@ -106,8 +108,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long id = techArticle.getId();
 
@@ -141,7 +142,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
     }
 
     @Test
-    @DisplayName("회원은 기술블로그 댓글을 작성할 수 있다.")
+    @DisplayName("기술블로그 댓글을 작성할 수 있다.")
     void registerTechComment() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
@@ -149,10 +150,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long id = techArticle.getId();
 
@@ -209,10 +207,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long id = techArticle.getId() + 1;
 
@@ -363,7 +358,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -428,7 +423,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -535,7 +530,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -593,7 +588,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when // then
@@ -644,12 +639,12 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment originParentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member,
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("답글입니다."), member,
                 techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
@@ -716,12 +711,12 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long techArticleId = savedTechArticle.getId();
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment originParentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member,
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("답글입니다."), member,
                 techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
@@ -958,7 +953,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when // then
@@ -1017,7 +1012,7 @@ public class TechArticleCommentControllerDocsTest extends SupportControllerDocsT
                 new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when // then

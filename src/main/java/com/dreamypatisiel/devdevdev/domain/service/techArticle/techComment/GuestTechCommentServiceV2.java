@@ -3,10 +3,15 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
@@ -26,19 +31,46 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuestTechCommentServiceV2 extends TechCommentCommonService implements TechCommentService {
 
     private final AnonymousMemberService anonymousMemberService;
+    private final TechCommentCommonService techCommentCommonService;
+    private final TechArticleCommonService techArticleCommonService;
 
-    public GuestTechCommentServiceV2(TechCommentRepository techCommentRepository,
-                                     TechBestCommentsPolicy techBestCommentsPolicy,
-                                     AnonymousMemberService anonymousMemberService) {
+    public GuestTechCommentServiceV2(TechCommentRepository techCommentRepository, TechBestCommentsPolicy techBestCommentsPolicy,
+                                     AnonymousMemberService anonymousMemberService,
+                                     TechCommentCommonService techCommentCommonService,
+                                     TechArticleCommonService techArticleCommonService) {
         super(techCommentRepository, techBestCommentsPolicy);
         this.anonymousMemberService = anonymousMemberService;
+        this.techCommentCommonService = techCommentCommonService;
+        this.techArticleCommonService = techArticleCommonService;
     }
 
     @Override
-    public TechCommentResponse registerMainTechComment(Long techArticleId,
-                                                       RegisterTechCommentRequest registerTechCommentRequest,
+    @Transactional
+    public TechCommentResponse registerMainTechComment(Long techArticleId, TechCommentDto techCommentDto,
                                                        Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        String anonymousMemberId = techCommentDto.getAnonymousMemberId();
+        String contents = techCommentDto.getContents();
+
+        // 회원 조회 또는 생성
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 기술블로그 조회
+        TechArticle techArticle = techArticleCommonService.findTechArticle(techArticleId);
+
+        // 댓글 엔티티 생성 및 저장
+        TechComment techComment = TechComment.createMainTechCommentByAnonymousMember(new CommentContents(contents),
+                findAnonymousMember, techArticle);
+        techCommentRepository.save(techComment);
+
+        // 기술블로그 댓글수 증가
+        techArticle.incrementCommentCount();
+
+        // 데이터 가공
+        return new TechCommentResponse(techComment.getId());
     }
 
     @Override
@@ -94,6 +126,7 @@ public class GuestTechCommentServiceV2 extends TechCommentCommonService implemen
      * @Since: 2025.07.20
      */
     @Override
+    @Transactional
     public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId,
                                                            String anonymousMemberId, Authentication authentication) {
 

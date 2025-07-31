@@ -34,6 +34,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
@@ -134,10 +135,11 @@ public class MemberTechCommentServiceTest {
         Long id = savedTechArticle.getId();
 
         RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest, null);
 
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.registerMainTechComment(
-                id, registerTechCommentRequest, authentication);
+                id, registerCommentDto, authentication);
         em.flush();
 
         // then
@@ -184,10 +186,11 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest, null);
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.registerMainTechComment(id, registerTechCommentRequest, authentication))
+                () -> memberTechCommentService.registerMainTechComment(id, registerCommentDto, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
     }
@@ -204,10 +207,11 @@ public class MemberTechCommentServiceTest {
 
         Long id = 1L;
         RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest, null);
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.registerMainTechComment(id, registerTechCommentRequest, authentication))
+                () -> memberTechCommentService.registerMainTechComment(id, registerCommentDto, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
@@ -236,7 +240,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -349,7 +353,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -391,7 +395,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -438,7 +442,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -514,7 +518,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -565,7 +569,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), author, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), author, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -620,7 +624,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
@@ -680,12 +684,12 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment originParentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createRepliedTechComment(new CommentContents("답글입니다."), member,
+        TechComment parentTechComment = TechComment.createRepliedTechCommentByMember(new CommentContents("답글입니다."), member,
                 techArticle, originParentTechComment, originParentTechComment);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
@@ -745,7 +749,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId() + 1;
 
@@ -783,7 +787,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -1923,7 +1927,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when
@@ -1961,7 +1965,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
 
         TechCommentRecommend techCommentRecommend = TechCommentRecommend.create(techComment, member);
@@ -2002,7 +2006,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId() + 1;
 
@@ -2037,7 +2041,7 @@ public class MemberTechCommentServiceTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 

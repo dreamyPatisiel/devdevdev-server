@@ -4,6 +4,7 @@ import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMB
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.TechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
@@ -41,17 +42,21 @@ public class TechArticleCommentController {
 
     private final TechArticleServiceStrategy techArticleServiceStrategy;
 
-    @Operation(summary = "기술블로그 댓글 작성")
+    @Operation(summary = "기술블로그 댓글 작성", description = "기술블로그 댓글을 작성할 수 있습니다.")
     @PostMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerMainTechComment(
             @PathVariable Long techArticleId,
             @RequestBody @Validated RegisterTechCommentRequest registerTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest,
+                anonymousMemberId);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.registerMainTechComment(techArticleId,
-                registerTechCommentRequest, authentication);
+                registerCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -68,8 +73,7 @@ public class TechArticleCommentController {
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.registerRepliedTechComment(techArticleId,
-                originParentTechCommentId,
-                parentTechCommentId, registerRepliedTechCommentRequest, authentication);
+                originParentTechCommentId, parentTechCommentId, registerRepliedTechCommentRequest, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

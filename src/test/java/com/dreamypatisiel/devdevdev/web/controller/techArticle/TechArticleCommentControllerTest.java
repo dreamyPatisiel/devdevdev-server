@@ -1,5 +1,16 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -12,27 +23,27 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import com.dreamypatisiel.devdevdev.web.WebConstant;
 import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
-import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,13 +57,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class TechArticleCommentControllerTest extends SupportControllerTest {
 
@@ -70,7 +74,10 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     TimeProvider timeProvider;
     @Autowired
     EntityManager em;
+    @Autowired
+    TechArticleServiceStrategy techArticleServiceStrategy;
 
+    @Disabled("GuestTechCommentServiceV2는 테스트가 불가능하다. 익명 회원은 댓글 작성이 가능 하기 때문")
     @Test
     @DisplayName("익명 사용자는 기술블로그 댓글을 작성할 수 없다.")
     void registerTechCommentByAnonymous() throws Exception {
@@ -80,10 +87,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long id = techArticle.getId();
 
@@ -103,7 +107,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
 
     @Test
     @DisplayName("회원은 기술블로그 댓글을 작성할 수 있다.")
-    void registerTechComment() throws Exception {
+    void registerTechCommentByMember() throws Exception {
         // given
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
@@ -140,6 +144,41 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
     }
 
     @Test
+    @DisplayName("익명 회원은 기술블로그 댓글을 작성할 수 있다.")
+    void registerTechCommentByAnonymousMember() throws Exception {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long id = techArticle.getId();
+
+        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
+                "꿈빛파티시엘", "1234", email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        member.updateRefreshToken(refreshToken);
+        memberRepository.save(member);
+
+        RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글 내용입니다.");
+
+        // when // then
+        mockMvc.perform(post("/devdevdev/api/v1/articles/{id}/comments", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(WebConstant.HEADER_ANONYMOUS_MEMBER_ID, "anonymous-member-id")
+                        .content(om.writeValueAsString(registerTechCommentRequest)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultType").value(ResultType.SUCCESS.name()))
+                .andExpect(jsonPath("$.data").isNotEmpty())
+                .andExpect(jsonPath("$.data").isMap())
+                .andExpect(jsonPath("$.data.techCommentId").isNumber());
+    }
+
+    @Test
     @DisplayName("회원이 기술블로그 댓글을 작성할 때 존재하지 않는 기술블로그라면 예외가 발생한다.")
     void registerTechCommentNotFoundTechArticleException() throws Exception {
         // given
@@ -148,10 +187,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
 
@@ -185,10 +221,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId();
 
@@ -259,7 +292,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -301,7 +334,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -376,7 +409,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -419,7 +452,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
         Long techCommentId = techComment.getId();
 
@@ -457,7 +490,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다"), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다"), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when // then
@@ -492,12 +525,12 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         member.updateRefreshToken(refreshToken);
         memberRepository.save(member);
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment originParentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member,
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("답글입니다."), member,
                 techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
@@ -541,12 +574,12 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long techArticleId = savedTechArticle.getId();
 
-        TechComment originParentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment originParentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(originParentTechComment);
         Long originParentTechCommentId = originParentTechComment.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("답글입니다."), member,
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("답글입니다."), member,
                 techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
@@ -708,7 +741,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                 new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
 
         em.flush();
@@ -863,8 +896,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
 
         // 답글 생성
         TechComment repliedTechComment = createRepliedTechComment(new CommentContents("최상위 댓글1의 답글1"), member3,
-                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L),
-                new Count(0L));
+                techArticle, originParentTechComment1, originParentTechComment1, new Count(0L), new Count(0L), new Count(0L));
         techCommentRepository.save(repliedTechComment);
 
         // when // then
@@ -872,6 +904,7 @@ class TechArticleCommentControllerTest extends SupportControllerTest {
                         techArticle.getId())
                         .queryParam("size", "3")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header(WebConstant.HEADER_ANONYMOUS_MEMBER_ID, "anonymousMemberId")
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())

@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
@@ -14,7 +15,7 @@ import org.springframework.security.core.Authentication;
 public interface TechCommentService {
 
     TechCommentResponse registerMainTechComment(Long techArticleId,
-                                                RegisterTechCommentRequest registerTechCommentRequest,
+                                                TechCommentDto techCommentDto,
                                                 Authentication authentication);
 
     TechCommentResponse registerRepliedTechComment(Long techArticleId,

@@ -15,6 +15,7 @@ import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
@@ -40,15 +41,12 @@ public class MemberTechCommentService extends TechCommentCommonService implement
     private final MemberProvider memberProvider;
     private final TimeProvider timeProvider;
     private final TechArticlePopularScorePolicy techArticlePopularScorePolicy;
-
-    private final TechCommentRepository techCommentRepository;
     private final TechCommentRecommendRepository techCommentRecommendRepository;
 
     public MemberTechCommentService(TechCommentRepository techCommentRepository,
                                     TechArticleCommonService techArticleCommonService, MemberProvider memberProvider,
                                     TimeProvider timeProvider,
                                     TechArticlePopularScorePolicy techArticlePopularScorePolicy,
-                                    TechCommentRepository techCommentRepository1,
                                     TechCommentRecommendRepository techCommentRecommendRepository,
                                     TechBestCommentsPolicy techBestCommentsPolicy) {
         super(techCommentRepository, techBestCommentsPolicy);
@@ -56,7 +54,6 @@ public class MemberTechCommentService extends TechCommentCommonService implement
         this.memberProvider = memberProvider;
         this.timeProvider = timeProvider;
         this.techArticlePopularScorePolicy = techArticlePopularScorePolicy;
-        this.techCommentRepository = techCommentRepository1;
         this.techCommentRecommendRepository = techCommentRecommendRepository;
     }
 
@@ -66,8 +63,9 @@ public class MemberTechCommentService extends TechCommentCommonService implement
      * @Since: 2024.08.06
      */
     @Transactional
+    @Override
     public TechCommentResponse registerMainTechComment(Long techArticleId,
-                                                       RegisterTechCommentRequest registerTechCommentRequest,
+                                                       TechCommentDto techCommentDto,
                                                        Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -76,8 +74,8 @@ public class MemberTechCommentService extends TechCommentCommonService implement
         TechArticle techArticle = techArticleCommonService.findTechArticle(techArticleId);
 
         // 댓글 엔티티 생성 및 저장
-        String contents = registerTechCommentRequest.getContents();
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents(contents), findMember,
+        String contents = techCommentDto.getContents();
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents(contents), findMember,
                 techArticle);
         techCommentRepository.save(techComment);
 
@@ -113,7 +111,7 @@ public class MemberTechCommentService extends TechCommentCommonService implement
         TechArticle findTechArticle = findParentTechComment.getTechArticle();
 
         String contents = registerRepliedTechCommentRequest.getContents();
-        TechComment repliedTechComment = TechComment.createRepliedTechComment(new CommentContents(contents), findMember,
+        TechComment repliedTechComment = TechComment.createRepliedTechCommentByMember(new CommentContents(contents), findMember,
                 findTechArticle, findOriginParentTechComment, findParentTechComment);
         techCommentRepository.save(repliedTechComment);
 
