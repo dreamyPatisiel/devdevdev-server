@@ -173,6 +173,11 @@ public class TechComment extends BasicTime {
         this.deletedBy = deletedBy;
     }
 
+    public void changeDeletedAt(LocalDateTime deletedAt, AnonymousMember deletedAnonymousBy) {
+        this.deletedAt = deletedAt;
+        this.deletedAnonymousBy = deletedAnonymousBy;
+    }
+
     public void modifyCommentContents(CommentContents contents, LocalDateTime contentsLastModifiedAt) {
         this.contents = contents;
         this.contentsLastModifiedAt = contentsLastModifiedAt;

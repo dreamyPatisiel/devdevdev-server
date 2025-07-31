@@ -235,8 +235,7 @@ public class MemberTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -245,13 +244,14 @@ public class MemberTechCommentServiceTest {
         Long techCommentId = techComment.getId();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정입니다.");
+        TechCommentDto modifyCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest, null);
 
         LocalDateTime modifiedDateTime = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
         when(timeProvider.getLocalDateTimeNow()).thenReturn(modifiedDateTime);
 
         // when
         TechCommentResponse techCommentResponse = memberTechCommentService.modifyTechComment(
-                techArticleId, techCommentId, modifyTechCommentRequest, authentication);
+                techArticleId, techCommentId, modifyCommentDto, authentication);
         em.flush();
 
         // then
@@ -285,10 +285,11 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정입니다.");
+        TechCommentDto modifyCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest, null);
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.modifyTechComment(0L, 0L, modifyTechCommentRequest,
+                () -> memberTechCommentService.modifyTechComment(0L, 0L, modifyCommentDto,
                         authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
@@ -319,10 +320,11 @@ public class MemberTechCommentServiceTest {
         Long techArticleId = techArticle.getId();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정입니다.");
+        TechCommentDto modifyCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest, null);
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.modifyTechComment(techArticleId, 0L, modifyTechCommentRequest,
+                () -> memberTechCommentService.modifyTechComment(techArticleId, 0L, modifyCommentDto,
                         authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
@@ -348,8 +350,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -362,10 +363,11 @@ public class MemberTechCommentServiceTest {
         em.flush();
 
         ModifyTechCommentRequest modifyTechCommentRequest = new ModifyTechCommentRequest("댓글 수정");
+        TechCommentDto modifyCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest, null);
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.modifyTechComment(techArticleId, techCommentId, modifyTechCommentRequest,
+                () -> memberTechCommentService.modifyTechComment(techArticleId, techCommentId, modifyCommentDto,
                         authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
@@ -390,8 +392,7 @@ public class MemberTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -437,8 +438,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -477,8 +477,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -513,8 +512,7 @@ public class MemberTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -564,8 +562,7 @@ public class MemberTechCommentServiceTest {
         companyRepository.save(company);
 
         TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 

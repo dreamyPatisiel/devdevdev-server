@@ -9,7 +9,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSor
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -46,8 +45,7 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     }
 
     @Override
-    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId,
-                                                 ModifyTechCommentRequest modifyTechCommentRequest,
+    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId, TechCommentDto modifyTechCommentDto,
                                                  Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

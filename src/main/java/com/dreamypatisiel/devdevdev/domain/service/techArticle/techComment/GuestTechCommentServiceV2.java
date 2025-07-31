@@ -15,9 +15,9 @@ import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -32,14 +32,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class GuestTechCommentServiceV2 extends TechCommentCommonService implements TechCommentService {
 
+    private final TimeProvider timeProvider;
+
     private final AnonymousMemberService anonymousMemberService;
     private final TechArticleCommonService techArticleCommonService;
 
-    public GuestTechCommentServiceV2(TechCommentRepository techCommentRepository, TechBestCommentsPolicy techBestCommentsPolicy,
+    public GuestTechCommentServiceV2(TimeProvider timeProvider, TechCommentRepository techCommentRepository,
+                                     TechBestCommentsPolicy techBestCommentsPolicy,
                                      AnonymousMemberService anonymousMemberService,
                                      TechArticlePopularScorePolicy techArticlePopularScorePolicy,
                                      TechArticleCommonService techArticleCommonService) {
         super(techCommentRepository, techBestCommentsPolicy, techArticlePopularScorePolicy);
+        this.timeProvider = timeProvider;
         this.anonymousMemberService = anonymousMemberService;
         this.techArticleCommonService = techArticleCommonService;
     }
@@ -114,10 +118,28 @@ public class GuestTechCommentServiceV2 extends TechCommentCommonService implemen
     }
 
     @Override
-    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId,
-                                                 ModifyTechCommentRequest modifyTechCommentRequest,
+    @Transactional
+    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId, TechCommentDto modifyTechCommentDto,
                                                  Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        String contents = modifyTechCommentDto.getContents();
+        String anonymousMemberId = modifyTechCommentDto.getAnonymousMemberId();
+
+        // 회원 조회 또는 생성
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 기술블로그 댓글 조회
+        TechComment findTechComment = techCommentRepository.findByIdAndTechArticleIdAndCreatedAnonymousByAndDeletedAtIsNull(
+                        techCommentId, techArticleId, findAnonymousMember)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 댓글 수정
+        findTechComment.modifyCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
+
+        // 데이터 가공
+        return new TechCommentResponse(findTechComment.getId());
     }
 
     @Override
