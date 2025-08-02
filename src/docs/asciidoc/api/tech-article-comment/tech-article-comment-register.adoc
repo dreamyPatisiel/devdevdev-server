@@ -1,7 +1,9 @@
 [[Tech-Article-Comments-Register]]
 == 기술블로그 댓글 작성 API(POST: /devdevdev/api/v1/articles/{techArticleId}/comments)
 
-* 회원은 기술블로그에 댓글을 작성할 수 있다.
+* 기술블로그에 댓글을 작성할 수 있다.
+** 회원인 경우 토큰을 `Authorization` 헤더에 포함시켜야 한다.
+** 익명 회원인 경우 `Anonymous-Member-Id` 헤더에 익명 회원 아이디를 포함시켜야 한다.
 
 === 정상 요청/응답
 
