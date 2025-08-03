@@ -81,7 +81,7 @@ public class TechArticleCommentController {
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    @Operation(summary = "기술블로그 댓글/답글 수정")
+    @Operation(summary = "기술블로그 댓글/답글 수정", description = "기술블로그 댓글/답글을 수정할 수 있습니다.")
     @PatchMapping("/articles/{techArticleId}/comments/{techCommentId}")
     public ResponseEntity<BasicResponse<TechCommentResponse>> modifyTechComment(
             @PathVariable Long techArticleId,
@@ -107,10 +107,11 @@ public class TechArticleCommentController {
             @PathVariable Long techCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.deleteTechComment(techArticleId, techCommentId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

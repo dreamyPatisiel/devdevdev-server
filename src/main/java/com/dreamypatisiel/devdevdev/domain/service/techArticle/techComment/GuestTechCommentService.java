@@ -13,6 +13,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentReco
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -51,7 +52,7 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     }
 
     @Override
-    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId,
+    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId, @Nullable String anonymousMemberId,
                                                  Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }

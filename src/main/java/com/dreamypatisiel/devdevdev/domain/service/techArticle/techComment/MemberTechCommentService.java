@@ -24,6 +24,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResp
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -150,10 +151,9 @@ public class MemberTechCommentService extends TechCommentCommonService implement
      * @Author: 유소영
      * @Since: 2024.08.13
      */
-    @Transactional
-    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId,
+    @Override
+    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId, @Nullable String anonymousMemberId,
                                                  Authentication authentication) {
-
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 

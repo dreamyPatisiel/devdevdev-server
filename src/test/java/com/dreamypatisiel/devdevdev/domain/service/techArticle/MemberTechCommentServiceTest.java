@@ -366,9 +366,8 @@ public class MemberTechCommentServiceTest {
         TechCommentDto modifyCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest, null);
 
         // when // then
-        assertThatThrownBy(
-                () -> memberTechCommentService.modifyTechComment(techArticleId, techCommentId, modifyCommentDto,
-                        authentication))
+        assertThatThrownBy(() -> memberTechCommentService.modifyTechComment(techArticleId, techCommentId, modifyCommentDto,
+                authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
@@ -406,7 +405,7 @@ public class MemberTechCommentServiceTest {
         em.flush();
 
         // when
-        memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication);
+        memberTechCommentService.deleteTechComment(techArticleId, techCommentId, null, authentication);
 
         // then
         TechComment findTechComment = techCommentRepository.findById(techCommentId).get();
@@ -452,7 +451,7 @@ public class MemberTechCommentServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication))
+                () -> memberTechCommentService.deleteTechComment(techArticleId, techCommentId, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
@@ -483,7 +482,7 @@ public class MemberTechCommentServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.deleteTechComment(techArticleId, 0L, authentication))
+                () -> memberTechCommentService.deleteTechComment(techArticleId, 0L, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
@@ -526,7 +525,7 @@ public class MemberTechCommentServiceTest {
         em.flush();
 
         // when
-        memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication);
+        memberTechCommentService.deleteTechComment(techArticleId, techCommentId, null, authentication);
 
         // then
         TechComment findTechComment = techCommentRepository.findById(techCommentId).get();
@@ -572,7 +571,7 @@ public class MemberTechCommentServiceTest {
 
         // when // then
         assertThatThrownBy(
-                () -> memberTechCommentService.deleteTechComment(techArticleId, techCommentId, authentication))
+                () -> memberTechCommentService.deleteTechComment(techArticleId, techCommentId, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
@@ -591,8 +590,7 @@ public class MemberTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(
-                () -> memberTechCommentService.deleteTechComment(0L, 0L, authentication))
+        assertThatThrownBy(() -> memberTechCommentService.deleteTechComment(0L, 0L, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
     }
