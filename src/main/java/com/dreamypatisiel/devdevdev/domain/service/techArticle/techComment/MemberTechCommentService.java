@@ -19,7 +19,6 @@ import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
@@ -126,9 +125,9 @@ public class MemberTechCommentService extends TechCommentCommonService implement
      * @Author: 유소영
      * @Since: 2024.08.11
      */
+    @Override
     @Transactional
-    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId,
-                                                 ModifyTechCommentRequest modifyTechCommentRequest,
+    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId, TechCommentDto modifyTechCommentDto,
                                                  Authentication authentication) {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -139,7 +138,7 @@ public class MemberTechCommentService extends TechCommentCommonService implement
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
 
         // 댓글 수정
-        String contents = modifyTechCommentRequest.getContents();
+        String contents = modifyTechCommentDto.getContents();
         findTechComment.modifyCommentContents(new CommentContents(contents), timeProvider.getLocalDateTimeNow());
 
         // 데이터 가공

@@ -89,10 +89,13 @@ public class TechArticleCommentController {
             @RequestBody @Validated ModifyTechCommentRequest modifyTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+        TechCommentDto modifyTechCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest,
+                anonymousMemberId);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.modifyTechComment(techArticleId, techCommentId,
-                modifyTechCommentRequest, authentication);
+                modifyTechCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
