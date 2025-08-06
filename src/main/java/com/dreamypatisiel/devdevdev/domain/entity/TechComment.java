@@ -152,6 +152,22 @@ public class TechComment extends BasicTime {
                 .build();
     }
 
+    public static TechComment createRepliedTechCommentByAnonymousMember(CommentContents contents,
+                                                                        AnonymousMember createdAnonymousBy,
+                                                                        TechArticle techArticle, TechComment originParent,
+                                                                        TechComment parent) {
+        return TechComment.builder()
+                .contents(contents)
+                .createdAnonymousBy(createdAnonymousBy)
+                .techArticle(techArticle)
+                .blameTotalCount(Count.defaultCount())
+                .recommendTotalCount(Count.defaultCount())
+                .replyTotalCount(Count.defaultCount())
+                .originParent(originParent)
+                .parent(parent)
+                .build();
+    }
+
     public void changeDeletedAt(LocalDateTime deletedAt, Member deletedBy) {
         this.deletedAt = deletedAt;
         this.deletedBy = deletedBy;
