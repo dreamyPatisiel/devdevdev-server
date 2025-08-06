@@ -143,9 +143,26 @@ public class GuestTechCommentServiceV2 extends TechCommentCommonService implemen
     }
 
     @Override
-    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId,
+    @Transactional
+    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId, String anonymousMemberId,
                                                  Authentication authentication) {
-        throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
+
+        // 익명 회원인지 검증
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 익명회원 조회 또는 생성
+        AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 기술블로그 댓글 조회
+        TechComment findTechComment = techCommentRepository.findByIdAndTechArticleIdAndCreatedAnonymousByAndDeletedAtIsNull(
+                        techCommentId, techArticleId, findAnonymousMember)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE));
+
+        // 소프트 삭제
+        findTechComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findAnonymousMember);
+
+        // 데이터 가공
+        return new TechCommentResponse(findTechComment.getId());
     }
 
     /**

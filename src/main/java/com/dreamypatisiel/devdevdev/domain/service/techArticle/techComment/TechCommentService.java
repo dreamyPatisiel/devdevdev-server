@@ -7,6 +7,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentReco
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
@@ -25,7 +26,8 @@ public interface TechCommentService {
     TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId, TechCommentDto modifyTechCommentDto,
                                           Authentication authentication);
 
-    TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId, Authentication authentication);
+    TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId, @Nullable String anonymousMemberId,
+                                          Authentication authentication);
 
     SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
                                                              TechCommentSort techCommentSort, Pageable pageable,

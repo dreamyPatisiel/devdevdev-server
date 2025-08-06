@@ -1915,4 +1915,134 @@ class GuestTechCommentServiceV2Test {
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
     }
+
+    @Test
+    @DisplayName("익명회원은 본인이 작성한, 아직 삭제되지 않은 댓글을 삭제할 수 있다.")
+    void deleteTechComment() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.createMainTechCommentByAnonymousMember(new CommentContents("댓글입니다"),
+                anonymousMember, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(deletedAt);
+
+        em.flush();
+
+        // when
+        guestTechCommentServiceV2.deleteTechComment(techArticleId, techCommentId, anonymousMember.getAnonymousMemberId(),
+                authentication);
+
+        // then
+        TechComment findTechComment = techCommentRepository.findById(techCommentId).get();
+
+        assertAll(
+                () -> assertThat(findTechComment.getDeletedAt()).isNotNull(),
+                () -> assertThat(findTechComment.getDeletedAnonymousBy().getId()).isEqualTo(anonymousMember.getId()),
+                () -> assertThat(findTechComment.getDeletedAt()).isEqualTo(deletedAt)
+        );
+    }
+
+    @Test
+    @DisplayName("익명회원이 댓글을 삭제할 때, 이미 삭제된 댓글이라면 예외가 발생한다.")
+    void deleteTechCommentAlreadyDeletedException() {
+        // given
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        TechComment techComment = TechComment.createMainTechCommentByAnonymousMember(new CommentContents("댓글입니다"),
+                anonymousMember, techArticle);
+        techCommentRepository.save(techComment);
+        Long techCommentId = techComment.getId();
+
+        LocalDateTime deletedAt = LocalDateTime.of(2024, 10, 6, 0, 0, 0);
+        techComment.changeDeletedAt(deletedAt, anonymousMember);
+        em.flush();
+
+        // when // then
+        assertThatThrownBy(() -> guestTechCommentServiceV2.deleteTechComment(techArticleId, techCommentId,
+                anonymousMember.getAnonymousMemberId(), authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("익명회원이 댓글을 삭제할 때, 댓글이 존재하지 않으면 예외가 발생한다.")
+    void deleteTechCommentNotFoundException() {
+        // given
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        // 익명회원 생성
+        AnonymousMember anonymousMember = AnonymousMember.create("anonymousMemberId", "익명으로 개발하는 댑댑이");
+        anonymousMemberRepository.save(anonymousMember);
+
+        // 익명회원 목킹
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
+
+        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
+                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        // when // then
+        assertThatThrownBy(
+                () -> guestTechCommentServiceV2.deleteTechComment(techArticleId, 0L, anonymousMember.getAnonymousMemberId(),
+                        authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_TECH_COMMENT_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("댓글을 삭제할 때 회원이 익명회원 전용 댓글 삭제 메소드를 호출하면 예외가 발생한다.")
+    void deleteTechCommentIllegalStateException() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> guestTechCommentServiceV2.deleteTechComment(0L, 0L, null, authentication))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
 }
