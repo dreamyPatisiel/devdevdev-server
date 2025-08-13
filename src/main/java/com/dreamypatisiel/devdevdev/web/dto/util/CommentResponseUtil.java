@@ -56,15 +56,42 @@ public class CommentResponseUtil {
     }
 
     public static String getCommentByTechCommentStatus(TechComment techComment) {
-        if (techComment.isDeleted()) {
-            // 댓글 작성자에 의해 삭제된 경우
-            if (techComment.getDeletedBy().isEqualsId(techComment.getCreatedBy().getId())) {
-                return DELETE_COMMENT_MESSAGE;
-            }
-            return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
+        // 기술블로그 댓글이 삭제되지 않은 경우
+        if (!techComment.isDeleted()) {
+            return techComment.getContents().getCommentContents();
         }
 
-        return techComment.getContents().getCommentContents();
+        // 익명회원이 작성한 기술블로그 댓글인 경우
+        if (techComment.isCreatedAnonymousMember()) {
+            // 자기자신이 삭제한 경우
+            if (techComment.isDeletedByAnonymousMember()) {
+                return DELETE_COMMENT_MESSAGE;
+            }
+
+            // 어드민이 삭제한 경우
+            if (techComment.getDeletedBy().isAdmin()) {
+                return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
+            }
+
+            return CONTACT_ADMIN_MESSAGE;
+        }
+
+        // 회원이 작성한 기술블로그 댓글인 경우
+        if (techComment.isCreatedMember()) {
+            // 자기 자신이 삭제한 경우
+            if (techComment.isDeletedByMember()) {
+                return DELETE_COMMENT_MESSAGE;
+            }
+
+            // 어드민이 삭제한 경우
+            if (techComment.getDeletedBy().isAdmin()) {
+                return DELETE_INVALID_COMMUNITY_POLICY_COMMENT_MESSAGE;
+            }
+
+            return CONTACT_ADMIN_MESSAGE;
+        }
+        
+        return CONTACT_ADMIN_MESSAGE;
     }
 
     public static boolean isDeletedByAdmin(PickComment pickComment) {
