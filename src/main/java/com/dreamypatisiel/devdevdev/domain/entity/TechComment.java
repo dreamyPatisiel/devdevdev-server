@@ -222,4 +222,16 @@ public class TechComment extends BasicTime {
     public boolean isCreatedMember() {
         return this.createdBy != null && this.createdAnonymousBy == null;
     }
+
+    public boolean isDeletedByMember() {
+        return this.deletedBy != null;
+    }
+
+    public boolean isDeletedByAnonymousMember() {
+        return this.deletedAnonymousBy != null;
+    }
+
+    public boolean isDeletedByAdmin() {
+        return this.deletedBy != null && this.deletedBy.isAdmin();
+    }
 }
