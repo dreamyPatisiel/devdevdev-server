@@ -1,7 +1,5 @@
 package com.dreamypatisiel.devdevdev.web.controller.member;
 
-//import com.dreamypatisiel.devdevdev.LocalInitData;
-
 import com.dreamypatisiel.devdevdev.LocalInitData;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
