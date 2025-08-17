@@ -36,8 +36,7 @@ class KeywordControllerDocsTest extends SupportControllerDocsTest {
         // given
         String prefix = "자";
         List<String> result = List.of("자바", "자바 스크립트", "자바가 최고야");
-        given(techKeywordService.autocompleteKeyword(prefix))
-                .willReturn(result);
+        given(techKeywordService.autocompleteKeyword(prefix)).willReturn(result);
 
         // when // then
         ResultActions actions = mockMvc.perform(get(DEFAULT_PATH_V1 + "/keywords/auto-complete")

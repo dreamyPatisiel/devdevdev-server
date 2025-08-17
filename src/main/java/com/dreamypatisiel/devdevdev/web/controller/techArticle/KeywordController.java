@@ -17,7 +17,7 @@ import java.util.List;
 
 @Tag(name = "검색어 자동완성 API", description = "검색어 자동완성, 검색어 추가 API")
 @Slf4j
-@Profile({"dev", "prod"}) // local 에서는 검색어 자동완성 불가
+@Profile({"test", "dev", "prod"}) // local 에서는 검색어 자동완성 불가
 @RestController
 @RequestMapping("/devdevdev/api/v1/keywords")
 @RequiredArgsConstructor
