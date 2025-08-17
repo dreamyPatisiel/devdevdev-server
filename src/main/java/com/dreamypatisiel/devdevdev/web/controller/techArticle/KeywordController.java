@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Tag(name = "검색어 자동완성 API", description = "검색어 자동완성, 검색어 추가 API")
 @Slf4j
+@Profile({"dev", "prod"}) // local 에서는 검색어 자동완성 불가
 @RestController
 @RequestMapping("/devdevdev/api/v1/keywords")
 @RequiredArgsConstructor
