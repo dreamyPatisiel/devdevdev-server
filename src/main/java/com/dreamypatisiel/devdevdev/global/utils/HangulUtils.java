@@ -3,7 +3,7 @@ package com.dreamypatisiel.devdevdev.global.utils;
 /**
  * 한글 처리를 위한 유틸리티 클래스
  */
-public class HangulUtils {
+public abstract class HangulUtils {
 
     // 한글 유니코드 범위
     private static final int HANGUL_START = 0xAC00; // '가'
