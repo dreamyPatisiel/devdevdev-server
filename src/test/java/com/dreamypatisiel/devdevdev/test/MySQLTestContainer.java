@@ -23,7 +23,7 @@ public abstract class MySQLTestContainer {
             .withPassword("test")
             .withCommand(
                 "--character-set-server=utf8mb4", 
-                "--collation-server=utf8mb4_unicode_ci", 
+                "--collation-server=utf8mb4_general_ci",
                 "--ngram_token_size=1"
             );
 

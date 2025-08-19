@@ -3,6 +3,7 @@ package com.dreamypatisiel.devdevdev.domain.repository.techArticle.custom;
 import com.dreamypatisiel.devdevdev.domain.entity.TechKeyword;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.JPQLQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -30,12 +31,11 @@ public class TechKeywordRepositoryImpl implements TechKeywordRepositoryCustom {
         );
 
         // 스코어 계산을 위한 expression
-        var jamoScore = Expressions.numberTemplate(Double.class,
+        NumberTemplate<Double> jamoScore = Expressions.numberTemplate(Double.class,
                 "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
                 techKeyword.jamoKey, inputJamo
         );
-        
-        var chosungScore = Expressions.numberTemplate(Double.class,
+        NumberTemplate<Double> chosungScore = Expressions.numberTemplate(Double.class,
                 "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
                 techKeyword.chosungKey, inputChosung
         );

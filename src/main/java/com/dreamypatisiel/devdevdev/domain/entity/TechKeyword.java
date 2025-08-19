@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-                @Index(name = "idx__ft__chosung_key", columnList = "chosung_key"),
-                @Index(name = "idx__ft__jamo_key", columnList = "jamo_key")
+                @Index(name = "idx_tech_keyword_01", columnList = "chosung_key"),
+                @Index(name = "idx_tech_keyword_02", columnList = "jamo_key")
 })
 public class TechKeyword extends BasicTime {
     @Id
