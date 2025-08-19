@@ -7,19 +7,21 @@ import com.dreamypatisiel.devdevdev.domain.entity.Bookmark;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.jpa.JPQLQueryFactory;
+import jakarta.persistence.EntityManager;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 @RequiredArgsConstructor
 public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
@@ -27,31 +29,14 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     private final JPQLQueryFactory query;
 
     @Override
-    public List<TechArticle> findAllByElasticIdIn(List<String> elasticIds) {
-
-        List<TechArticle> findTechArticles = query.selectFrom(techArticle)
-                .where(techArticle.elasticId.in(elasticIds))
-                .fetch();
-
-        // elasticId 목록의 순서를 기반으로 결과 목록 재정렬(h2 database에서는 order by Field() 쿼리를 지원하지 않으므로 재정렬 필요)
-        Map<String, TechArticle> techArticles = findTechArticles.stream()
-                .collect(Collectors.toMap(TechArticle::getElasticId, Function.identity()));
-
-        return elasticIds.stream()
-                .map(techArticles::get)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public Slice<TechArticle> findBookmarkedByMemberAndCursor(Pageable pageable, Long techArticleId,
-                                                              BookmarkSort bookmarkSort,
-                                                              Member member) {
-
+                                                              BookmarkSort bookmarkSort, Member member
+    ) {
         List<TechArticle> contents = query.selectFrom(techArticle)
                 .innerJoin(bookmark)
                 .on(techArticle.eq(bookmark.techArticle))
                 .where(bookmark.member.eq(member), bookmark.status.isTrue(),
-                        getCursorCondition(bookmarkSort, techArticleId, member))
+                        getCursorConditionFromBookmarkSort(bookmarkSort, techArticleId, member))
                 .orderBy(bookmarkSort(bookmarkSort), techArticle.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -59,7 +44,55 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
     }
 
-    private Predicate getCursorCondition(BookmarkSort bookmarkSort, Long techArticleId, Member member) {
+    @Override
+    public SliceCustom<TechArticle> findTechArticlesByCursor(Pageable pageable, Long techArticleId,
+                                                             TechArticleSort techArticleSort, Long companyId,
+                                                             String keyword, Float score
+    ) {
+        // 키워드가 있는 경우 FULLTEXT 검색, 없는 경우 일반 조회
+        if (StringUtils.hasText(keyword)) {
+            return findTechArticlesByCursorWithKeyword(pageable, techArticleId, techArticleSort, companyId, keyword, score);
+        } else {
+            return findTechArticlesByCursorWithoutKeyword(pageable, techArticleId, techArticleSort, companyId);
+        }
+    }
+
+    // 키워드 검색
+    private SliceCustom<TechArticle> findTechArticlesByCursorWithKeyword(Pageable pageable, Long techArticleId,
+                                                                         TechArticleSort techArticleSort, Long companyId,
+                                                                         String keyword, Float score
+    ) {
+        List<TechArticle> contents = null;
+
+        // 기술블로그 총 갯수
+        long totalElements = query.select(techArticle.count())
+                .from(techArticle)
+                .fetchCount();
+
+        return new SliceCustom<>(contents, pageable, totalElements);
+    }
+
+    // 일반 조회
+    private SliceCustom<TechArticle> findTechArticlesByCursorWithoutKeyword(Pageable pageable, Long techArticleId,
+                                                                            TechArticleSort techArticleSort, Long companyId
+    ) {
+        List<TechArticle> contents = query.selectFrom(techArticle)
+                .where(getCursorConditionFromTechArticleSort(techArticleSort, techArticleId))
+                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
+                .orderBy(techArticleSort(techArticleSort), techArticle.id.desc())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 기술블로그 총 갯수
+        long totalElements = query.select(techArticle.count())
+                .from(techArticle)
+                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
+                .fetchCount();
+
+        return new SliceCustom<>(contents, pageable, totalElements);
+    }
+
+    private Predicate getCursorConditionFromBookmarkSort(BookmarkSort bookmarkSort, Long techArticleId, Member member) {
         if (ObjectUtils.isEmpty(techArticleId)) {
             return null;
         }
@@ -87,6 +120,31 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     private OrderSpecifier<?> bookmarkSort(BookmarkSort bookmarkSort) {
         return Optional.ofNullable(bookmarkSort)
                 .orElse(BookmarkSort.BOOKMARKED).getOrderSpecifierByBookmarkSort();
+
+    }
+
+    private Predicate getCursorConditionFromTechArticleSort(TechArticleSort techArticleSort, Long techArticleId) {
+        if (ObjectUtils.isEmpty(techArticleId)) {
+            return null;
+        }
+
+        // techArticleId로 기술블로그 조회
+        TechArticle findTechArticle = query.selectFrom(techArticle)
+                .where(techArticle.id.eq(techArticleId))
+                .fetchOne();
+
+        // 일치하는 기술블로그가 없으면
+        if (ObjectUtils.isEmpty(findTechArticle)) {
+            return techArticle.id.loe(techArticleId);
+        }
+
+        return Optional.ofNullable(techArticleSort)
+                .orElse(TechArticleSort.LATEST).getCursorCondition(findTechArticle);
+    }
+
+    private OrderSpecifier<?> techArticleSort(TechArticleSort techArticleSort) {
+        return Optional.ofNullable(techArticleSort)
+                .orElse(TechArticleSort.LATEST).getOrderSpecifierByTechArticleSort();
 
     }
 

@@ -55,8 +55,8 @@ public class MypageController {
             @RequestParam(required = false) Long techArticleId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<TechArticleMainResponse> response = memberService.getBookmarkedTechArticles(pageable, techArticleId,
-                bookmarkSort, authentication);
+        Slice<TechArticleMainResponse> response = memberService.getBookmarkedTechArticles(
+                pageable, techArticleId, bookmarkSort, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
