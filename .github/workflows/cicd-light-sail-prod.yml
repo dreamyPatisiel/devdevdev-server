@@ -108,16 +108,16 @@ jobs:
 
           sudo systemctl enable --now docker >/dev/null 2>&1 || true
 
-          IMAGE_NAME="${IMAGE_NAME}"
-          CONTAINER_BASE="${CONTAINER_BASE}"
-          BLUE_SUFFIX="${BLUE_SUFFIX}"
-          GREEN_SUFFIX="${GREEN_SUFFIX}"
-          BLUE_PORT="${BLUE_PORT}"
-          GREEN_PORT="${GREEN_PORT}"
-          APP_PORT="${APP_PORT}"
-          HEALTHCHECK_PATH="${HEALTHCHECK_PATH}"
-          HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT}"
-          HEALTHCHECK_RETRY="${HEALTHCHECK_RETRY}"
+          IMAGE_NAME=${IMAGE_NAME:-devdevdev/app}
+          CONTAINER_BASE=${CONTAINER_BASE:-devdevdev-main-server}
+          BLUE_SUFFIX=${BLUE_SUFFIX:--blue}
+          GREEN_SUFFIX=${GREEN_SUFFIX:--green}
+          BLUE_PORT=${BLUE_PORT:-18080}
+          GREEN_PORT=${GREEN_PORT:-18081}
+          APP_PORT=${APP_PORT:-8080}
+          HEALTHCHECK_PATH=${HEALTHCHECK_PATH:-/}          # actuator 없으면 /
+          HEALTHCHECK_TIMEOUT=${HEALTHCHECK_TIMEOUT:-3}
+          HEALTHCHECK_RETRY=${HEALTHCHECK_RETRY:-20}
 
           UPSTREAM_FILE="/etc/nginx/conf.d/backend-upstream.upstream"
           BLUE_NAME="${CONTAINER_BASE}${BLUE_SUFFIX}"
