@@ -105,6 +105,7 @@ jobs:
           cat > deploy_blue_green.sh <<EOS
           #!/usr/bin/env bash
           set -euo pipefail
+          sudo systemctl enable --now docker >/dev/null 2>&1 || true
 
           IMAGE_NAME="${IMAGE_NAME}"
           CONTAINER_BASE="${CONTAINER_BASE}"
@@ -123,7 +124,7 @@ jobs:
           BLUE_NAME="\${CONTAINER_BASE}\${BLUE_SUFFIX}"
           GREEN_NAME="\${CONTAINER_BASE}\${GREEN_SUFFIX}"
 
-          ARCHIVE_FILE="$(ls -t /home/${SSH_USER}/image-*.tar.gz | head -n1)"
+          ARCHIVE_FILE="$(ls -t "$HOME"/image-*.tar.gz | head -n1)"
           echo "[1/9] Load image: \${ARCHIVE_FILE}"
           sudo docker load -i "\${ARCHIVE_FILE}"
 
@@ -209,8 +210,7 @@ jobs:
       # ====== 원격 실행 ======
       - name: Remote Blue/Green deploy
         run: |
-          ssh -i key.pem -o StrictHostKeyChecking=yes ${SSH_USER}@${LIGHTSAIL_HOST} \
-            "sudo bash /home/${SSH_USER}/deploy_blue_green.sh"
+          ssh -i key.pem -o StrictHostKeyChecking=yes ${SSH_USER}@${LIGHTSAIL_HOST} "bash /home/${SSH_USER}/deploy_blue_green.sh"
 
       # ====== Slack 알림 ======
       - name: action-slack
