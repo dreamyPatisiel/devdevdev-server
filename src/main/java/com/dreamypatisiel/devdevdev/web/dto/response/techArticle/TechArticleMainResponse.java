@@ -2,6 +2,7 @@ package com.dreamypatisiel.devdevdev.web.dto.response.techArticle;
 
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
@@ -64,13 +65,13 @@ public class TechArticleMainResponse {
                 .author(techArticle.getAuthor())
                 .company(companyResponse)
                 .regDate(techArticle.getRegDate())
-                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl().getUrl(), companyResponse))
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
                 .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
-                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl().getUrl()))
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
                 .isBookmarked(isBookmarkedByMember(techArticle, member))
                 .build();
     }
@@ -84,13 +85,13 @@ public class TechArticleMainResponse {
                 .author(techArticle.getAuthor())
                 .company(companyResponse)
                 .regDate(techArticle.getRegDate())
-                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl().getUrl(), companyResponse))
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
                 .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
-                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl().getUrl()))
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
                 .isBookmarked(false)
                 .build();
     }
@@ -104,13 +105,13 @@ public class TechArticleMainResponse {
                 .author(techArticle.getAuthor())
                 .company(companyResponse)
                 .regDate(techArticle.getRegDate())
-                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl().getUrl(), companyResponse))
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
                 .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
-                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl().getUrl()))
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
                 .isBookmarked(isBookmarkedByMember(techArticle, member))
                 .score(getValidScore(score))
                 .build();
@@ -125,24 +126,24 @@ public class TechArticleMainResponse {
                 .author(techArticle.getAuthor())
                 .company(companyResponse)
                 .regDate(techArticle.getRegDate())
-                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl().getUrl(), companyResponse))
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
                 .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
-                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl().getUrl()))
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
                 .isBookmarked(false)
                 .score(getValidScore(score))
                 .build();
     }
 
-    private static String getThumbnailUrl(String thumbnailUrl, CompanyResponse companyResponse) {
+    private static String getThumbnailUrl(Url thumbnailUrl, CompanyResponse companyResponse) {
         // 썸네일 이미지가 없다면 회사 로고로 내려준다.
-        if (ObjectUtils.isEmpty(thumbnailUrl)) {
+        if (ObjectUtils.isEmpty(thumbnailUrl) || thumbnailUrl.getUrl() == null) {
             return companyResponse.getOfficialImageUrl();
         }
-        return thumbnailUrl;
+        return thumbnailUrl.getUrl();
     }
 
     private static Float getValidScore(Float score) {

@@ -4,6 +4,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import java.time.LocalDate;
+
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
@@ -57,7 +59,7 @@ public class TechArticleDetailResponse {
                 .author(techArticle.getAuthor())
                 .company(companyResponse)
                 .regDate(techArticle.getRegDate())
-                .thumbnailUrl(techArticle.getThumbnailUrl().getUrl())
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl()))
                 .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
@@ -76,7 +78,7 @@ public class TechArticleDetailResponse {
                 .author(techArticle.getAuthor())
                 .company(companyResponse)
                 .regDate(techArticle.getRegDate())
-                .thumbnailUrl(techArticle.getThumbnailUrl().getUrl())
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl()))
                 .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
@@ -92,5 +94,12 @@ public class TechArticleDetailResponse {
             return contents;
         }
         return contents.substring(0, maxLength);
+    }
+
+    private static String getThumbnailUrl(Url thumbnailUrl) {
+        if (ObjectUtils.isEmpty(thumbnailUrl)) {
+            return null;
+        }
+        return thumbnailUrl.getUrl();
     }
 }

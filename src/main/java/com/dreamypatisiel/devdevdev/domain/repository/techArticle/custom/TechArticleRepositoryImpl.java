@@ -11,8 +11,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSor
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.jpa.JPQLQueryFactory;
-import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +28,7 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
 
+    public static final String MATCH_AGAINST_FUNCTION = "match_against";
     private final JPQLQueryFactory query;
 
     @Override
@@ -62,11 +65,45 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                                                                          TechArticleSort techArticleSort, Long companyId,
                                                                          String keyword, Float score
     ) {
-        List<TechArticle> contents = null;
-
-        // 기술블로그 총 갯수
+        // FULLTEXT 검색 조건 생성
+        BooleanExpression titleMatch = Expressions.booleanTemplate(
+                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1}) > 0.0",
+                techArticle.title.title, keyword
+        );
+        
+        BooleanExpression contentsMatch = Expressions.booleanTemplate(
+                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1}) > 0.0",
+                techArticle.contents, keyword
+        );
+        
+        // 스코어 계산을 위한 expression
+        NumberTemplate<Double> titleScore = Expressions.numberTemplate(Double.class,
+                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
+                techArticle.title.title, keyword
+        );
+        NumberTemplate<Double> contentsScore = Expressions.numberTemplate(Double.class,
+                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
+                techArticle.contents, keyword
+        );
+        
+        // 전체 스코어 계산 (제목 가중치 2배)
+        NumberTemplate<Double> totalScore = Expressions.numberTemplate(Double.class,
+                "({0} * 2.0) + {1}", titleScore, contentsScore
+        );
+        
+        List<TechArticle> contents = query.selectFrom(techArticle)
+                .where(titleMatch.or(contentsMatch))
+                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
+                .where(getCursorConditionForKeywordSearch(techArticleSort, techArticleId, score, totalScore))
+                .orderBy(getOrderSpecifierForKeywordSearch(techArticleSort, totalScore), techArticle.id.desc())
+                .limit(pageable.getPageSize())
+                .fetch();
+        
+        // 키워드 검색 결과 총 갯수
         long totalElements = query.select(techArticle.count())
                 .from(techArticle)
+                .where(titleMatch.or(contentsMatch))
+                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
                 .fetchCount();
 
         return new SliceCustom<>(contents, pageable, totalElements);
@@ -146,6 +183,46 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         return Optional.ofNullable(techArticleSort)
                 .orElse(TechArticleSort.LATEST).getOrderSpecifierByTechArticleSort();
 
+    }
+
+    // 키워드 검색을 위한 커서 조건 생성
+    private Predicate getCursorConditionForKeywordSearch(TechArticleSort techArticleSort, Long techArticleId, 
+                                                        Float score, NumberTemplate<Double> totalScore) {
+        if (ObjectUtils.isEmpty(techArticleId) || ObjectUtils.isEmpty(score)) {
+            return null;
+        }
+        
+        // HIGHEST_SCORE(정확도순)인 경우 스코어 기반 커서 사용
+        if (techArticleSort == TechArticleSort.HIGHEST_SCORE) {
+            return totalScore.lt(score.doubleValue())
+                    .or(totalScore.eq(score.doubleValue())
+                            .and(techArticle.id.lt(techArticleId)));
+        }
+        
+        // 다른 정렬 방식인 경우 기존 커서 조건 사용
+        TechArticle findTechArticle = query.selectFrom(techArticle)
+                .where(techArticle.id.eq(techArticleId))
+                .fetchOne();
+        
+        if (ObjectUtils.isEmpty(findTechArticle)) {
+            return techArticle.id.loe(techArticleId);
+        }
+        
+        return Optional.ofNullable(techArticleSort)
+                .orElse(TechArticleSort.HIGHEST_SCORE).getCursorCondition(findTechArticle);
+    }
+
+    // 키워드 검색을 위한 정렬 조건 생성
+    private OrderSpecifier<?> getOrderSpecifierForKeywordSearch(TechArticleSort techArticleSort, 
+                                                               NumberTemplate<Double> totalScore) {
+        // HIGHEST_SCORE(정확도순)인 경우 스코어 기반 정렬
+        if (techArticleSort == TechArticleSort.HIGHEST_SCORE) {
+            return totalScore.desc();
+        }
+        
+        // 다른 정렬 방식인 경우 기존 정렬 사용
+        return Optional.ofNullable(techArticleSort)
+                .orElse(TechArticleSort.HIGHEST_SCORE).getOrderSpecifierByTechArticleSort();
     }
 
     private boolean hasNextPage(List<TechArticle> contents, int pageSize) {
