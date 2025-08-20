@@ -5,19 +5,26 @@ on:
     branches: [ "main-test" ]
 
 env:
+  # --- 애플리케이션/컨테이너 공통 ---
   PROJECT_NAME: "devdevdev"
-  IMAGE_NAME: "devdevdev/app"                       # 로컬 빌드 이미지 이름
+  IMAGE_NAME: "devdevdev/app"                       # 로컬 빌드 이미지 이름(태그 latest, SHA)
   CONTAINER_BASE: "devdevdev-main-server"           # 컨테이너 베이스명
   BLUE_SUFFIX: "-blue"
   GREEN_SUFFIX: "-green"
+
+  # --- 포트 구성 ---
   BLUE_PORT: "18080"                                # 호스트 포트(Blue)
   GREEN_PORT: "18081"                               # 호스트 포트(Green)
-  APP_PORT: "8080"                                  # 컨테이너 내부 포트
-  HEALTHCHECK_PATH: "/actuator/health"              # 없으면 "/" 로 바꾸세요
+  APP_PORT: "8080"                                  # 컨테이너 내부 포트(Spring Boot)
+
+  # --- 헬스체크 ---
+  HEALTHCHECK_PATH: "/actuator/health"              # Actuator 미사용이면 "/" 로 변경하세요
   HEALTHCHECK_TIMEOUT: "3"                          # curl 타임아웃(초)
   HEALTHCHECK_RETRY: "20"                           # 재시도 횟수 (약 60초)
-  SSH_USER: "ec2-user"                        # SSH 접속 사용자
-  LIGHTSAIL_HOST: "${{ secrets.LIGHTSAIL_HOST }}"
+
+  # --- SSH/Lightsail ---
+  SSH_USER: "ec2-user"                             # SSH 접속 사용자
+  LIGHTSAIL_HOST: "${{ secrets.LIGHTSAIL_HOST }}"   # 퍼블릭 IP 또는 도메인
 
 jobs:
   build:
@@ -27,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # ---- 애플리케이션 설정파일 주입 ----
+      # ====== 리소스/시크릿 주입 (현재 파이프라인과 동일) ======
       - name: Set up JDK 21
         uses: actions/setup-java@v3
         with:
@@ -51,7 +58,14 @@ jobs:
           echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
           echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
 
-      # ---- Docker 빌드 ----
+      # ====== Gradle 빌드 (Docker가 JAR을 COPY할 수 있도록 선행) ======
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle (bootJar)
+        run: ./gradlew bootJar
+
+      # ====== Docker 빌드 ======
       - name: Use Dockerfile-prod if present
         run: |
           if [ -f Dockerfile-prod ]; then
@@ -61,7 +75,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${IMAGE_NAME}:${GITHUB_SHA} -t ${IMAGE_NAME}:latest .
+          docker build \
+            -t ${IMAGE_NAME}:${GITHUB_SHA} \
+            -t ${IMAGE_NAME}:latest \
+            .
 
       - name: Save image as archive
         run: |
@@ -69,7 +86,7 @@ jobs:
           docker save ${IMAGE_NAME}:${GITHUB_SHA} | gzip > out/image-${GITHUB_SHA}.tar.gz
           echo "ARCHIVE=out/image-${GITHUB_SHA}.tar.gz" >> $GITHUB_ENV
 
-      # ---- SSH 준비 ----
+      # ====== SSH 준비 ======
       - name: Prepare SSH key
         run: |
           echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > key.pem
@@ -77,7 +94,7 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H ${LIGHTSAIL_HOST} >> ~/.ssh/known_hosts
 
-      # ---- 아카이브/스크립트 전송 ----
+      # ====== 아카이브/스크립트 전송 ======
       - name: Upload image archive
         run: |
           scp -i key.pem -o StrictHostKeyChecking=yes "$ARCHIVE" \
@@ -100,7 +117,9 @@ jobs:
           HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT}"
           HEALTHCHECK_RETRY="${HEALTHCHECK_RETRY}"
 
+          # Nginx 업스트림 경로(사전에 구성됨)
           UPSTREAM_FILE="/etc/nginx/conf.d/backend-upstream.upstream"
+
           BLUE_NAME="\${CONTAINER_BASE}\${BLUE_SUFFIX}"
           GREEN_NAME="\${CONTAINER_BASE}\${GREEN_SUFFIX}"
 
@@ -108,10 +127,10 @@ jobs:
           echo "[1/9] Load image: \${ARCHIVE_FILE}"
           sudo docker load -i "\${ARCHIVE_FILE}"
 
-          # 현재 활성 포트 확인(없으면 BLUE로 초기화)
+          # 현재 활성 포트 확인 (없으면 BLUE로 초기화)
           ACTIVE_PORT=""
           if [ -f "\${UPSTREAM_FILE}" ]; then
-            ACTIVE_PORT=$(grep -oE '127\.0\.0\.1:([0-9]+)' "\${UPSTREAM_FILE}" | awk -F: '{print $2}' || true)
+            ACTIVE_PORT=\$(grep -oE '127\.0\.0\.1:([0-9]+)' "\${UPSTREAM_FILE}" | awk -F: '{print \$2}' || true)
           fi
           if [ -z "\${ACTIVE_PORT}" ]; then
             echo "server 127.0.0.1:\${BLUE_PORT};" | sudo tee "\${UPSTREAM_FILE}" >/dev/null
@@ -147,10 +166,10 @@ jobs:
             -e SPRING_PROFILES_ACTIVE=prod \
             \${IMAGE_NAME}:latest
 
-          # 헬스체크: actuator가 없으면 HEALTHCHECK_PATH를 "/" 로 바꾸세요.
+          # 헬스체크 (Actuator 미사용 시 HEALTHCHECK_PATH="/" 로 설정)
           echo "[5/9] Health check http://127.0.0.1:\${TARGET_PORT}\${HEALTHCHECK_PATH}"
           ok=0
-          for i in $(seq 1 \${HEALTHCHECK_RETRY}); do
+          for i in \$(seq 1 \${HEALTHCHECK_RETRY}); do
             if curl -fsS --max-time \${HEALTHCHECK_TIMEOUT} "http://127.0.0.1:\${TARGET_PORT}\${HEALTHCHECK_PATH}" >/dev/null 2>&1; then
               ok=1; break
             fi
@@ -187,13 +206,13 @@ jobs:
           chmod +x deploy_blue_green.sh
           scp -i key.pem -o StrictHostKeyChecking=yes deploy_blue_green.sh ${SSH_USER}@${LIGHTSAIL_HOST}:/home/${SSH_USER}/
 
-      # ---- 원격 실행 ----
+      # ====== 원격 실행 ======
       - name: Remote Blue/Green deploy
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=yes ${SSH_USER}@${LIGHTSAIL_HOST} \
             "sudo bash /home/${SSH_USER}/deploy_blue_green.sh"
 
-      # ---- Slack 알림 ----
+      # ====== Slack 알림 ======
       - name: action-slack
         uses: 8398a7/action-slack@v3
         with:
