@@ -83,7 +83,8 @@ jobs:
       - name: Save image as archive
         run: |
           mkdir -p out
-          docker save ${IMAGE_NAME}:${GITHUB_SHA} | gzip > out/image.tar.gz
+          # SHA와 latest 두 태그 모두 아카이브에 포함
+          docker save ${IMAGE_NAME}:${GITHUB_SHA} ${IMAGE_NAME}:latest | gzip > out/image.tar.gz
           echo "ARCHIVE=out/image.tar.gz" >> $GITHUB_ENV
 
       # ====== SSH 준비 ======
@@ -130,7 +131,20 @@ jobs:
           ls -lh "${ARCHIVE_FILE}" || { echo "[!] archive missing"; exit 1; }
           gzip -t "${ARCHIVE_FILE}"
           gunzip -c "${ARCHIVE_FILE}" | sudo docker load
-
+          
+          # 보강: :latest 태그가 없으면 가장 최근 태그를 latest로 재태깅
+          if ! sudo docker image inspect "${IMAGE_NAME}:latest" >/dev/null 2>&1; then
+            echo "[info] ${IMAGE_NAME}:latest not found. Retagging…"
+            # 해당 리포의 임의의 태그 하나를 찾아 latest로 붙임
+            NEW_TAG=$(sudo docker images --format '{{.Repository}}:{{.Tag}}' \
+            | awk -v repo="${IMAGE_NAME}" -F: '$1==repo && $2!="latest"{print $2; exit}')
+            if [ -n "${NEW_TAG:-}" ]; then
+            sudo docker tag "${IMAGE_NAME}:${NEW_TAG}" "${IMAGE_NAME}:latest"
+            else
+            echo "[!] no tag to retag as latest"; exit 1
+            fi
+          fi
+          
           ACTIVE_PORT=""
           if [ -f "${UPSTREAM_FILE}" ]; then
             ACTIVE_PORT=$(grep -oE '127\.0\.0\.1:([0-9]+)' "${UPSTREAM_FILE}" | awk -F: '{print $2}' || true)
