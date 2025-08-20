@@ -1,0 +1,195 @@
+name: Build and Deploy to PROD (Lightsail Blue/Green via SSH + Docker)
+
+on:
+  push:
+    branches: [ "main-test" ]
+
+env:
+  PROJECT_NAME: "devdevdev"
+  IMAGE_NAME: "devdevdev/app"                       # 로컬 빌드 이미지 이름
+  CONTAINER_BASE: "devdevdev-main-server"           # 컨테이너 베이스명
+  BLUE_SUFFIX: "-blue"
+  GREEN_SUFFIX: "-green"
+  BLUE_PORT: "18080"                                # 호스트 포트(Blue)
+  GREEN_PORT: "18081"                               # 호스트 포트(Green)
+  APP_PORT: "8080"                                  # 컨테이너 내부 포트
+  HEALTHCHECK_PATH: "/actuator/health"              # 헬스체크 경로
+  HEALTHCHECK_TIMEOUT: "3"                          # curl 타임아웃(초)
+  HEALTHCHECK_RETRY: "10"                           # 재시도 횟수
+  SSH_USER: "ec2-user"                            # SSH 접속 사용자
+  LIGHTSAIL_HOST: "${{ secrets.LIGHTSAIL_HOST }}"
+
+jobs:
+  build:
+    name: Build and Deploy (Blue/Green)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # ----- Build prerequisites (리소스/시크릿 주입은 기존 그대로 유지) -----
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: corretto
+
+      - name: make application-prod.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.application_prod }}" >> ./application-prod.yml
+          echo "${{ secrets.application_jwt_prod }}" >> ./application-jwt-prod.yml
+          echo "${{ secrets.application_oauth2_prod }}" >> ./application-oauth2-prod.yml
+          echo "${{ secrets.application_storage_s3_prod }}" >> ./application-storage-s3-prod.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_prod }}" >> ./application-opensearch-prod.yml
+
+      - name: make application-test.yml
+        run: |
+          cd ./src/test/resources
+          echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
+
+      # ----- Docker build -----
+      - name: Use Dockerfile-prod if present
+        run: |
+          if [ -f Dockerfile-prod ]; then
+            rm -f Dockerfile
+            cp Dockerfile-prod Dockerfile
+          fi
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${IMAGE_NAME}:${GITHUB_SHA} -t ${IMAGE_NAME}:latest .
+
+      - name: Save image as archive
+        run: |
+          mkdir -p out
+          docker save ${IMAGE_NAME}:${GITHUB_SHA} | gzip > out/image-${GITHUB_SHA}.tar.gz
+          echo "ARCHIVE=out/image-${GITHUB_SHA}.tar.gz" >> $GITHUB_ENV
+
+      # ----- SSH 준비 -----
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${LIGHTSAIL_HOST} >> ~/.ssh/known_hosts
+
+      # ----- 전송 -----
+      - name: Upload image archive
+        run: |
+          scp -i key.pem -o StrictHostKeyChecking=yes "$ARCHIVE" \
+            ${SSH_USER}@${LIGHTSAIL_HOST}:/home/${SSH_USER}/
+
+      - name: Upload blue/green deploy script
+        run: |
+          cat > deploy_blue_green.sh <<'EOS'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          IMAGE_NAME="${IMAGE_NAME}"
+          CONTAINER_BASE="${CONTAINER_BASE}"
+          BLUE_SUFFIX="${BLUE_SUFFIX}"
+          GREEN_SUFFIX="${GREEN_SUFFIX}"
+          BLUE_PORT="${BLUE_PORT}"
+          GREEN_PORT="${GREEN_PORT}"
+          APP_PORT="${APP_PORT}"
+          HEALTHCHECK_PATH="${HEALTHCHECK_PATH}"
+          HEALTHCHECK_TIMEOUT="${HEALTHCHECK_TIMEOUT}"
+          HEALTHCHECK_RETRY="${HEALTHCHECK_RETRY}"
+
+          UPSTREAM_FILE="/etc/nginx/conf.d/backend-upstream.conf"
+
+          BLUE_NAME="${CONTAINER_BASE}${BLUE_SUFFIX}"
+          GREEN_NAME="${CONTAINER_BASE}${GREEN_SUFFIX}"
+
+          ARCHIVE_FILE="$(ls -t ~/image-*.tar.gz | head -n1)"
+          echo "[1/8] Load image: ${ARCHIVE_FILE}"
+          sudo docker load -i "$ARCHIVE_FILE"
+
+          # 현재 활성 포트를 파악(업스트림 파일에서 파싱)
+          ACTIVE_PORT=""
+          if [ -f "${UPSTREAM_FILE}" ]; then
+            ACTIVE_PORT=$(grep -oE '127\.0\.0\.1:([0-9]+)' "${UPSTREAM_FILE}" | awk -F: '{print $2}' || true)
+          fi
+          echo "[2/8] Current active port: ${ACTIVE_PORT:-unknown}"
+
+          # 타깃(유휴) 색/포트 결정
+          if [ "${ACTIVE_PORT}" = "${BLUE_PORT}" ]; then
+            TARGET_NAME="${GREEN_NAME}"
+            TARGET_PORT="${GREEN_PORT}"
+            OLD_NAME="${BLUE_NAME}"
+            OLD_PORT="${BLUE_PORT}"
+          else
+            TARGET_NAME="${BLUE_NAME}"
+            TARGET_PORT="${BLUE_PORT}"
+            OLD_NAME="${GREEN_NAME}"
+            OLD_PORT="${GREEN_PORT}"
+          fi
+
+          echo "[3/8] Target container: ${TARGET_NAME} on ${TARGET_PORT}"
+
+          # 유휴 컨테이너 정리
+          if sudo docker ps -a --format '{{.Names}}' | grep -qw "${TARGET_NAME}"; then
+            sudo docker stop "${TARGET_NAME}" || true
+            sudo docker rm "${TARGET_NAME}" || true
+          fi
+
+          # 새 컨테이너 실행 (내부포트 8080 -> 호스트 TARGET_PORT 바인딩)
+          echo "[4/8] Run new container"
+          sudo docker run -d \
+            --name "${TARGET_NAME}" \
+            --restart=always \
+            -p 127.0.0.1:${TARGET_PORT}:${APP_PORT} \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            ${IMAGE_NAME}:latest
+
+          # 헬스체크 (재시도)
+          echo "[5/8] Health check on http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}"
+          ok=0
+          for i in $(seq 1 ${HEALTHCHECK_RETRY}); do
+            if curl -fsS --max-time ${HEALTHCHECK_TIMEOUT} "http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}" >/dev/null 2>&1; then
+              ok=1
+              break
+            fi
+            echo "  retry $i/${HEALTHCHECK_RETRY}..."
+            sleep 3
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "[!] Health check failed. Rolling back."
+            sudo docker logs --tail 200 "${TARGET_NAME}" || true
+            sudo docker stop "${TARGET_NAME}" || true
+            sudo docker rm "${TARGET_NAME}" || true
+            exit 1
+          fi
+
+          # 업스트림 스위치
+          echo "[6/8] Switch upstream to ${TARGET_PORT}"
+          echo "server 127.0.0.1:${TARGET_PORT};" | sudo tee "${UPSTREAM_FILE}" >/dev/null
+          sudo nginx -t
+          sudo systemctl reload nginx
+
+          # 구 버전 종료 및 정리
+          echo "[7/8] Stop old container: ${OLD_NAME} (if any)"
+          if sudo docker ps -a --format '{{.Names}}' | grep -qw "${OLD_NAME}"; then
+            sudo docker stop "${OLD_NAME}" || true
+            sudo docker rm "${OLD_NAME}" || true
+          fi
+
+          # 아카이브 청소
+          echo "[8/8] Cleanup old archives (keep last 3)"
+          cd ~ && ls -t image-*.tar.gz | tail -n +4 | xargs -r rm -f
+
+          echo "Blue/Green deploy done."
+          EOS
+          chmod +x deploy_blue_green.sh
+          scp -i key.pem -o StrictHostKeyChecking=yes deploy_blue_green.sh ${SSH_USER}@${LIGHTSAIL_HOST}:/home/${SSH_USER}/
+
+      # ----- 원격 실행 -----
+      - name: Remote Blue/Green deploy
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=yes ${SSH_USER}@${LIGHTSAIL_HOST} \
+            "sudo bash /home/${SSH_USER}/deploy_blue_green.sh"
+        env:
