@@ -63,7 +63,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle (bootJar)
-        run: ./gradlew bootJar
+        run: ./gradlew bootJar -x test
 
       # ====== Docker 빌드 ======
       - name: Use Dockerfile-prod if present
@@ -123,9 +123,9 @@ jobs:
           BLUE_NAME="${CONTAINER_BASE}${BLUE_SUFFIX}"
           GREEN_NAME="${CONTAINER_BASE}${GREEN_SUFFIX}"
 
-          ARCHIVE_FILE="/home/${SSH_USER}/image.tar.gz"
-
-          echo "[debug] whoami=$(whoami) HOME=$HOME"
+          # 아카이브 경로는 HOME 기준으로
+          ARCHIVE_FILE="$HOME/image.tar.gz"
+          
           echo "[1/9] Load image: ${ARCHIVE_FILE}"
           ls -lh "${ARCHIVE_FILE}" || { echo "[!] archive missing"; exit 1; }
           gzip -t "${ARCHIVE_FILE}"
