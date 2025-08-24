@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
-public class FileUtils {
+public abstract class FileUtils {
 
     public static final String SLASH = "/";
     public static final String DASH = "-";
@@ -22,7 +22,7 @@ public class FileUtils {
     public static List<BlobInfo> createBlobInfos(String bucketName, List<MultipartFile> multipartFiles) {
         return multipartFiles.stream()
                 .map(image -> Blob.newBuilder(bucketName,
-                        FileUtils.createRandomFileNameBy(image.getOriginalFilename()))
+                                FileUtils.createRandomFileNameBy(image.getOriginalFilename()))
                         .setContentType(image.getContentType())
                         .build()
                 )
@@ -35,7 +35,7 @@ public class FileUtils {
         boolean isAllowMediaType = Arrays.stream(allowedMediaTypes)
                 .anyMatch(mediaType -> mediaType.equals(targetMultipartFile.getContentType()));
 
-        if(!isAllowMediaType) {
+        if (!isAllowMediaType) {
             String supportedMediaType = String.join(DELIMITER_COMMA, allowedMediaTypes);
             String errorMessage = String.format(INVALID_MEDIA_TYPE_MESSAGE, contentType, supportedMediaType);
 

@@ -52,7 +52,7 @@ class UserPrincipalTest {
         Map<String, Object> attributes = new HashMap<>();
 
         // when
-        UserPrincipal userPrincipal = UserPrincipal.createByMemberAndAttributes(member, attributes);
+        UserPrincipal userPrincipal = UserPrincipal.createByMemberAndAttributes(member, attributes, false);
 
         // then
         assertAll(

@@ -1,11 +1,13 @@
 package com.dreamypatisiel.devdevdev.domain.repository.pick.custom;
 
-import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
+import static com.dreamypatisiel.devdevdev.domain.entity.QAnonymousMember.anonymousMember;
 import static com.dreamypatisiel.devdevdev.domain.entity.QMember.member;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPick.pick;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickComment.pickComment;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickOption.pickOption;
 import static com.dreamypatisiel.devdevdev.domain.entity.QPickVote.pickVote;
+
+import com.dreamypatisiel.devdevdev.domain.entity.PickComment;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
@@ -41,7 +43,8 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
 
         List<PickComment> contents = query.selectFrom(pickComment)
                 .innerJoin(pickComment.pick, pick).on(pick.id.eq(pickId))
-                .innerJoin(pickComment.createdBy, member).fetchJoin()
+                .leftJoin(pickComment.createdBy, member).fetchJoin()
+                .leftJoin(pickComment.createdAnonymousBy, anonymousMember).fetchJoin()
                 .leftJoin(pickComment.pickVote, pickVote).fetchJoin()
                 .leftJoin(pickVote.pickOption, pickOption).fetchJoin()
                 .where(pick.contentStatus.eq(ContentStatus.APPROVAL)
@@ -62,7 +65,8 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
 
         return query.selectFrom(pickComment)
                 .innerJoin(pickComment.pick, pick).on(pick.id.eq(pickId))
-                .innerJoin(pickComment.createdBy, member).fetchJoin()
+                .leftJoin(pickComment.createdBy, member).fetchJoin()
+                .leftJoin(pickComment.createdAnonymousBy, anonymousMember).fetchJoin()
                 .leftJoin(pickComment.pickVote, pickVote).fetchJoin()
                 .leftJoin(pickVote.pickOption, pickOption).fetchJoin()
                 .where(pick.contentStatus.eq(ContentStatus.APPROVAL)
@@ -92,7 +96,8 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                                                                               Pageable pageable) {
         // 회원이 작성한 픽픽픽 댓글 조회
         List<MyWrittenCommentDto> contents = query.select(
-                        new QMyWrittenCommentDto(pick.id,
+                        new QMyWrittenCommentDto(
+                                pick.id,
                                 pick.title.title,
                                 pickComment.id,
                                 Expressions.constant(MyWrittenCommentFilter.PICK.name()),
@@ -100,7 +105,9 @@ public class PickCommentRepositoryImpl implements PickCommentRepositoryCustom {
                                 pickComment.recommendTotalCount.count,
                                 pickComment.createdAt,
                                 pickOption.title.title,
-                                pickOption.pickOptionType.stringValue()))
+                                pickOption.pickOptionType.stringValue()
+                        )
+                )
                 .from(pickComment)
                 .leftJoin(pickComment.pickVote, pickVote)
                 .leftJoin(pickVote.pickOption, pickOption)

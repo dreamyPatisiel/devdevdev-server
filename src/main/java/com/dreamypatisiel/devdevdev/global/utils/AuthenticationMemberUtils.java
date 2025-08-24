@@ -5,7 +5,7 @@ import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class AuthenticationMemberUtils {
+public abstract class AuthenticationMemberUtils {
 
     public static final String ANONYMOUS_USER = "anonymousUser";
     public static final String INVALID_TYPE_CAST_USER_PRINCIPAL_MESSAGE = "인증객체 타입에 문제가 발생했습니다.";
@@ -14,7 +14,7 @@ public class AuthenticationMemberUtils {
     public static UserPrincipal getUserPrincipal() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        if(!isUserPrincipalClass(principal)) {
+        if (!isUserPrincipalClass(principal)) {
             throw new UserPrincipalException(INVALID_TYPE_CAST_USER_PRINCIPAL_MESSAGE);
         }
 
@@ -22,7 +22,7 @@ public class AuthenticationMemberUtils {
     }
 
     public static void validateAnonymousMethodCall(Authentication authentication) {
-        if(!isAnonymous(authentication)) {
+        if (!isAnonymous(authentication)) {
             throw new IllegalStateException(INVALID_METHODS_CALL_MESSAGE);
         }
     }

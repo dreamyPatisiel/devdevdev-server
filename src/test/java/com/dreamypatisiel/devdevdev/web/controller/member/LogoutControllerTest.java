@@ -1,4 +1,4 @@
-package com.dreamypatisiel.devdevdev.web.controller;
+package com.dreamypatisiel.devdevdev.web.controller.member;
 
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
 import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.BEARER_PREFIX;
@@ -17,6 +17,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.Token;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
+import com.dreamypatisiel.devdevdev.web.controller.SupportControllerTest;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;

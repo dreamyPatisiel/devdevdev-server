@@ -2,18 +2,18 @@ package com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 
+import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.TechBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -25,13 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class GuestTechCommentService extends TechCommentCommonService implements TechCommentService {
 
     public GuestTechCommentService(TechCommentRepository techCommentRepository,
-                                   TechBestCommentsPolicy techBestCommentsPolicy) {
-        super(techCommentRepository, techBestCommentsPolicy);
+                                   TechBestCommentsPolicy techBestCommentsPolicy,
+                                   TechArticlePopularScorePolicy techArticlePopularScorePolicy) {
+        super(techCommentRepository, techBestCommentsPolicy, techArticlePopularScorePolicy);
     }
 
     @Override
     public TechCommentResponse registerMainTechComment(Long techArticleId,
-                                                       RegisterTechCommentRequest registerTechCommentRequest,
+                                                       TechCommentDto techCommentDto,
                                                        Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -39,20 +40,19 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     @Override
     public TechCommentResponse registerRepliedTechComment(Long techArticleId, Long originParentTechCommentId,
                                                           Long parentTechCommentId,
-                                                          RegisterTechCommentRequest registerRepliedTechCommentRequest,
+                                                          TechCommentDto registerRepliedTechCommentRequest,
                                                           Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     @Override
-    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId,
-                                                 ModifyTechCommentRequest modifyTechCommentRequest,
+    public TechCommentResponse modifyTechComment(Long techArticleId, Long techCommentId, TechCommentDto modifyTechCommentDto,
                                                  Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
 
     @Override
-    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId,
+    public TechCommentResponse deleteTechComment(Long techArticleId, Long techCommentId, @Nullable String anonymousMemberId,
                                                  Authentication authentication) {
         throw new AccessDeniedException(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -60,12 +60,12 @@ public class GuestTechCommentService extends TechCommentCommonService implements
     @Override
     public SliceCommentCustom<TechCommentsResponse> getTechComments(Long techArticleId, Long techCommentId,
                                                                     TechCommentSort techCommentSort, Pageable pageable,
-                                                                    Authentication authentication) {
+                                                                    String anonymousMemberId, Authentication authentication) {
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 기술블로그 댓글/답글 조회
-        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, null);
+        return super.getTechComments(techArticleId, techCommentId, techCommentSort, pageable, null, null);
     }
 
     @Override
@@ -80,12 +80,12 @@ public class GuestTechCommentService extends TechCommentCommonService implements
      * @Since: 2024.10.27
      */
     @Override
-    public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId,
+    public List<TechCommentsResponse> findTechBestComments(int size, Long techArticleId, String anonymousMemberId,
                                                            Authentication authentication) {
 
         // 익명 회원인지 검증
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
-        return super.findTechBestComments(size, techArticleId, null);
+        return super.findTechBestComments(size, techArticleId, null, null);
     }
 }

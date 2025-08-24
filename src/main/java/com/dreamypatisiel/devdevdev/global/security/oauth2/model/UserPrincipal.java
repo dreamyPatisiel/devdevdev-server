@@ -34,6 +34,8 @@ public class UserPrincipal implements OAuth2User, UserDetails {
     private final Collection<? extends GrantedAuthority> authorities;
     @Setter(value = AccessLevel.PRIVATE)
     private Map<String, Object> attributes = new HashMap<>();
+    @Getter
+    private boolean isNewMember;
 
     public static UserPrincipal createByMember(Member member) {
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = Collections.singletonList(
@@ -51,9 +53,10 @@ public class UserPrincipal implements OAuth2User, UserDetails {
         );
     }
 
-    public static UserPrincipal createByMemberAndAttributes(Member member, Map<String, Object> attributes) {
+    public static UserPrincipal createByMemberAndAttributes(Member member, Map<String, Object> attributes, boolean isNewMember) {
         UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
         userPrincipal.setAttributes(attributes);
+        userPrincipal.isNewMember = isNewMember;
         return userPrincipal;
     }
 

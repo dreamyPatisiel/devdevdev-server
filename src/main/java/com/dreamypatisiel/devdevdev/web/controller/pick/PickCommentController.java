@@ -1,10 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
+
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickCommentService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
@@ -42,22 +46,26 @@ public class PickCommentController {
 
     private final PickServiceStrategy pickServiceStrategy;
 
-    @Operation(summary = "픽픽픽 댓글 작성", description = "회원은 픽픽픽 댓글을 작성할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글 작성", description = "픽픽픽 댓글을 작성할 수 있습니다.")
     @PostMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickComment(
             @PathVariable Long pickId,
             @RequestBody @Validated RegisterPickCommentRequest registerPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto registerCommentDto = PickCommentDto.createRegisterCommentDto(registerPickCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
-        PickCommentResponse pickCommentResponse = pickCommentService.registerPickComment(pickId,
-                registerPickCommentRequest, authentication);
+        PickCommentResponse pickCommentResponse = pickCommentService.registerPickComment(
+                pickId, registerCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 답글 작성", description = "회원은 픽픽픽 댓글에 답글을 작성할 수 있습니다.")
+    @Operation(summary = "픽픽픽 답글 작성", description = "픽픽픽 댓글에 답글을 작성할 수 있습니다.")
     @PostMapping("/picks/{pickId}/comments/{pickOriginParentCommentId}/{pickParentCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> registerPickRepliedComment(
             @PathVariable Long pickId,
@@ -66,16 +74,20 @@ public class PickCommentController {
             @RequestBody @Validated RegisterPickRepliedCommentRequest registerPickRepliedCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto repliedCommentDto = PickCommentDto.createRepliedCommentDto(registerPickRepliedCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.registerPickRepliedComment(
-                pickParentCommentId, pickOriginParentCommentId, pickId, registerPickRepliedCommentRequest,
+                pickParentCommentId, pickOriginParentCommentId, pickId, repliedCommentDto,
                 authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 수정", description = "회원은 자신이 작성한 픽픽픽 댓글/답글을 수정할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글/답글 수정", description = "회원/익명회원 본인이 작성한 픽픽픽 댓글/답글만 수정할 수 있습니다.")
     @PatchMapping("/picks/{pickId}/comments/{pickCommentId}")
     public ResponseEntity<BasicResponse<PickCommentResponse>> modifyPickComment(
             @PathVariable Long pickId,
@@ -83,15 +95,19 @@ public class PickCommentController {
             @RequestBody @Validated ModifyPickCommentRequest modifyPickCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        PickCommentDto modifyCommentDto = PickCommentDto.createModifyCommentDto(modifyPickCommentRequest,
+                anonymousMemberId);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.modifyPickComment(pickCommentId, pickId,
-                modifyPickCommentRequest, authentication);
+                modifyCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 조회", description = "회원은 픽픽픽 댓글/답글을 조회할 수 있습니다.")
+    @Operation(summary = "픽픽픽 댓글/답글 조회", description = "픽픽픽 댓글/답글을 조회할 수 있습니다.")
     @GetMapping("/picks/{pickId}/comments")
     public ResponseEntity<BasicResponse<SliceCustom<PickCommentsResponse>>> getPickComments(
             @PageableDefault(size = 5, sort = "id", direction = Direction.DESC) Pageable pageable,
@@ -101,25 +117,26 @@ public class PickCommentController {
             @RequestParam(required = false) EnumSet<PickOptionType> pickOptionTypes) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
-        SliceCustom<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickComments(pageable,
-                pickId, pickCommentId, pickCommentSort, pickOptionTypes, authentication);
+        SliceCustom<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickComments(
+                pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }
 
-    @Operation(summary = "픽픽픽 댓글/답글 삭제", description = "회원은 자신이 작성한 픽픽픽 댓글/답글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
+    @Operation(summary = "픽픽픽 댓글/답글 삭제", description = "회원/익명회원 본인이 작성한 픽픽픽 댓글/답글을 삭제할 수 있습니다.(어드민은 모든 댓글 삭제 가능)")
     @DeleteMapping("/picks/{pickId}/comments/{pickCommentId}")
-    public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(
-            @PathVariable Long pickId,
-            @PathVariable Long pickCommentId) {
+    public ResponseEntity<BasicResponse<PickCommentResponse>> deletePickComment(@PathVariable Long pickId,
+                                                                                @PathVariable Long pickCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         PickCommentResponse pickCommentResponse = pickCommentService.deletePickComment(pickCommentId, pickId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentResponse));
     }
@@ -142,14 +159,14 @@ public class PickCommentController {
     @Operation(summary = "픽픽픽 베스트 댓글 조회", description = "픽픽픽 베스트 댓글을 조회할 수 있습니다.")
     @GetMapping("/picks/{pickId}/comments/best")
     public ResponseEntity<BasicResponse<PickCommentsResponse>> getPickBestComments(
-            @RequestParam(defaultValue = "3") int size,
-            @PathVariable Long pickId) {
+            @RequestParam(defaultValue = "3") int size, @PathVariable Long pickId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         PickCommentService pickCommentService = pickServiceStrategy.pickCommentService();
         List<PickCommentsResponse> pickCommentsResponse = pickCommentService.findPickBestComments(size, pickId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(pickCommentsResponse));
     }

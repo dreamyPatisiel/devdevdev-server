@@ -5,6 +5,7 @@ import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessa
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,7 +16,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.exception.CompanyExceptionMessage;
+import com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
@@ -33,8 +34,10 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRep
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
@@ -51,14 +54,16 @@ import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedComp
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.auditing.AuditingHandler;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.PageRequest;
@@ -116,6 +121,8 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     PickCommentRepository pickCommentRepository;
     @Autowired
     SubscriptionRepository subscriptionRepository;
+    @MockBean
+    TimeProvider timeProvider;
 
     @Test
     @DisplayName("회원이 회원탈퇴 설문조사를 완료하지 않으면 탈퇴가 불가능하다.")
@@ -455,6 +462,8 @@ class MemberServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원탈퇴 서베이 이력을 기록한다.")
     void recordMemberExitSurveyAnswer() {
         // given
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(LocalDateTime.of(2024, 1, 1, 0, 0, 0, 0));
+        
         SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
@@ -1175,6 +1184,108 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 () -> memberService.findMySubscribedCompanies(pageable, null, authentication))
                 .isInstanceOf(MemberException.class)
                 .hasMessage(INVALID_MEMBER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    @DisplayName("회원은 닉네임을 변경할 수 있다.")
+    void changeNickname() {
+        // given
+        String oldNickname = "이전 닉네임";
+        String newNickname = "변경된 닉네임";
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        String changedNickname = memberService.changeNickname(newNickname, authentication);
+
+        // then
+        assertThat(member.getNickname().getNickname()).isEqualTo(newNickname);
+        assertThat(changedNickname).isEqualTo(newNickname);
+    }
+
+    @DisplayName("회원이 1440분(24시간) 이내에 닉네임을 변경한 적이 있다면 예외가 발생한다.")
+    @ParameterizedTest
+    @CsvSource({
+            "0, true",
+            "60, true", // 1시간
+            "1439, true", // 23.9시간
+            "1440, false", // 24시간, 변경 허용
+            "1500, false" // 25시간, 변경 허용
+    })
+    void changeNicknameThrowsExceptionWhenChangedWithin24Hours(long minutesAgo, boolean shouldThrowException) {
+        // given
+        LocalDateTime fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(fixedNow);
+        
+        String oldNickname = "이전 닉네임";
+        String newNickname = "새 닉네임";
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        member.changeNickname(oldNickname, fixedNow.minusMinutes(minutesAgo));
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        if (shouldThrowException) {
+            assertThatThrownBy(() -> memberService.changeNickname(newNickname, authentication))
+                    .isInstanceOf(NicknameException.class)
+                    .hasMessageContaining(NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
+        } else {
+            assertThatCode(() -> memberService.changeNickname(newNickname, authentication))
+                    .doesNotThrowAnyException();
+            assertThat(member.getNickname().getNickname()).isEqualTo(newNickname);
+        }
+    }
+
+    @DisplayName("회원의 닉네임 변경 가능 여부를 반환한다.")
+    @ParameterizedTest
+    @CsvSource({
+            "0, false",
+            "60, false", // 1시간
+            "1439, false", // 23.9시간
+            "1440, true", // 24시간
+            "1500, true" // 25시간
+    })
+    void canChangeNickname(long minutesAgo, boolean expected) {
+        // given
+        LocalDateTime fixedNow = LocalDateTime.of(2024, 1, 1, 12, 0, 0);
+        when(timeProvider.getLocalDateTimeNow()).thenReturn(fixedNow);
+        
+        String oldNickname = "이전 닉네임";
+        String newNickname = "새 닉네임";
+
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, oldNickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+
+        member.changeNickname(newNickname, fixedNow.minusMinutes(minutesAgo));
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        boolean result = memberService.canChangeNickname(authentication);
+
+        // then
+        assertThat(result).isEqualTo(expected);
     }
 
     private static Company createCompany(String companyName, String officialUrl, String careerUrl,

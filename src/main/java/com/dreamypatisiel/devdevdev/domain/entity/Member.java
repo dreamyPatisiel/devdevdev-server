@@ -20,6 +20,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -96,6 +97,8 @@ public class Member extends BasicTime {
 
     private LocalDateTime deletedAt;
 
+    private LocalDateTime nicknameUpdatedAt;
+
     @OneToMany(mappedBy = "member")
     private List<InterestedCompany> interestedCompanies = new ArrayList<>();
 
@@ -110,7 +113,7 @@ public class Member extends BasicTime {
 
     @OneToMany(mappedBy = "member")
     private List<TechArticleRecommend> recommends = new ArrayList<>();
-    
+
     public Member(Long id) {
         this.id = id;
     }
@@ -186,5 +189,15 @@ public class Member extends BasicTime {
     public void deleteMember(LocalDateTime now) {
         this.isDeleted = true;
         this.deletedAt = now;
+    }
+
+    public void changeNickname(String nickname, LocalDateTime now) {
+        this.nickname = new Nickname(nickname);
+        this.nicknameUpdatedAt = now;
+    }
+
+    public boolean canChangeNickname(int restrictionMinutes, LocalDateTime now) {
+        return nicknameUpdatedAt == null
+                || ChronoUnit.MINUTES.between(nicknameUpdatedAt, now) >= restrictionMinutes;
     }
 }

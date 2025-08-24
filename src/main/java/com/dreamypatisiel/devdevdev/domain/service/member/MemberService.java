@@ -11,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
+import com.dreamypatisiel.devdevdev.domain.policy.NicknameChangePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.CommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
@@ -23,6 +24,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
 import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -51,6 +53,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE;
+
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -67,6 +80,7 @@ public class MemberService {
     private final SurveyAnswerJdbcTemplateRepository surveyAnswerJdbcTemplateRepository;
     private final CommentRepository commentRepository;
     private final CompanyRepository companyRepository;
+    private final NicknameChangePolicy nicknameChangePolicy;
 
     /**
      * 회원 탈퇴 회원의 북마크와 회원 정보를 삭제합니다.
@@ -294,5 +308,32 @@ public class MemberService {
                 }).collect(Collectors.toList());
 
         return new SliceCustom<>(subscribedCompanyResponses, pageable, subscribedCompanies.getTotalElements());
+    }
+
+    /**
+     * @Note: 유저의 닉네임을 변경합니다. 설정된 제한 시간 이내에 변경한 이력이 있다면 닉네임 변경이 불가능합니다.
+     * @Author: 유소영
+     * @Since: 2025.07.03
+     */
+    @Transactional
+    public String changeNickname(String nickname, Authentication authentication) {
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+
+        if (!member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow())) {
+            throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
+        }
+
+        member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
+        return member.getNicknameAsString();
+    }
+
+    /**
+     * @Note: 유저가 닉네임을 변경할 수 있는지 여부를 반환합니다.
+     * @Author: 유소영
+     * @Since: 2025.07.06
+     */
+    public boolean canChangeNickname(Authentication authentication) {
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+        return member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow());
     }
 }

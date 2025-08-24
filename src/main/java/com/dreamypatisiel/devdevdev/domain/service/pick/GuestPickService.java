@@ -55,9 +55,7 @@ public class GuestPickService extends PickCommonService implements PickService {
 
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
 
-    private final PickPopularScorePolicy pickPopularScorePolicy;
     private final PickVoteRepository pickVoteRepository;
-    private final TimeProvider timeProvider;
     private final AnonymousMemberService anonymousMemberService;
 
     public GuestPickService(PickRepository pickRepository, EmbeddingsService embeddingsService,
@@ -67,12 +65,10 @@ public class GuestPickService extends PickCommonService implements PickService {
                             PickPopularScorePolicy pickPopularScorePolicy,
                             PickVoteRepository pickVoteRepository,
                             TimeProvider timeProvider, AnonymousMemberService anonymousMemberService) {
-        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
-                pickCommentRecommendRepository);
-        this.pickPopularScorePolicy = pickPopularScorePolicy;
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, timeProvider, pickRepository,
+                pickCommentRepository, pickCommentRecommendRepository);
         this.pickVoteRepository = pickVoteRepository;
         this.anonymousMemberService = anonymousMemberService;
-        this.timeProvider = timeProvider;
     }
 
     @Transactional

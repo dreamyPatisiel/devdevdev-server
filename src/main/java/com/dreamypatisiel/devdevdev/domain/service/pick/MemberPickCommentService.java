@@ -1,9 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_ACTION_DELETED_PICK_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_COMMENT_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_VOTE_MESSAGE;
@@ -22,20 +20,19 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentSort;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.domain.service.pick.dto.PickCommentDto;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickCommentRequest;
-import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRepliedCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentRecommendResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickCommentsResponse;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -45,14 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class MemberPickCommentService extends PickCommonService implements PickCommentService {
 
-    public static final String MODIFY = "수정";
-    public static final String REGISTER = "작성";
-    public static final String DELETE = "삭제";
-    public static final String RECOMMEND = "추천";
-
-    private final TimeProvider timeProvider;
     private final MemberProvider memberProvider;
-    private final PickPopularScorePolicy pickPopularScorePolicy;
 
     private final PickRepository pickRepository;
     private final PickVoteRepository pickVoteRepository;
@@ -64,11 +54,9 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                                     PickRepository pickRepository, PickVoteRepository pickVoteRepository,
                                     PickCommentRepository pickCommentRepository,
                                     PickCommentRecommendRepository pickCommentRecommendRepository) {
-        super(embeddingsService, pickBestCommentsPolicy, pickRepository, pickCommentRepository,
-                pickCommentRecommendRepository);
-        this.timeProvider = timeProvider;
+        super(embeddingsService, pickBestCommentsPolicy, pickPopularScorePolicy, timeProvider, pickRepository,
+                pickCommentRepository, pickCommentRecommendRepository);
         this.memberProvider = memberProvider;
-        this.pickPopularScorePolicy = pickPopularScorePolicy;
         this.pickRepository = pickRepository;
         this.pickVoteRepository = pickVoteRepository;
         this.pickCommentRepository = pickCommentRepository;
@@ -79,13 +67,12 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.23
      */
+    @Override
     @Transactional
-    public PickCommentResponse registerPickComment(Long pickId,
-                                                   RegisterPickCommentRequest pickMainCommentRequest,
-                                                   Authentication authentication) {
+    public PickCommentResponse registerPickComment(Long pickId, PickCommentDto pickCommentDto, Authentication authentication) {
 
-        String contents = pickMainCommentRequest.getContents();
-        Boolean isPickVotePublic = pickMainCommentRequest.getIsPickVotePublic();
+        String contents = pickCommentDto.getContents();
+        Boolean isPickVotePublic = pickCommentDto.getIsPickVotePublic();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -93,6 +80,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         // 픽픽픽 조회
         Pick findPick = pickRepository.findById(pickId)
                 .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
         // 댓글 갯수 증가 및 인기점수 반영
         findPick.incrementCommentTotalCount();
         findPick.changePopularScore(pickPopularScorePolicy);
@@ -108,7 +96,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_VOTE_MESSAGE));
 
             // 픽픽픽 투표한 픽 옵션의 댓글 작성
-            PickComment pickComment = PickComment.createPublicVoteComment(new CommentContents(contents),
+            PickComment pickComment = PickComment.createPublicVoteCommentByMember(new CommentContents(contents),
                     findMember, findPick, findPickVote);
             pickCommentRepository.save(pickComment);
 
@@ -116,7 +104,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
         }
 
         // 픽픽픽 선택지 투표 비공개인 경우
-        PickComment pickComment = PickComment.createPrivateVoteComment(new CommentContents(contents), findMember,
+        PickComment pickComment = PickComment.createPrivateVoteCommentByMember(new CommentContents(contents), findMember,
                 findPick);
         pickCommentRepository.save(pickComment);
 
@@ -128,64 +116,32 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.24
      */
+    @Override
     @Transactional
     public PickCommentResponse registerPickRepliedComment(Long pickParentCommentId,
                                                           Long pickCommentOriginParentId,
                                                           Long pickId,
-                                                          RegisterPickRepliedCommentRequest pickSubCommentRequest,
+                                                          PickCommentDto pickCommentDto,
                                                           Authentication authentication) {
 
-        String contents = pickSubCommentRequest.getContents();
+        String contents = pickCommentDto.getContents();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 답글 대상의 픽픽픽 댓글 조회
-        PickComment findParentPickComment = pickCommentRepository.findWithPickByIdAndPickId(pickParentCommentId, pickId)
-                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
+        // 픽픽픽 댓글 로직 수행
+        PickReplyContext pickReplyContext = prepareForReplyRegistration(pickParentCommentId, pickCommentOriginParentId, pickId);
 
-        // 픽픽픽 게시글의 승인 상태 검증
-        Pick findPick = findParentPickComment.getPick();
-        validateIsApprovalPickContentStatus(findPick, INVALID_NOT_APPROVAL_STATUS_PICK_REPLY_MESSAGE,
-                REGISTER);
-        // 댓글 총 갯수 증가 및 인기점수 반영
-        findPick.incrementCommentTotalCount();
-        findPick.changePopularScore(pickPopularScorePolicy);
-
-        // 픽픽픽 최초 댓글 검증 및 반환
-        PickComment findOriginParentPickComment = getAndValidateOriginParentPickComment(
-                pickCommentOriginParentId, findParentPickComment);
-        // 픽픽픽 최초 댓글의 답글 갯수 증가
-        findOriginParentPickComment.incrementReplyTotalCount();
+        PickComment findParentPickComment = pickReplyContext.parentPickComment();
+        PickComment findOriginParentPickComment = pickReplyContext.originParentPickComment();
+        Pick findPick = pickReplyContext.pick();
 
         // 픽픽픽 서브 댓글(답글) 생성
-        PickComment pickRepliedComment = PickComment.createRepliedComment(new CommentContents(contents),
+        PickComment pickRepliedComment = PickComment.createRepliedCommentByMember(new CommentContents(contents),
                 findParentPickComment, findOriginParentPickComment, findMember, findPick);
         pickCommentRepository.save(pickRepliedComment);
 
         return new PickCommentResponse(pickRepliedComment.getId());
-    }
-
-    private PickComment getAndValidateOriginParentPickComment(Long pickCommentOriginParentId,
-                                                              PickComment parentPickComment) {
-
-        // 픽픽픽 답글 대상의 댓글이 삭제 상태이면
-        validateIsDeletedPickComment(parentPickComment, INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE, REGISTER);
-
-        // 픽픽픽 답글 대상의 댓글이 최초 댓글이면
-        if (parentPickComment.isEqualsId(pickCommentOriginParentId)) {
-            return parentPickComment;
-        }
-
-        // 픽픽픽 답글 대상의 댓글의 메인 댓글 조회
-        PickComment findOriginParentPickComment = pickCommentRepository.findById(pickCommentOriginParentId)
-                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
-
-        // 픽픽픽 최초 댓글이 삭제 상태이면
-        validateIsDeletedPickComment(findOriginParentPickComment, INVALID_CAN_NOT_REPLY_DELETED_PICK_COMMENT_MESSAGE,
-                REGISTER);
-
-        return findOriginParentPickComment;
     }
 
     /**
@@ -193,12 +149,13 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.10
      */
+    @Override
     @Transactional
     public PickCommentResponse modifyPickComment(Long pickCommentId, Long pickId,
-                                                 ModifyPickCommentRequest modifyPickCommentRequest,
+                                                 PickCommentDto pickModifyCommentDto,
                                                  Authentication authentication) {
 
-        String contents = modifyPickCommentRequest.getContents();
+        String contents = pickModifyCommentDto.getContents();
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -223,8 +180,10 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.11
      */
+    @Override
     @Transactional
-    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, Authentication authentication) {
+    public PickCommentResponse deletePickComment(Long pickCommentId, Long pickId, @Nullable String anonymousMemberId,
+                                                 Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
@@ -237,7 +196,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                     .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_COMMENT_MESSAGE));
 
             // 소프트 삭제
-            findPickComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
+            findPickComment.changeDeletedAtByMember(timeProvider.getLocalDateTimeNow(), findMember);
 
             return new PickCommentResponse(findPickComment.getId());
         }
@@ -252,7 +211,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
                 DELETE);
 
         // 소프트 삭제
-        findPickComment.changeDeletedAt(timeProvider.getLocalDateTimeNow(), findMember);
+        findPickComment.changeDeletedAtByMember(timeProvider.getLocalDateTimeNow(), findMember);
 
         return new PickCommentResponse(findPickComment.getId());
     }
@@ -263,17 +222,19 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.08.25
      */
+    @Override
     public SliceCommentCustom<PickCommentsResponse> findPickComments(Pageable pageable, Long pickId,
                                                                      Long pickCommentId,
                                                                      PickCommentSort pickCommentSort,
                                                                      EnumSet<PickOptionType> pickOptionTypes,
+                                                                     String anonymousMemberId,
                                                                      Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 댓글/답글 조회
-        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, findMember);
+        return super.findPickComments(pageable, pickId, pickCommentId, pickCommentSort, pickOptionTypes, findMember, null);
     }
 
     /**
@@ -281,6 +242,7 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Author: 장세웅
      * @Since: 2024.09.07
      */
+    @Override
     @Transactional
     public PickCommentRecommendResponse recommendPickComment(Long pickId, Long pickCommendId,
                                                              Authentication authentication) {
@@ -307,12 +269,13 @@ public class MemberPickCommentService extends PickCommonService implements PickC
      * @Since: 2024.10.09
      */
     @Override
-    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, Authentication authentication) {
+    public List<PickCommentsResponse> findPickBestComments(int size, Long pickId, String anonymousMemberId,
+                                                           Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        return super.findPickBestComments(size, pickId, findMember);
+        return super.findPickBestComments(size, pickId, findMember, null);
     }
 
     private PickCommentRecommendResponse toggleOrCreatePickCommentRecommend(PickComment pickComment, Member member) {

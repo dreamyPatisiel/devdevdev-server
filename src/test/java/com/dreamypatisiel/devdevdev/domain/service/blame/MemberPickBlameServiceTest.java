@@ -390,7 +390,7 @@ class MemberPickBlameServiceTest {
 
         // 삭제 상태의 픽픽픽 댓글 생성
         PickComment pickComment = createPickComment(pick, member, "픽픽픽 댓글");
-        pickComment.changeDeletedAt(LocalDateTime.now(), member);
+        pickComment.changeDeletedAtByMember(LocalDateTime.now(), member);
         pickCommentRepository.save(pickComment);
 
         BlamePickDto blamePickDto = new BlamePickDto(pick.getId(), pickComment.getId(), 0L, null);

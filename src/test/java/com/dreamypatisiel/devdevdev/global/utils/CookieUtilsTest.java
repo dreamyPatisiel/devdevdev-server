@@ -183,6 +183,7 @@ class CookieUtilsTest {
         int maxAge = 100;
         boolean isHttpOnly = true;
         boolean isSecure = false;
+        String sameSite = "None";
 
         // when
         CookieUtils.addCookieToResponse(response, name, value, maxAge, isHttpOnly, isSecure);
@@ -195,7 +196,8 @@ class CookieUtilsTest {
                 () -> assertThat(cookie.getValue()).isEqualTo(value),
                 () -> assertThat(cookie.getMaxAge()).isEqualTo(maxAge),
                 () -> assertThat(cookie.isHttpOnly()).isEqualTo(isHttpOnly),
-                () -> assertThat(cookie.getSecure()).isEqualTo(isSecure)
+                () -> assertThat(cookie.getSecure()).isEqualTo(isSecure),
+                () -> assertThat(cookie.getAttribute("SameSite")).isEqualTo(sameSite)
         );
     }
 
@@ -265,19 +267,22 @@ class CookieUtilsTest {
         Member member = Member.createMemberBy(socialMemberDto);
         String encodedNickname = URLEncoder.encode(member.getNicknameAsString(), StandardCharsets.UTF_8);
         String email = member.getEmailAsString();
+        boolean isNewMember = true;
 
         // when
-        CookieUtils.configMemberCookie(response, member);
+        CookieUtils.configMemberCookie(response, member, isNewMember);
 
         // then
         Cookie nicknameCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME);
         Cookie emailCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL);
         Cookie isAdmin = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN);
+        Cookie isNewMemberCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_NEW);
 
         assertAll(
                 () -> assertThat(nicknameCookie).isNotNull(),
                 () -> assertThat(emailCookie).isNotNull(),
-                () -> assertThat(isAdmin).isNotNull()
+                () -> assertThat(isAdmin).isNotNull(),
+                () -> assertThat(isNewMemberCookie).isNotNull()
         );
 
         assertAll(
@@ -302,6 +307,14 @@ class CookieUtilsTest {
                 () -> assertThat(isAdmin.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
                 () -> assertThat(isAdmin.getSecure()).isTrue(),
                 () -> assertThat(isAdmin.isHttpOnly()).isFalse()
+        );
+
+        assertAll(
+                () -> assertThat(isNewMemberCookie.getName()).isEqualTo(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_NEW),
+                () -> assertThat(isNewMemberCookie.getValue()).isEqualTo(String.valueOf(isNewMember)),
+                () -> assertThat(isNewMemberCookie.getMaxAge()).isEqualTo(CookieUtils.DEFAULT_MAX_AGE),
+                () -> assertThat(isNewMemberCookie.getSecure()).isTrue(),
+                () -> assertThat(isNewMemberCookie.isHttpOnly()).isFalse()
         );
     }
 

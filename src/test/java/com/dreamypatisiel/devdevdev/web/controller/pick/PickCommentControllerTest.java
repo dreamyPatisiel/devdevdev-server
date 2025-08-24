@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
 import static com.dreamypatisiel.devdevdev.web.dto.response.ResultType.SUCCESS;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -535,7 +536,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 new Count(0), member5, pick, null);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
-        originParentPickComment6.changeDeletedAt(LocalDateTime.now(), member6);
+        originParentPickComment6.changeDeletedAtByMember(LocalDateTime.now(), member6);
 
         pickCommentRepository.saveAll(
                 List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
@@ -684,7 +685,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 new Count(0), member5, pick, null);
         PickComment originParentPickComment6 = createPickComment(new CommentContents("댓글6"), false, new Count(0),
                 new Count(0), member6, pick, null);
-        originParentPickComment6.changeDeletedAt(LocalDateTime.now(), member6);
+        originParentPickComment6.changeDeletedAtByMember(LocalDateTime.now(), member6);
         pickCommentRepository.saveAll(
                 List.of(originParentPickComment6, originParentPickComment5, originParentPickComment4,
                         originParentPickComment3, originParentPickComment2, originParentPickComment1));
@@ -912,7 +913,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 originParentPickComment1, originParentPickComment1);
         PickComment pickReply2 = createReplidPickComment(new CommentContents("너무 행복하다"), member6, pick,
                 originParentPickComment1, pickReply1);
-        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("사랑해요~"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
@@ -939,6 +940,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].pickCommentId").isNumber())
                 .andExpect(jsonPath("$.datas.[0].createdAt").isString())
                 .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].anonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].author").isString())
                 .andExpect(jsonPath("$.datas.[0].isCommentOfPickAuthor").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
@@ -966,6 +968,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAnonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAuthor").isString());
     }
 
@@ -1038,7 +1041,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 originParentPickComment1, originParentPickComment1);
         PickComment pickReply2 = createReplidPickComment(new CommentContents("너무 행복하다"), member6, pick,
                 originParentPickComment1, pickReply1);
-        pickReply2.changeDeletedAt(LocalDateTime.now(), member1);
+        pickReply2.changeDeletedAtByMember(LocalDateTime.now(), member1);
         PickComment pickReply3 = createReplidPickComment(new CommentContents("사랑해요~"), member6, pick,
                 originParentPickComment2, originParentPickComment2);
         pickCommentRepository.saveAll(List.of(pickReply1, pickReply2, pickReply3));
@@ -1055,6 +1058,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                         pick.getId())
                         .queryParam("size", "3")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header(HEADER_ANONYMOUS_MEMBER_ID, "anonymousMemberId")
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -1064,6 +1068,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].pickCommentId").isNumber())
                 .andExpect(jsonPath("$.datas.[0].createdAt").isString())
                 .andExpect(jsonPath("$.datas.[0].memberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].anonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].author").isString())
                 .andExpect(jsonPath("$.datas.[0].isCommentOfPickAuthor").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].isCommentAuthor").isBoolean())
@@ -1091,6 +1096,7 @@ class PickCommentControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isModified").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].isDeleted").isBoolean())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentMemberId").isNumber())
+                .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAnonymousMemberId").isEmpty())
                 .andExpect(jsonPath("$.datas.[0].replies.[0].pickParentCommentAuthor").isString());
     }
 
