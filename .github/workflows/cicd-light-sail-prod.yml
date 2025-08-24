@@ -20,7 +20,7 @@ env:
   # --- 헬스체크 ---
   HEALTHCHECK_PATH: "/actuator/health"              # Actuator 미사용이면 "/" 로 변경하세요
   HEALTHCHECK_TIMEOUT: "3"                          # curl 타임아웃(초)
-  HEALTHCHECK_RETRY: "40"                           # 재시도 횟수 (5초 * 40 = 최대 200초)
+  HEALTHCHECK_RETRY: "20"                           # 재시도 횟수 (5초 * 20 = 최대 100초)
 
   # --- SSH/Lightsail ---
   SSH_USER: "ec2-user"                             # SSH 접속 사용자
