@@ -1,15 +1,16 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.techArticle;
 
-import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.isBookmarkedByMember;
-
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import java.time.LocalDate;
-import java.util.Objects;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.util.ObjectUtils;
+
+import java.time.LocalDate;
+import java.util.Objects;
+
+import static com.dreamypatisiel.devdevdev.web.dto.util.TechArticleResponseUtils.isBookmarkedByMember;
 
 @Data
 public class TechArticleMainResponse {
@@ -17,158 +18,142 @@ public class TechArticleMainResponse {
     public static final int CONTENTS_MAX_LENGTH = 1000;
 
     public final Long id;
-    public final String elasticId;
-    public final String thumbnailUrl;
-    public final Boolean isLogoImage;
-    public final String techArticleUrl;
     public final String title;
     public final String contents;
+    public final String author;
     public final CompanyResponse company;
     public final LocalDate regDate;
-    public final String author;
+    public final String techArticleUrl;
+    public final String thumbnailUrl;
     public final Long viewTotalCount;
     public final Long recommendTotalCount;
     public final Long commentTotalCount;
     public final Long popularScore;
+    public final Boolean isLogoImage;
     public final Boolean isBookmarked;
     public final Float score;
 
     @Builder
-    private TechArticleMainResponse(Long id, String elasticId, String thumbnailUrl, Boolean isLogoImage, String techArticleUrl, String title,
-                                    String contents,
-                                    CompanyResponse company, LocalDate regDate, String author, Long viewTotalCount,
-                                    Long recommendTotalCount, Long commentTotalCount, Long popularScore,
-                                    Boolean isBookmarked, Float score) {
+    private TechArticleMainResponse(Long id, String title, String contents, String author, CompanyResponse company,
+                                    LocalDate regDate, String thumbnailUrl, String techArticleUrl,
+                                    Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore,
+                                    Boolean isLogoImage, Boolean isBookmarked, Float score) {
         this.id = id;
-        this.elasticId = elasticId;
-        this.thumbnailUrl = thumbnailUrl;
-        this.isLogoImage = isLogoImage;
-        this.techArticleUrl = techArticleUrl;
         this.title = title;
         this.contents = contents;
+        this.author = author;
         this.company = company;
         this.regDate = regDate;
-        this.author = author;
-        this.isBookmarked = isBookmarked;
+        this.techArticleUrl = techArticleUrl;
+        this.thumbnailUrl = thumbnailUrl;
         this.viewTotalCount = viewTotalCount;
         this.recommendTotalCount = recommendTotalCount;
         this.commentTotalCount = commentTotalCount;
         this.popularScore = popularScore;
+        this.isLogoImage = isLogoImage;
+        this.isBookmarked = isBookmarked;
         this.score = score;
     }
 
-    public static TechArticleMainResponse of(TechArticle techArticle,
-                                             ElasticTechArticle elasticTechArticle,
-                                             CompanyResponse companyResponse) {
-        return TechArticleMainResponse.builder()
-                .id(techArticle.getId())
-                .viewTotalCount(techArticle.getViewTotalCount().getCount())
-                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
-                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
-                .popularScore(techArticle.getPopularScore().getCount())
-                .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
-                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
-                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
-                .title(elasticTechArticle.getTitle())
-                .company(companyResponse)
-                .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getAuthor())
-                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
-                .isBookmarked(false)
-                .build();
-    }
 
-    public static TechArticleMainResponse of(TechArticle techArticle,
-                                             ElasticTechArticle elasticTechArticle,
-                                             CompanyResponse companyResponse,
-                                             Member member) {
+    public static TechArticleMainResponse of(TechArticle techArticle, Member member) {
+        CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
         return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
+                .title(techArticle.getTitle().getTitle())
+                .contents(truncateString(techArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .author(techArticle.getAuthor())
+                .company(companyResponse)
+                .regDate(techArticle.getRegDate())
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
+                .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
-                .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
-                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
-                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
-                .title(elasticTechArticle.getTitle())
-                .company(companyResponse)
-                .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getAuthor())
-                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
                 .isBookmarked(isBookmarkedByMember(techArticle, member))
                 .build();
     }
 
-    public static TechArticleMainResponse of(TechArticle techArticle,
-                                             ElasticTechArticle elasticTechArticle,
-                                             CompanyResponse companyResponse,
-                                             Float score) {
+    public static TechArticleMainResponse of(TechArticle techArticle) {
+        CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
         return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
+                .title(techArticle.getTitle().getTitle())
+                .contents(truncateString(techArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .author(techArticle.getAuthor())
+                .company(companyResponse)
+                .regDate(techArticle.getRegDate())
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
+                .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
                 .viewTotalCount(techArticle.getViewTotalCount().getCount())
                 .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
                 .commentTotalCount(techArticle.getCommentTotalCount().getCount())
                 .popularScore(techArticle.getPopularScore().getCount())
-                .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
-                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
-                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
-                .title(elasticTechArticle.getTitle())
-                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
+                .isBookmarked(false)
+                .build();
+    }
+
+    public static TechArticleMainResponse of(TechArticle techArticle, Member member, Float score) {
+        CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
+        return TechArticleMainResponse.builder()
+                .id(techArticle.getId())
+                .title(techArticle.getTitle().getTitle())
+                .contents(truncateString(techArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .author(techArticle.getAuthor())
                 .company(companyResponse)
-                .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getAuthor())
+                .regDate(techArticle.getRegDate())
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
+                .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
+                .viewTotalCount(techArticle.getViewTotalCount().getCount())
+                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
+                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
+                .popularScore(techArticle.getPopularScore().getCount())
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
+                .isBookmarked(isBookmarkedByMember(techArticle, member))
+                .score(getValidScore(score))
+                .build();
+    }
+
+    public static TechArticleMainResponse of(TechArticle techArticle, Float score) {
+        CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
+        return TechArticleMainResponse.builder()
+                .id(techArticle.getId())
+                .title(techArticle.getTitle().getTitle())
+                .contents(truncateString(techArticle.getContents(), CONTENTS_MAX_LENGTH))
+                .author(techArticle.getAuthor())
+                .company(companyResponse)
+                .regDate(techArticle.getRegDate())
+                .thumbnailUrl(getThumbnailUrl(techArticle.getThumbnailUrl(), companyResponse))
+                .techArticleUrl(techArticle.getTechArticleUrl().getUrl())
+                .viewTotalCount(techArticle.getViewTotalCount().getCount())
+                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
+                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
+                .popularScore(techArticle.getPopularScore().getCount())
+                .isLogoImage(ObjectUtils.isEmpty(techArticle.getThumbnailUrl()))
                 .isBookmarked(false)
                 .score(getValidScore(score))
                 .build();
     }
 
-    public static TechArticleMainResponse of(TechArticle techArticle,
-                                             ElasticTechArticle elasticTechArticle,
-                                             CompanyResponse companyResponse,
-                                             Float score,
-                                             Member member) {
-        return TechArticleMainResponse.builder()
-                .id(techArticle.getId())
-                .viewTotalCount(techArticle.getViewTotalCount().getCount())
-                .recommendTotalCount(techArticle.getRecommendTotalCount().getCount())
-                .commentTotalCount(techArticle.getCommentTotalCount().getCount())
-                .popularScore(techArticle.getPopularScore().getCount())
-                .elasticId(elasticTechArticle.getId())
-                .thumbnailUrl(getThumbnailUrl(elasticTechArticle, companyResponse))
-                .isLogoImage(ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl()))
-                .techArticleUrl(elasticTechArticle.getTechArticleUrl())
-                .title(elasticTechArticle.getTitle())
-                .contents(truncateString(elasticTechArticle.getContents(), CONTENTS_MAX_LENGTH))
-                .company(companyResponse)
-                .regDate(elasticTechArticle.getRegDate())
-                .author(elasticTechArticle.getAuthor())
-                .score(getValidScore(score))
-                .isBookmarked(isBookmarkedByMember(techArticle, member))
-                .build();
-    }
-
-    private static String getThumbnailUrl(ElasticTechArticle elasticTechArticle, CompanyResponse companyResponse) {
+    private static String getThumbnailUrl(Url thumbnailUrl, CompanyResponse companyResponse) {
         // 썸네일 이미지가 없다면 회사 로고로 내려준다.
-        if (ObjectUtils.isEmpty(elasticTechArticle.getThumbnailUrl())) {
+        if (ObjectUtils.isEmpty(thumbnailUrl) || thumbnailUrl.getUrl() == null) {
             return companyResponse.getOfficialImageUrl();
         }
-
-        return elasticTechArticle.getThumbnailUrl();
+        return thumbnailUrl.getUrl();
     }
 
     private static Float getValidScore(Float score) {
         return Objects.isNull(score) || Float.isNaN(score) ? null : score;
     }
 
-    private static String truncateString(String elasticTechArticleContents, int maxLength) {
-        if (elasticTechArticleContents.length() <= maxLength) {
-            return elasticTechArticleContents;
+    private static String truncateString(String contents, int maxLength) {
+        if (ObjectUtils.isEmpty(contents) || contents.length() <= maxLength) {
+            return contents;
         }
-
-        return elasticTechArticleContents.substring(0, maxLength);
+        return contents.substring(0, maxLength);
     }
 }
