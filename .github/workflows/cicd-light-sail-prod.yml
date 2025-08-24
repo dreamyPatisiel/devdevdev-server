@@ -209,7 +209,7 @@ jobs:
           fi
 
           echo "[8/9] Cleanup old archives (keep last 3)"
-          cd "/home/${SSH_USER}" && ls -t image*.tar.gz | tail -n +4 | xargs -r rm -f
+          cd "$HOME" && ls -t image*.tar.gz | tail -n +4 | xargs -r rm -f
 
           echo "[9/9] Done."
           EOS
