@@ -20,7 +20,7 @@ env:
   # --- 헬스체크 ---
   HEALTHCHECK_PATH: "/actuator/health"              # Actuator 미사용이면 "/" 로 변경하세요
   HEALTHCHECK_TIMEOUT: "3"                          # curl 타임아웃(초)
-  HEALTHCHECK_RETRY: "20"                           # 재시도 횟수 (약 60초)
+  HEALTHCHECK_RETRY: "40"                           # 재시도 횟수 (5초 * 40 = 최대 200초)
 
   # --- SSH/Lightsail ---
   SSH_USER: "ec2-user"                             # SSH 접속 사용자
@@ -187,7 +187,7 @@ jobs:
               ok=1; break
             fi
             echo "  retry $i/${HEALTHCHECK_RETRY}..."
-            sleep 3
+            sleep 5
           done
           if [ "$ok" -ne 1 ]; then
             echo "[!] Health check failed. Rollback."
@@ -220,7 +220,17 @@ jobs:
       - name: Remote Blue/Green deploy
         run: |
           ssh -i key.pem -o StrictHostKeyChecking=yes ${SSH_USER}@${LIGHTSAIL_HOST} \
-            "bash /home/${SSH_USER}/deploy_blue_green.sh"
+            "env IMAGE_NAME='${IMAGE_NAME}' \
+                 CONTAINER_BASE='${CONTAINER_BASE}' \
+                 BLUE_SUFFIX='${BLUE_SUFFIX}' \
+                 GREEN_SUFFIX='${GREEN_SUFFIX}' \
+                 BLUE_PORT='${BLUE_PORT}' \
+                 GREEN_PORT='${GREEN_PORT}' \
+                 APP_PORT='${APP_PORT}' \
+                 HEALTHCHECK_PATH='${HEALTHCHECK_PATH}' \
+                 HEALTHCHECK_TIMEOUT='${HEALTHCHECK_TIMEOUT}' \
+                 HEALTHCHECK_RETRY='${HEALTHCHECK_RETRY}' \
+               bash /home/${SSH_USER}/deploy_blue_green.sh"
 
       # ====== Slack 알림 ======
       - name: action-slack
