@@ -2,7 +2,7 @@ name: Build and Deploy to PROD (Lightsail Blue/Green via SSH + Docker)
 
 on:
   push:
-    branches: [ "main-test" ]
+    branches: [ "main" ]
 
 env:
   # --- 애플리케이션/컨테이너 공통 ---

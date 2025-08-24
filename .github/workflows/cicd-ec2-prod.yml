@@ -3,7 +3,7 @@ name: Build and Deploy to PROD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main-ec2" ]
 
 # 환경 변수 $변수명으로 사용
 env:
