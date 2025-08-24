@@ -1,6 +1,15 @@
 package com.dreamypatisiel.devdevdev.domain.service.member;
 
-import com.dreamypatisiel.devdevdev.domain.entity.*;
+import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
+
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
+import com.dreamypatisiel.devdevdev.domain.entity.Member;
+import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyAnswer;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestion;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
+import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
+import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.CommentRepository;
@@ -29,6 +38,11 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -36,14 +50,6 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.MEMBER_INCOMPLETE_SURVEY_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -101,12 +107,15 @@ public class MemberService {
         // 회원이 작성한 픽픽픽 조회
         Slice<Pick> findPicks = pickRepository.findPicksByMemberAndCursor(pageable, findMember, pickId);
 
+        // 전체 갯수
+        Long totalElements = pickRepository.countByMember(findMember);
+
         // 데이터 가공
         List<MyPickMainResponse> myPickMainsResponse = findPicks.stream()
                 .map(MyPickMainResponse::from)
                 .toList();
 
-        return new SliceImpl<>(myPickMainsResponse, pageable, findPicks.hasNext());
+        return new SliceCustom<>(myPickMainsResponse, pageable, totalElements);
     }
 
     /**
