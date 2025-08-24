@@ -178,14 +178,15 @@ jobs:
             ${IMAGE_NAME}:latest
 
           echo "[5/9] Health check http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}"
+          code=$(curl -sS -o /dev/null -w "%{http_code}" \
+          --max-time ${HEALTHCHECK_TIMEOUT} --noproxy '*' \
+          "http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}" || echo "000")
           ok=0
           for i in $(seq 1 ${HEALTHCHECK_RETRY}); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time ${HEALTHCHECK_TIMEOUT} \
-            "http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}")
-          if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
-            ok=1; break
-          fi
-            echo "  retry $i/${HEALTHCHECK_RETRY} (code=$code)"
+            if curl -fsS --max-time ${HEALTHCHECK_TIMEOUT} "http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}" >/dev/null 2>&1; then
+              ok=1; break
+            fi
+            echo "  retry $i/${HEALTHCHECK_RETRY}..."
             sleep 3
           done
           if [ "$ok" -ne 1 ]; then
@@ -193,7 +194,7 @@ jobs:
             sudo docker logs --tail 200 "${TARGET_NAME}" || true
             sudo docker stop "${TARGET_NAME}" || true
             sudo docker rm "${TARGET_NAME}" || true
-          exit 1
+            exit 1
           fi
 
           echo "[6/9] Switch upstream to ${TARGET_PORT}"
