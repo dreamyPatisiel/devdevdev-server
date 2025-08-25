@@ -15,8 +15,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
@@ -72,8 +70,6 @@ class NotificationServiceTest {
     @Autowired
     TechArticleRepository techArticleRepository;
     @Autowired
-    ElasticTechArticleRepository elasticTechArticleRepository;
-    @Autowired
     SubscriptionRepository subscriptionRepository;
 
     String userId = "dreamy5patisiel";
@@ -85,9 +81,7 @@ class NotificationServiceTest {
     String role = Role.ROLE_USER.name();
 
     @AfterAll
-    static void tearDown(@Autowired ElasticTechArticleRepository elasticTechArticleRepository,
-                         @Autowired TechArticleRepository techArticleRepository) {
-        elasticTechArticleRepository.deleteAll();
+    static void tearDown(@Autowired TechArticleRepository techArticleRepository) {
         techArticleRepository.deleteAllInBatch();
     }
 
@@ -253,9 +247,7 @@ class NotificationServiceTest {
         List<Notification> notifications = new ArrayList<>();
 
         for (int i = 0; i < 6; i++) {
-            TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목 "+i), new Url("https://example.com"),
-                    new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
-
+            TechArticle techArticle = createTechArticle(i, company);
             techArticles.add(techArticle);
             notifications.add(createNotification(member, "알림 메시지 " + i, NotificationType.SUBSCRIPTION, false, techArticle));
         }
@@ -326,24 +318,11 @@ class NotificationServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-
-        List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId" + i, "기술블로그 제목 "+i,
-                    LocalDate.now(), "기술블로그 내용", "https://example.com", "기술블로그 설명",
-                    "https://example.com/thumbnail.png", "작성자", "회사명", company.getId(),
-                    1L, 1L, 1L, 1L);
-            elasticTechArticles.add(elasticTechArticle);
-        }
-        elasticTechArticleRepository.saveAll(elasticTechArticles);
-
         List<TechArticle> techArticles = new ArrayList<>();
         List<Notification> notifications = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목 "+i), new Url("https://example.com"),
-                    new Count(1L), new Count(1L), new Count(1L), new Count(1L), elasticTechArticles.get(i).getId(), company);
-
+            TechArticle techArticle = createTechArticle(i, company);
             techArticles.add(techArticle);
             notifications.add(createNotification(member, "알림 메시지 " + i, NotificationType.SUBSCRIPTION, false, techArticle));
         }
@@ -371,7 +350,6 @@ class NotificationServiceTest {
         assertThat(content).allSatisfy(notificationNewArticleResponse -> {
                     assertThat(notificationNewArticleResponse.getNotificationId()).isInstanceOf(Long.class);
                     assertThat(notificationNewArticleResponse.getTechArticle().getId()).isInstanceOf(Long.class);
-                    assertThat(notificationNewArticleResponse.getTechArticle().getElasticId()).isInstanceOf(String.class);
                     assertThat(notificationNewArticleResponse.getTechArticle().getCompany().getId()).isInstanceOf(Long.class);
         });
 
@@ -583,8 +561,7 @@ class NotificationServiceTest {
         List<Notification> notifications = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목 "+i), new Url("https://example.com"),
-                    new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+            TechArticle techArticle = createTechArticle(company);
 
             techArticles.add(techArticle);
             notifications.add(createNotification(member, "알림 메시지 " + i, NotificationType.SUBSCRIPTION, false, techArticle));
@@ -635,8 +612,7 @@ class NotificationServiceTest {
         List<Notification> notifications = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
-            TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목 "+i), new Url("https://example.com"),
-                    new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+            TechArticle techArticle = createTechArticle(company);
 
             techArticles.add(techArticle);
             notifications.add(createNotification(member, "알림 메시지 " + i, NotificationType.SUBSCRIPTION, false, techArticle));
@@ -666,12 +642,6 @@ class NotificationServiceTest {
     private static Member createMember() {
         return Member.builder()
                 .isDeleted(false)
-                .build();
-    }
-
-    private static TechArticle createTechArticle(Company company) {
-        return TechArticle.builder()
-                .company(company)
                 .build();
     }
 
@@ -734,27 +704,35 @@ class NotificationServiceTest {
                 .build();
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
-                                                               String contents, String techArticleUrl,
-                                                               String description, String thumbnailUrl, String author,
-                                                               String company, Long companyId,
-                                                               Long viewTotalCount, Long recommendTotalCount,
-                                                               Long commentTotalCount, Long popularScore) {
-        return ElasticTechArticle.builder()
-                .id(id)
-                .title(title)
-                .regDate(regDate)
-                .contents(contents)
-                .techArticleUrl(techArticleUrl)
-                .description(description)
-                .thumbnailUrl(thumbnailUrl)
-                .author(author)
+    private static TechArticle createTechArticle(Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 "))
+                .contents("내용 ")
                 .company(company)
-                .companyId(companyId)
-                .viewTotalCount(viewTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .commentTotalCount(commentTotalCount)
-                .popularScore(popularScore)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(1))
+                .recommendTotalCount(new Count(1))
+                .viewTotalCount(new Count(1))
+                .popularScore(new Count(1))
+                .build();
+    }
+
+    private static TechArticle createTechArticle(int i, Company company) {
+        return TechArticle.builder()
+                .title(new Title("기술블로그 제목 " + i))
+                .contents("기술블로그 내용")
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com"))
+                .thumbnailUrl(new Url("https://example.com/thumbnail.png"))
+                .commentTotalCount(new Count(1))
+                .recommendTotalCount(new Count(1))
+                .viewTotalCount(new Count(1))
+                .popularScore(new Count(1))
                 .build();
     }
 }

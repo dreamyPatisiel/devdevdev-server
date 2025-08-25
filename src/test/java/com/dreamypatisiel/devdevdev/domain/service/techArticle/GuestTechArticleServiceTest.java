@@ -1,29 +1,21 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
+import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticleRecommend;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService;
-import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
@@ -34,6 +26,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -42,16 +35,26 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
 
-class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@SpringBootTest
+@Transactional
+class GuestTechArticleServiceTest {
     @Autowired
     GuestTechArticleService guestTechArticleService;
     @Autowired
     TechArticleRepository techArticleRepository;
+    @Autowired
+    CompanyRepository companyRepository;
     @Autowired
     TechArticleRecommendRepository techArticleRecommendRepository;
     @Autowired
@@ -109,14 +112,20 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회한다. 이때 북마크 값은 false 이다.")
     void getTechArticle() {
         // given
-        Long id = firstTechArticle.getId();
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id, null,
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(techArticleId, null,
                 authentication);
 
         // then
@@ -138,10 +147,17 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         String anonymousMemberId = "GA1.1.276672604.1715872960";
-        Long techArticleId = firstTechArticle.getId();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
 
         AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, firstTechArticle);
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, techArticle);
         techArticleRecommendRepository.save(techArticleRecommend);
 
         em.flush();
@@ -164,16 +180,23 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회하면 조회수가 1 증가한다.")
     void getTechArticleIncrementViewCount() {
         // given
-        Long id = firstTechArticle.getId();
-        long prevViewTotalCount = firstTechArticle.getViewTotalCount().getCount();
-        long prevPopularScore = firstTechArticle.getPopularScore().getCount();
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        long prevViewTotalCount = techArticle.getViewTotalCount().getCount();
+        long prevPopularScore = techArticle.getPopularScore().getCount();
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(id, null,
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(techArticleId, null,
                 authentication);
 
         // then
@@ -188,7 +211,13 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 익명 사용자가 아니면 예외가 발생한다.")
     void getTechArticleNotAnonymousUserException() {
         // given
-        Long id = firstTechArticle.getId();
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
 
         UserPrincipal userPrincipal = UserPrincipal.createByEmailAndRoleAndSocialType(email, role, socialType);
         SecurityContext context = SecurityContextHolder.getContext();
@@ -197,7 +226,7 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(techArticleId, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE);
     }
@@ -206,14 +235,14 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(
-                new Title("매일 1,000만 사용자의 데이터를 꿈파는 어떻게 처리할까?"),
-                new Url("https://example.com"), new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId() + 1;
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+        Long id = techArticleId + 1;
 
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -226,52 +255,6 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
     }
 
     @Test
-    @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
-    void getTechArticleNotFoundElasticIdException() {
-        // given
-        TechArticle techArticle = TechArticle.createTechArticle(
-                new Title("매일 1,000만 사용자의 데이터를 꿈파는 어떻게 처리할까?"),
-                new Url("https://example.com"), new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        when(authentication.getPrincipal()).thenReturn("anonymousUser");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
-                .isInstanceOf(TechArticleException.class)
-                .hasMessage(NOT_FOUND_ELASTIC_ID_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("익명 사용자가 기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
-    void getTechArticleNotFoundElasticTechArticleException() {
-        // given
-        TechArticle techArticle = TechArticle.createTechArticle(
-                new Title("매일 1,000만 사용자의 데이터를 꿈파는 어떻게 처리할까?"),
-                new Url("https://example.com"), new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), "elasticId", company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        when(authentication.getPrincipal()).thenReturn("anonymousUser");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        // when // then
-        assertThatThrownBy(() -> guestTechArticleService.getTechArticle(id, null, authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
-    }
-
-    @Test
     @DisplayName("익명 사용자가 기술블로그 북마크를 요청하면 예외가 발생한다.")
     void updateBookmarkAccessDeniedException() {
         // given
@@ -279,10 +262,16 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
 
-        Long id = firstTechArticle.getId();
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
 
         // when // then
-        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(id, authentication))
+        assertThatThrownBy(() -> guestTechArticleService.updateBookmark(techArticleId, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -297,9 +286,17 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         String anonymousMemberId = "GA1.1.276672604.1715872960";
-        Long techArticleId = firstTechArticle.getId();
-        Count popularScore = firstTechArticle.getPopularScore();
-        Count recommendTotalCount = firstTechArticle.getRecommendTotalCount();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        Count popularScore = techArticle.getPopularScore();
+        Count recommendTotalCount = techArticle.getRecommendTotalCount();
 
         // when
         TechArticleRecommendResponse techArticleRecommendResponse = guestTechArticleService.updateRecommend(techArticleId, anonymousMemberId, authentication);
@@ -313,18 +310,18 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
                     assertThat(response.getRecommendTotalCount()).isEqualTo(recommendTotalCount.getCount() + 1);
                 });
 
-        TechArticle techArticle = techArticleRepository.findById(techArticleId).get();
-        assertThat(techArticle)
+        TechArticle findTechArticle = techArticleRepository.findById(techArticleId).get();
+        assertThat(findTechArticle)
                 .satisfies(article -> {
                     assertThat(article.getRecommendTotalCount().getCount()).isEqualTo(recommendTotalCount.getCount() + 1);
                     assertThat(article.getPopularScore().getCount()).isEqualTo(popularScore.getCount() + 4);
                 });
 
         AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        TechArticleRecommend techArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(firstTechArticle, anonymousMember).get();
+        TechArticleRecommend techArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(techArticle, anonymousMember).get();
         assertThat(techArticleRecommend)
                 .satisfies(recommend -> {
-                    assertThat(recommend.getTechArticle().getId()).isEqualTo(firstTechArticle.getId());
+                    assertThat(recommend.getTechArticle().getId()).isEqualTo(techArticle.getId());
                     assertThat(recommend.getAnonymousMember()).isEqualTo(anonymousMember);
                     assertThat(recommend.isRecommended()).isTrue();
                 });
@@ -340,12 +337,20 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
         SecurityContextHolder.setContext(securityContext);
 
         String anonymousMemberId = "GA1.1.276672604.1715872960";
-        Long techArticleId = firstTechArticle.getId();
-        Count popularScore = firstTechArticle.getPopularScore();
-        Count recommendTotalCount = firstTechArticle.getRecommendTotalCount();
+
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
+
+        Count popularScore = techArticle.getPopularScore();
+        Count recommendTotalCount = techArticle.getRecommendTotalCount();
 
         AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, firstTechArticle);
+        TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, techArticle);
         techArticleRecommendRepository.save(techArticleRecommend);
 
         // when
@@ -362,20 +367,46 @@ class GuestTechArticleServiceTest extends ElasticsearchSupportTest {
                     assertThat(response.getStatus()).isFalse();
                 });
 
-        TechArticle techArticle = techArticleRepository.findById(techArticleId).get();
-        assertThat(techArticle)
+        TechArticle findTechArticle = techArticleRepository.findById(techArticleId).get();
+        assertThat(findTechArticle)
                 .satisfies(article -> {
                     assertThat(article.getRecommendTotalCount().getCount()).isEqualTo(recommendTotalCount.getCount() - 1L);
                     assertThat(article.getPopularScore().getCount()).isEqualTo(popularScore.getCount() - 4L);
                 });
 
         AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        TechArticleRecommend findTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(firstTechArticle, findAnonymousMember).get();
+        TechArticleRecommend findTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(techArticle, findAnonymousMember).get();
         assertThat(findTechArticleRecommend)
                 .satisfies(recommend -> {
-                    assertThat(recommend.getTechArticle().getId()).isEqualTo(firstTechArticle.getId());
+                    assertThat(recommend.getTechArticle().getId()).isEqualTo(techArticle.getId());
                     assertThat(recommend.getAnonymousMember()).isEqualTo(findAnonymousMember);
                     assertThat(recommend.isRecommended()).isFalse();
                 });
+    }
+
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
+                                         String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .officialImageUrl(new Url(officialImageUrl))
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
+                .build();
+    }
+
+    private static TechArticle createTechArticle(Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 "))
+                .contents("내용 ")
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(1))
+                .recommendTotalCount(new Count(1))
+                .viewTotalCount(new Count(1))
+                .popularScore(new Count(10))
+                .build();
     }
 }

@@ -1,40 +1,37 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
 import static com.dreamypatisiel.devdevdev.domain.exception.MemberExceptionMessage.INVALID_MEMBER_NOT_FOUND_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_ID_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE;
 import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
+import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.MemberTechArticleService;
-import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.exception.TechArticleException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleRecommendResponse;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -42,13 +39,21 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.transaction.annotation.Transactional;
 
-class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+@SpringBootTest
+@Transactional
+class MemberTechArticleServiceTest {
     @Autowired
     MemberTechArticleService memberTechArticleService;
     @Autowired
     TechArticleRepository techArticleRepository;
+    @Autowired
+    CompanyRepository companyRepository;
     @Autowired
     MemberRepository memberRepository;
     @Autowired
@@ -65,6 +70,26 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     String password = "password";
     String socialType = SocialType.KAKAO.name();
     String role = Role.ROLE_USER.name();
+
+    private static final int TEST_ARTICLES_COUNT = 20;
+    private static Company company;
+    private static TechArticle firstTechArticle;
+    private static List<TechArticle> techArticles;
+
+    @BeforeAll
+    static void setup(@Autowired TechArticleRepository techArticleRepository,
+                      @Autowired CompanyRepository companyRepository) {
+        company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        List<TechArticle> techArticles = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            TechArticle techArticle = createTechArticle(i, company);
+            techArticles.add(techArticle);
+        }
+        techArticleRepository.saveAll(techArticles);
+    }
 
     @Test
     @DisplayName("회원이 커서 방식으로 기술블로그를 조회하여 응답을 생성한다.")
@@ -257,11 +282,11 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
     @DisplayName("회원이 기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(1, company);
         TechArticle savedTechArticle = techArticleRepository.save(techArticle);
         Long id = savedTechArticle.getId() + 1;
 
@@ -279,62 +304,6 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
         assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(NOT_FOUND_TECH_ARTICLE_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("회원이 기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
-    void getTechArticleNotFoundElasticIdException() {
-        // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
-                .isInstanceOf(TechArticleException.class)
-                .hasMessage(NOT_FOUND_ELASTIC_ID_MESSAGE);
-    }
-
-    @Test
-    @DisplayName("회원이 기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
-    void getTechArticleNotFoundElasticTechArticleException() {
-        // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), "elasticId", company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-        memberRepository.save(member);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // when // then
-        assertThatThrownBy(() -> memberTechArticleService.getTechArticle(id, null, authentication))
-                .isInstanceOf(NotFoundException.class)
-                .hasMessage(NOT_FOUND_ELASTIC_TECH_ARTICLE_MESSAGE);
     }
 
     @Test
@@ -505,6 +474,32 @@ class MemberTechArticleServiceTest extends ElasticsearchSupportTest {
                 .member(member)
                 .techArticle(techArticle)
                 .status(status)
+                .build();
+    }
+
+    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
+                                         String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .officialImageUrl(new Url(officialImageUrl))
+                .careerUrl(new Url(careerUrl))
+                .officialUrl(new Url(officialUrl))
+                .build();
+    }
+
+    private static TechArticle createTechArticle(int i, Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 " + i))
+                .contents("내용 " + i)
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(i))
+                .recommendTotalCount(new Count(i))
+                .viewTotalCount(new Count(i))
+                .popularScore(new Count(10L *i))
                 .build();
     }
 }

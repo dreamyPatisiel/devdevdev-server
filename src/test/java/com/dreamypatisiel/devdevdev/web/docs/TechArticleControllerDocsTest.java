@@ -37,8 +37,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.web.dto.response.ResultType;
@@ -49,6 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -74,49 +73,28 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @Autowired
     CompanyRepository companyRepository;
     @Autowired
-    ElasticTechArticleRepository elasticTechArticleRepository;
-    @Autowired
     MemberRepository memberRepository;
     @Autowired
     BookmarkRepository bookmarkRepository;
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
-                      @Autowired CompanyRepository companyRepository,
-                      @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+                      @Autowired CompanyRepository companyRepository) {
         company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
-        // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
-        LocalDate baseDate = LocalDate.of(2024, 8, 30);
-        List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀_" + i,
-                    baseDate.minusDays(i), "내용", "http://example.com/" + i, "설명", "http://example.com/", "작성자",
-                    company.getName().getCompanyName(), company.getId(), (long) TEST_ARTICLES_COUNT - i,
-                    (long) TEST_ARTICLES_COUNT - i, (long) TEST_ARTICLES_COUNT - i,
-                    (long) (TEST_ARTICLES_COUNT - i) * 10);
-            elasticTechArticles.add(elasticTechArticle);
-        }
-        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
-                elasticTechArticles);
-
-        // 엘라스틱 기술블로그를 토대로 RDB 기술블로그 데이터를 생성한다.
-        techArticles = new ArrayList<>();
-        for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
+        List<TechArticle> techArticles = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            TechArticle techArticle = createTechArticle(i, company);
             techArticles.add(techArticle);
         }
-        List<TechArticle> savedTechArticles = techArticleRepository.saveAll(techArticles);
-        firstTechArticle = savedTechArticles.getFirst();
+        techArticleRepository.saveAll(techArticles);
     }
 
     @AfterAll
     static void tearDown(@Autowired TechArticleRepository techArticleRepository,
-                         @Autowired ElasticTechArticleRepository elasticTechArticleRepository,
                          @Autowired CompanyRepository companyRepository) {
-        elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
         companyRepository.deleteAllInBatch();
     }
@@ -141,7 +119,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         bookmarkRepository.saveAll(bookmarks);
 
         Pageable pageable = PageRequest.of(0, 1);
-        String elasticId = "elasticId_1";
+        String techArticleId = "1";
         String keyword = "타이틀";
         String companyId = company.getId().toString();
 
@@ -150,7 +128,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
                         .queryParam("keyword", keyword)
-                        .queryParam("elasticId", elasticId)
+                        .queryParam("techArticleId", techArticleId)
                         .queryParam("companyId", companyId)
                         .queryParam("score", "10")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -172,7 +150,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                 .attributes(techArticleSortType()),
                         parameterWithName("keyword").optional().description("검색어"),
                         parameterWithName("companyId").optional().description("회사 아이디"),
-                        parameterWithName("elasticId").optional().description("마지막 데이터의 엘라스틱서치 아이디"),
+                        parameterWithName("techArticleId").optional().description("마지막 데이터의 기술블로그 아이디"),
                         parameterWithName("score").optional().description("마지막 데이터의 정확도 점수(정확도순 검색일 때에만 필수)")
                 ),
                 responseFields(
@@ -181,8 +159,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
                         fieldWithPath("data.content").type(JsonFieldType.ARRAY).description("기술블로그 메인 배열"),
                         fieldWithPath("data.content.[].id").type(JsonFieldType.NUMBER).description("기술블로그 아이디"),
-                        fieldWithPath("data.content.[].elasticId").type(JsonFieldType.STRING)
-                                .description("기술블로그 엘라스틱서치 아이디"),
                         fieldWithPath("data.content.[].techArticleUrl").type(JsonFieldType.STRING)
                                 .description("기술블로그 Url"),
                         fieldWithPath("data.content.[].thumbnailUrl").type(JsonFieldType.STRING)
@@ -246,46 +222,19 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     }
 
     @Test
-    @DisplayName("기술블로그 메인을 조회할 때 존재하지 않는 엘라스틱서치 ID를 조회하면 에러가 발생한다.")
-    void getTechArticlesNotFoundElasticIdException() throws Exception {
-        // given
-        Pageable pageable = PageRequest.of(0, 1);
-
-        // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
-                        .queryParam("size", String.valueOf(pageable.getPageSize()))
-                        .queryParam("techArticleSort", TechArticleSort.LATEST.name())
-                        .queryParam("elasticId", "elasticId")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-
-        // Docs
-        actions.andDo(document("not-found-elastic-tech-article-cursor-exception",
-                preprocessResponse(prettyPrint()),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
-        ));
-    }
-
-    @Test
-    @DisplayName("커서 방식으로 다음 페이지의 엘라스틱서치 기술블로그를 검색어로 검색할 때," +
+    @DisplayName("커서 방식으로 다음 페이지의 기술블로그를 검색어로 검색할 때," +
             "정확도 내림차순으로 조회하기 위한 점수가 없다면 예외가 발생한다.")
     void getTechArticlesWithKeywordWithCursorOrderByHIGHEST_SCOREWithoutScoreException() throws Exception {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        String elasticId = "elasticId_1";
+        String techArticleId = "1";
         String keyword = "타이틀";
 
         // when // then
         ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles")
                         .queryParam("size", String.valueOf(pageable.getPageSize()))
                         .queryParam("techArticleSort", TechArticleSort.HIGHEST_SCORE.name())
-                        .queryParam("elasticId", elasticId)
+                        .queryParam("techArticleId", techArticleId)
                         .queryParam("keyword", keyword)
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
@@ -366,8 +315,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
                         fieldWithPath("data").type(JsonFieldType.OBJECT).description("응답 데이터"),
-
-                        fieldWithPath("data.elasticId").type(JsonFieldType.STRING).description("기술블로그 엘라스틱서치 아이디"),
                         fieldWithPath("data.techArticleUrl").type(JsonFieldType.STRING).description("기술블로그 Url"),
                         fieldWithPath("data.thumbnailUrl").type(JsonFieldType.STRING).description("기술블로그 썸네일 이미지"),
                         fieldWithPath("data.title").type(JsonFieldType.STRING).description("기술블로그 제목"),
@@ -431,13 +378,9 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
     @DisplayName("기술블로그 상세를 조회할 때 기술블로그가 존재하지 않으면 예외가 발생한다.")
     void getTechArticleNotFoundTechArticleException() throws Exception {
         // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId() + 1;
+        TechArticle techArticle = createTechArticle(1, company);
+        techArticleRepository.save(techArticle);
+        Long id = techArticle.getId() + 1;
 
         SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
                 "꿈빛파티시엘", "1234", email, socialType, role);
@@ -454,66 +397,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
 
         // Docs
         actions.andDo(document("not-found-tech-article-exception",
-                preprocessResponse(prettyPrint()),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
-        ));
-    }
-
-    @Test
-    @DisplayName("기술블로그 상세를 조회할 때 엘라스틱ID가 존재하지 않으면 예외가 발생한다.")
-    void getTechArticleNotFoundElasticIdException() throws Exception {
-        // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
-                .andDo(print());
-
-        // Docs
-        actions.andDo(document("not-found-elastic-id-exception",
-                preprocessResponse(prettyPrint()),
-                responseFields(
-                        fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
-                        fieldWithPath("message").type(JsonFieldType.STRING).description("에러 메시지"),
-                        fieldWithPath("errorCode").type(JsonFieldType.NUMBER).description("에러 코드")
-                )
-        ));
-    }
-
-    @Test
-    @DisplayName("기술블로그 상세를 조회할 때 엘라스틱 기술블로그가 존재하지 않으면 예외가 발생한다.")
-    void getTechArticleNotFoundElasticTechArticleException() throws Exception {
-        // given
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L),
-                new Count(1L), "elasticId", company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
-
-        // when // then
-        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v1/articles/{techArticleId}", id)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken))
-                .andDo(print());
-
-        // Docs
-        actions.andDo(document("not-found-elastic-tech-article-exception",
                 preprocessResponse(prettyPrint()),
                 responseFields(
                         fieldWithPath("resultType").type(JsonFieldType.STRING).description("응답 결과"),
@@ -637,30 +520,6 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         return startDate.plusDays(randomDays);
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
-                                                               String contents, String techArticleUrl,
-                                                               String description, String thumbnailUrl, String author,
-                                                               String company, Long companyId,
-                                                               Long viewTotalCount, Long recommendTotalCount,
-                                                               Long commentTotalCount, Long popularScore) {
-        return ElasticTechArticle.builder()
-                .id(id)
-                .title(title)
-                .regDate(regDate)
-                .contents(contents)
-                .techArticleUrl(techArticleUrl)
-                .description(description)
-                .thumbnailUrl(thumbnailUrl)
-                .author(author)
-                .company(company)
-                .companyId(companyId)
-                .viewTotalCount(viewTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .commentTotalCount(commentTotalCount)
-                .popularScore(popularScore)
-                .build();
-    }
-
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
@@ -668,6 +527,22 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                 .officialImageUrl(new Url(officialImageUrl))
                 .careerUrl(new Url(careerUrl))
                 .officialUrl(new Url(officialUrl))
+                .build();
+    }
+
+    private static TechArticle createTechArticle(int i, Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 " + i))
+                .contents("내용 " + i)
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(i))
+                .recommendTotalCount(new Count(i))
+                .viewTotalCount(new Count(i))
+                .popularScore(new Count(i))
                 .build();
     }
 }
