@@ -61,6 +61,17 @@ spring:
           max-idle: 8
           min-idle: 2
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+
 #MyBatis
 mybatis:
   type-aliases-package: com.dreamypatisiel.devdevdev.domain.repository
