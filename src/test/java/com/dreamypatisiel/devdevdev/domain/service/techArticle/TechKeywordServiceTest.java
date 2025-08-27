@@ -4,7 +4,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechKeyword;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechKeywordRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.keyword.TechKeywordService;
 import com.dreamypatisiel.devdevdev.global.utils.HangulUtils;
-import com.dreamypatisiel.devdevdev.test.MySQLTestContainer;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,9 +19,7 @@ import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
-class TechKeywordServiceTest extends MySQLTestContainer {
+@Testcontainers
+class TechKeywordServiceTest {
 
     @Autowired
     EntityManager em;
@@ -39,6 +41,18 @@ class TechKeywordServiceTest extends MySQLTestContainer {
     
     @Autowired
     DataSource dataSource;
+
+    @Container
+    @ServiceConnection
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+            .withDatabaseName("devdevdev_test")
+            .withUsername("test")
+            .withPassword("test")
+            .withCommand(
+                "--character-set-server=utf8mb4", 
+                "--collation-server=utf8mb4_general_ci",
+                "--ngram_token_size=1"
+            );
 
     private static boolean indexesCreated = false;
 
@@ -66,24 +80,36 @@ class TechKeywordServiceTest extends MySQLTestContainer {
      * JDBC를 사용하여 MySQL fulltext 인덱스를 생성
      */
     private void createFulltextIndexesWithJDBC() throws SQLException {
-        Connection connection = dataSource.getConnection();
-        Statement statement = connection.createStatement();
-
-        connection.setAutoCommit(false); // 트랜잭션 시작
-
+        Connection connection = null;
         try {
-            // 기존 인덱스가 있다면 삭제
-            statement.executeUpdate("DROP INDEX idx__ft__jamo_key ON tech_keyword");
-            statement.executeUpdate("DROP INDEX idx__ft__chosung_key ON tech_keyword");
-        } catch (Exception e) {
-            System.out.println("인덱스 없음 (정상): " + e.getMessage());
+            // 현재 테스트 클래스의 컨테이너에 직접 연결
+            connection = DriverManager.getConnection(
+                mysql.getJdbcUrl(),
+                mysql.getUsername(), 
+                mysql.getPassword()
+            );
+            connection.setAutoCommit(false); // 트랜잭션 시작
+
+            try (Statement statement = connection.createStatement()) {
+                try {
+                    // 기존 인덱스가 있다면 삭제
+                    statement.executeUpdate("DROP INDEX idx__ft__jamo_key ON tech_keyword");
+                    statement.executeUpdate("DROP INDEX idx__ft__chosung_key ON tech_keyword");
+                } catch (Exception e) {
+                    System.out.println("인덱스 없음 (정상): " + e.getMessage());
+                }
+
+                // fulltext 인덱스 생성
+                statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__jamo_key ON tech_keyword (jamo_key) WITH PARSER ngram");
+                statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__chosung_key ON tech_keyword (chosung_key) WITH PARSER ngram");
+
+                connection.commit(); // 트랜잭션 커밋
+            }
+        } finally {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
         }
-
-        // fulltext 인덱스 생성
-        statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__jamo_key ON tech_keyword (jamo_key) WITH PARSER ngram");
-        statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__chosung_key ON tech_keyword (chosung_key) WITH PARSER ngram");
-
-        connection.commit(); // 트랜잭션 커밋
     }
 
     @Test

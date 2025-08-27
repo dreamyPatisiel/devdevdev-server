@@ -17,19 +17,26 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.MemberTechArticleService;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.BookmarkResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleRecommendResponse;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeAll;
+import org.springframework.test.context.transaction.BeforeTransaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -41,12 +48,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
+import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @SpringBootTest
 @Transactional
+@Testcontainers
 class MemberTechArticleServiceTest {
     @Autowired
     MemberTechArticleService memberTechArticleService;
@@ -62,6 +74,20 @@ class MemberTechArticleServiceTest {
     TechArticleRecommendRepository techArticleRecommendRepository;
     @Autowired
     EntityManager em;
+    @Autowired
+    DataSource dataSource;
+
+    @Container
+    @ServiceConnection
+    static MySQLContainer<?> mysql = new MySQLContainer<>("mysql:8.0")
+            .withDatabaseName("devdevdev_test")
+            .withUsername("test")
+            .withPassword("test")
+            .withCommand(
+                "--character-set-server=utf8mb4", 
+                "--collation-server=utf8mb4_general_ci",
+                "--ngram_token_size=1"
+            );
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -72,23 +98,69 @@ class MemberTechArticleServiceTest {
     String role = Role.ROLE_USER.name();
 
     private static final int TEST_ARTICLES_COUNT = 20;
-    private static Company company;
+    private static Company testCompany;
+    private static List<TechArticle> testTechArticles;
     private static TechArticle firstTechArticle;
-    private static List<TechArticle> techArticles;
+    private static boolean indexesCreated = false;
 
-    @BeforeAll
-    static void setup(@Autowired TechArticleRepository techArticleRepository,
-                      @Autowired CompanyRepository companyRepository) {
-        company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
-                "https://example.com");
-        companyRepository.save(company);
+    @BeforeTransaction
+    public void initIndexes() throws SQLException {
+        if (!indexesCreated) {
+            // 인덱스 생성
+            createFulltextIndexesWithJDBC();
+            indexesCreated = true;
 
-        List<TechArticle> techArticles = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            TechArticle techArticle = createTechArticle(i, company);
-            techArticles.add(techArticle);
+            // 데이터 추가
+            testCompany = createCompany("꿈빛 파티시엘", "https://example.com/company.png", 
+                                      "https://example.com", "https://example.com");
+            companyRepository.save(testCompany);
+
+            testTechArticles = new ArrayList<>();
+            for (int i = 0; i < TEST_ARTICLES_COUNT; i++) {
+                TechArticle techArticle = createTechArticle(i, testCompany);
+                testTechArticles.add(techArticle);
+            }
+            techArticleRepository.saveAll(testTechArticles);
+            firstTechArticle = testTechArticles.get(1);
         }
-        techArticleRepository.saveAll(techArticles);
+    }
+
+    /**
+     * JDBC를 사용하여 MySQL fulltext 인덱스를 생성
+     */
+    private void createFulltextIndexesWithJDBC() throws SQLException {
+        Connection connection = null;
+        try {
+            // 현재 테스트 클래스의 컨테이너에 직접 연결
+            connection = DriverManager.getConnection(
+                mysql.getJdbcUrl(),
+                mysql.getUsername(), 
+                mysql.getPassword()
+            );
+            connection.setAutoCommit(false); // 트랜잭션 시작
+
+            try (Statement statement = connection.createStatement()) {
+                try {
+                    // 기존 인덱스가 있다면 삭제
+                    statement.executeUpdate("DROP INDEX idx__ft__title ON tech_article");
+                    statement.executeUpdate("DROP INDEX idx__ft__contents ON tech_article");
+                    statement.executeUpdate("DROP INDEX idx__ft__title_contents ON tech_article");
+                } catch (Exception e) {
+                    System.out.println("인덱스 없음 (정상): " + e.getMessage());
+                }
+
+                // fulltext 인덱스 생성 (개별 + 복합)
+                statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__title ON tech_article (title) WITH PARSER ngram");
+                statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__contents ON tech_article (contents) WITH PARSER ngram");
+                statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__title_contents ON tech_article (title, contents) WITH PARSER ngram");
+
+                connection.commit(); // 트랜잭션 커밋
+            }
+        } finally {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        }
     }
 
     @Test
@@ -113,7 +185,9 @@ class MemberTechArticleServiceTest {
 
         // then
         assertThat(techArticles)
-                .hasSize(pageable.getPageSize());
+                .hasSize(pageable.getPageSize())
+                .extracting(TechArticleMainResponse::getRegDate)
+                .isSortedAccordingTo(Comparator.reverseOrder()); // 기본 정렬은 최신순
     }
 
 
@@ -422,11 +496,11 @@ class MemberTechArticleServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Long techArticleId = firstTechArticle.getId();
-        Count popularScore = firstTechArticle.getPopularScore();
-        Count recommendTotalCount = firstTechArticle.getRecommendTotalCount();
-
         TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(member, firstTechArticle);
         techArticleRecommendRepository.save(techArticleRecommend);
+
+        Count popularScore = firstTechArticle.getPopularScore();
+        Count recommendTotalCount = firstTechArticle.getRecommendTotalCount();
 
         // when
         TechArticleRecommendResponse techArticleRecommendResponse = memberTechArticleService.updateRecommend(techArticleId, null, authentication);
@@ -454,6 +528,180 @@ class MemberTechArticleServiceTest {
                     assertThat(recommend.getMember()).isEqualTo(member);
                     assertThat(recommend.isRecommended()).isFalse();
                 });
+    }
+
+    // ===== ElasticTechArticleServiceTest에서 이관된 정렬 및 커서 기능 테스트들 =====
+
+    @ParameterizedTest
+    @EnumSource(value = TechArticleSort.class, names = {"LATEST", "MOST_VIEWED", "MOST_COMMENTED", "POPULAR"})
+    @DisplayName("회원이 다양한 정렬 기준으로 기술블로그를 조회한다.")
+    void getTechArticlesWithDifferentSorts(TechArticleSort sort) {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        Slice<TechArticleMainResponse> techArticles = memberTechArticleService.getTechArticles(
+                pageable, null, sort, null, null, null, authentication);
+
+        // then
+        assertThat(techArticles).hasSize(pageable.getPageSize());
+        
+        List<TechArticleMainResponse> articles = techArticles.getContent();
+        switch (sort) {
+            case LATEST -> assertThat(articles)
+                    .extracting(TechArticleMainResponse::getRegDate)
+                    .isSortedAccordingTo(Comparator.reverseOrder());
+            case MOST_VIEWED -> assertThat(articles)
+                    .extracting(TechArticleMainResponse::getViewTotalCount)
+                    .isSortedAccordingTo(Comparator.reverseOrder());
+            case MOST_COMMENTED -> assertThat(articles)
+                    .extracting(TechArticleMainResponse::getCommentTotalCount)
+                    .isSortedAccordingTo(Comparator.reverseOrder());
+            case POPULAR -> assertThat(articles)
+                    .extracting(TechArticleMainResponse::getPopularScore)
+                    .isSortedAccordingTo(Comparator.reverseOrder());
+        }
+    }
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 다음 페이지의 기술블로그를 최신순으로 조회한다.")
+    void getTechArticlesWithCursorOrderByLatest() {
+        // given
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 5);
+        
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 첫 번째 페이지 조회
+        Slice<TechArticleMainResponse> firstPage = memberTechArticleService.getTechArticles(
+                prevPageable, null, TechArticleSort.LATEST, null, null, null, authentication);
+        
+        TechArticleMainResponse cursor = firstPage.getContent().get(0);
+
+        // when
+        Slice<TechArticleMainResponse> secondPage = memberTechArticleService.getTechArticles(
+                pageable, cursor.getId(), TechArticleSort.LATEST, null, null, null, authentication);
+
+        // then
+        assertThat(secondPage)
+                .hasSize(pageable.getPageSize())
+                .extracting(TechArticleMainResponse::getRegDate)
+                .isSortedAccordingTo(Comparator.reverseOrder())
+                .allMatch(date -> !date.isAfter(cursor.getRegDate()));
+    }
+
+    @Test
+    @DisplayName("회원이 커서 방식으로 다음 페이지의 기술블로그를 조회순으로 조회한다.")
+    void getTechArticlesWithCursorOrderByMostViewed() {
+        // given
+        Pageable prevPageable = PageRequest.of(0, 1);
+        Pageable pageable = PageRequest.of(0, 5);
+        
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 첫 번째 페이지 조회
+        Slice<TechArticleMainResponse> firstPage = memberTechArticleService.getTechArticles(
+                prevPageable, null, TechArticleSort.MOST_VIEWED, null, null, null, authentication);
+        
+        TechArticleMainResponse cursor = firstPage.getContent().get(0);
+
+        // when
+        Slice<TechArticleMainResponse> secondPage = memberTechArticleService.getTechArticles(
+                pageable, cursor.getId(), TechArticleSort.MOST_VIEWED, null, null, null, authentication);
+
+        // then
+        assertThat(secondPage)
+                .hasSize(pageable.getPageSize())
+                .extracting(TechArticleMainResponse::getViewTotalCount)
+                .isSortedAccordingTo(Comparator.reverseOrder())
+                .allMatch(viewCount -> viewCount <= cursor.getViewTotalCount());
+    }
+
+    @Test
+    @DisplayName("회원이 키워드로 기술블로그를 검색한다.")
+    void getTechArticlesWithKeyword() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        String keyword = "내용";
+        
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        Slice<TechArticleMainResponse> techArticles = memberTechArticleService.getTechArticles(
+                pageable, null, null, keyword, null, null, authentication);
+
+        // then
+        assertThat(techArticles.getContent())
+                .isNotEmpty()
+                .allSatisfy(article -> {
+                    boolean containsKeyword = article.getTitle().contains(keyword) || 
+                                            article.getContents().contains(keyword);
+                    assertThat(containsKeyword).isTrue();
+                });
+    }
+
+    @Test
+    @DisplayName("회원이 특정 회사의 기술블로그만 필터링하여 조회한다.")
+    void getTechArticlesFilterByCompany() {
+        // given
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when
+        Slice<TechArticleMainResponse> techArticles = memberTechArticleService.getTechArticles(
+                pageable, null, TechArticleSort.LATEST, null, testCompany.getId(), null, authentication);
+
+        // then
+        assertThat(techArticles.getContent())
+                .isNotEmpty()
+                .allSatisfy(article -> 
+                    assertThat(article.getCompany().getId()).isEqualTo(testCompany.getId())
+                )
+                .extracting(TechArticleMainResponse::getRegDate)
+                .isSortedAccordingTo(Comparator.reverseOrder());
     }
 
     private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
@@ -493,7 +741,7 @@ class MemberTechArticleServiceTest {
                 .contents("내용 " + i)
                 .company(company)
                 .author("작성자")
-                .regDate(LocalDate.now())
+                .regDate(LocalDate.now().minusDays(i))
                 .techArticleUrl(new Url("https://example.com/article"))
                 .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
                 .commentTotalCount(new Count(i))
