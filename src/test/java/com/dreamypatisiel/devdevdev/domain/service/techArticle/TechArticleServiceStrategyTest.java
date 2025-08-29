@@ -7,18 +7,20 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.MemberTechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleService;
-import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 
-class TechArticleServiceStrategyTest extends ElasticsearchSupportTest {
-
+@SpringBootTest
+@Transactional
+class TechArticleServiceStrategyTest {
     @Autowired
     TechArticleServiceStrategy techArticleServiceStrategy;
     @Mock

@@ -16,6 +16,8 @@ import static com.dreamypatisiel.devdevdev.domain.entity.QTechKeyword.techKeywor
 public class TechKeywordRepositoryImpl implements TechKeywordRepositoryCustom {
 
     public static final String MATCH_AGAINST_FUNCTION = "match_against";
+    public static final String MATCH_AGAINST_NL_FUNCTION = "match_against_nl";
+
     private final JPQLQueryFactory query;
 
     @Override
@@ -30,13 +32,13 @@ public class TechKeywordRepositoryImpl implements TechKeywordRepositoryCustom {
                 techKeyword.chosungKey, inputChosung
         );
 
-        // 스코어 계산을 위한 expression
+        // 스코어 계산을 위한 expression (Natural Language Mode)
         NumberTemplate<Double> jamoScore = Expressions.numberTemplate(Double.class,
-                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
+                "function('" + MATCH_AGAINST_NL_FUNCTION + "', {0}, {1})",
                 techKeyword.jamoKey, inputJamo
         );
         NumberTemplate<Double> chosungScore = Expressions.numberTemplate(Double.class,
-                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
+                "function('" + MATCH_AGAINST_NL_FUNCTION + "', {0}, {1})",
                 techKeyword.chosungKey, inputChosung
         );
 

@@ -16,8 +16,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkReposi
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
@@ -72,7 +70,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MyPageControllerTest extends SupportControllerTest {
 
     private static final int TEST_ARTICLES_COUNT = 20;
-    private static List<TechArticle> techArticles;
+    private static final List<TechArticle> techArticles = new ArrayList<>();
 
     @Autowired
     ApplicationContext applicationContext;
@@ -109,40 +107,21 @@ class MyPageControllerTest extends SupportControllerTest {
 
     @BeforeAll
     static void setup(@Autowired TechArticleRepository techArticleRepository,
-                      @Autowired CompanyRepository companyRepository,
-                      @Autowired ElasticTechArticleRepository elasticTechArticleRepository) {
+                      @Autowired CompanyRepository companyRepository) {
         Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
                 "https://example.com");
         companyRepository.save(company);
 
-        // 엘라스틱 기술블로그 데이터를 최신순->오래된순, 조회수많은순->적은순, 댓글많은순->적은순의 순서로 생성한다.
-        LocalDate baseDate = LocalDate.of(2024, 8, 30);
-        List<ElasticTechArticle> elasticTechArticles = new ArrayList<>();
-        for (int i = 1; i <= TEST_ARTICLES_COUNT; i++) {
-            ElasticTechArticle elasticTechArticle = createElasticTechArticle("elasticId_" + i, "타이틀_" + i,
-                    baseDate.minusDays(i), "내용", "http://example.com/" + i, "설명", "http://example.com/", "작성자",
-                    company.getName().getCompanyName(), company.getId(), (long) TEST_ARTICLES_COUNT - i,
-                    (long) TEST_ARTICLES_COUNT - i, (long) TEST_ARTICLES_COUNT - i,
-                    (long) (TEST_ARTICLES_COUNT - i) * 10);
-            elasticTechArticles.add(elasticTechArticle);
-        }
-        Iterable<ElasticTechArticle> elasticTechArticleIterable = elasticTechArticleRepository.saveAll(
-                elasticTechArticles);
-
-        // 엘라스틱 기술블로그를 토대로 RDB 기술블로그 데이터를 생성한다.
-        techArticles = new ArrayList<>();
-        for (ElasticTechArticle elasticTechArticle : elasticTechArticleIterable) {
-            TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
+        for (int i = 0; i < 10; i++) {
+            TechArticle techArticle = createTechArticle(i, company);
             techArticles.add(techArticle);
         }
         techArticleRepository.saveAll(techArticles);
     }
 
     @AfterAll
-    static void tearDown(@Autowired ElasticTechArticleRepository elasticTechArticleRepository,
-                         @Autowired TechArticleRepository techArticleRepository,
+    static void tearDown(@Autowired TechArticleRepository techArticleRepository,
                          @Autowired CompanyRepository companyRepository) {
-        elasticTechArticleRepository.deleteAll();
         techArticleRepository.deleteAllInBatch();
         companyRepository.deleteAllInBatch();
     }
@@ -181,7 +160,6 @@ class MyPageControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data").isNotEmpty())
                 .andExpect(jsonPath("$.data.content").isArray())
                 .andExpect(jsonPath("$.data.content.[0].id").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].elasticId").isString())
                 .andExpect(jsonPath("$.data.content.[0].thumbnailUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].techArticleUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].title").isString())
@@ -853,30 +831,6 @@ class MyPageControllerTest extends SupportControllerTest {
         return startDate.plusDays(randomDays);
     }
 
-    private static ElasticTechArticle createElasticTechArticle(String id, String title, LocalDate regDate,
-                                                               String contents, String techArticleUrl,
-                                                               String description, String thumbnailUrl, String author,
-                                                               String company, Long companyId,
-                                                               Long viewTotalCount, Long recommendTotalCount,
-                                                               Long commentTotalCount, Long popularScore) {
-        return ElasticTechArticle.builder()
-                .id(id)
-                .title(title)
-                .regDate(regDate)
-                .contents(contents)
-                .techArticleUrl(techArticleUrl)
-                .description(description)
-                .thumbnailUrl(thumbnailUrl)
-                .author(author)
-                .company(company)
-                .companyId(companyId)
-                .viewTotalCount(viewTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .commentTotalCount(commentTotalCount)
-                .popularScore(popularScore)
-                .build();
-    }
-
     private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
                                          String careerUrl) {
         return Company.builder()
@@ -896,6 +850,22 @@ class MyPageControllerTest extends SupportControllerTest {
                 .officialImageUrl(new Url(imageUrl))
                 .description(description)
                 .industry(industry)
+                .build();
+    }
+
+    private static TechArticle createTechArticle(int i, Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 " + i))
+                .contents("내용 " + i)
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(i))
+                .recommendTotalCount(new Count(i))
+                .viewTotalCount(new Count(i))
+                .popularScore(new Count(i))
                 .build();
     }
 }

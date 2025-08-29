@@ -48,6 +48,8 @@ import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsRes
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.assertj.core.groups.Tuple;
@@ -118,8 +120,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -433,8 +434,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -608,9 +608,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -924,9 +922,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1082,8 +1078,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1273,8 +1268,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술 블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
 
         // 댓글 생성
@@ -1422,8 +1416,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
 
         // 댓글 등록 요청 생성
@@ -1524,8 +1517,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1589,8 +1581,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(2L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1633,7 +1624,7 @@ class GuestTechCommentServiceV2Test {
                         1L),
                 // 기술블로그 댓글 수 증가 확인
                 () -> assertThat(findRepliedTechComment.getTechArticle().getCommentTotalCount().getCount()).isEqualTo(
-                        3L)
+                        2L)
         );
     }
 
@@ -1659,8 +1650,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1704,8 +1694,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1777,8 +1766,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1857,8 +1845,7 @@ class GuestTechCommentServiceV2Test {
         companyRepository.save(company);
 
         // 기술블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1889,8 +1876,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1932,8 +1918,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1977,8 +1962,7 @@ class GuestTechCommentServiceV2Test {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -2014,8 +1998,7 @@ class GuestTechCommentServiceV2Test {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -2044,5 +2027,21 @@ class GuestTechCommentServiceV2Test {
         assertThatThrownBy(() -> guestTechCommentServiceV2.deleteTechComment(0L, 0L, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
+    }
+
+    private TechArticle createTechArticle(Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 "))
+                .contents("내용 ")
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(1))
+                .recommendTotalCount(new Count(1))
+                .viewTotalCount(new Count(1))
+                .popularScore(new Count(1))
+                .build();
     }
 }

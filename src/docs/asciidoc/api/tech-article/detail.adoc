@@ -19,5 +19,4 @@ include::{snippets}/tech-article-detail/response-fields.adoc[]
 
 === 예외
 ==== HTTP Response
-include::{snippets}/not-found-elastic-id-exception/response-body.adoc[]
 include::{snippets}/not-found-tech-article-exception/response-body.adoc[]

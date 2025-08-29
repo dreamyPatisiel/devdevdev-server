@@ -34,15 +34,15 @@ public class TechArticleController {
     public ResponseEntity<BasicResponse<Slice<TechArticleMainResponse>>> getTechArticles(
             @PageableDefault Pageable pageable,
             @RequestParam(required = false) TechArticleSort techArticleSort,
-            @RequestParam(required = false) String elasticId,
+            @RequestParam(required = false) Long techArticleId,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long companyId,
-            @RequestParam(required = false) Float score) {
-
+            @RequestParam(required = false) Float score
+    ) {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<TechArticleMainResponse> response = techArticleService.getTechArticles(pageable, elasticId,
-                techArticleSort, keyword, companyId, score, authentication);
+        Slice<TechArticleMainResponse> response = techArticleService.getTechArticles(
+                pageable, techArticleId, techArticleSort, keyword, companyId, score, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -51,8 +51,8 @@ public class TechArticleController {
     @GetMapping("/articles/{techArticleId}")
     public ResponseEntity<BasicResponse<TechArticleDetailResponse>> getTechArticle(
             @PathVariable Long techArticleId,
-            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
-
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId
+    ) {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         TechArticleDetailResponse response = techArticleService.getTechArticle(techArticleId, anonymousMemberId, authentication);
@@ -62,8 +62,9 @@ public class TechArticleController {
 
     @Operation(summary = "기술블로그 북마크")
     @PostMapping("/articles/{techArticleId}/bookmark")
-    public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark(@PathVariable Long techArticleId) {
-
+    public ResponseEntity<BasicResponse<BookmarkResponse>> updateBookmark(
+            @PathVariable Long techArticleId
+    ) {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         BookmarkResponse response = techArticleService.updateBookmark(techArticleId, authentication);
@@ -77,7 +78,6 @@ public class TechArticleController {
             @PathVariable Long techArticleId,
             @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId
     ) {
-
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         TechArticleRecommendResponse response = techArticleService.updateRecommend(techArticleId, anonymousMemberId, authentication);

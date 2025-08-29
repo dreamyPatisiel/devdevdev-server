@@ -32,7 +32,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkReposi
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.service.ElasticsearchSupportTest;
 import com.dreamypatisiel.devdevdev.exception.MemberException;
 import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
@@ -53,6 +52,8 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import jakarta.persistence.EntityManager;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -73,9 +74,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
-class MemberServiceTest extends ElasticsearchSupportTest {
+@Transactional
+class MemberServiceTest {
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -422,7 +425,14 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 userPrincipal.getSocialType().name()));
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Bookmark bookmark = createBookmark(member, firstTechArticle, true);
+        Company company = createCompany("꿈빛 파티시엘", "https://example.com/company.png", "https://example.com",
+                "https://example.com");
+        companyRepository.save(company);
+
+        TechArticle techArticle = createTechArticle(company, "기술블로그 제목");
+        techArticleRepository.save(techArticle);
+
+        Bookmark bookmark = createBookmark(member, techArticle, true);
         bookmarkRepository.save(bookmark);
 
         em.flush();
@@ -1314,8 +1324,17 @@ class MemberServiceTest extends ElasticsearchSupportTest {
 
     private static TechArticle createTechArticle(Company company, String title) {
         return TechArticle.builder()
-                .company(company)
                 .title(new Title(title))
+                .contents("내용 ")
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/article.png"))
+                .commentTotalCount(new Count(1))
+                .recommendTotalCount(new Count(1))
+                .viewTotalCount(new Count(1))
+                .popularScore(new Count(1))
                 .build();
     }
 
@@ -1430,6 +1449,16 @@ class MemberServiceTest extends ElasticsearchSupportTest {
                 .member(member)
                 .techArticle(techArticle)
                 .status(status)
+                .build();
+    }
+
+    public static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
+                                        String careerUrl) {
+        return Company.builder()
+                .name(new CompanyName(companyName))
+                .officialUrl(new Url(officialUrl))
+                .careerUrl(new Url(careerUrl))
+                .officialImageUrl(new Url(officialImageUrl))
                 .build();
     }
 }
