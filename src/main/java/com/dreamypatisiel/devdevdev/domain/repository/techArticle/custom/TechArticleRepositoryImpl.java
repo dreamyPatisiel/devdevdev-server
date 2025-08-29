@@ -29,6 +29,8 @@ import org.springframework.util.StringUtils;
 public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
 
     public static final String MATCH_AGAINST_FUNCTION = "match_against";
+    public static final String MATCH_AGAINST_NL_FUNCTION = "match_against_nl";
+
     private final JPQLQueryFactory query;
 
     @Override
@@ -55,9 +57,8 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         // 키워드가 있는 경우 FULLTEXT 검색, 없는 경우 일반 조회
         if (StringUtils.hasText(keyword)) {
             return findTechArticlesByCursorWithKeyword(pageable, techArticleId, techArticleSort, companyId, keyword, score);
-        } else {
-            return findTechArticlesByCursorWithoutKeyword(pageable, techArticleId, techArticleSort, companyId);
         }
+        return findTechArticlesByCursorWithoutKeyword(pageable, techArticleId, techArticleSort, companyId);
     }
 
     // 키워드 검색
@@ -76,13 +77,13 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                 techArticle.contents, keyword
         );
         
-        // 스코어 계산을 위한 expression
+        // 스코어 계산을 위한 expression (Natural Language Mode)
         NumberTemplate<Double> titleScore = Expressions.numberTemplate(Double.class,
-                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
+                "function('" + MATCH_AGAINST_NL_FUNCTION + "', {0}, {1})",
                 techArticle.title.title, keyword
         );
         NumberTemplate<Double> contentsScore = Expressions.numberTemplate(Double.class,
-                "function('" + MATCH_AGAINST_FUNCTION + "', {0}, {1})",
+                "function('" + MATCH_AGAINST_NL_FUNCTION + "', {0}, {1})",
                 techArticle.contents, keyword
         );
         
