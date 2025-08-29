@@ -1,0 +1,244 @@
+name: Build and Deploy to PROD (Lightsail Blue/Green via SSH + Docker)
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  # --- 애플리케이션/컨테이너 공통 ---
+  PROJECT_NAME: "devdevdev"
+  IMAGE_NAME: "devdevdev/app"                       # 로컬 빌드 이미지 이름(태그 latest, SHA)
+  CONTAINER_BASE: "devdevdev-main-server"           # 컨테이너 베이스명
+  BLUE_SUFFIX: "-blue"
+  GREEN_SUFFIX: "-green"
+
+  # --- 포트 구성 ---
+  BLUE_PORT: "18080"                                # 호스트 포트(Blue)
+  GREEN_PORT: "18081"                               # 호스트 포트(Green)
+  APP_PORT: "8080"                                  # 컨테이너 내부 포트(Spring Boot)
+
+  # --- 헬스체크 ---
+  HEALTHCHECK_PATH: "/actuator/health"              # Actuator 미사용이면 "/" 로 변경하세요
+  HEALTHCHECK_TIMEOUT: "3"                          # curl 타임아웃(초)
+  HEALTHCHECK_RETRY: "20"                           # 재시도 횟수 (5초 * 20 = 최대 100초)
+
+  # --- SSH/Lightsail ---
+  SSH_USER: "ec2-user"                             # SSH 접속 사용자
+  LIGHTSAIL_HOST: "${{ secrets.LIGHTSAIL_HOST }}"   # 퍼블릭 IP 또는 도메인
+
+jobs:
+  build:
+    name: Build and Deploy (Blue/Green)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # ====== 리소스/시크릿 주입 (현재 파이프라인과 동일) ======
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: 21
+          distribution: corretto
+
+      - name: make application-prod.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.application_prod }}" >> ./application-prod.yml
+          echo "${{ secrets.application_jwt_prod }}" >> ./application-jwt-prod.yml
+          echo "${{ secrets.application_oauth2_prod }}" >> ./application-oauth2-prod.yml
+          echo "${{ secrets.application_storage_s3_prod }}" >> ./application-storage-s3-prod.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_prod }}" >> ./application-opensearch-prod.yml
+
+      - name: make application-test.yml
+        run: |
+          cd ./src/test/resources
+          echo "${{ secrets.application_storage_s3 }}" >> ./application-storage-s3.yml
+          echo "${{ secrets.application_open_ai }}" >> ./application-open-ai.yml
+          echo "${{ secrets.application_opensearch_test }}" >> ./application-opensearch-test.yml
+
+      # ====== Gradle 빌드 (Docker가 JAR을 COPY할 수 있도록 선행) ======
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle (bootJar)
+        run: ./gradlew bootJar -x test -x asciidoctor
+
+      # ====== Docker 빌드 ======
+      - name: Use Dockerfile-prod if present
+        run: |
+          if [ -f Dockerfile-prod ]; then
+            rm -f Dockerfile
+            cp Dockerfile-prod Dockerfile
+          fi
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${IMAGE_NAME}:${GITHUB_SHA} \
+            -t ${IMAGE_NAME}:latest \
+            .
+
+      - name: Save image as archive
+        run: |
+          mkdir -p out
+          # SHA와 latest 두 태그 모두 아카이브에 포함
+          docker save ${IMAGE_NAME}:${GITHUB_SHA} ${IMAGE_NAME}:latest | gzip > out/image.tar.gz
+          echo "ARCHIVE=out/image.tar.gz" >> $GITHUB_ENV
+
+      # ====== SSH 준비 ======
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.LIGHTSAIL_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${LIGHTSAIL_HOST} >> ~/.ssh/known_hosts
+
+      # ====== 아카이브/스크립트 전송 ======
+      - name: Upload image archive
+        run: |
+          scp -i key.pem -o StrictHostKeyChecking=yes "$ARCHIVE" \
+            ${SSH_USER}@${LIGHTSAIL_HOST}:/home/${SSH_USER}/image.tar.gz
+
+      - name: Upload blue/green deploy script
+        run: |
+          cat > deploy_blue_green.sh <<'EOS'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          sudo systemctl enable --now docker >/dev/null 2>&1 || true
+
+          IMAGE_NAME=${IMAGE_NAME:-devdevdev/app}
+          CONTAINER_BASE=${CONTAINER_BASE:-devdevdev-main-server}
+          BLUE_SUFFIX=${BLUE_SUFFIX:--blue}
+          GREEN_SUFFIX=${GREEN_SUFFIX:--green}
+          BLUE_PORT=${BLUE_PORT:-18080}
+          GREEN_PORT=${GREEN_PORT:-18081}
+          APP_PORT=${APP_PORT:-8080}
+          HEALTHCHECK_PATH=${HEALTHCHECK_PATH:-/}          # actuator 없으면 /
+          HEALTHCHECK_TIMEOUT=${HEALTHCHECK_TIMEOUT:-3}
+          HEALTHCHECK_RETRY=${HEALTHCHECK_RETRY:-20}
+
+          UPSTREAM_FILE="/etc/nginx/conf.d/backend-upstream.upstream"
+          BLUE_NAME="${CONTAINER_BASE}${BLUE_SUFFIX}"
+          GREEN_NAME="${CONTAINER_BASE}${GREEN_SUFFIX}"
+
+          # 아카이브 경로는 HOME 기준으로
+          ARCHIVE_FILE="$HOME/image.tar.gz"
+          
+          echo "[1/9] Load image: ${ARCHIVE_FILE}"
+          ls -lh "${ARCHIVE_FILE}" || { echo "[!] archive missing"; exit 1; }
+          gzip -t "${ARCHIVE_FILE}"
+          gunzip -c "${ARCHIVE_FILE}" | sudo docker load
+          
+          # 보강: :latest 태그가 없으면 가장 최근 태그를 latest로 재태깅
+          if ! sudo docker image inspect "${IMAGE_NAME}:latest" >/dev/null 2>&1; then
+            echo "[info] ${IMAGE_NAME}:latest not found. Retagging…"
+            # 해당 리포의 임의의 태그 하나를 찾아 latest로 붙임
+            NEW_TAG=$(sudo docker images --format '{{.Repository}}:{{.Tag}}' \
+            | awk -v repo="${IMAGE_NAME}" -F: '$1==repo && $2!="latest"{print $2; exit}')
+            if [ -n "${NEW_TAG:-}" ]; then
+            sudo docker tag "${IMAGE_NAME}:${NEW_TAG}" "${IMAGE_NAME}:latest"
+            else
+            echo "[!] no tag to retag as latest"; exit 1
+            fi
+          fi
+          
+          ACTIVE_PORT=""
+          if [ -f "${UPSTREAM_FILE}" ]; then
+            ACTIVE_PORT=$(grep -oE '127\.0\.0\.1:([0-9]+)' "${UPSTREAM_FILE}" | awk -F: '{print $2}' || true)
+          fi
+          if [ -z "${ACTIVE_PORT}" ]; then
+            echo "server 127.0.0.1:${BLUE_PORT};" | sudo tee "${UPSTREAM_FILE}" >/dev/null
+            ACTIVE_PORT="${BLUE_PORT}"
+          fi
+          echo "[2/9] Current active port: ${ACTIVE_PORT}"
+
+          if [ "${ACTIVE_PORT}" = "${BLUE_PORT}" ]; then
+            TARGET_NAME="${GREEN_NAME}"; TARGET_PORT="${GREEN_PORT}"
+            OLD_NAME="${BLUE_NAME}";    OLD_PORT="${BLUE_PORT}"
+          else
+            TARGET_NAME="${BLUE_NAME}"; TARGET_PORT="${BLUE_PORT}"
+            OLD_NAME="${GREEN_NAME}";   OLD_PORT="${GREEN_PORT}"
+          fi
+          echo "[3/9] Target container: ${TARGET_NAME} on ${TARGET_PORT}"
+
+          if sudo docker ps -a --format '{{.Names}}' | grep -qw "${TARGET_NAME}"; then
+            sudo docker stop "${TARGET_NAME}" || true
+            sudo docker rm "${TARGET_NAME}" || true
+          fi
+
+          echo "[4/9] Run new container"
+          sudo docker run -d \
+            --name "${TARGET_NAME}" \
+            --restart=always \
+            -p 127.0.0.1:${TARGET_PORT}:${APP_PORT} \
+            -e SPRING_PROFILES_ACTIVE=prod \
+            ${IMAGE_NAME}:latest
+
+          echo "[5/9] Health check http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}"
+          code=$(curl -sS -o /dev/null -w "%{http_code}" \
+          --max-time ${HEALTHCHECK_TIMEOUT} --noproxy '*' \
+          "http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}" || echo "000")
+          ok=0
+          for i in $(seq 1 ${HEALTHCHECK_RETRY}); do
+            if curl -fsS --max-time ${HEALTHCHECK_TIMEOUT} "http://127.0.0.1:${TARGET_PORT}${HEALTHCHECK_PATH}" >/dev/null 2>&1; then
+              ok=1; break
+            fi
+            echo "  retry $i/${HEALTHCHECK_RETRY}..."
+            sleep 5
+          done
+          if [ "$ok" -ne 1 ]; then
+            echo "[!] Health check failed. Rollback."
+            sudo docker logs --tail 200 "${TARGET_NAME}" || true
+            sudo docker stop "${TARGET_NAME}" || true
+            sudo docker rm "${TARGET_NAME}" || true
+            exit 1
+          fi
+
+          echo "[6/9] Switch upstream to ${TARGET_PORT}"
+          echo "server 127.0.0.1:${TARGET_PORT};" | sudo tee "${UPSTREAM_FILE}" >/dev/null
+          sudo nginx -t
+          sudo systemctl reload nginx
+
+          echo "[7/9] Stop old container: ${OLD_NAME} (if any)"
+          if sudo docker ps -a --format '{{.Names}}' | grep -qw "${OLD_NAME}"; then
+            sudo docker stop "${OLD_NAME}" || true
+            sudo docker rm "${OLD_NAME}" || true
+          fi
+
+          echo "[8/9] Cleanup old archives (keep last 3)"
+          cd "$HOME" && ls -t image*.tar.gz | tail -n +4 | xargs -r rm -f
+
+          echo "[9/9] Done."
+          EOS
+          chmod +x deploy_blue_green.sh
+          scp -i key.pem -o StrictHostKeyChecking=yes deploy_blue_green.sh ${SSH_USER}@${LIGHTSAIL_HOST}:/home/${SSH_USER}/
+
+      # ====== 원격 실행 ======
+      - name: Remote Blue/Green deploy
+        run: |
+          ssh -i key.pem -o StrictHostKeyChecking=yes ${SSH_USER}@${LIGHTSAIL_HOST} \
+            "env IMAGE_NAME='${IMAGE_NAME}' \
+                 CONTAINER_BASE='${CONTAINER_BASE}' \
+                 BLUE_SUFFIX='${BLUE_SUFFIX}' \
+                 GREEN_SUFFIX='${GREEN_SUFFIX}' \
+                 BLUE_PORT='${BLUE_PORT}' \
+                 GREEN_PORT='${GREEN_PORT}' \
+                 APP_PORT='${APP_PORT}' \
+                 HEALTHCHECK_PATH='${HEALTHCHECK_PATH}' \
+                 HEALTHCHECK_TIMEOUT='${HEALTHCHECK_TIMEOUT}' \
+                 HEALTHCHECK_RETRY='${HEALTHCHECK_RETRY}' \
+               bash /home/${SSH_USER}/deploy_blue_green.sh"
+
+      # ====== Slack 알림 ======
+      - name: action-slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          author_name: "[PROD] 배포 결과를 알려드려요"
+          fields: repo,message,commit,author,eventName,ref,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
