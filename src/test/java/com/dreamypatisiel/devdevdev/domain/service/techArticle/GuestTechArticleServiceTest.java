@@ -183,6 +183,26 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(techArticles)
                 .hasSize(pageable.getPageSize())
+                .allSatisfy(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                })
                 .extracting(TechArticleMainResponse::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder()); // 기본 정렬은 최신순
     }
@@ -231,7 +251,23 @@ class GuestTechArticleServiceTest {
                 .isNotNull()
                 .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
                     assertThat(article.getIsBookmarked()).isFalse();
+                    assertThat(article.getIsRecommended()).isNotNull();
                 });
     }
 
@@ -270,6 +306,22 @@ class GuestTechArticleServiceTest {
                 .isNotNull()
                 .isInstanceOf(TechArticleDetailResponse.class)
                 .satisfies(article -> {
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsBookmarked()).isFalse();
                     assertThat(article.getIsRecommended()).isTrue();
                 });
     }
@@ -300,6 +352,22 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(techArticleDetailResponse)
                 .satisfies(article -> {
+                    // 모든 필드 검증
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsBookmarked()).isFalse();
+                    assertThat(article.getIsRecommended()).isNotNull();
                     assertThat(article.getViewTotalCount()).isEqualTo(prevViewTotalCount + 1);
                     assertThat(article.getPopularScore()).isEqualTo(prevPopularScore + 2);
                 });
@@ -487,8 +555,6 @@ class GuestTechArticleServiceTest {
                 });
     }
 
-    // ===== ElasticTechArticleServiceTest에서 이관된 정렬 및 커서 기능 테스트들 =====
-
     @ParameterizedTest
     @EnumSource(value = TechArticleSort.class, names = {"LATEST", "MOST_VIEWED", "MOST_COMMENTED", "POPULAR"})
     @DisplayName("익명 사용자가 다양한 정렬 기준으로 기술블로그를 조회한다.")
@@ -508,6 +574,29 @@ class GuestTechArticleServiceTest {
         assertThat(techArticles).hasSize(pageable.getPageSize());
         
         List<TechArticleMainResponse> articles = techArticles.getContent();
+        
+        assertThat(articles).allSatisfy(article -> {
+            assertThat(article.getId()).isNotNull();
+            assertThat(article.getTitle()).isNotNull().isNotEmpty();
+            assertThat(article.getContents()).isNotNull();
+            assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+            assertThat(article.getCompany()).isNotNull();
+            assertThat(article.getCompany().getId()).isNotNull();
+            assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+            assertThat(article.getCompany().getCareerUrl()).isNotNull();
+            assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+            assertThat(article.getRegDate()).isNotNull();
+            assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+            assertThat(article.getThumbnailUrl()).isNotNull();
+            assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+            assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+            assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+            assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+            assertThat(article.getIsLogoImage()).isNotNull();
+            assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+        });
+        
+        // 정렬 검증
         switch (sort) {
             case LATEST -> assertThat(articles)
                     .extracting(TechArticleMainResponse::getRegDate)
@@ -548,6 +637,26 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(secondPage)
                 .hasSize(pageable.getPageSize())
+                .allSatisfy(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                })
                 .extracting(TechArticleMainResponse::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(date -> !date.isAfter(cursor.getRegDate()));
@@ -577,6 +686,26 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(secondPage)
                 .hasSize(pageable.getPageSize())
+                .allSatisfy(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                })
                 .extracting(TechArticleMainResponse::getViewTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(viewCount -> viewCount <= cursor.getViewTotalCount());
@@ -606,6 +735,26 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(secondPage)
                 .hasSize(pageable.getPageSize())
+                .allSatisfy(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                })
                 .extracting(TechArticleMainResponse::getCommentTotalCount)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(commentCount -> commentCount <= cursor.getCommentTotalCount());
@@ -635,6 +784,26 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(secondPage)
                 .hasSize(pageable.getPageSize())
+                .allSatisfy(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                })
                 .extracting(TechArticleMainResponse::getPopularScore)
                 .isSortedAccordingTo(Comparator.reverseOrder())
                 .allMatch(popularScore -> popularScore <= cursor.getPopularScore());
@@ -659,7 +828,25 @@ class GuestTechArticleServiceTest {
         assertThat(techArticles.getContent())
                 .isNotEmpty()
                 .allSatisfy(article -> {
-                    boolean containsKeyword = article.getTitle().contains(keyword) || 
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                    boolean containsKeyword = article.getTitle().contains(keyword) ||
                                             article.getContents().contains(keyword);
                     assertThat(containsKeyword).isTrue();
                 });
@@ -682,9 +869,27 @@ class GuestTechArticleServiceTest {
         // then
         assertThat(techArticles.getContent())
                 .isNotEmpty()
-                .allSatisfy(article -> 
-                    assertThat(article.getCompany().getId()).isEqualTo(testCompany.getId())
-                )
+                .allSatisfy(article -> {
+                    assertThat(article.getId()).isNotNull();
+                    assertThat(article.getTitle()).isNotNull().isNotEmpty();
+                    assertThat(article.getContents()).isNotNull();
+                    assertThat(article.getAuthor()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany()).isNotNull();
+                    assertThat(article.getCompany().getId()).isNotNull();
+                    assertThat(article.getCompany().getName()).isNotNull().isNotEmpty();
+                    assertThat(article.getCompany().getCareerUrl()).isNotNull();
+                    assertThat(article.getCompany().getOfficialImageUrl()).isNotNull();
+                    assertThat(article.getRegDate()).isNotNull();
+                    assertThat(article.getTechArticleUrl()).isNotNull().isNotEmpty();
+                    assertThat(article.getThumbnailUrl()).isNotNull();
+                    assertThat(article.getViewTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getRecommendTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getCommentTotalCount()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getPopularScore()).isNotNull().isGreaterThanOrEqualTo(0L);
+                    assertThat(article.getIsLogoImage()).isNotNull();
+                    assertThat(article.getIsBookmarked()).isNotNull().isFalse();
+                    assertThat(article.getCompany().getId()).isEqualTo(testCompany.getId());
+                })
                 .extracting(TechArticleMainResponse::getRegDate)
                 .isSortedAccordingTo(Comparator.reverseOrder());
     }
