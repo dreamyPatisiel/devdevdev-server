@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
 
 public interface TechArticleService {
     Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, Long techArticleId, TechArticleSort techArticleSort,
-                                                   String keyword, Long companyId, Float score,
+                                                   String keyword, Long companyId, Double score,
                                                    Authentication authentication);
 
     TechArticleDetailResponse getTechArticle(Long techArticleId, String anonymousMemberId, Authentication authentication);

@@ -31,13 +31,13 @@ public class TechArticleMainResponse {
     public final Long popularScore;
     public final Boolean isLogoImage;
     public final Boolean isBookmarked;
-    public final Float score;
+    public final Double score;
 
     @Builder
     private TechArticleMainResponse(Long id, String title, String contents, String author, CompanyResponse company,
                                     LocalDate regDate, String thumbnailUrl, String techArticleUrl,
                                     Long viewTotalCount, Long recommendTotalCount, Long commentTotalCount, Long popularScore,
-                                    Boolean isLogoImage, Boolean isBookmarked, Float score) {
+                                    Boolean isLogoImage, Boolean isBookmarked, Double score) {
         this.id = id;
         this.title = title;
         this.contents = contents;
@@ -96,7 +96,7 @@ public class TechArticleMainResponse {
                 .build();
     }
 
-    public static TechArticleMainResponse of(TechArticle techArticle, Member member, Float score) {
+    public static TechArticleMainResponse of(TechArticle techArticle, Member member, Double score) {
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
         return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
@@ -117,7 +117,7 @@ public class TechArticleMainResponse {
                 .build();
     }
 
-    public static TechArticleMainResponse of(TechArticle techArticle, Float score) {
+    public static TechArticleMainResponse of(TechArticle techArticle, Double score) {
         CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
         return TechArticleMainResponse.builder()
                 .id(techArticle.getId())
@@ -146,8 +146,8 @@ public class TechArticleMainResponse {
         return thumbnailUrl.getUrl();
     }
 
-    private static Float getValidScore(Float score) {
-        return Objects.isNull(score) || Float.isNaN(score) ? null : score;
+    private static Double getValidScore(Double score) {
+        return Objects.isNull(score) || Double.isNaN(score) ? null : score;
     }
 
     private static String truncateString(String contents, int maxLength) {
