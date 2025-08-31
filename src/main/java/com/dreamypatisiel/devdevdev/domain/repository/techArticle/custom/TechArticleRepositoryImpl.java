@@ -9,6 +9,8 @@ import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleDto;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -50,9 +52,9 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     @Override
-    public SliceCustom<TechArticle> findTechArticlesByCursor(Pageable pageable, Long techArticleId,
+    public SliceCustom<TechArticleDto> findTechArticlesByCursor(Pageable pageable, Long techArticleId,
                                                              TechArticleSort techArticleSort, Long companyId,
-                                                             String keyword, Float score
+                                                             String keyword, Double score
     ) {
         // 키워드가 있는 경우 FULLTEXT 검색, 없는 경우 일반 조회
         if (StringUtils.hasText(keyword)) {
@@ -62,9 +64,9 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     // 키워드 검색
-    private SliceCustom<TechArticle> findTechArticlesByCursorWithKeyword(Pageable pageable, Long techArticleId,
+    public SliceCustom<TechArticleDto> findTechArticlesByCursorWithKeyword(Pageable pageable, Long techArticleId,
                                                                          TechArticleSort techArticleSort, Long companyId,
-                                                                         String keyword, Float score
+                                                                         String keyword, Double score
     ) {
         // FULLTEXT 검색 조건 생성
         BooleanExpression titleMatch = Expressions.booleanTemplate(
@@ -87,18 +89,26 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                 techArticle.contents, keyword
         );
         
-        // 전체 스코어 계산 (제목 가중치 2배)
+        // 전체 스코어 계산 (제목 가중치 2배, 안전한 범위로 제한)
         NumberTemplate<Double> totalScore = Expressions.numberTemplate(Double.class,
-                "({0} * 2.0) + {1}", titleScore, contentsScore
+                "(LEAST({0}, 100000) * 2.0) + LEAST({1}, 100000)", titleScore, contentsScore
         );
         
-        List<TechArticle> contents = query.selectFrom(techArticle)
+        // TechArticle과 score를 함께 조회
+        List<Tuple> results = query.select(techArticle, totalScore)
+                .from(techArticle)
                 .where(titleMatch.or(contentsMatch))
                 .where(getCompanyIdCondition(companyId))
                 .where(getCursorConditionForKeywordSearch(techArticleSort, techArticleId, score, totalScore))
                 .orderBy(getOrderSpecifierForKeywordSearch(techArticleSort, totalScore), techArticle.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
+        
+        // Tuple을 TechArticleDto로 변환
+        List<TechArticleDto> contents = results.stream()
+                .map(result -> TechArticleDto.of(
+                        result.get(techArticle), result.get(totalScore)))
+                .toList();
         
         // 키워드 검색 결과 총 갯수
         long totalElements = query.select(techArticle.count())
@@ -111,15 +121,20 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     }
 
     // 일반 조회
-    private SliceCustom<TechArticle> findTechArticlesByCursorWithoutKeyword(Pageable pageable, Long techArticleId,
+    private SliceCustom<TechArticleDto> findTechArticlesByCursorWithoutKeyword(Pageable pageable, Long techArticleId,
                                                                             TechArticleSort techArticleSort, Long companyId
     ) {
-        List<TechArticle> contents = query.selectFrom(techArticle)
+        List<TechArticle> results = query.selectFrom(techArticle)
                 .where(getCursorConditionFromTechArticleSort(techArticleSort, techArticleId))
-                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
+                .where(getCompanyIdCondition(companyId))
                 .orderBy(techArticleSort(techArticleSort), techArticle.id.desc())
                 .limit(pageable.getPageSize())
                 .fetch();
+
+        // Tuple을 TechArticleDto로 변환
+        List<TechArticleDto> contents = results.stream()
+                .map(result -> TechArticleDto.of(result, null))
+                .toList();
 
         // 기술블로그 총 갯수
         long totalElements = query.select(techArticle.count())
@@ -188,13 +203,13 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
 
     // 키워드 검색을 위한 커서 조건 생성
     private Predicate getCursorConditionForKeywordSearch(TechArticleSort techArticleSort, Long techArticleId, 
-                                                        Float score, NumberTemplate<Double> totalScore) {
+                                                        Double score, NumberTemplate<Double> totalScore) {
         if (ObjectUtils.isEmpty(techArticleId) || ObjectUtils.isEmpty(score)) {
             return null;
         }
         
         // HIGHEST_SCORE(정확도순)인 경우 스코어 기반 커서 사용
-        if (techArticleSort == TechArticleSort.HIGHEST_SCORE) {
+        if (techArticleSort == TechArticleSort.HIGHEST_SCORE || ObjectUtils.isEmpty(techArticleSort)) {
             return totalScore.lt(score.doubleValue())
                     .or(totalScore.eq(score.doubleValue())
                             .and(techArticle.id.lt(techArticleId)));
@@ -217,13 +232,13 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     private OrderSpecifier<?> getOrderSpecifierForKeywordSearch(TechArticleSort techArticleSort, 
                                                                NumberTemplate<Double> totalScore) {
         // HIGHEST_SCORE(정확도순)인 경우 스코어 기반 정렬
-        if (techArticleSort == TechArticleSort.HIGHEST_SCORE) {
+        if (techArticleSort == TechArticleSort.HIGHEST_SCORE || ObjectUtils.isEmpty(techArticleSort)) {
             return totalScore.desc();
         }
         
         // 다른 정렬 방식인 경우 기존 정렬 사용
         return Optional.ofNullable(techArticleSort)
-                .orElse(TechArticleSort.HIGHEST_SCORE).getOrderSpecifierByTechArticleSort();
+                .orElse(TechArticleSort.LATEST).getOrderSpecifierByTechArticleSort();
     }
 
     public BooleanExpression getCompanyIdCondition(Long companyId) {

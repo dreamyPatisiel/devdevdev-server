@@ -5,10 +5,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticleRecommend;
 import com.dreamypatisiel.devdevdev.domain.policy.TechArticlePopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRecommendRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleSort;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.*;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.*;
@@ -50,17 +47,17 @@ public class MemberTechArticleService extends TechArticleCommonService implement
     @Override
     public Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, Long techArticleId,
                                                           TechArticleSort techArticleSort, String keyword,
-                                                          Long companyId, Float score, Authentication authentication) {
+                                                          Long companyId, Double score, Authentication authentication) {
         // 회원 조회
         Member member = memberProvider.getMemberByAuthentication(authentication);
 
         // 기술블로그 조회
-        SliceCustom<TechArticle> techArticles = techArticleRepository.findTechArticlesByCursor(
+        SliceCustom<TechArticleDto> techArticles = techArticleRepository.findTechArticlesByCursor(
                 pageable, techArticleId, techArticleSort, companyId, keyword, score);
 
         // 데이터 가공
         List<TechArticleMainResponse> techArticlesResponse = techArticles.stream()
-                .map(techArticle -> TechArticleMainResponse.of(techArticle, member))
+                .map(techArticle -> TechArticleMainResponse.of(techArticle.getTechArticle(), member, techArticle.getScore()))
                 .toList();
 
         return new SliceCustom<>(techArticlesResponse, pageable, techArticles.hasNext(), techArticles.getTotalElements());

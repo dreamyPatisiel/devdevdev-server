@@ -37,7 +37,7 @@ public class TechArticleController {
             @RequestParam(required = false) Long techArticleId,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Long companyId,
-            @RequestParam(required = false) Float score
+            @RequestParam(required = false) Double score
     ) {
         TechArticleService techArticleService = techArticleServiceStrategy.getTechArticleService();
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();

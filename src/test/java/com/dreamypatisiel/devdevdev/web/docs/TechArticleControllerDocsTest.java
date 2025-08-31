@@ -72,7 +72,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
         TechArticleMainResponse response = createTechArticleMainResponse(
                 1L, "http://thumbnail.com", false, "http://article.com", "타이틀 1", "내용 1",
                 1L, "회사명", "http://career.com", "http://official.com", LocalDate.now(), "작성자",
-                10L, 5L, 100L, true, 10.0f
+                10L, 5L, 100L, true, 10.0
         );
         
         SliceCustom<TechArticleMainResponse> mockSlice = new SliceCustom<>(
@@ -451,7 +451,7 @@ public class TechArticleControllerDocsTest extends SupportControllerDocsTest {
                                                                   String techArticleUrl, String title, String contents,
                                                                   Long companyId, String companyName, String careerUrl, String officialImageUrl,
                                                                   LocalDate regDate, String author, long recommendCount,
-                                                                  long commentCount, long viewCount, Boolean isBookmarked, Float score) {
+                                                                  long commentCount, long viewCount, Boolean isBookmarked, Double score) {
         return TechArticleMainResponse.builder()
                 .id(id)
                 .thumbnailUrl(thumbnailUrl)

@@ -11,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.*;
+import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -50,17 +51,19 @@ public class GuestTechArticleService extends TechArticleCommonService implements
     @Override
     public Slice<TechArticleMainResponse> getTechArticles(Pageable pageable, Long techArticleId,
                                                           TechArticleSort techArticleSort, String keyword,
-                                                          Long companyId, Float score, Authentication authentication) {
+                                                          Long companyId, Double score, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
         // 기술블로그 조회
-        SliceCustom<TechArticle> techArticles = techArticleRepository.findTechArticlesByCursor(
+        SliceCustom<TechArticleDto> techArticles = techArticleRepository.findTechArticlesByCursor(
                 pageable, techArticleId, techArticleSort, companyId, keyword, score);
 
         // 데이터 가공
         List<TechArticleMainResponse> techArticlesResponse = techArticles.stream()
-                .map(TechArticleMainResponse::of)
+                .map(techArticle -> TechArticleMainResponse.of(
+                        techArticle.getTechArticle(), techArticle.getScore()
+                ))
                 .toList();
 
         return new SliceCustom<>(techArticlesResponse, pageable, techArticles.hasNext(), techArticles.getTotalElements());

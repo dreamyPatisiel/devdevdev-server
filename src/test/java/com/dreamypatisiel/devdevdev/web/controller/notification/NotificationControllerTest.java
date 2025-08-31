@@ -246,7 +246,7 @@ class NotificationControllerTest extends SupportControllerTest {
                                                                   String techArticleUrl, String title, String contents,
                                                                   Long companyId, String companyName, String careerUrl, String officialImageUrl,
                                                                   LocalDate regDate, String author, long recommendCount,
-                                                                  long commentCount, long viewCount, Boolean isBookmarked, Float score) {
+                                                                  long commentCount, long viewCount, Boolean isBookmarked, Double score) {
         return TechArticleMainResponse.builder()
                 .id(id)
                 .thumbnailUrl(thumbnailUrl)
