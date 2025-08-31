@@ -204,7 +204,7 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
     // 키워드 검색을 위한 커서 조건 생성
     private Predicate getCursorConditionForKeywordSearch(TechArticleSort techArticleSort, Long techArticleId, 
                                                         Double score, NumberTemplate<Double> totalScore) {
-        if (ObjectUtils.isEmpty(techArticleId)) {
+        if (ObjectUtils.isEmpty(techArticleId) || ObjectUtils.isEmpty(score)) {
             return null;
         }
         
