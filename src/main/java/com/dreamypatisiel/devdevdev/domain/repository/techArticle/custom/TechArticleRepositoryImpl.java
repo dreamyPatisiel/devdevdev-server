@@ -94,7 +94,7 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         
         List<TechArticle> contents = query.selectFrom(techArticle)
                 .where(titleMatch.or(contentsMatch))
-                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
+                .where(getCompanyIdCondition(companyId))
                 .where(getCursorConditionForKeywordSearch(techArticleSort, techArticleId, score, totalScore))
                 .orderBy(getOrderSpecifierForKeywordSearch(techArticleSort, totalScore), techArticle.id.desc())
                 .limit(pageable.getPageSize())
@@ -104,7 +104,7 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         long totalElements = query.select(techArticle.count())
                 .from(techArticle)
                 .where(titleMatch.or(contentsMatch))
-                .where(companyId != null ? techArticle.company.id.eq(companyId) : null)
+                .where(getCompanyIdCondition(companyId))
                 .fetchCount();
 
         return new SliceCustom<>(contents, pageable, totalElements);
@@ -224,6 +224,13 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
         // 다른 정렬 방식인 경우 기존 정렬 사용
         return Optional.ofNullable(techArticleSort)
                 .orElse(TechArticleSort.HIGHEST_SCORE).getOrderSpecifierByTechArticleSort();
+    }
+
+    public BooleanExpression getCompanyIdCondition(Long companyId) {
+        if(companyId == null) {
+            return null;
+        }
+        return techArticle.company.id.eq(companyId);
     }
 
     private boolean hasNextPage(List<TechArticle> contents, int pageSize) {
