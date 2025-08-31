@@ -89,9 +89,9 @@ public class TechArticleRepositoryImpl implements TechArticleRepositoryCustom {
                 techArticle.contents, keyword
         );
         
-        // 전체 스코어 계산 (제목 가중치 2배)
+        // 전체 스코어 계산 (제목 가중치 2배, 안전한 범위로 제한)
         NumberTemplate<Double> totalScore = Expressions.numberTemplate(Double.class,
-                "({0} * 2.0) + {1}", titleScore, contentsScore
+                "(LEAST({0}, 100000) * 2.0) + LEAST({1}, 100000)", titleScore, contentsScore
         );
         
         // TechArticle과 score를 함께 조회
