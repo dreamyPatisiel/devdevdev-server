@@ -1,12 +1,14 @@
 package com.dreamypatisiel.devdevdev.web.controller.member;
 
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
+import com.dreamypatisiel.devdevdev.domain.service.member.MemberNicknameDictionaryService;
 import com.dreamypatisiel.devdevdev.domain.service.member.MemberService;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.comment.MyWrittenCommentRequest;
+import com.dreamypatisiel.devdevdev.web.dto.request.member.ChangeNicknameRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.member.RecordMemberExitSurveyAnswerRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.comment.MyWrittenCommentResponse;
@@ -29,6 +31,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,6 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MypageController {
 
     private final MemberService memberService;
+    private final MemberNicknameDictionaryService memberNicknameDictionaryService;
 
     @Operation(summary = "북마크 목록 조회")
     @GetMapping("/mypage/bookmarks")
@@ -51,8 +55,8 @@ public class MypageController {
             @RequestParam(required = false) Long techArticleId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
-        Slice<TechArticleMainResponse> response = memberService.getBookmarkedTechArticles(pageable, techArticleId,
-                bookmarkSort, authentication);
+        Slice<TechArticleMainResponse> response = memberService.getBookmarkedTechArticles(
+                pageable, techArticleId, bookmarkSort, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -132,5 +136,30 @@ public class MypageController {
                 pageable, companyId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(mySubscribedCompanies));
+    }
+
+    @Operation(summary = "랜덤 닉네임 생성", description = "랜덤 닉네임을 생성합니다.")
+    @GetMapping("/mypage/nickname/random")
+    public ResponseEntity<BasicResponse<String>> getRandomNickname() {
+        String response = memberNicknameDictionaryService.createRandomNickname();
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "닉네임 변경", description = "유저의 닉네임을 변경합니다.")
+    @PatchMapping("/mypage/nickname")
+    public ResponseEntity<BasicResponse<String>> changeNickname(
+            @RequestBody @Valid ChangeNicknameRequest request
+    ) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String response = memberService.changeNickname(request.getNickname(), authentication);
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "닉네임 변경 가능 여부 조회", description = "닉네임 변경 가능 여부를 true/false로 반환합니다.")
+    @GetMapping("/mypage/nickname/changeable")
+    public ResponseEntity<BasicResponse<Boolean>> canChangeNickname() {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        boolean result = memberService.canChangeNickname(authentication);
+        return ResponseEntity.ok(BasicResponse.success(result));
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberNicknameDictionaryService {
 
     public static final String NOT_FOUND_WORD_EXCEPTION_MESSAGE = "랜덤 닉네임 생성을 위한 단어가 없습니다.";
+    public static final String SPACE = " ";
 
     private final MemberNicknameDictionaryRepository memberNicknameDictionaryRepository;
 
@@ -44,6 +45,6 @@ public class MemberNicknameDictionaryService {
     private String concatNickname(List<MemberNicknameDictionary> words) {
         return words.stream()
                 .map(word -> word.getWord().getWord())
-                .collect(Collectors.joining(" "));
+                .collect(Collectors.joining(SPACE));
     }
 }

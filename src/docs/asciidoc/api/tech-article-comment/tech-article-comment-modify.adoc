@@ -2,8 +2,10 @@
 == 기술블로그 댓글 수정 API(PATCH: /devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId})
 
 * 기술블로그 댓글을 수정한다.
-* 회원 본인이 작성한 기술블로그 댓글을 수정할 수 있다.
-* 삭제된 댓글을 수정할 수 없다.
+** 회원인 경우 토큰을 `Authorization` 헤더에 포함시켜야 한다.
+** 익명 회원인 경우 `Anonymous-Member-Id` 헤더에 익명 회원 아이디를 포함시켜야 한다.
+* 회원 또는 익명회원 본인이 작성한 기술블로그 댓글/답글 만 수정 할 수 있다.
+* 삭제된 댓글/답글을 수정할 수 없다.
 
 === 정상 요청/응답
 

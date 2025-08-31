@@ -1,9 +1,13 @@
 package com.dreamypatisiel.devdevdev.web.controller.techArticle;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
+
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.TechArticleServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.TechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
+import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.ModifyTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
@@ -38,22 +42,26 @@ public class TechArticleCommentController {
 
     private final TechArticleServiceStrategy techArticleServiceStrategy;
 
-    @Operation(summary = "기술블로그 댓글 작성")
+    @Operation(summary = "기술블로그 댓글 작성", description = "기술블로그 댓글을 작성할 수 있습니다.")
     @PostMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerMainTechComment(
             @PathVariable Long techArticleId,
             @RequestBody @Validated RegisterTechCommentRequest registerTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest,
+                anonymousMemberId);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.registerMainTechComment(techArticleId,
-                registerTechCommentRequest, authentication);
+                registerCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    @Operation(summary = "기술블로그 답글 작성")
+    @Operation(summary = "기술블로그 답글 작성", description = "기술블로그 답글을 작성할 수 있습니다.")
     @PostMapping("/articles/{techArticleId}/comments/{originParentTechCommentId}/{parentTechCommentId}")
     public ResponseEntity<BasicResponse<TechCommentResponse>> registerRepliedTechComment(
             @PathVariable Long techArticleId,
@@ -62,16 +70,18 @@ public class TechArticleCommentController {
             @RequestBody @Validated RegisterTechCommentRequest registerRepliedTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+        TechCommentDto registerRepliedCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechCommentRequest,
+                anonymousMemberId);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.registerRepliedTechComment(techArticleId,
-                originParentTechCommentId,
-                parentTechCommentId, registerRepliedTechCommentRequest, authentication);
+                originParentTechCommentId, parentTechCommentId, registerRepliedCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    @Operation(summary = "기술블로그 댓글/답글 수정")
+    @Operation(summary = "기술블로그 댓글/답글 수정", description = "기술블로그 댓글/답글을 수정할 수 있습니다.")
     @PatchMapping("/articles/{techArticleId}/comments/{techCommentId}")
     public ResponseEntity<BasicResponse<TechCommentResponse>> modifyTechComment(
             @PathVariable Long techArticleId,
@@ -79,10 +89,13 @@ public class TechArticleCommentController {
             @RequestBody @Validated ModifyTechCommentRequest modifyTechCommentRequest) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
+        TechCommentDto modifyTechCommentDto = TechCommentDto.createModifyCommentDto(modifyTechCommentRequest,
+                anonymousMemberId);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.modifyTechComment(techArticleId, techCommentId,
-                modifyTechCommentRequest, authentication);
+                modifyTechCommentDto, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -94,28 +107,29 @@ public class TechArticleCommentController {
             @PathVariable Long techCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         TechCommentResponse response = techCommentService.deleteTechComment(techArticleId, techCommentId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
 
-    @Operation(summary = "기술블로그 댓글/답글 조회")
+    @Operation(summary = "기술블로그 댓글/답글 조회", description = "기술블로그 댓글/답글을 조회할 수 있습니다.")
     @GetMapping("/articles/{techArticleId}/comments")
     public ResponseEntity<BasicResponse<SliceCustom<TechCommentsResponse>>> getTechComments(
             @PageableDefault(size = 5) Pageable pageable,
             @PathVariable Long techArticleId,
             @RequestParam(required = false) TechCommentSort techCommentSort,
-            @RequestParam(required = false) Long techCommentId
-    ) {
+            @RequestParam(required = false) Long techCommentId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         SliceCustom<TechCommentsResponse> response = techCommentService.getTechComments(techArticleId, techCommentId,
-                techCommentSort, pageable, authentication);
+                techCommentSort, pageable, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }
@@ -143,10 +157,11 @@ public class TechArticleCommentController {
             @PathVariable Long techArticleId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+        String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
         TechCommentService techCommentService = techArticleServiceStrategy.getTechCommentService();
         List<TechCommentsResponse> techCommentsResponse = techCommentService.findTechBestComments(size, techArticleId,
-                authentication);
+                anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(techCommentsResponse));
     }

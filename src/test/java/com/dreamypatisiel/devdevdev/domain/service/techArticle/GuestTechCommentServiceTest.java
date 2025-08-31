@@ -1,45 +1,53 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createCompany;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createMainTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createRepliedTechComment;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createSocialDto;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.TechTestUtils.createTechCommentRecommend;
+import static com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.TechComment;
 import com.dreamypatisiel.devdevdev.domain.entity.TechCommentRecommend;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CommentContents;
-import com.dreamypatisiel.devdevdev.domain.entity.embedded.CompanyName;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Url;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import static com.dreamypatisiel.devdevdev.domain.exception.GuestExceptionMessage.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRecommendRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechCommentSort;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.dto.TechCommentDto;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.GuestTechCommentService;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import static com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils.INVALID_METHODS_CALL_MESSAGE;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCommentCustom;
 import com.dreamypatisiel.devdevdev.web.dto.request.techArticle.RegisterTechCommentRequest;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechRepliedCommentsResponse;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
@@ -101,17 +109,16 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
-        TechArticle savedTechArticle = techArticleRepository.save(techArticle);
-        Long id = savedTechArticle.getId();
+        TechArticle techArticle = createTechArticle(company);
+        techArticleRepository.save(techArticle);
+        Long techArticleId = techArticle.getId();
 
         RegisterTechCommentRequest registerTechCommentRequest = new RegisterTechCommentRequest("댓글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerTechCommentRequest, null);
 
         // when // then
         assertThatThrownBy(() -> guestTechCommentService.registerMainTechComment(
-                id, registerTechCommentRequest, authentication))
+                techArticleId, registerCommentDto, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -130,22 +137,21 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(1L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment parentTechComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member,
+        TechComment parentTechComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member,
                 techArticle);
         techCommentRepository.save(parentTechComment);
         Long parentTechCommentId = parentTechComment.getId();
 
         RegisterTechCommentRequest registerRepliedTechComment = new RegisterTechCommentRequest("답글입니다.");
+        TechCommentDto registerCommentDto = TechCommentDto.createRegisterCommentDto(registerRepliedTechComment, null);
 
         // when // then
         assertThatThrownBy(() -> guestTechCommentService.registerRepliedTechComment(
-                techArticleId, parentTechCommentId, parentTechCommentId, registerRepliedTechComment, authentication))
+                techArticleId, parentTechCommentId, parentTechCommentId, registerCommentDto, authentication))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage(INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE);
     }
@@ -164,13 +170,11 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(2L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
-        TechComment techComment = TechComment.createMainTechComment(new CommentContents("댓글입니다."), member, techArticle);
+        TechComment techComment = TechComment.createMainTechCommentByMember(new CommentContents("댓글입니다."), member, techArticle);
         techCommentRepository.save(techComment);
 
         // when // then
@@ -195,9 +199,7 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -246,7 +248,7 @@ public class GuestTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.OLDEST, pageable, authentication);
+                null, TechCommentSort.OLDEST, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -489,9 +491,7 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -540,7 +540,7 @@ public class GuestTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.LATEST, pageable, authentication);
+                null, TechCommentSort.LATEST, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -658,9 +658,7 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -709,7 +707,7 @@ public class GuestTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.MOST_COMMENTED, pageable, authentication);
+                null, TechCommentSort.MOST_COMMENTED, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -952,9 +950,7 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L),
-                new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -983,7 +979,7 @@ public class GuestTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
-                null, TechCommentSort.MOST_LIKED, pageable, authentication);
+                null, TechCommentSort.MOST_LIKED, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(6L);
@@ -1100,8 +1096,7 @@ public class GuestTechCommentServiceTest {
                 "https://example.com");
         companyRepository.save(company);
 
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
         Long techArticleId = techArticle.getId();
 
@@ -1132,7 +1127,7 @@ public class GuestTechCommentServiceTest {
 
         // when
         SliceCommentCustom<TechCommentsResponse> response = guestTechCommentService.getTechComments(techArticleId,
-                originParentTechComment6.getId(), null, pageable, authentication);
+                originParentTechComment6.getId(), null, pageable, null, authentication);
 
         // then
         assertThat(response.getTotalOriginParentComments()).isEqualTo(5L); // 삭제된 댓글은 카운트하지 않는다
@@ -1249,7 +1244,7 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // when // then
-        assertThatThrownBy(() -> guestTechCommentService.findTechBestComments(3, 1L, authentication))
+        assertThatThrownBy(() -> guestTechCommentService.findTechBestComments(3, 1L, null, authentication))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage(INVALID_METHODS_CALL_MESSAGE);
     }
@@ -1276,8 +1271,7 @@ public class GuestTechCommentServiceTest {
         companyRepository.save(company);
 
         // 기술 블로그 생성
-        TechArticle techArticle = TechArticle.createTechArticle(new Title("기술블로그 제목"), new Url("https://example.com"),
-                new Count(1L), new Count(1L), new Count(12L), new Count(1L), null, company);
+        TechArticle techArticle = createTechArticle(company);
         techArticleRepository.save(techArticle);
 
         // 댓글 생성
@@ -1306,7 +1300,7 @@ public class GuestTechCommentServiceTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
-        List<TechCommentsResponse> response = guestTechCommentService.findTechBestComments(3, techArticle.getId(),
+        List<TechCommentsResponse> response = guestTechCommentService.findTechBestComments(3, techArticle.getId(), null,
                 authentication);
 
         // then
@@ -1400,70 +1394,19 @@ public class GuestTechCommentServiceTest {
                 );
     }
 
-    private TechCommentRecommend createTechCommentRecommend(Boolean recommendedStatus, TechComment techComment,
-                                                            Member member) {
-        TechCommentRecommend techCommentRecommend = TechCommentRecommend.builder()
-                .recommendedStatus(recommendedStatus)
-                .techComment(techComment)
-                .member(member)
-                .build();
-
-        techCommentRecommend.changeTechComment(techComment);
-
-        return techCommentRecommend;
-    }
-
-    private static TechComment createMainTechComment(CommentContents contents, Member createdBy,
-                                                     TechArticle techArticle,
-                                                     Count blameTotalCount, Count recommendTotalCount,
-                                                     Count replyTotalCount) {
-        return TechComment.builder()
-                .contents(contents)
-                .createdBy(createdBy)
-                .techArticle(techArticle)
-                .blameTotalCount(blameTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .replyTotalCount(replyTotalCount)
-                .build();
-    }
-
-    private static TechComment createRepliedTechComment(CommentContents contents, Member createdBy,
-                                                        TechArticle techArticle,
-                                                        TechComment originParent, TechComment parent,
-                                                        Count blameTotalCount, Count recommendTotalCount,
-                                                        Count replyTotalCount) {
-        return TechComment.builder()
-                .contents(contents)
-                .createdBy(createdBy)
-                .techArticle(techArticle)
-                .blameTotalCount(blameTotalCount)
-                .recommendTotalCount(recommendTotalCount)
-                .replyTotalCount(replyTotalCount)
-                .originParent(originParent)
-                .parent(parent)
-                .build();
-    }
-
-    private SocialMemberDto createSocialDto(String userId, String name, String nickName, String password, String email,
-                                            String socialType, String role) {
-        return SocialMemberDto.builder()
-                .userId(userId)
-                .name(name)
-                .nickname(nickName)
-                .password(password)
-                .email(email)
-                .socialType(SocialType.valueOf(socialType))
-                .role(Role.valueOf(role))
-                .build();
-    }
-
-    private static Company createCompany(String companyName, String officialImageUrl, String officialUrl,
-                                         String careerUrl) {
-        return Company.builder()
-                .name(new CompanyName(companyName))
-                .officialUrl(new Url(officialUrl))
-                .careerUrl(new Url(careerUrl))
-                .officialImageUrl(new Url(officialImageUrl))
+    private TechArticle createTechArticle(Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 "))
+                .contents("내용 ")
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(1))
+                .recommendTotalCount(new Count(1))
+                .viewTotalCount(new Count(1))
+                .popularScore(new Count(1))
                 .build();
     }
 }

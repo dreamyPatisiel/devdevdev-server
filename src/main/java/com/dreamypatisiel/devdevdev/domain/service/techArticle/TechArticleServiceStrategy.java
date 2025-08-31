@@ -6,7 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.service.techArticle.subscription.Subs
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.MemberTechArticleService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleService;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.GuestTechCommentService;
+import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.GuestTechCommentServiceV2;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.MemberTechCommentService;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techComment.TechCommentService;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
@@ -29,7 +29,7 @@ public class TechArticleServiceStrategy {
 
     public TechCommentService getTechCommentService() {
         if (AuthenticationMemberUtils.isAnonymous()) {
-            return applicationContext.getBean(GuestTechCommentService.class);
+            return applicationContext.getBean(GuestTechCommentServiceV2.class);
         }
         return applicationContext.getBean(MemberTechCommentService.class);
     }

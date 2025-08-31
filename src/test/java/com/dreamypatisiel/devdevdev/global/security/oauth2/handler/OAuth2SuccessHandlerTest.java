@@ -56,7 +56,7 @@ class OAuth2SuccessHandlerTest {
         Map<String, Object> kakaoAttributes = new HashMap<>();
         kakaoAttributes.put(KakaoMember.EMAIL, email);
         attributes.put(KakaoMember.KAKAO_ACCOUNT, kakaoAttributes);
-        UserPrincipal userPrincipal = UserPrincipal.createByMemberAndAttributes(member, attributes);
+        UserPrincipal userPrincipal = UserPrincipal.createByMemberAndAttributes(member, attributes, false);
 
         // OAuth2AuthenticationToken 생성
         SecurityContext context = SecurityContextHolder.getContext();
@@ -82,6 +82,7 @@ class OAuth2SuccessHandlerTest {
     @DisplayName("OAuth2.0 로그인 성공 시"
             + " 토큰을 생성하고 토큰을 쿠키에 저장하고"
             + " 로그인된 회원의 이메일과 닉네임을 쿠키에 저장하고"
+            + " 로그인된 회원의 신규회원 여부를 쿠키에 저장하고"
             + " 리다이렉트를 설정하고"
             + " 회원에 리프레시 토큰을 저장한다.")
     void onAuthenticationSuccess() throws IOException {
@@ -105,6 +106,7 @@ class OAuth2SuccessHandlerTest {
         Cookie nicknameCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_NICKNAME);
         Cookie emailCookie = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_EMAIL);
         Cookie isAdmin = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_ADMIN);
+        Cookie isNewMember = response.getCookie(JwtCookieConstant.DEVDEVDEV_MEMBER_IS_NEW);
 
         assertAll(
                 () -> assertThat(accessCookie).isNotNull(),
@@ -112,7 +114,8 @@ class OAuth2SuccessHandlerTest {
                 () -> assertThat(loginStatusCookie).isNotNull(),
                 () -> assertThat(nicknameCookie).isNotNull(),
                 () -> assertThat(emailCookie).isNotNull(),
-                () -> assertThat(isAdmin).isNotNull()
+                () -> assertThat(isAdmin).isNotNull(),
+                () -> assertThat(isNewMember).isNotNull()
         );
         assertAll(
                 () -> assertThat(accessCookie.isHttpOnly()).isFalse(),

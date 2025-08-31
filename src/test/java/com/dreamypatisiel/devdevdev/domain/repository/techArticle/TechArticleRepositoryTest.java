@@ -40,31 +40,6 @@ class TechArticleRepositoryTest {
     EntityManager em;
 
     @Test
-    @DisplayName("elasticIds 리스트의 elasticId에 해당하는 기술블로그 엔티티를 순서대로 가져올 수 있다.")
-    void findAllByElasticIdIn() {
-        // given
-        Company company = Company.builder().name(new CompanyName("회사")).build();
-        companyRepository.save(company);
-
-        TechArticle techArticle1 = createTechArticle(company, "elasticId1");
-        TechArticle techArticle2 = createTechArticle(company, "elasticId2");
-        TechArticle techArticle3 = createTechArticle(company, "elasticId3");
-        TechArticle techArticle4 = createTechArticle(company, "elasticId4");
-
-        techArticleRepository.saveAll(List.of(techArticle1, techArticle2, techArticle3, techArticle4));
-
-        List<String> elasticIds = List.of("elasticId1", "elasticId3", "elasticId2");
-
-        // when
-        List<TechArticle> techArticles = techArticleRepository.findAllByElasticIdIn(elasticIds);
-
-        // then
-        assertThat(techArticles).hasSize(3)
-                .extracting(TechArticle::getElasticId)
-                .containsExactly("elasticId1", "elasticId3", "elasticId2");
-    }
-
-    @Test
     @DisplayName("기술블로그 북마크 목록을 북마크 등록시간 내림차순으로 가져올 수 있다.")
     void findBookmarkedByCursorOrderByBookmarkedDesc() {
         // given
@@ -163,12 +138,8 @@ class TechArticleRepositoryTest {
                 .containsExactly(techArticle1, techArticle3);
     }
 
-    private static TechArticle createTechArticle(Company company, String elasticId) {
-        return TechArticle.builder()
-                .company(company)
-                .elasticId(elasticId)
-                .build();
-    }
+    // TODO
+    // 기술블로그 조회 관련 테스트코드
 
     private static TechArticle createTechArticle(Company company, Count commentTotalCount) {
         return TechArticle.builder()

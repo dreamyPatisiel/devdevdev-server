@@ -2,7 +2,9 @@
 == 기술블로그 댓글 삭제 API(DELETE: /devdevdev/api/v1/articles/{techArticleId}/comments/{techCommentId})
 
 * 기술블로그 댓글을 삭제한다.
-* 회원 본인이 작성한 기술블로그 댓글을 삭제할 수 있다.
+* 본인이 작성한 기술블로그 댓글을 삭제할 수 있다.
+** 회원인 경우 토큰을 `Authorization` 헤더에 포함시켜야 한다.
+** 익명 회원인 경우 `Anonymous-Member-Id` 헤더에 익명 회원 아이디를 포함시켜야 한다.
 * 어드민 권한을 가진 회원은 모든 댓글을 삭제할 수 있다.
 
 === 정상 요청/응답
@@ -33,7 +35,7 @@ include::{snippets}/delete-tech-article-comments/response-fields.adoc[]
 
 * `존재하지 않는 기술블로그입니다.`: 기술블로그가 존재하지 않는 경우
 * `존재하지 않는 기술블로그 댓글입니다`: 기술블로그 댓글이 존재하지 않거나, 삭제된 댓글이거나, 본인이 작성한 댓글이 아닐 경우
-* `익명 회원은 사용할 수 없는 기능 입니다.`: 익명 회원인 경우
 * `회원을 찾을 수 없습니다.`: 회원이 존재하지 않는 경우
+* `익명 사용자가 아닙니다. 잘못된 메소드 호출 입니다.`: 회원이 익명 회원 메소드를 호출한 경우
 
 include::{snippets}/delete-tech-article-comments-not-found-exception/response-body.adoc[]

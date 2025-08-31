@@ -237,7 +237,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
-          author_name: "[PROD-TEST] 배포 결과를 알려드려요"
+          author_name: "[PROD] 배포 결과를 알려드려요"
           fields: repo,message,commit,author,eventName,ref,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

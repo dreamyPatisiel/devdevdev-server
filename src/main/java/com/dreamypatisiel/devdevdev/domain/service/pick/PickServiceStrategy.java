@@ -20,7 +20,7 @@ public class PickServiceStrategy {
 
     public PickCommentService pickCommentService() {
         if (AuthenticationMemberUtils.isAnonymous()) {
-            return applicationContext.getBean(GuestPickCommentService.class);
+            return applicationContext.getBean(GuestPickCommentServiceV2.class);
         }
         return applicationContext.getBean(MemberPickCommentService.class);
     }

@@ -11,6 +11,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.SurveyQuestionOption;
 import com.dreamypatisiel.devdevdev.domain.entity.SurveyVersionQuestionMapper;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.CustomSurveyAnswer;
+import com.dreamypatisiel.devdevdev.domain.policy.NicknameChangePolicy;
 import com.dreamypatisiel.devdevdev.domain.repository.CompanyRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.CommentRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.comment.MyWrittenCommentDto;
@@ -21,8 +22,7 @@ import com.dreamypatisiel.devdevdev.domain.repository.survey.SurveyVersionQuesti
 import com.dreamypatisiel.devdevdev.domain.repository.survey.custom.SurveyAnswerJdbcTemplateRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.BookmarkSort;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
+import com.dreamypatisiel.devdevdev.exception.NicknameException;
 import com.dreamypatisiel.devdevdev.exception.SurveyException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -36,13 +36,11 @@ import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyQues
 import com.dreamypatisiel.devdevdev.web.dto.response.member.MemberExitSurveyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.MyPickMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.subscription.SubscribedCompanyResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -50,6 +48,8 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.NicknameExceptionMessage.NICKNAME_CHANGE_RATE_LIMIT_MESSAGE;
 
 @Service
 @RequiredArgsConstructor
@@ -61,12 +61,12 @@ public class MemberService {
     private final SurveyVersionQuestionMapperRepository surveyVersionQuestionMapperRepository;
     private final SurveyAnswerRepository surveyAnswerRepository;
     private final TechArticleRepository techArticleRepository;
-    private final TechArticleCommonService techArticleCommonService;
     private final TimeProvider timeProvider;
     private final SurveyQuestionOptionRepository surveyQuestionOptionRepository;
     private final SurveyAnswerJdbcTemplateRepository surveyAnswerJdbcTemplateRepository;
     private final CommentRepository commentRepository;
     private final CompanyRepository companyRepository;
+    private final NicknameChangePolicy nicknameChangePolicy;
 
     /**
      * 회원 탈퇴 회원의 북마크와 회원 정보를 삭제합니다.
@@ -213,33 +213,16 @@ public class MemberService {
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
-        // 북마크 기술블로그 조회(rds, elasticsearch)
-        Slice<TechArticle> techArticleSlices = techArticleRepository.findBookmarkedByMemberAndCursor(pageable,
-                techArticleId, bookmarkSort, findMember);
-
-        List<TechArticle> techArticles = techArticleSlices.getContent();
-
-        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByTechArticles(
-                techArticles);
+        // 북마크 기술블로그 조회
+        Slice<TechArticle> techArticles = techArticleRepository.findBookmarkedByMemberAndCursor(
+                pageable, techArticleId, bookmarkSort, findMember);
 
         // 데이터 가공
-        List<TechArticleMainResponse> techArticleMainResponse = techArticles.stream()
-                .flatMap(techArticle -> mapToTechArticlesResponse(techArticle, elasticTechArticles, findMember))
+        List<TechArticleMainResponse> techArticleMainResponse = techArticles.getContent().stream()
+                .map(techArticle -> TechArticleMainResponse.of(techArticle, findMember))
                 .toList();
 
-        return new SliceImpl<>(techArticleMainResponse, pageable, techArticleSlices.hasNext());
-    }
-
-    /**
-     * 기술블로그 목록 응답 형태로 가공합니다.
-     */
-    private Stream<TechArticleMainResponse> mapToTechArticlesResponse(TechArticle techArticle,
-                                                                      List<ElasticTechArticle> elasticTechArticles,
-                                                                      Member member) {
-        return elasticTechArticles.stream()
-                .filter(elasticTechArticle -> techArticle.getElasticId().equals(elasticTechArticle.getId()))
-                .map(elasticTechArticle -> TechArticleMainResponse.of(techArticle, elasticTechArticle,
-                        CompanyResponse.from(techArticle.getCompany()), member));
+        return new SliceImpl<>(techArticleMainResponse, techArticles.getPageable(), techArticles.hasNext());
     }
 
     /**
@@ -294,5 +277,32 @@ public class MemberService {
                 }).collect(Collectors.toList());
 
         return new SliceCustom<>(subscribedCompanyResponses, pageable, subscribedCompanies.getTotalElements());
+    }
+
+    /**
+     * @Note: 유저의 닉네임을 변경합니다. 설정된 제한 시간 이내에 변경한 이력이 있다면 닉네임 변경이 불가능합니다.
+     * @Author: 유소영
+     * @Since: 2025.07.03
+     */
+    @Transactional
+    public String changeNickname(String nickname, Authentication authentication) {
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+
+        if (!member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow())) {
+            throw new NicknameException(NICKNAME_CHANGE_RATE_LIMIT_MESSAGE);
+        }
+
+        member.changeNickname(nickname, timeProvider.getLocalDateTimeNow());
+        return member.getNicknameAsString();
+    }
+
+    /**
+     * @Note: 유저가 닉네임을 변경할 수 있는지 여부를 반환합니다.
+     * @Author: 유소영
+     * @Since: 2025.07.06
+     */
+    public boolean canChangeNickname(Authentication authentication) {
+        Member member = memberProvider.getMemberByAuthentication(authentication);
+        return member.canChangeNickname(nicknameChangePolicy.getNicknameChangeIntervalMinutes(), timeProvider.getLocalDateTimeNow());
     }
 }

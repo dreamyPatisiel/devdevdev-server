@@ -5,13 +5,7 @@ import static com.dreamypatisiel.devdevdev.web.controller.exception.SystemErrorC
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
-import com.dreamypatisiel.devdevdev.exception.ImageFileException;
-import com.dreamypatisiel.devdevdev.exception.InternalServerException;
-import com.dreamypatisiel.devdevdev.exception.MemberException;
-import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.exception.PickOptionImageNameException;
-import com.dreamypatisiel.devdevdev.exception.TokenInvalidException;
-import com.dreamypatisiel.devdevdev.exception.TokenNotFoundException;
+import com.dreamypatisiel.devdevdev.exception.*;
 import com.dreamypatisiel.devdevdev.global.security.jwt.model.JwtCookieConstant;
 import com.dreamypatisiel.devdevdev.global.utils.CookieUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
@@ -98,6 +92,12 @@ public class ApiControllerAdvice {
     public ResponseEntity<BasicResponse<Object>> memberException(MemberException e) {
         return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.NOT_FOUND.value()),
                 HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(NicknameException.class)
+    public ResponseEntity<BasicResponse<Object>> nicknameException(NicknameException e) {
+        return new ResponseEntity<>(BasicResponse.fail(e.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(NotFoundException.class)

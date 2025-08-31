@@ -11,7 +11,6 @@ import com.dreamypatisiel.devdevdev.domain.repository.SseEmitterRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.notification.NotificationRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.SubscriptionRepository;
 import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.TechArticleCommonService;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
@@ -26,7 +25,6 @@ import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPo
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationPopupResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationReadResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.notification.NotificationResponse;
-import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.CompanyResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -167,60 +165,25 @@ public class NotificationService {
 
         // 데이터 가공
         // NotificationType 에 따라 다른 DTO로 변환
-        Map<Long, ElasticTechArticle> elasticTechArticles = getTechArticleIdToElastic(notifications.getContent());
-
         List<NotificationResponse> response = notifications.getContent().stream()
-                .map(notification -> mapToNotificationResponse(notification, elasticTechArticles))
+                .map(this::mapToNotificationResponse)
                 .toList();
 
         return new SliceCustom<>(response, pageable, notifications.hasNext(), notifications.getTotalElements());
     }
 
-    private NotificationResponse mapToNotificationResponse(Notification notification,
-                                                           Map<Long, ElasticTechArticle> elasticTechArticles) {
+    private NotificationResponse mapToNotificationResponse(Notification notification) {
         // TODO: 현재는 SUBSCRIPTION 타입만 제공, 알림 타입이 추가될 경우 각 타입에 맞는 응답 DTO 변환 매핑 필요
         if (notification.getType() == NotificationType.SUBSCRIPTION) {
-            return NotificationNewArticleResponse.from(notification,
-                    getTechArticleMainResponse(notification, elasticTechArticles));
+            return NotificationNewArticleResponse.from(notification, getTechArticleMainResponse(notification));
         }
         throw new NotFoundException(NotificationExceptionMessage.NOT_FOUND_NOTIFICATION_TYPE);
     }
 
     // NotificationType.SUBSCRIPTION 알림의 경우 TechArticleMainResponse 생성
-    private TechArticleMainResponse getTechArticleMainResponse(Notification notification,
-                                                               Map<Long, ElasticTechArticle> elasticTechArticles) {
+    private TechArticleMainResponse getTechArticleMainResponse(Notification notification) {
         TechArticle techArticle = notification.getTechArticle();
-        CompanyResponse companyResponse = CompanyResponse.from(techArticle.getCompany());
-        ElasticTechArticle elasticTechArticle = elasticTechArticles.get(notification.getId());
-
-        return TechArticleMainResponse.of(techArticle, elasticTechArticle, companyResponse);
-    }
-
-    // 알림 ID를 키로 하고, ElasticTechArticle 을 값으로 가지는 맵을 반환
-    private Map<Long, ElasticTechArticle> getTechArticleIdToElastic(List<Notification> notifications) {
-        // 1. NotificationType.SUBSCRIPTION 알림만 필터링하여 ElasticTechArticle 리스트 생성
-        List<TechArticle> techArticles = notifications.stream()
-                .filter(notification -> notification.getType() == NotificationType.SUBSCRIPTION)
-                .map(Notification::getTechArticle)
-                .toList();
-
-        List<ElasticTechArticle> elasticTechArticles = techArticleCommonService.findElasticTechArticlesByTechArticles(
-                techArticles);
-
-        // 2. ElasticID → ElasticTechArticle 매핑
-        Map<String, ElasticTechArticle> elasticIdToElastic = elasticTechArticles.stream()
-                .collect(Collectors.toMap(
-                        ElasticTechArticle::getId,
-                        elasticTechArticle -> elasticTechArticle
-                ));
-
-        // 3. Notification ID → ElasticTechArticle 매핑
-        return notifications.stream()
-                .filter(notification -> notification.getType() == NotificationType.SUBSCRIPTION)
-                .collect(Collectors.toMap(
-                        Notification::getId,
-                        notification -> elasticIdToElastic.get(notification.getTechArticle().getElasticId())
-                ));
+        return TechArticleMainResponse.of(techArticle);
     }
 
     /**
