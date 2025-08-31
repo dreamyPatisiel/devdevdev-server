@@ -172,7 +172,7 @@ class NotificationControllerTest extends SupportControllerTest {
         // given
         PageRequest pageable = PageRequest.of(0, 1);
         TechArticleMainResponse techArticleMainResponse = createTechArticleMainResponse(
-                1L, "elasticId", "http://thumbnailUrl.com", false,
+                1L, "http://thumbnailUrl.com", false,
                 "http://techArticleUrl.com", "기술블로그 타이틀", "기술블로그 내용",
                 1L, "기업명", "http://careerUrl.com","http://officialImage.com", LocalDate.now(), "작성자",
                 0L, 0L, 0L, false, null
@@ -200,7 +200,6 @@ class NotificationControllerTest extends SupportControllerTest {
                 .andExpect(jsonPath("$.data.content.[0].isRead").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].techArticle").isNotEmpty())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.id").isNumber())
-                .andExpect(jsonPath("$.data.content.[0].techArticle.elasticId").isString())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.thumbnailUrl").isString())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.isLogoImage").isBoolean())
                 .andExpect(jsonPath("$.data.content.[0].techArticle.techArticleUrl").isString())
@@ -243,14 +242,13 @@ class NotificationControllerTest extends SupportControllerTest {
         verify(notificationService, times(1)).getNotifications(any(), anyLong(), any());
     }
 
-    private TechArticleMainResponse createTechArticleMainResponse(Long id, String elasticId, String thumbnailUrl, Boolean isLogoImage,
+    private TechArticleMainResponse createTechArticleMainResponse(Long id, String thumbnailUrl, Boolean isLogoImage,
                                                                   String techArticleUrl, String title, String contents,
                                                                   Long companyId, String companyName, String careerUrl, String officialImageUrl,
                                                                   LocalDate regDate, String author, long recommendCount,
                                                                   long commentCount, long viewCount, Boolean isBookmarked, Float score) {
         return TechArticleMainResponse.builder()
                 .id(id)
-                .elasticId(elasticId)
                 .thumbnailUrl(thumbnailUrl)
                 .isLogoImage(isLogoImage)
                 .techArticleUrl(techArticleUrl)

@@ -20,9 +20,9 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.techArticle.TechArticleRepository;
-import com.dreamypatisiel.devdevdev.elastic.domain.document.ElasticTechArticle;
-import com.dreamypatisiel.devdevdev.elastic.domain.repository.ElasticTechArticleRepository;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +66,6 @@ public class LocalInitData {
     private final PickPopularScorePolicy pickPopularScorePolicy;
     private final TechArticleRepository techArticleRepository;
     private final BookmarkRepository bookmarkRepository;
-    private final ElasticTechArticleRepository elasticTechArticleRepository;
     private final CompanyRepository companyRepository;
     private final MemberNicknameDictionaryRepository memberNicknameDictionaryRepository;
     private final BlameTypeRepository blameTypeRepository;
@@ -93,10 +92,9 @@ public class LocalInitData {
         pickVoteRepository.saveAll(pickVotes);
 
         List<Company> companies = createCompanies();
-        List<Company> savedCompanies = companyRepository.saveAll(companies);
+        companyRepository.saveAll(companies);
 
-        Map<Long, Company> companyIdMap = getCompanyIdMap(savedCompanies);
-        List<TechArticle> techArticles = createTechArticles(companyIdMap);
+        List<TechArticle> techArticles = createTechArticles(companies);
         techArticleRepository.saveAll(techArticles);
 
         List<Bookmark> bookmarks = createBookmarks(member, techArticles);
@@ -205,15 +203,12 @@ public class LocalInitData {
         return bookmarks;
     }
 
-    private List<TechArticle> createTechArticles(Map<Long, Company> companyIdMap) {
+    private List<TechArticle> createTechArticles(List<Company> companies) {
         List<TechArticle> techArticles = new ArrayList<>();
-        Iterable<ElasticTechArticle> elasticTechArticles = elasticTechArticleRepository.findTop10By();
-        for (ElasticTechArticle elasticTechArticle : elasticTechArticles) {
-            Company company = companyIdMap.get(elasticTechArticle.getCompanyId());
-            if (company != null) {
-                TechArticle techArticle = TechArticle.createTechArticle(elasticTechArticle, company);
-                techArticles.add(techArticle);
-            }
+        for (int i = 0; i < companies.size(); i++) {
+            Company company = companies.get(i);
+            TechArticle techArticle = createTechArticle(i, company);
+            techArticles.add(techArticle);
         }
         return techArticles;
     }
@@ -362,5 +357,21 @@ public class LocalInitData {
 
     private BlameType createBlameType(String reason, int sortOrder) {
         return new BlameType(reason, sortOrder);
+    }
+
+    private TechArticle createTechArticle(int i, Company company) {
+        return TechArticle.builder()
+                .title(new Title("타이틀 " + i))
+                .contents("내용 " + i)
+                .company(company)
+                .author("작성자")
+                .regDate(LocalDate.now())
+                .techArticleUrl(new Url("https://example.com/article"))
+                .thumbnailUrl(new Url("https://example.com/images/thumbnail.png"))
+                .commentTotalCount(new Count(i))
+                .recommendTotalCount(new Count(i))
+                .viewTotalCount(new Count(i))
+                .popularScore(new Count(i))
+                .build();
     }
 }
