@@ -4,8 +4,8 @@ import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMB
 
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickFacadeService;
-import com.dreamypatisiel.devdevdev.domain.service.pick.PickService;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
+import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceV1;
 import com.dreamypatisiel.devdevdev.domain.service.pick.dto.VotePickOptionDto;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
@@ -13,6 +13,7 @@ import com.dreamypatisiel.devdevdev.openai.data.request.EmbeddingRequest;
 import com.dreamypatisiel.devdevdev.openai.data.response.Embedding;
 import com.dreamypatisiel.devdevdev.openai.data.response.OpenAIResponse;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingRequestHandler;
+import com.dreamypatisiel.devdevdev.web.controller.ApiVersion;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.ModifyPickRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.RegisterPickRequest;
 import com.dreamypatisiel.devdevdev.web.dto.request.pick.VotePickOptionRequest;
@@ -69,7 +70,7 @@ public class PickController {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
         Slice<PickMainResponse> response = pickService.findPicksMain(pageable, pickId, pickSort, anonymousMemberId,
                 authentication);
 
@@ -83,7 +84,7 @@ public class PickController {
             @RequestParam String name,
             @RequestPart List<MultipartFile> pickOptionImages) {
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
         PickUploadImageResponse pickUploadImageResponse = pickService.uploadImages(name, pickOptionImages);
 
         return ResponseEntity.ok(BasicResponse.success(pickUploadImageResponse));
@@ -93,7 +94,7 @@ public class PickController {
     @DeleteMapping("/picks/image/{pickOptionImageId}")
     public ResponseEntity<BasicResponse<Void>> deletePickImage(@PathVariable Long pickOptionImageId) {
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
         pickService.deleteImage(pickOptionImageId);
 
         return ResponseEntity.ok(BasicResponse.success());
@@ -110,7 +111,7 @@ public class PickController {
         OpenAIResponse<Embedding> embeddingOpenAIResponse = embeddingRequestHandler.postEmbeddings(
                 EmbeddingRequest.createTextEmbedding3Small(registerPickRequest.getPickTitle()));
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
 
         pickFacadeService.injectPickService(pickService);
 
@@ -133,7 +134,7 @@ public class PickController {
         OpenAIResponse<Embedding> embeddingOpenAIResponse = embeddingRequestHandler.postEmbeddings(
                 EmbeddingRequest.createTextEmbedding3Small(modifyPickRequest.getPickTitle()));
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
 
         pickFacadeService.injectPickService(pickService);
 
@@ -150,7 +151,7 @@ public class PickController {
                                                                            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
         PickDetailResponse response = pickService.findPickDetail(pickId, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
@@ -164,7 +165,7 @@ public class PickController {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
         String anonymousMemberId = HttpRequestUtils.getHeaderValue(HEADER_ANONYMOUS_MEMBER_ID);
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
 
         VotePickOptionDto votePickOptionDto = VotePickOptionDto.of(votePickOptionRequest, anonymousMemberId);
         VotePickResponse response = pickService.votePickOption(votePickOptionDto, authentication);
@@ -177,7 +178,7 @@ public class PickController {
     public ResponseEntity<BasicResponse<Void>> deletePick(@PathVariable Long pickId) {
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
         pickService.deletePick(pickId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success());
@@ -187,7 +188,7 @@ public class PickController {
     @GetMapping("picks/{pickId}/similarties")
     public ResponseEntity<BasicResponse<SimilarPickResponse>> getSimilarPicks(@PathVariable Long pickId) {
 
-        PickService pickService = pickServiceStrategy.getPickService();
+        PickServiceV1 pickService = (PickServiceV1) pickServiceStrategy.getPickService(ApiVersion.V1);
         List<SimilarPickResponse> response = pickService.findTop3SimilarPicks(pickId);
 
         return ResponseEntity.ok(BasicResponse.success(response));

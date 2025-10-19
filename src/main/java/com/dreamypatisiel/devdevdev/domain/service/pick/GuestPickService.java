@@ -51,7 +51,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional(readOnly = true)
-public class GuestPickService extends PickCommonService implements PickService {
+public class GuestPickService extends PickCommonService implements PickServiceV1 {
 
     public static final String INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE = "비회원은 현재 해당 기능을 이용할 수 없습니다.";
 
