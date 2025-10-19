@@ -72,7 +72,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional(readOnly = true)
-public class MemberPickService extends PickCommonService implements PickService {
+public class MemberPickService extends PickCommonService implements PickServiceV1 {
 
     public static final String FIRST_PICK_OPTION_IMAGE = "firstPickOptionImage";
     public static final String SECOND_PICK_OPTION_IMAGE = "secondPickOptionImage";

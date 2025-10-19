@@ -18,7 +18,7 @@ import org.springframework.util.ObjectUtils;
 @RequiredArgsConstructor
 public class PickFacadeService {
 
-    private PickService pickService;
+    private PickServiceV1 pickService;
     private final EmbeddingsService embeddingsService;
 
     @Transactional
@@ -54,12 +54,12 @@ public class PickFacadeService {
         return response;
     }
 
-    public void injectPickService(PickService pickService) {
+    public void injectPickService(PickServiceV1 pickService) {
         validatePickService(pickService);
         this.pickService = pickService;
     }
 
-    private void validatePickService(PickService pickService) {
+    private void validatePickService(PickServiceV1 pickService) {
         if (ObjectUtils.isEmpty(pickService)) {
             throw new IllegalStateException("Pick service cannot be empty");
         }
