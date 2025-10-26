@@ -2,13 +2,14 @@ package com.dreamypatisiel.devdevdev.web.dto.response.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.global.utils.MarkdownUtils;
 import com.dreamypatisiel.devdevdev.web.dto.util.PickResponseUtils;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 public class PickMainOptionResponseV2 {
@@ -63,16 +64,23 @@ public class PickMainOptionResponseV2 {
     }
 
     public static String getContentWithLengthLimit(PickOption pickOption) {
-        String content = pickOption.getContents().getPickOptionContents();
-        if (content == null) {
+        if (pickOption == null || pickOption.getContents() == null) {
             return null;
         }
 
-        // 300자 제한
-        if (content.length() > 300) {
-            return content.substring(0, 300);
+        String content = pickOption.getContents().getPickOptionContents();
+        if (ObjectUtils.isEmpty(content)) {
+            return null;
         }
-        return content;
+
+        // 마크다운 문법 제거 및 300자 제한
+        String text = MarkdownUtils.convertMarkdownToText(content);
+
+        // 300자 제한
+        if (text.length() > 300) {
+            return text.substring(0, 300);
+        }
+        return text;
     }
 }
 
