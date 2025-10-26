@@ -4,6 +4,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.global.utils.TimeUtils;
 
 public class PickResponseUtils {
 
@@ -40,5 +41,9 @@ public class PickResponseUtils {
                         && pickVote.isAnonymousMemberNotNull())
                 .anyMatch(pickVote -> !pickVote.isDeleted()
                         && pickVote.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()));
+    }
+
+    public static boolean isNewPick(Pick pick) {
+        return TimeUtils.isWithinOneWeek(pick.getCreatedAt());
     }
 }
