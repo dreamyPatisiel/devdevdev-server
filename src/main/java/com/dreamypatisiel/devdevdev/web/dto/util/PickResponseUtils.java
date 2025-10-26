@@ -6,7 +6,7 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.global.utils.TimeUtils;
 
-public class PickResponseUtils {
+public abstract class PickResponseUtils {
 
     public static boolean isVotedMember(Pick pick, Member member) {
         return pick.getPickVotes().stream()

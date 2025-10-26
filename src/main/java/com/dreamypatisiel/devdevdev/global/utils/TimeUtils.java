@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 /**
  * 시간 관련 유틸리티 클래스
  */
-public class TimeUtils {
+public abstract class TimeUtils {
 
     /**
      * 주어진 시간이 현재로부터 일주일 이내인지 확인합니다.
