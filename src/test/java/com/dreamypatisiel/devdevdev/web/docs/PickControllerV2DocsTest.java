@@ -216,11 +216,15 @@ class PickControllerV2DocsTest extends SupportControllerDocsTest {
                 .andExpect(status().isOk());
 
         // docs
-        actions.andDo(document("pick-similar-v2",
+        actions.andDo(document("pick-similarity-v2",
                 preprocessRequest(prettyPrint()),
                 preprocessResponse(prettyPrint()),
                 pathParameters(
                         parameterWithName("pickId").description("픽픽픽 아이디")
+                ),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
                 ),
                 responseFields(
                         fieldWithPath("resultType").type(STRING).description("응답 결과"),
@@ -230,7 +234,7 @@ class PickControllerV2DocsTest extends SupportControllerDocsTest {
                         fieldWithPath("datas[].voteTotalCount").type(NUMBER).description("픽픽픽 전체 투표 수"),
                         fieldWithPath("datas[].commentTotalCount").type(NUMBER).description("픽픽픽 전체 댓글 수"),
                         fieldWithPath("datas[].similarity").type(NUMBER).description("픽픽픽 유사도"),
-                        fieldWithPath("datas[].isNew").type(BOOLEAN).description("신규 픽픽픽 여부")
+                        fieldWithPath("datas[].isNew").type(BOOLEAN).description("일주일 이내 게시글 여부 (NEW)")
                 )
         ));
     }
