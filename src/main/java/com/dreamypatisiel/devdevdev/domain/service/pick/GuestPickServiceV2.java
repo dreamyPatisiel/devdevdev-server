@@ -5,21 +5,24 @@ import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.*;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponseV2;
+import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -44,7 +47,7 @@ public class GuestPickServiceV2 extends PickCommonService implements PickService
     @Transactional
     @Override
     public Slice<PickMainResponseV2> findPicksMain(Pageable pageable, Long pickId, PickSort pickSort,
-                                                 String anonymousMemberId, Authentication authentication) {
+                                                   String anonymousMemberId, Authentication authentication) {
         // 익명 사용자 호출인지 확인
         AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
 
@@ -71,5 +74,11 @@ public class GuestPickServiceV2 extends PickCommonService implements PickService
     @Override
     public List<SimilarPickResponseV2> findTop3SimilarPicksV2(Long pickId) {
         return super.findTop3SimilarPicksV2(pickId);
+    }
+
+    @Override
+    public Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double score,
+                                                              String keyword, Authentication authentication) {
+        return null;
     }
 }
