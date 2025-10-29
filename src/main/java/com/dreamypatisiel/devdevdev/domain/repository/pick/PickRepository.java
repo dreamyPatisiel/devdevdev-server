@@ -17,4 +17,6 @@ public interface PickRepository extends JpaRepository<Pick, Long>, PickRepositor
     List<Pick> findTop1000ByContentStatusAndEmbeddingsIsNotNullOrderByCreatedAtDesc(ContentStatus contentStatus);
 
     Long countByMember(Member member);
+    
+    Long countByContentStatus(ContentStatus contentStatus);
 }

@@ -4,8 +4,12 @@ import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
+import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
+import com.dreamypatisiel.devdevdev.global.utils.TimeUtils;
 
-public class PickResponseUtils {
+import java.time.LocalDateTime;
+
+public abstract class PickResponseUtils {
 
     public static boolean isVotedMember(Pick pick, Member member) {
         return pick.getPickVotes().stream()
@@ -40,5 +44,9 @@ public class PickResponseUtils {
                         && pickVote.isAnonymousMemberNotNull())
                 .anyMatch(pickVote -> !pickVote.isDeleted()
                         && pickVote.getAnonymousMember().isEqualAnonymousMemberId(anonymousMember.getId()));
+    }
+
+    public static boolean isNewPick(Pick pick) {
+        return TimeUtils.isWithinOneWeek(pick.getCreatedAt(), LocalDateTime.now());
     }
 }
