@@ -20,7 +20,7 @@ import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponse
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponseV2;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -105,10 +105,10 @@ public class MemberPickServiceV2 extends PickCommonService implements PickServic
 
         // 데이터 가공
         List<PickMainSearchResponseV2> pickMainSearchResponse = pickSearchDtos.stream()
-                .map(PickSearchDto::getPickId)
-                .map(findPicks::get)
-                .filter(Objects::nonNull)
-                .map(pick -> PickMainSearchResponseV2.of(pick, findMember, score))
+                .flatMap(pickSearchDto -> Optional.ofNullable(findPicks.get(pickSearchDto.getPickId()))
+                        .map(pick -> PickMainSearchResponseV2.of(pick, findMember, pickSearchDto.getMaxTotalScore()))
+                        .stream()
+                )
                 .toList();
 
         return new SliceCustom<>(pickMainSearchResponse, pageable, (long) pickSearchDtos.size());

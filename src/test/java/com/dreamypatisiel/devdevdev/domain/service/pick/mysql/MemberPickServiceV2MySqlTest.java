@@ -1,6 +1,7 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick.mysql;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -99,6 +100,7 @@ class MemberPickServiceV2MySqlTest {
             );
 
     private static boolean indexesCreated = false;
+    private Long pickId;
 
     @BeforeTransaction
     public void initIndexes() throws SQLException {
@@ -117,6 +119,7 @@ class MemberPickServiceV2MySqlTest {
             Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(1), new Count(0), member,
                     ContentStatus.APPROVAL);
             pickRepository.save(pick);
+            pickId = pick.getId();
 
             // 픽픽픽 옵션 생성
             PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1"), new PickOptionContents("픽픽픽 옵션1 내용"),
@@ -191,7 +194,27 @@ class MemberPickServiceV2MySqlTest {
                 authentication);
 
         // then
-        assertThat(pickMainSearch).hasSize(1);
+        Pick findPick = pickRepository.findById(pickId).get();
+        assertThat(pickMainSearch).hasSize(1)
+                .extracting("id", "title", "voteTotalCount", "commentTotalCount", "isNew", "score")
+                .containsExactly(
+                        tuple(findPick.getId(),
+                                findPick.getTitle().getTitle(),
+                                findPick.getVoteTotalCount().getCount(),
+                                findPick.getCommentTotalCount().getCount(),
+                                true,
+                                600000.0)
+                );
+
+        List<PickOption> pickOptions = findPick.getPickOptions();
+        assertThat(pickMainSearch.getContent().get(0).getPickOptions()).hasSize(2)
+                .extracting("id", "title", "percent", "isPicked", "content", "thumbnailImageUrl")
+                .containsExactly(
+                        tuple(pickOptions.get(0).getId(), pickOptions.get(0).getTitle().getTitle(), 100,
+                                false, "픽픽픽 옵션1 내용", "http://iamge1.png"),
+                        tuple(pickOptions.get(1).getId(), pickOptions.get(1).getTitle().getTitle(), 0,
+                                false, "픽픽픽 옵션2 내용", "http://iamge2.png")
+                );
     }
 
     private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,
