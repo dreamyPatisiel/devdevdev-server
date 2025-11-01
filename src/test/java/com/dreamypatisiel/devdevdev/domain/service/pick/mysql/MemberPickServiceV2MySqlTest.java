@@ -190,7 +190,7 @@ class MemberPickServiceV2MySqlTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<PickMainSearchResponseV2> pickMainSearch = memberPickServiceV2.findPickMainSearch(pageable, null, null, "픽픽",
+        Slice<PickMainSearchResponseV2> pickMainSearch = memberPickServiceV2.findPickMainSearch(pageable, null, null, null, "픽픽",
                 authentication);
 
         // then

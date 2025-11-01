@@ -11,17 +11,17 @@ import lombok.Getter;
 
 @Getter
 public class PickMainSearchResponseV2 extends PickMainResponseV2 {
-    private final Double score;
+    private final Double searchScore;
 
     @Builder(builderMethodName = "searchBuilder")
     public PickMainSearchResponseV2(Long id, Title title, Count voteTotalCount, Count commentTotalCount, Count viewTotalCount,
                                     Count popularScore, Boolean isVoted, Boolean isNew,
-                                    List<PickMainOptionResponseV2> pickOptions, Double score) {
+                                    List<PickMainOptionResponseV2> pickOptions, Double searchScore) {
         super(id, title, voteTotalCount, commentTotalCount, viewTotalCount, popularScore, isVoted, isNew, pickOptions);
-        this.score = score;
+        this.searchScore = searchScore;
     }
 
-    public static PickMainSearchResponseV2 of(Pick pick, Member member, Double score) {
+    public static PickMainSearchResponseV2 of(Pick pick, Member member, Double searchScore) {
         return PickMainSearchResponseV2.searchBuilder()
                 .id(pick.getId())
                 .title(pick.getTitle())
@@ -32,7 +32,7 @@ public class PickMainSearchResponseV2 extends PickMainResponseV2 {
                 .pickOptions(mapToPickOptionsResponse(pick, member))
                 .isVoted(PickResponseUtils.isVotedMember(pick, member))
                 .isNew(PickResponseUtils.isNewPick(pick))
-                .score(score)
+                .searchScore(searchScore)
                 .build();
     }
 }

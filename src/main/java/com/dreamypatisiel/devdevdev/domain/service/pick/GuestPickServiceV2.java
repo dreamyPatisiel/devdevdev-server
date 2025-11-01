@@ -77,7 +77,7 @@ public class GuestPickServiceV2 extends PickCommonService implements PickService
     }
 
     @Override
-    public Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double score,
+    public Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double score, Double popularScore,
                                                               String keyword, Authentication authentication) {
         return null;
     }

@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 public interface PickMapper {
     List<PickSearchDto> findPickSearchDtoByKeywordAndCursor(@Param("cursorId") Long pickId,
                                                             @Param("keyword") String keyword,
-                                                            @Param("cursorScore") Double maxTotalScore,
+                                                            @Param("cursorSearchScore") Double searchScore,
+                                                            @Param("cursorPopularScore") Double popularScore,
                                                             @Param("limit") int limit);
 }
