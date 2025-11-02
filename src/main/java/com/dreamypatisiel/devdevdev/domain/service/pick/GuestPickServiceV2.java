@@ -85,6 +85,7 @@ public class GuestPickServiceV2 extends PickCommonService implements PickService
         return super.findTop3SimilarPicksV2(pickId);
     }
 
+    @Transactional
     @Override
     public Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double searchScore,
                                                               String keyword, String anonymousMemberId,
