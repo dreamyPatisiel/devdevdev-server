@@ -12,8 +12,7 @@
     <!--    3. pick_option.pick_option_contents 에서 매칭된 경우-->
     <select id="findPickSearchDtoByKeywordAndCursor" resultMap="pickSearchDto">
         select pick_id,
-        max_total_score,
-        popular_score
+        max_total_score
         from (
         select p.id as pick_id,
         (
@@ -28,8 +27,7 @@
             from devdevdev.pick_option po
             where po.pick_id = p.id), 0
             )
-        ) as max_total_score,
-        p.popular_score
+        ) as max_total_score
         from devdevdev.pick p
         where match(p.title) against(#{keyword} in natural language mode)
 
@@ -40,12 +38,11 @@
             coalesce(least(match(p.title) against(#{keyword} in natural language mode), 100000) * 3.0, 0) +
             coalesce(max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0), 0) +
             coalesce(max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000)), 0)
-        ) as max_total_score,
-        p.popular_score
+        ) as max_total_score
         from devdevdev.pick p
         inner join devdevdev.pick_option po on p.id = po.pick_id
         where match(po.title) against(#{keyword} in natural language mode)
-        group by p.id, p.popular_score
+        group by p.id
 
         union
 
@@ -54,28 +51,22 @@
             coalesce(least(match(p.title) against(#{keyword} in natural language mode), 100000) * 3.0, 0) +
             coalesce(max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0), 0) +
             coalesce(max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000)), 0)
-        ) as max_total_score,
-        p.popular_score
+        ) as max_total_score
         from devdevdev.pick p
         inner join devdevdev.pick_option po on p.id = po.pick_id
         where match(po.pick_option_contents) against(#{keyword} in natural language mode)
-        group by p.id, p.popular_score
+        group by p.id
         ) as pick_search_results
         <where>
-            <if test="cursorSearchScore != null and cursorPopularScore != null and cursorId != null">
+            <if test="cursorSearchScore != null and cursorId != null">
                 (max_total_score <![CDATA[ < ]]> #{cursorSearchScore})
                 or (
                     max_total_score = #{cursorSearchScore}
-                    and popular_score <![CDATA[ < ]]> #{cursorPopularScore}
-                )
-                or (
-                    max_total_score = #{cursorSearchScore}
-                    and popular_score = #{cursorPopularScore}
                     and pick_id <![CDATA[ < ]]> #{cursorId}
                 )
             </if>
         </where>
-        order by max_total_score desc, popular_score desc, pick_id desc
+        order by max_total_score desc, pick_id desc
         limit #{limit}
     </select>
 

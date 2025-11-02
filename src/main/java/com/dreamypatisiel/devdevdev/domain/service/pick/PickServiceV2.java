@@ -15,6 +15,6 @@ public interface PickServiceV2 extends PickService {
 
     List<SimilarPickResponseV2> findTop3SimilarPicksV2(Long pickId);
 
-    Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double searchScore, Double popularScore,
-                                                       String keyword, Authentication authentication);
+    Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double searchScore, String keyword,
+                                                       String anonymousMemberId, Authentication authentication);
 }

@@ -10,6 +10,5 @@ public interface PickMapper {
     List<PickSearchDto> findPickSearchDtoByKeywordAndCursor(@Param("cursorId") Long pickId,
                                                             @Param("keyword") String keyword,
                                                             @Param("cursorSearchScore") Double searchScore,
-                                                            @Param("cursorPopularScore") Double popularScore,
                                                             @Param("limit") int limit);
 }

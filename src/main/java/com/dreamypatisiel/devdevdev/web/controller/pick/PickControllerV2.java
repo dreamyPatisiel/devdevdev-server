@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,15 +70,14 @@ public class PickControllerV2 {
             @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable,
             @RequestParam(required = false) Long pickId,
             @RequestParam(required = false) Double searchScore,
-            @RequestParam(required = false) Double popularScore,
-            @RequestParam String keyword) {
+            @RequestParam String keyword,
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
 
         Authentication authentication = AuthenticationMemberUtils.getAuthentication();
 
         PickServiceV2 pickService = (PickServiceV2) pickServiceStrategy.getPickService(ApiVersion.V2);
-        Slice<PickMainSearchResponseV2> response = pickService.findPickMainSearch(pageable, pickId, searchScore, popularScore,
-                keyword,
-                authentication);
+        Slice<PickMainSearchResponseV2> response = pickService.findPickMainSearch(pageable, pickId, searchScore,
+                keyword, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

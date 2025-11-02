@@ -1,5 +1,6 @@
 package com.dreamypatisiel.devdevdev.web.dto.response.pick;
 
+import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
@@ -31,6 +32,21 @@ public class PickMainSearchResponseV2 extends PickMainResponseV2 {
                 .popularScore(pick.getPopularScore())
                 .pickOptions(mapToPickOptionsResponse(pick, member))
                 .isVoted(PickResponseUtils.isVotedMember(pick, member))
+                .isNew(PickResponseUtils.isNewPick(pick))
+                .searchScore(searchScore)
+                .build();
+    }
+
+    public static PickMainSearchResponseV2 of(Pick pick, AnonymousMember anonymousMember, Double searchScore) {
+        return PickMainSearchResponseV2.searchBuilder()
+                .id(pick.getId())
+                .title(pick.getTitle())
+                .voteTotalCount(pick.getVoteTotalCount())
+                .commentTotalCount(pick.getCommentTotalCount())
+                .viewTotalCount(pick.getViewTotalCount())
+                .popularScore(pick.getPopularScore())
+                .pickOptions(mapToPickOptionsResponse(pick, anonymousMember))
+                .isVoted(PickResponseUtils.isVotedAnonymousMember(pick, anonymousMember))
                 .isNew(PickResponseUtils.isNewPick(pick))
                 .searchScore(searchScore)
                 .build();

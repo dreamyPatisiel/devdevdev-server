@@ -85,16 +85,15 @@ public class MemberPickServiceV2 extends PickCommonService implements PickServic
      * @Note: 픽픽픽 검색 조회
      */
     @Override
-    public Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double searchScore,
-                                                              Double popularScore, String keyword,
-                                                              Authentication authentication) {
+    public Slice<PickMainSearchResponseV2> findPickMainSearch(Pageable pageable, Long pickId, Double searchScore, String keyword,
+                                                              String anonymousMemberId, Authentication authentication) {
 
         // 회원 조회
         Member findMember = memberProvider.getMemberByAuthentication(authentication);
 
         // 픽픽픽 검색
         List<PickSearchDto> pickSearchDtos = pickMapper.findPickSearchDtoByKeywordAndCursor(pickId,
-                keyword, searchScore, popularScore, pageable.getPageSize());
+                keyword, searchScore, pageable.getPageSize());
 
         Set<Long> pickIds = pickSearchDtos.stream()
                 .map(PickSearchDto::getPickId)

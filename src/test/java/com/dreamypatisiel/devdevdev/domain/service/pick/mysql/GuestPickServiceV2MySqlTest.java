@@ -2,6 +2,8 @@ package com.dreamypatisiel.devdevdev.domain.service.pick.mysql;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Member;
@@ -16,18 +18,15 @@ import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.Role;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.SocialType;
-import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
+import com.dreamypatisiel.devdevdev.domain.repository.member.AnonymousMemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickServiceV2;
-import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
+import com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickServiceV2;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
-import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
+import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponseV2;
-import jakarta.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -37,16 +36,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MySQLContainer;
@@ -56,10 +50,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @Transactional
 @Testcontainers
-class MemberPickServiceV2MySqlTest {
+class GuestPickServiceV2MySqlTest {
 
     @Autowired
-    MemberPickServiceV2 memberPickServiceV2;
+    GuestPickServiceV2 guestPickServiceV2;
     @Autowired
     PickRepository pickRepository;
     @Autowired
@@ -69,15 +63,7 @@ class MemberPickServiceV2MySqlTest {
     @Autowired
     PickOptionImageRepository pickOptionImageRepository;
     @Autowired
-    PickPopularScorePolicy pickPopularScorePolicy;
-    @Autowired
-    EntityManager em;
-    @MockBean
-    MemberProvider memberProvider;
-    @MockBean
-    EmbeddingsService embeddingsService;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    AnonymousMemberRepository anonymousMemberRepository;
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -174,24 +160,23 @@ class MemberPickServiceV2MySqlTest {
     }
 
     @Test
-    @DisplayName("회원이 픽픽픽 검색을 조회한다.")
+    @DisplayName("익명회원이 픽픽픽 검색을 조회한다.")
     void findPickMainSearch() {
         // given
-        SocialMemberDto socialMemberDto = createSocialDto("dreamy5patisiel", "꿈빛파티시엘",
-                "꿈빛파티시엘", "1234", email, socialType, role);
-        Member member = Member.createMemberBy(socialMemberDto);
-
-        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
-                userPrincipal.getSocialType().name()));
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = mock(Authentication.class);
+        when(authentication.getPrincipal()).thenReturn(AuthenticationMemberUtils.ANONYMOUS_USER);
 
         Pageable pageable = PageRequest.of(0, 10);
 
+        String anonymousMemberId = "GA1.1.276672604.1715872960";
+        AnonymousMember anonymousMember = AnonymousMember.builder()
+                .anonymousMemberId(anonymousMemberId)
+                .build();
+        anonymousMemberRepository.save(anonymousMember);
+
         // when
-        Slice<PickMainSearchResponseV2> pickMainSearch = memberPickServiceV2.findPickMainSearch(pageable, null, null, "픽픽", null,
-                authentication);
+        Slice<PickMainSearchResponseV2> pickMainSearch = guestPickServiceV2.findPickMainSearch(pageable, null, null, "픽픽",
+                anonymousMemberId, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pickId).get();
@@ -324,7 +309,8 @@ class MemberPickServiceV2MySqlTest {
 
     private Pick createPick(Member member, Title title, Count pickVoteTotalCount, Count pickViewTotalCount,
                             Count pickcommentTotalCount, String thumbnailUrl, String author,
-                            List<PickVote> pickVotes) {
+                            List<PickVote> pickVotes
+    ) {
 
         Pick pick = Pick.builder()
                 .member(member)
