@@ -1,14 +1,6 @@
 package com.dreamypatisiel.devdevdev.domain.service.pick;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
-import com.dreamypatisiel.devdevdev.domain.entity.Member;
-import com.dreamypatisiel.devdevdev.domain.entity.Pick;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
-import com.dreamypatisiel.devdevdev.domain.entity.PickOptionImage;
-import com.dreamypatisiel.devdevdev.domain.entity.PickVote;
+import com.dreamypatisiel.devdevdev.domain.entity.*;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.PickOptionContents;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
@@ -23,21 +15,17 @@ import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
-import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
-import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -74,10 +62,6 @@ class MemberPickServiceV2Test {
     PickPopularScorePolicy pickPopularScorePolicy;
     @Autowired
     EntityManager em;
-    @MockBean
-    MemberProvider memberProvider;
-    @MockBean
-    EmbeddingsService embeddingsService;
 
     String userId = "dreamy5patisiel";
     String name = "꿈빛파티시엘";
@@ -95,6 +79,12 @@ class MemberPickServiceV2Test {
                 "꿈빛파티시엘", "1234", email, socialType, role);
         Member member = Member.createMemberBy(socialMemberDto);
         memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // 픽픽픽 생성
         Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(0), new Count(1), new Count(0), member,
@@ -116,7 +106,8 @@ class MemberPickServiceV2Test {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Slice<PickMainResponseV2> picksMain = memberPickServiceV2.findPicksMain(pageable, null, null, null, null);
+        Slice<PickMainResponseV2> picksMain = memberPickServiceV2.findPicksMain(pageable, null, null,
+                null, authentication);
 
         // then
         Pick findPick = pickRepository.findById(pick.getId()).get();
@@ -178,7 +169,6 @@ class MemberPickServiceV2Test {
         pickVoteRepository.save(pickVote);
 
         em.flush();
-        em.clear();
 
         // when
         PickDetailResponseV2 pickDetail = memberPickServiceV2.findPickDetail(pick.getId(), null, authentication);
@@ -200,22 +190,26 @@ class MemberPickServiceV2Test {
         PickDetailOptionResponse findFirstPickOptionResponse = pickOptions.get(PickOptionType.firstPickOption);
         PickDetailOptionResponse findSecondPickOptionResponse = pickOptions.get(PickOptionType.secondPickOption);
 
+        PickOption findFirstPickOption = pickOptionRepository.findById(findFirstPickOptionResponse.getId()).get();
         assertThat(findFirstPickOptionResponse).isNotNull();
         assertAll(
                 () -> assertThat(findFirstPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션1"),
                 () -> assertThat(findFirstPickOptionResponse.getIsPicked()).isEqualTo(true),
                 () -> assertThat(findFirstPickOptionResponse.getPercent()).isEqualTo(100),
                 () -> assertThat(findFirstPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션1 내용"),
-                () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1L)
+                () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1L),
+                () -> assertThat(findFirstPickOption.getPickOptionImages()).hasSize(1)
         );
 
+        PickOption findSecondPickOption = pickOptionRepository.findById(findSecondPickOptionResponse.getId()).get();
         assertThat(findSecondPickOptionResponse).isNotNull();
         assertAll(
                 () -> assertThat(findSecondPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션2"),
                 () -> assertThat(findSecondPickOptionResponse.getIsPicked()).isEqualTo(false),
                 () -> assertThat(findSecondPickOptionResponse.getPercent()).isEqualTo(0),
                 () -> assertThat(findSecondPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션2 내용"),
-                () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0L)
+                () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0L),
+                () -> assertThat(findSecondPickOption.getPickOptionImages()).hasSize(1)
         );
     }
 
