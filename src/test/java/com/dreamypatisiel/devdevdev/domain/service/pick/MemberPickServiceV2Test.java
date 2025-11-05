@@ -21,10 +21,16 @@ import com.dreamypatisiel.devdevdev.domain.repository.member.MemberRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionImageRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickOptionRepository;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.PickVoteRepository;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.MemberProvider;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.SocialMemberDto;
+import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailOptionResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
+import com.dreamypatisiel.devdevdev.web.dto.util.CommonResponseUtil;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +41,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
 
 @SpringBootTest
 @Transactional
@@ -51,6 +68,8 @@ class MemberPickServiceV2Test {
     MemberRepository memberRepository;
     @Autowired
     PickOptionImageRepository pickOptionImageRepository;
+    @Autowired
+    PickVoteRepository pickVoteRepository;
     @Autowired
     PickPopularScorePolicy pickPopularScorePolicy;
     @Autowired
@@ -120,6 +139,104 @@ class MemberPickServiceV2Test {
                         tuple(pickOptions.get(1).getId(), pickOptions.get(1).getTitle().getTitle(), 0,
                                 false, "픽픽픽 옵션2 내용", "http://iamge2.png")
                 );
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 상세를 조회한다. V2")
+    void findPickDetail() {
+        // given
+        // 회원 생성
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // 픽픽픽 생성 (투표수 1, 댓글수 5)
+        Pick pick = createPick(new Title("픽픽픽 제목"), new Count(0), new Count(5), new Count(1), new Count(0), member,
+                ContentStatus.APPROVAL);
+        pickRepository.save(pick);
+
+        // 픽픽픽 옵션 생성
+        PickOption firstPickOption = createPickOption(pick, new Title("픽픽픽 옵션1"), new PickOptionContents("픽픽픽 옵션1 내용"),
+                new Count(1), PickOptionType.firstPickOption);
+        PickOption secondPickOption = createPickOption(pick, new Title("픽픽픽 옵션2"), new PickOptionContents("픽픽픽 옵션2 내용"),
+                new Count(0), PickOptionType.secondPickOption);
+        pickOptionRepository.saveAll(List.of(firstPickOption, secondPickOption));
+
+        // 픽픽픽 옵션 이미지 생성
+        PickOptionImage firstPickOptionImage = createPickOptionImage("이미지1", "http://image1.png", firstPickOption);
+        PickOptionImage secondPickOptionImage = createPickOptionImage("이미지2", "http://image2.png", secondPickOption);
+        pickOptionImageRepository.saveAll(List.of(firstPickOptionImage, secondPickOptionImage));
+
+        // 픽픽픽 옵션 투표 여부
+        PickVote pickVote = createPickVote(member, firstPickOption, pick);
+        pickVoteRepository.save(pickVote);
+
+        em.flush();
+        em.clear();
+
+        // when
+        PickDetailResponseV2 pickDetail = memberPickServiceV2.findPickDetail(pick.getId(), null, authentication);
+
+        // then
+        assertThat(pickDetail).isNotNull();
+        assertAll(
+                () -> assertThat(pickDetail.getUserId()).isEqualTo(
+                        CommonResponseUtil.sliceAndMaskEmail(member.getEmail().getEmail())),
+                () -> assertThat(pickDetail.getNickname()).isEqualTo(member.getNickname().getNickname()),
+                () -> assertThat(pickDetail.getPickTitle()).isEqualTo("픽픽픽 제목"),
+                () -> assertThat(pickDetail.getVoteTotalCount()).isEqualTo(1L),
+                () -> assertThat(pickDetail.getCommentTotalCount()).isEqualTo(5L),
+                () -> assertThat(pickDetail.getIsAuthor()).isEqualTo(true),
+                () -> assertThat(pickDetail.getIsVoted()).isEqualTo(true)
+        );
+
+        Map<PickOptionType, PickDetailOptionResponse> pickOptions = pickDetail.getPickOptions();
+        PickDetailOptionResponse findFirstPickOptionResponse = pickOptions.get(PickOptionType.firstPickOption);
+        PickDetailOptionResponse findSecondPickOptionResponse = pickOptions.get(PickOptionType.secondPickOption);
+
+        assertThat(findFirstPickOptionResponse).isNotNull();
+        assertAll(
+                () -> assertThat(findFirstPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션1"),
+                () -> assertThat(findFirstPickOptionResponse.getIsPicked()).isEqualTo(true),
+                () -> assertThat(findFirstPickOptionResponse.getPercent()).isEqualTo(100),
+                () -> assertThat(findFirstPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션1 내용"),
+                () -> assertThat(findFirstPickOptionResponse.getVoteTotalCount()).isEqualTo(1L)
+        );
+
+        assertThat(findSecondPickOptionResponse).isNotNull();
+        assertAll(
+                () -> assertThat(findSecondPickOptionResponse.getTitle()).isEqualTo("픽픽픽 옵션2"),
+                () -> assertThat(findSecondPickOptionResponse.getIsPicked()).isEqualTo(false),
+                () -> assertThat(findSecondPickOptionResponse.getPercent()).isEqualTo(0),
+                () -> assertThat(findSecondPickOptionResponse.getContent()).isEqualTo("픽픽픽 옵션2 내용"),
+                () -> assertThat(findSecondPickOptionResponse.getVoteTotalCount()).isEqualTo(0L)
+        );
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 상세 조회할 때 픽픽픽이 없으면 예외가 발생한다. V2")
+    void findPickDetailNotFoundPickDetail() {
+        // given
+        SocialMemberDto socialMemberDto = createSocialDto(userId, name, nickname, password, email, socialType, role);
+        Member member = Member.createMemberBy(socialMemberDto);
+        memberRepository.save(member);
+
+        UserPrincipal userPrincipal = UserPrincipal.createByMember(member);
+        SecurityContext context = SecurityContextHolder.getContext();
+        context.setAuthentication(new OAuth2AuthenticationToken(userPrincipal, userPrincipal.getAuthorities(),
+                userPrincipal.getSocialType().name()));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // when // then
+        assertThatThrownBy(() -> memberPickServiceV2.findPickDetail(0L, null, authentication))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(INVALID_NOT_FOUND_PICK_MESSAGE);
     }
 
     private Pick createPick(Title title, Count viewTotalCount, Count commentTotalCount, Count voteTotalCount,

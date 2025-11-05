@@ -2,6 +2,7 @@
 
 include::pick-main.adoc[]
 include::pick-detail.adoc[]
+include::pick-detail-v2.adoc[]
 include::pick-register.adoc[]
 include::pick-modify.adoc[]
 include::pick-delete.adoc[]
