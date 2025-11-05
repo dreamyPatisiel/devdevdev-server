@@ -9,6 +9,7 @@ import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
 import com.dreamypatisiel.devdevdev.web.controller.ApiVersion;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickDetailResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponseV2;
@@ -50,6 +51,18 @@ public class PickControllerV2 {
         PickServiceV2 pickService = (PickServiceV2) pickServiceStrategy.getPickService(ApiVersion.V2);
         Slice<PickMainResponseV2> response = pickService.findPicksMain(pageable, pickId, pickSort, anonymousMemberId,
                 authentication);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "픽픽픽 상세 조회 V2", description = "픽픽픽 상세 페이지를 조회합니다.")
+    @GetMapping("/picks/{pickId}")
+    public ResponseEntity<BasicResponse<PickDetailResponseV2>> getPickDetail(@PathVariable Long pickId,
+                                                                           @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickServiceV2 pickService = (PickServiceV2) pickServiceStrategy.getPickService(ApiVersion.V2);
+        PickDetailResponseV2 response = pickService.findPickDetail(pickId, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

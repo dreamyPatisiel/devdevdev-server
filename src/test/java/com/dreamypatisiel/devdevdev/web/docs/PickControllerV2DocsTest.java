@@ -28,11 +28,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Count;
 import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.GuestPickServiceV2;
 import com.dreamypatisiel.devdevdev.domain.service.pick.MemberPickServiceV2;
 import com.dreamypatisiel.devdevdev.global.constant.SecurityConstant;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.*;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainOptionResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponseV2;
@@ -49,6 +51,30 @@ import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.ResultActions;
+
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+
+import static com.dreamypatisiel.devdevdev.global.constant.SecurityConstant.AUTHORIZATION_HEADER;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.authenticationType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.pickSortType;
+import static com.dreamypatisiel.devdevdev.web.docs.format.ApiDocsFormatGenerator.yearMonthDateTimeType;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.JsonFieldType.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 class PickControllerV2DocsTest extends SupportControllerDocsTest {
@@ -251,6 +277,141 @@ class PickControllerV2DocsTest extends SupportControllerDocsTest {
                         fieldWithPath("datas[].commentTotalCount").type(NUMBER).description("픽픽픽 전체 댓글 수"),
                         fieldWithPath("datas[].similarity").type(NUMBER).description("픽픽픽 유사도"),
                         fieldWithPath("datas[].isNew").type(BOOLEAN).description("일주일 이내 게시글 여부 (NEW)")
+                )
+        ));
+    }
+
+    @Test
+    @DisplayName("회원이 픽픽픽 상세를 조회한다. V2")
+    void getPickDetail() throws Exception {
+        // given
+        Long pickId = 1L;
+
+        // Mock 데이터 생성
+        PickDetailOptionImageResponse image1 = PickDetailOptionImageResponse.builder()
+                .id(1L)
+                .imageUrl("http://image1.png")
+                .build();
+
+        PickDetailOptionImageResponse image2 = PickDetailOptionImageResponse.builder()
+                .id(2L)
+                .imageUrl("http://image2.png")
+                .build();
+
+        PickDetailOptionResponse firstOption = PickDetailOptionResponse.builder()
+                .id(1L)
+                .title("픽옵션1")
+                .isPicked(true)
+                .percent(new BigDecimal("60"))
+                .content("픽콘텐츠1")
+                .voteTotalCount(3L)
+                .pickDetailOptionImagesResponse(List.of(image1))
+                .build();
+
+        PickDetailOptionResponse secondOption = PickDetailOptionResponse.builder()
+                .id(2L)
+                .title("픽옵션2")
+                .isPicked(false)
+                .percent(new BigDecimal("40"))
+                .content("픽콘텐츠2")
+                .voteTotalCount(2L)
+                .pickDetailOptionImagesResponse(List.of(image2))
+                .build();
+
+        Map<PickOptionType, PickDetailOptionResponse> pickOptions = Map.of(
+                PickOptionType.firstPickOption, firstOption,
+                PickOptionType.secondPickOption, secondOption
+        );
+
+        PickDetailResponseV2 response = PickDetailResponseV2.builder()
+                .userId("dre***@gmail.com")
+                .nickname("꿈빛파티시엘")
+                .pickCreatedAt(LocalDateTime.of(2024, 1, 1, 12, 0, 0))
+                .pickTitle("픽픽픽 제목")
+                .voteTotalCount(5L)
+                .commentTotalCount(10L)
+                .isAuthor(true)
+                .isVoted(true)
+                .pickOptions(pickOptions)
+                .build();
+
+        when(memberPickServiceV2.findPickDetail(anyLong(), any(), any(Authentication.class)))
+                .thenReturn(response);
+
+        // when // then
+        ResultActions actions = mockMvc.perform(get("/devdevdev/api/v2/picks/{pickId}", pickId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(AUTHORIZATION_HEADER, SecurityConstant.BEARER_PREFIX + accessToken)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(status().isOk());
+
+        // docs
+        actions.andDo(document("pick-detail-v2",
+                preprocessRequest(prettyPrint()),
+                preprocessResponse(prettyPrint()),
+                requestHeaders(
+                        headerWithName(AUTHORIZATION_HEADER).optional().description("Bearer 엑세스 토큰"),
+                        headerWithName("Anonymous-Member-Id").optional().description("익명 회원 아이디")
+                ),
+                pathParameters(
+                        parameterWithName("pickId").description("픽픽픽 아이디")
+                ),
+                responseFields(
+                        fieldWithPath("resultType").type(STRING).description("응답 결과"),
+                        fieldWithPath("data").type(OBJECT).description("응답 데이터"),
+
+                        fieldWithPath("data.nickname").type(STRING).description("픽픽픽 작성자 닉네임"),
+                        fieldWithPath("data.userId").type(STRING).description("픽픽픽 작성자 아이디"),
+                        fieldWithPath("data.pickCreatedAt").type(STRING).description("픽픽픽 생성 일시")
+                                .attributes(yearMonthDateTimeType()),
+                        fieldWithPath("data.pickTitle").type(STRING).description("픽픽픽 제목"),
+                        fieldWithPath("data.voteTotalCount").type(NUMBER).description("픽픽픽 전체 투표 수 (NEW)"),
+                        fieldWithPath("data.commentTotalCount").type(NUMBER).description("픽픽픽 전체 댓글 수 (NEW)"),
+                        fieldWithPath("data.isAuthor").type(BOOLEAN).description("현재 로그인한 회원이 픽픽픽 작성자 여부"),
+                        fieldWithPath("data.isVoted").type(BOOLEAN).description("픽픽픽 투표 여부"),
+
+                        fieldWithPath("data.pickOptions").type(OBJECT).description("픽픽픽 옵션 객체"),
+
+                        fieldWithPath("data.pickOptions.firstPickOption").type(OBJECT).description("픽픽픽 첫번째 옵션 객체"),
+                        fieldWithPath("data.pickOptions.firstPickOption.id").type(NUMBER)
+                                .description("첫 번째 픽픽픽 옵션 아이디"),
+                        fieldWithPath("data.pickOptions.firstPickOption.title").type(STRING)
+                                .description("첫 번째 픽픽픽 옵션 제목"),
+                        fieldWithPath("data.pickOptions.firstPickOption.isPicked").type(BOOLEAN)
+                                .description("첫 번째 픽픽픽 옵션 투표 여부"),
+                        fieldWithPath("data.pickOptions.firstPickOption.percent").type(NUMBER)
+                                .description("첫 번째 픽픽픽 옵션 득표율(%)"),
+                        fieldWithPath("data.pickOptions.firstPickOption.content").type(STRING)
+                                .description("첫 번째 픽픽픽 옵션 내용"),
+                        fieldWithPath("data.pickOptions.firstPickOption.voteTotalCount").type(NUMBER)
+                                .description("첫 번째 픽픽픽 옵션 득표수"),
+                        fieldWithPath("data.pickOptions.firstPickOption.pickDetailOptionImages").type(ARRAY)
+                                .description("첫 번째 픽픽픽 옵션 이미지 배열"),
+                        fieldWithPath("data.pickOptions.firstPickOption.pickDetailOptionImages.[].id").type(NUMBER)
+                                .description("첫 번째 픽픽픽 옵션 이미지 아이디"),
+                        fieldWithPath("data.pickOptions.firstPickOption.pickDetailOptionImages.[].imageUrl").type(
+                                STRING).description("첫 번째 픽픽픽 옵션 이미지 url"),
+
+                        fieldWithPath("data.pickOptions.secondPickOption").type(OBJECT).description("픽픽픽 두번째 옵션 객체"),
+                        fieldWithPath("data.pickOptions.secondPickOption.id").type(NUMBER)
+                                .description("두 번째 픽픽픽 옵션 아이디"),
+                        fieldWithPath("data.pickOptions.secondPickOption.title").type(STRING)
+                                .description("두 번째 픽픽픽 옵션 제목"),
+                        fieldWithPath("data.pickOptions.secondPickOption.isPicked").type(BOOLEAN)
+                                .description("두 번째 픽픽픽 옵션 투표 여부"),
+                        fieldWithPath("data.pickOptions.secondPickOption.percent").type(NUMBER)
+                                .description("두 번째 픽픽픽 옵션 득표율(%)"),
+                        fieldWithPath("data.pickOptions.secondPickOption.content").type(STRING)
+                                .description("두 번째 픽픽픽 옵션 내용"),
+                        fieldWithPath("data.pickOptions.secondPickOption.voteTotalCount").type(NUMBER)
+                                .description("두 번째 픽픽픽 옵션 득표수"),
+                        fieldWithPath("data.pickOptions.secondPickOption.pickDetailOptionImages").type(ARRAY)
+                                .description("두 번째 픽픽픽 옵션 이미지 배열"),
+                        fieldWithPath("data.pickOptions.secondPickOption.pickDetailOptionImages.[].id").type(NUMBER)
+                                .description("두 번째 픽픽픽 옵션 이미지 아이디"),
+                        fieldWithPath("data.pickOptions.secondPickOption.pickDetailOptionImages.[].imageUrl").type(
+                                STRING).description("두 번째 픽픽픽 옵션 이미지 url")
                 )
         ));
     }
