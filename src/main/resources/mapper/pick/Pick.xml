@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 위 코드가 mapper 설정을 하는 코드 -->
+
+<!-- Mapper를 사용하는 Repository의 전체 경로를 적어줘야함. -->
+<mapper namespace="com.dreamypatisiel.devdevdev.domain.repository.pick.mybatis.PickMapper">
+    <!-- 회원이 작성한 댓글을 작성일시 내림차순으로 조회 -->
+    <!--    1. pick.title 에서 매칭된 경우-->
+    <!--    2. pick_option.title 에서 매칭된 경우-->
+    <!--    3. pick_option.pick_option_contents 에서 매칭된 경우-->
+    <select id="findPickSearchDtoByKeywordAndCursor" resultMap="pickSearchDto">
+        select pick_id,
+        max_total_score
+        from (
+        select p.id as pick_id,
+        (
+        coalesce(least(match(p.title) against(#{keyword} in natural language mode), 100000) * 3.0, 0) +
+        coalesce(
+            (select max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0)
+            from devdevdev.pick_option po
+            where po.pick_id = p.id), 0
+            ) +
+        coalesce(
+            (select max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000))
+            from devdevdev.pick_option po
+            where po.pick_id = p.id), 0
+            )
+        ) as max_total_score
+        from devdevdev.pick p
+        where match(p.title) against(#{keyword} in natural language mode)
+            and p.content_status = 'APPROVAL'
+
+        union
+
+        select p.id as pick_id,
+        (
+            coalesce(least(match(p.title) against(#{keyword} in natural language mode), 100000) * 3.0, 0) +
+            coalesce(max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0), 0) +
+            coalesce(max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000)), 0)
+        ) as max_total_score
+        from devdevdev.pick p
+            inner join devdevdev.pick_option po on p.id = po.pick_id
+        where match(po.title) against(#{keyword} in natural language mode)
+            and p.content_status = 'APPROVAL'
+        group by p.id
+
+        union
+
+        select p.id as pick_id,
+        (
+            coalesce(least(match(p.title) against(#{keyword} in natural language mode), 100000) * 3.0, 0) +
+            coalesce(max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0), 0) +
+            coalesce(max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000)), 0)
+        ) as max_total_score
+        from devdevdev.pick p
+            inner join devdevdev.pick_option po on p.id = po.pick_id
+        where match(po.pick_option_contents) against(#{keyword} in natural language mode)
+            and p.content_status = 'APPROVAL'
+        group by p.id
+        ) as pick_search_results
+        <where>
+            <if test="cursorSearchScore != null and cursorId != null">
+                (max_total_score <![CDATA[ < ]]> #{cursorSearchScore})
+                or (
+                    max_total_score = #{cursorSearchScore}
+                    and pick_id <![CDATA[ < ]]> #{cursorId}
+                )
+            </if>
+        </where>
+        order by max_total_score desc, pick_id desc
+        limit #{limit}
+    </select>
+
+    <resultMap id="pickSearchDto"
+               type="com.dreamypatisiel.devdevdev.domain.repository.pick.PickSearchDto">
+        <id column="pick_id" property="pickId"/>
+        <result column="max_total_score" property="maxTotalScore"/>
+    </resultMap>
+
+</mapper>

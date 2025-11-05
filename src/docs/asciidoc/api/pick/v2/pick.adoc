@@ -1,0 +1,5 @@
+= 픽픽픽 V2
+
+include::pick-main-v2.adoc[]
+include::pick-search-v2.adoc[]
+include::pick-similarity-v2.adoc[]

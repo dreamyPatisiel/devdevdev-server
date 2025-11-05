@@ -1,5 +1,7 @@
 package com.dreamypatisiel.devdevdev.web.controller.pick;
 
+import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
+
 import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceStrategy;
 import com.dreamypatisiel.devdevdev.domain.service.pick.PickServiceV2;
@@ -8,9 +10,11 @@ import com.dreamypatisiel.devdevdev.global.utils.HttpRequestUtils;
 import com.dreamypatisiel.devdevdev.web.controller.ApiVersion;
 import com.dreamypatisiel.devdevdev.web.dto.response.BasicResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponseV2;
 import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponseV2;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -18,13 +22,14 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
-import static com.dreamypatisiel.devdevdev.web.WebConstant.HEADER_ANONYMOUS_MEMBER_ID;
-
-@Tag(name = "픽픽픽 API V2", description = "")
+@Tag(name = "픽픽픽 API V2", description = "픽픽픽 메인, 픽픽픽 검색, 나도 고민했는데 픽픽픽")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/devdevdev/api/v2")
@@ -55,6 +60,24 @@ public class PickControllerV2 {
 
         PickServiceV2 pickService = (PickServiceV2) pickServiceStrategy.getPickService(ApiVersion.V2);
         List<SimilarPickResponseV2> response = pickService.findTop3SimilarPicksV2(pickId);
+
+        return ResponseEntity.ok(BasicResponse.success(response));
+    }
+
+    @Operation(summary = "픽픽픽 검색 V2", description = "픽픽픽 메인에서 검색한 결과를 커서방식으로 조회합니다.")
+    @GetMapping("/picks/search")
+    public ResponseEntity<BasicResponse<Slice<PickMainSearchResponseV2>>> searchPicksMain(
+            @PageableDefault(sort = "id", direction = Direction.DESC) Pageable pageable,
+            @RequestParam(required = false) Long pickId,
+            @RequestParam(required = false) Double searchScore,
+            @RequestParam String keyword,
+            @RequestHeader(value = HEADER_ANONYMOUS_MEMBER_ID, required = false) String anonymousMemberId) {
+
+        Authentication authentication = AuthenticationMemberUtils.getAuthentication();
+
+        PickServiceV2 pickService = (PickServiceV2) pickServiceStrategy.getPickService(ApiVersion.V2);
+        Slice<PickMainSearchResponseV2> response = pickService.findPickMainSearch(pageable, pickId, searchScore,
+                keyword, anonymousMemberId, authentication);
 
         return ResponseEntity.ok(BasicResponse.success(response));
     }

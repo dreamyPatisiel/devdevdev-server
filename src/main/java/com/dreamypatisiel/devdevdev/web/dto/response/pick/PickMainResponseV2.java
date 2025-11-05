@@ -8,10 +8,10 @@ import com.dreamypatisiel.devdevdev.domain.entity.embedded.Title;
 import com.dreamypatisiel.devdevdev.web.dto.util.PickResponseUtils;
 import java.util.List;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @NoArgsConstructor
 public class PickMainResponseV2 {
     private Long id;
@@ -26,8 +26,8 @@ public class PickMainResponseV2 {
 
     @Builder
     public PickMainResponseV2(Long id, Title title, Count voteTotalCount, Count commentTotalCount,
-                            Count viewTotalCount, Count popularScore, Boolean isVoted, Boolean isNew,
-                            List<PickMainOptionResponseV2> pickOptions) {
+                              Count viewTotalCount, Count popularScore, Boolean isVoted, Boolean isNew,
+                              List<PickMainOptionResponseV2> pickOptions) {
         this.id = id;
         this.title = title.getTitle();
         this.voteTotalCount = voteTotalCount.getCount();
@@ -69,16 +69,15 @@ public class PickMainResponseV2 {
                 .build();
     }
 
-    private static List<PickMainOptionResponseV2> mapToPickOptionsResponse(Pick pick, Member member) {
+    protected static List<PickMainOptionResponseV2> mapToPickOptionsResponse(Pick pick, Member member) {
         return pick.getPickOptions().stream()
                 .map(pickOption -> PickMainOptionResponseV2.of(pick, pickOption, member))
                 .toList();
     }
 
-    private static List<PickMainOptionResponseV2> mapToPickOptionsResponse(Pick pick, AnonymousMember anonymousMember) {
+    protected static List<PickMainOptionResponseV2> mapToPickOptionsResponse(Pick pick, AnonymousMember anonymousMember) {
         return pick.getPickOptions().stream()
                 .map(pickOption -> PickMainOptionResponseV2.of(pick, pickOption, anonymousMember))
                 .toList();
     }
-
 }
