@@ -30,6 +30,7 @@
         ) as max_total_score
         from devdevdev.pick p
         where match(p.title) against(#{keyword} in natural language mode)
+            and p.content_status = 'APPROVAL'
 
         union
 
@@ -40,8 +41,9 @@
             coalesce(max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000)), 0)
         ) as max_total_score
         from devdevdev.pick p
-        inner join devdevdev.pick_option po on p.id = po.pick_id
+            inner join devdevdev.pick_option po on p.id = po.pick_id
         where match(po.title) against(#{keyword} in natural language mode)
+            and p.content_status = 'APPROVAL'
         group by p.id
 
         union
@@ -53,8 +55,9 @@
             coalesce(max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000)), 0)
         ) as max_total_score
         from devdevdev.pick p
-        inner join devdevdev.pick_option po on p.id = po.pick_id
+            inner join devdevdev.pick_option po on p.id = po.pick_id
         where match(po.pick_option_contents) against(#{keyword} in natural language mode)
+            and p.content_status = 'APPROVAL'
         group by p.id
         ) as pick_search_results
         <where>
