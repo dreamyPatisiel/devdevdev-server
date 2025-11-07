@@ -2,34 +2,35 @@ package com.dreamypatisiel.devdevdev.domain.service.pick;
 
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Pick;
+import com.dreamypatisiel.devdevdev.domain.entity.PickOption;
 import com.dreamypatisiel.devdevdev.domain.entity.enums.ContentStatus;
+import com.dreamypatisiel.devdevdev.domain.entity.enums.PickOptionType;
 import com.dreamypatisiel.devdevdev.domain.policy.PickBestCommentsPolicy;
 import com.dreamypatisiel.devdevdev.domain.policy.PickPopularScorePolicy;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRecommendRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickCommentRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickRepository;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSearchDto;
-import com.dreamypatisiel.devdevdev.domain.repository.pick.PickSort;
+import com.dreamypatisiel.devdevdev.domain.repository.pick.*;
 import com.dreamypatisiel.devdevdev.domain.repository.pick.mybatis.PickMapper;
 import com.dreamypatisiel.devdevdev.domain.service.member.AnonymousMemberService;
+import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.common.TimeProvider;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
 import com.dreamypatisiel.devdevdev.openai.embeddings.EmbeddingsService;
 import com.dreamypatisiel.devdevdev.web.dto.SliceCustom;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainResponseV2;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.PickMainSearchResponseV2;
-import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponseV2;
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.*;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.exception.PickExceptionMessage.INVALID_NOT_FOUND_PICK_MESSAGE;
 
 @Service
 @Transactional(readOnly = true)
@@ -75,6 +76,40 @@ public class GuestPickServiceV2 extends PickCommonService implements PickService
         long totalElements = pickRepository.countByContentStatus(ContentStatus.APPROVAL);
 
         return new SliceCustom<>(pickMainResponse, pageable, picks.hasNext(), totalElements);
+    }
+
+    /**
+     * 픽픽픽 상세 조회 V2
+     */
+    @Transactional
+    @Override
+    public PickDetailResponseV2 findPickDetail(Long pickId, String anonymousMemberId, Authentication authentication) {
+
+        // 익명 사용자 호출인지 확인
+        AuthenticationMemberUtils.validateAnonymousMethodCall(authentication);
+
+        // 익명 회원 조회 또는 생성
+        AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
+
+        // 픽픽픽 상세 조회(pickOption 페치조인)
+        Pick findPick = pickRepository.findPickWithPickOptionByPickId(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태가 아니면
+        if (!findPick.isTrueContentStatus(ContentStatus.APPROVAL)) {
+            throw new IllegalArgumentException(INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE);
+        }
+
+        findPick.plusOneViewTotalCount(); // 조회수 증가
+        findPick.changePopularScore(pickPopularScorePolicy); // 인기점수 계산
+
+        // 픽픽픽 옵션 가공
+        Map<PickOptionType, PickDetailOptionResponse> pickDetailOptions = findPick.getPickOptions().stream()
+                .collect(Collectors.toMap(PickOption::getPickOptionType,
+                        pickOption -> PickDetailOptionResponse.of(pickOption, findPick, anonymousMember)));
+
+        // 픽픽픽 상세
+        return PickDetailResponseV2.of(findPick, findPick.getMember(), anonymousMember, pickDetailOptions);
     }
 
     /**
