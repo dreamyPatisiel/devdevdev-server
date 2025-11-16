@@ -12,24 +12,26 @@
     <!--    3. pick_option.pick_option_contents 에서 매칭된 경우-->
     <select id="findPickSearchDtoByKeywordAndCursor" resultMap="pickSearchDto">
         select pick_id,
-        max_total_score
+        max(max_total_score) as max_total_score
         from (
         select p.id as pick_id,
         (
         coalesce(least(match(p.title) against(#{keyword} in natural language mode), 100000) * 3.0, 0) +
         coalesce(
-            (select max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0)
-            from devdevdev.pick_option po
-            where po.pick_id = p.id), 0
+            (
+                select max(least(match(po.title) against(#{keyword} in natural language mode), 100000) * 2.0)
+                from devdevdev.pick_option po
+                where po.pick_id = p.id), 0
             ) +
         coalesce(
-            (select max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000))
-            from devdevdev.pick_option po
-            where po.pick_id = p.id), 0
+            (
+                select max(least(match(po.pick_option_contents) against(#{keyword} in natural language mode), 100000))
+                from devdevdev.pick_option po
+                where po.pick_id = p.id), 0
             )
         ) as max_total_score
         from devdevdev.pick p
-        where match(p.title) against(#{keyword} in natural language mode)
+        where match(p.title) against(#{keyword} in boolean mode)
             and p.content_status = 'APPROVAL'
 
         union
@@ -42,7 +44,7 @@
         ) as max_total_score
         from devdevdev.pick p
             inner join devdevdev.pick_option po on p.id = po.pick_id
-        where match(po.title) against(#{keyword} in natural language mode)
+        where match(po.title) against(#{keyword} in boolean mode)
             and p.content_status = 'APPROVAL'
         group by p.id
 
@@ -56,7 +58,7 @@
         ) as max_total_score
         from devdevdev.pick p
             inner join devdevdev.pick_option po on p.id = po.pick_id
-        where match(po.pick_option_contents) against(#{keyword} in natural language mode)
+        where match(po.pick_option_contents) against(#{keyword} in boolean mode)
             and p.content_status = 'APPROVAL'
         group by p.id
         ) as pick_search_results
@@ -69,6 +71,7 @@
                 )
             </if>
         </where>
+        group by pick_id
         order by max_total_score desc, pick_id desc
         limit #{limit}
     </select>
