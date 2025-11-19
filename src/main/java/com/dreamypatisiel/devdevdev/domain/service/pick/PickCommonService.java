@@ -36,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+
+import com.dreamypatisiel.devdevdev.web.dto.response.pick.SimilarPickResponseV2;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -82,6 +84,33 @@ public class PickCommonService {
         return pickWithSimilarityDto.stream()
                 .map(SimilarPickResponse::from)
                 .sorted(Comparator.comparingDouble(SimilarPickResponse::getSimilarity).reversed()) // 내림차순
+                .limit(SIMILARITY_PICK_MAX_COUNT)
+                .toList();
+    }
+
+    public List<SimilarPickResponseV2> findTop3SimilarPicksV2(Long pickId) {
+
+        // 픽픽픽 조회
+        Pick findPick = pickRepository.findById(pickId)
+                .orElseThrow(() -> new NotFoundException(INVALID_NOT_FOUND_PICK_MESSAGE));
+
+        // 픽픽픽 게시글의 승인 상태가 아니면
+        if (!findPick.isTrueContentStatus(ContentStatus.APPROVAL)) {
+            throw new IllegalArgumentException(INVALID_NOT_APPROVAL_STATUS_PICK_MESSAGE);
+        }
+
+        // 임베딩 값이 없으면 500 예외 발생
+        if (ObjectUtils.isEmpty(findPick.getEmbeddings())) {
+            throw new InternalServerException();
+        }
+
+        // 유사도를 계산한 픽픽픽 조회
+        List<PickWithSimilarityDto> pickWithSimilarityDto = embeddingsService.getPicksWithSimilarityDtoExcludeTargetPick(
+                findPick);
+
+        return pickWithSimilarityDto.stream()
+                .map(SimilarPickResponseV2::from)
+                .sorted(Comparator.comparingDouble(SimilarPickResponseV2::getSimilarity).reversed()) // 내림차순
                 .limit(SIMILARITY_PICK_MAX_COUNT)
                 .toList();
     }

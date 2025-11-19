@@ -16,6 +16,7 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -64,6 +65,16 @@ public class PickRepositoryImpl implements PickRepositoryCustom {
                 .fetch();
 
         return new SliceImpl<>(contents, pageable, hasNextPage(contents, pageable.getPageSize()));
+    }
+
+    @Override
+    public List<Pick> findPicksWithPickOptionWithMemberByIdIn(Set<Long> ids) {
+        return query.selectFrom(pick)
+                .leftJoin(pick.pickOptions, pickOption)
+                .leftJoin(pick.member, member).fetchJoin()
+                .where(pick.id.in(ids)
+                        .and(pick.contentStatus.eq(ContentStatus.APPROVAL)))
+                .fetch();
     }
 
     @Override

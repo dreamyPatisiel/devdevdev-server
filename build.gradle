@@ -93,6 +93,9 @@ dependencies {
     // mybatis
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 
+    // markdown parser
+    implementation 'org.commonmark:commonmark:0.21.0'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'

@@ -1,0 +1,17 @@
+[[pick-search-v2]]
+== 픽픽픽 메인 검색 API(GET: /devdevdev/api/v2/picks/search)
+* 픽픽픽 메인에서 검색 결과를 반환한다.
+* 정확도순 정렬만 가능하다.
+
+=== 정상 요청/응답
+==== HTTP Request
+include::{snippets}/pick-search-v2/http-request.adoc[]
+==== HTTP Request Header Fields
+include::{snippets}/pick-search-v2/request-headers.adoc[]
+==== HTTP Request Query Parameters Fields
+include::{snippets}/pick-search-v2/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/pick-search-v2/http-response.adoc[]
+==== HTTP Response Fields
+include::{snippets}/pick-search-v2/response-fields.adoc[]

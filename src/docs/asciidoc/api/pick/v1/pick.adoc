@@ -1,4 +1,4 @@
-= 픽픽픽
+= 픽픽픽 V1
 
 include::pick-main.adoc[]
 include::pick-detail.adoc[]

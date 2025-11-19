@@ -1,5 +1,12 @@
 package com.dreamypatisiel.devdevdev.domain.service.techArticle;
 
+import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
+import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.dreamypatisiel.devdevdev.domain.entity.AnonymousMember;
 import com.dreamypatisiel.devdevdev.domain.entity.Company;
 import com.dreamypatisiel.devdevdev.domain.entity.TechArticle;
@@ -19,15 +26,19 @@ import com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.Guest
 import com.dreamypatisiel.devdevdev.exception.NotFoundException;
 import com.dreamypatisiel.devdevdev.global.security.oauth2.model.UserPrincipal;
 import com.dreamypatisiel.devdevdev.global.utils.AuthenticationMemberUtils;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleDetailResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleMainResponse;
 import com.dreamypatisiel.devdevdev.web.dto.response.techArticle.TechArticleRecommendResponse;
 import jakarta.persistence.EntityManager;
-import org.springframework.test.context.transaction.BeforeTransaction;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,6 +46,7 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -45,23 +57,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.test.context.transaction.BeforeTransaction;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-import static com.dreamypatisiel.devdevdev.domain.exception.TechArticleExceptionMessage.NOT_FOUND_TECH_ARTICLE_MESSAGE;
-import static com.dreamypatisiel.devdevdev.domain.service.techArticle.techArticle.GuestTechArticleService.INVALID_ANONYMOUS_CAN_NOT_USE_THIS_FUNCTION_MESSAGE;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @Transactional
@@ -93,9 +91,9 @@ class GuestTechArticleServiceTest {
             .withUsername("test")
             .withPassword("test")
             .withCommand(
-                "--character-set-server=utf8mb4", 
-                "--collation-server=utf8mb4_general_ci",
-                "--ngram_token_size=1"
+                    "--character-set-server=utf8mb4",
+                    "--collation-server=utf8mb4_general_ci",
+                    "--ngram_token_size=2"
             );
 
     String email = "dreamy5patisiel@kakao.com";
@@ -115,8 +113,8 @@ class GuestTechArticleServiceTest {
             indexesCreated = true;
 
             // 데이터 추가
-            testCompany = createCompany("꿈빛 파티시엘", "https://example.com/company.png", 
-                                      "https://example.com", "https://example.com");
+            testCompany = createCompany("꿈빛 파티시엘", "https://example.com/company.png",
+                    "https://example.com", "https://example.com");
             companyRepository.save(testCompany);
 
             testTechArticles = new ArrayList<>();
@@ -136,9 +134,9 @@ class GuestTechArticleServiceTest {
         try {
             // 현재 테스트 클래스의 컨테이너에 직접 연결
             connection = DriverManager.getConnection(
-                mysql.getJdbcUrl(),
-                mysql.getUsername(), 
-                mysql.getPassword()
+                    mysql.getJdbcUrl(),
+                    mysql.getUsername(),
+                    mysql.getPassword()
             );
             connection.setAutoCommit(false); // 트랜잭션 시작
 
@@ -155,7 +153,8 @@ class GuestTechArticleServiceTest {
                 // fulltext 인덱스 생성 (개별 + 복합)
                 statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__title ON tech_article (title) WITH PARSER ngram");
                 statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__contents ON tech_article (contents) WITH PARSER ngram");
-                statement.executeUpdate("CREATE FULLTEXT INDEX idx__ft__title_contents ON tech_article (title, contents) WITH PARSER ngram");
+                statement.executeUpdate(
+                        "CREATE FULLTEXT INDEX idx__ft__title_contents ON tech_article (title, contents) WITH PARSER ngram");
 
                 connection.commit(); // 트랜잭션 커밋
             }
@@ -298,7 +297,8 @@ class GuestTechArticleServiceTest {
         em.clear();
 
         // when
-        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(techArticleId, anonymousMemberId,
+        TechArticleDetailResponse techArticleDetailResponse = guestTechArticleService.getTechArticle(techArticleId,
+                anonymousMemberId,
                 authentication);
 
         // then
@@ -465,7 +465,8 @@ class GuestTechArticleServiceTest {
         Count recommendTotalCount = techArticle.getRecommendTotalCount();
 
         // when
-        TechArticleRecommendResponse techArticleRecommendResponse = guestTechArticleService.updateRecommend(techArticleId, anonymousMemberId, authentication);
+        TechArticleRecommendResponse techArticleRecommendResponse = guestTechArticleService.updateRecommend(techArticleId,
+                anonymousMemberId, authentication);
 
         // then
         assertThat(techArticleRecommendResponse)
@@ -484,7 +485,8 @@ class GuestTechArticleServiceTest {
                 });
 
         AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        TechArticleRecommend techArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(techArticle, anonymousMember).get();
+        TechArticleRecommend techArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(
+                techArticle, anonymousMember).get();
         assertThat(techArticleRecommend)
                 .satisfies(recommend -> {
                     assertThat(recommend.getTechArticle().getId()).isEqualTo(techArticle.getId());
@@ -515,17 +517,18 @@ class GuestTechArticleServiceTest {
         AnonymousMember anonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
         TechArticleRecommend techArticleRecommend = TechArticleRecommend.create(anonymousMember, techArticle);
         techArticleRecommendRepository.save(techArticleRecommend);
-        
+
         // 추천 후 상태 저장
         em.flush();
         em.clear();
-        
+
         TechArticle updatedTechArticle = techArticleRepository.findById(techArticleId).get();
         Count popularScore = updatedTechArticle.getPopularScore();
         Count recommendTotalCount = updatedTechArticle.getRecommendTotalCount();
 
         // when
-        TechArticleRecommendResponse techArticleRecommendResponse = guestTechArticleService.updateRecommend(techArticleId, anonymousMemberId, authentication);
+        TechArticleRecommendResponse techArticleRecommendResponse = guestTechArticleService.updateRecommend(techArticleId,
+                anonymousMemberId, authentication);
 
         // then
         em.flush();
@@ -546,7 +549,8 @@ class GuestTechArticleServiceTest {
                 });
 
         AnonymousMember findAnonymousMember = anonymousMemberService.findOrCreateAnonymousMember(anonymousMemberId);
-        TechArticleRecommend findTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(techArticle, findAnonymousMember).get();
+        TechArticleRecommend findTechArticleRecommend = techArticleRecommendRepository.findByTechArticleAndAnonymousMember(
+                techArticle, findAnonymousMember).get();
         assertThat(findTechArticleRecommend)
                 .satisfies(recommend -> {
                     assertThat(recommend.getTechArticle().getId()).isEqualTo(techArticle.getId());
@@ -561,7 +565,7 @@ class GuestTechArticleServiceTest {
     void getTechArticlesWithDifferentSorts(TechArticleSort sort) {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -572,9 +576,9 @@ class GuestTechArticleServiceTest {
 
         // then
         assertThat(techArticles).hasSize(pageable.getPageSize());
-        
+
         List<TechArticleMainResponse> articles = techArticles.getContent();
-        
+
         assertThat(articles).allSatisfy(article -> {
             assertThat(article.getId()).isNotNull();
             assertThat(article.getTitle()).isNotNull().isNotEmpty();
@@ -595,7 +599,7 @@ class GuestTechArticleServiceTest {
             assertThat(article.getIsLogoImage()).isNotNull();
             assertThat(article.getIsBookmarked()).isNotNull().isFalse();
         });
-        
+
         // 정렬 검증
         switch (sort) {
             case LATEST -> assertThat(articles)
@@ -619,7 +623,7 @@ class GuestTechArticleServiceTest {
         // given
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 5);
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -627,7 +631,7 @@ class GuestTechArticleServiceTest {
         // 첫 번째 페이지 조회
         Slice<TechArticleMainResponse> firstPage = guestTechArticleService.getTechArticles(
                 prevPageable, null, TechArticleSort.LATEST, null, null, null, authentication);
-        
+
         TechArticleMainResponse cursor = firstPage.getContent().get(0);
 
         // when
@@ -668,7 +672,7 @@ class GuestTechArticleServiceTest {
         // given
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 5);
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -676,7 +680,7 @@ class GuestTechArticleServiceTest {
         // 첫 번째 페이지 조회
         Slice<TechArticleMainResponse> firstPage = guestTechArticleService.getTechArticles(
                 prevPageable, null, TechArticleSort.MOST_VIEWED, null, null, null, authentication);
-        
+
         TechArticleMainResponse cursor = firstPage.getContent().get(0);
 
         // when
@@ -717,7 +721,7 @@ class GuestTechArticleServiceTest {
         // given
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 5);
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -725,7 +729,7 @@ class GuestTechArticleServiceTest {
         // 첫 번째 페이지 조회
         Slice<TechArticleMainResponse> firstPage = guestTechArticleService.getTechArticles(
                 prevPageable, null, TechArticleSort.MOST_COMMENTED, null, null, null, authentication);
-        
+
         TechArticleMainResponse cursor = firstPage.getContent().get(0);
 
         // when
@@ -766,7 +770,7 @@ class GuestTechArticleServiceTest {
         // given
         Pageable prevPageable = PageRequest.of(0, 1);
         Pageable pageable = PageRequest.of(0, 5);
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -774,7 +778,7 @@ class GuestTechArticleServiceTest {
         // 첫 번째 페이지 조회
         Slice<TechArticleMainResponse> firstPage = guestTechArticleService.getTechArticles(
                 prevPageable, null, TechArticleSort.POPULAR, null, null, null, authentication);
-        
+
         TechArticleMainResponse cursor = firstPage.getContent().get(0);
 
         // when
@@ -815,7 +819,7 @@ class GuestTechArticleServiceTest {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         String keyword = "내용";
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -847,7 +851,7 @@ class GuestTechArticleServiceTest {
                     assertThat(article.getIsLogoImage()).isNotNull();
                     assertThat(article.getIsBookmarked()).isNotNull().isFalse();
                     boolean containsKeyword = article.getTitle().contains(keyword) ||
-                                            article.getContents().contains(keyword);
+                            article.getContents().contains(keyword);
                     assertThat(containsKeyword).isTrue();
                 });
     }
@@ -857,7 +861,7 @@ class GuestTechArticleServiceTest {
     void getTechArticlesFilterByCompany() {
         // given
         Pageable pageable = PageRequest.of(0, 10);
-        
+
         when(authentication.getPrincipal()).thenReturn("anonymousUser");
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
@@ -932,7 +936,7 @@ class GuestTechArticleServiceTest {
                 .commentTotalCount(new Count(i))
                 .recommendTotalCount(new Count(i))
                 .viewTotalCount(new Count(i))
-                .popularScore(new Count(10L *i))
+                .popularScore(new Count(10L * i))
                 .build();
     }
 }
